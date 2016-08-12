@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/score_layout"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@color/action_bar_blue">
+
+        <TextView
+            android:id="@+id/position_in_country_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="10dp"
+            android:text="This week"
+            android:textColor="@color/text_colour_default"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/global_rank_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/position_in_country_text"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="10dp"
+            android:text="Overall ranking"
+            android:textColor="@color/text_colour_default"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/this_week_position_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/position_in_country_text"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="11dp"
+            android:fontFamily="sans-serif-light"
+            android:textColor="@color/text_colour_default"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/global_rank_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/this_week_position_value"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="11dp"
+            android:fontFamily="sans-serif-light"
+            android:textColor="@color/text_colour_default"
+            android:textSize="100sp" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/images_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#393939"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/details_left"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/images_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Images:"
+                android:textColor="@color/text_colour_default"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tracks_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="Tracks:"
+                android:textColor="@color/text_colour_default"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/details_right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/distance_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Distance:"
+                android:textColor="@color/text_colour_default"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/obd_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="OBD:"
+                android:textColor="@color/text_colour_default"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,1602 @@
+[
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_outline_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_outline_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_switch_track_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_switch_track_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/onebox_recent_list_icon.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/onebox_recent_list_icon.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_go_search_api_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_go_search_api_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/info.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/info.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_textfield_activated_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_textfield_activated_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_outline_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_outline_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_backup_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_backup_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_list_focused_holo.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_list_focused_holo.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_highlight_off_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_highlight_off_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/spinner_76_inner_holo.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/spinner_76_inner_holo.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_announcement_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_announcement_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_camera_accent.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_camera_accent.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/g_p_s_o_k.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/g_p_s_o_k.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_ab_back_mtrl_am_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_ab_back_mtrl_am_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_scrubber_control_to_pressed_mtrl_000.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_scrubber_control_to_pressed_mtrl_000.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/search_1_pressed_states_copy_5.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/search_1_pressed_states_copy_5.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_room_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_room_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_autorenew_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_autorenew_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_clear_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_clear_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_autorenew_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_autorenew_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_outline_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_outline_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/recenter.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/recenter.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_applications_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_applications_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cloud_black.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cloud_black.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/checkmark.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/checkmark.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_myprofile_gray.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_myprofile_gray.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_autorenew_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_autorenew_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/distance_dark_b_g.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/distance_dark_b_g.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_camera_enhance_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_camera_enhance_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/settings.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/settings.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_fixed_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_fixed_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_delete_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_delete_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_broken_image_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_broken_image_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_all_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_all_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_backup_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_backup_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_disabled.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_disabled.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_all_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_all_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_text_light_focused.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_text_light_focused.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_list_selector_disabled_holo_dark.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_list_selector_disabled_holo_dark.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cached_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cached_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_menu_share_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_menu_share_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/introbutton_behaviour_last.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.matthew-tamlin/sliding-intro-screen/2.1.1/res/drawable-hdpi-v4/introbutton_behaviour_last.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/g_p_s_good.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/g_p_s_good.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_camera_enhance_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_camera_enhance_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_action_icon_arrow_right.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_action_icon_arrow_right.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_icon_light_normal.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_icon_light_normal.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_myprofile_white.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_myprofile_white.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_text_light_normal.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_text_light_normal.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_btn_check_to_on_mtrl_000.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_btn_check_to_on_mtrl_000.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_https_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_https_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_btn_rating_star_on_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_btn_rating_star_on_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_announcement_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_announcement_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_text_light_pressed.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_text_light_pressed.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/logo.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/logo.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_open_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_open_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_btn_switch_to_on_mtrl_00001.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_btn_switch_to_on_mtrl_00001.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_highlight_off_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_highlight_off_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_list_pressed_holo_light.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_list_pressed_holo_light.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_scrubber_track_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_scrubber_track_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_cab_background_top_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_cab_background_top_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_check_circle_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_check_circle_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_https_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_https_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_pause_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_pause_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_osv_record_stop_red.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_osv_record_stop_red.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_outline_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_outline_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_explore_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_explore_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_delete_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_delete_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_btn_switch_to_on_mtrl_00012.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_btn_switch_to_on_mtrl_00012.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/stop_recording.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/stop_recording.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_not_fixed_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_not_fixed_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_icon_dark_focused.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_icon_dark_focused.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/profile.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/profile.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_https_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_https_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_camera_white.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_camera_white.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_list_pressed_holo_dark.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_list_pressed_holo_dark.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_cancel_white.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_cancel_white.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_off_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_off_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_highlight_off_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_highlight_off_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/camera_pressed.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/camera_pressed.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_announcement_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_announcement_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/minimize.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/minimize.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/camera_small_dark_b_g.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/camera_small_dark_b_g.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_menu_hardkey_panel_mtrl_mult.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_menu_hardkey_panel_mtrl_mult.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_all_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_all_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_highlight_off_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_highlight_off_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_announcement_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_announcement_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_ic_googleplayservices.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_ic_googleplayservices.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_autorenew_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_autorenew_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_clear_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_clear_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_text_dark_normal.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_text_dark_normal.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_check_circle_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_check_circle_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_not_fixed_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_not_fixed_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_btn_check_to_on_mtrl_015.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_btn_check_to_on_mtrl_015.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/gps_general.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/gps_general.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/uploading_resume.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/uploading_resume.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ellipse_bg.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ellipse_bg.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_star_black_16dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_star_black_16dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_camera_enhance_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_camera_enhance_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_fixed_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_fixed_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_delete_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_delete_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_scrubber_primary_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_scrubber_primary_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_commit_search_api_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_commit_search_api_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_off_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_off_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/search_1_pressed_states_copy_6.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/search_1_pressed_states_copy_6.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_open_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_open_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/introbutton_behaviour_first.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.matthew-tamlin/sliding-intro-screen/2.1.1/res/drawable-hdpi-v4/introbutton_behaviour_first.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_action_gps.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_action_gps.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_all_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_all_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/pause.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/pause.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_fixed_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_fixed_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_list_selector_disabled_holo_light.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_list_selector_disabled_holo_light.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_list_longpressed_holo.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_list_longpressed_holo.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cached_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cached_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_delete_white.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_delete_white.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/distance.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/distance.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cached_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cached_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_delete_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_delete_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/introbutton_behaviour_next.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.matthew-tamlin/sliding-intro-screen/2.1.1/res/drawable-hdpi-v4/introbutton_behaviour_next.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_btn_radio_to_on_mtrl_000.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_btn_radio_to_on_mtrl_000.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/search_1_pressed_states_copy_18.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/search_1_pressed_states_copy_18.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_text_dark_focused.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_text_dark_focused.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_off_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_off_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_backup_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_backup_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_backup_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_backup_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_icon_light_pressed.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_icon_light_pressed.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_position_me.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_position_me.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_menu_cut_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_menu_cut_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_pressed.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_pressed.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_text_dark_disabled.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_text_dark_disabled.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_applications_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_applications_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_clear_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_clear_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/sizedarkbg.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/sizedarkbg.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/camera_unpressed.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/camera_unpressed.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_sd_storage_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_sd_storage_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/bg_pattern.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/bg_pattern.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/back_dark_b_g.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/back_dark_b_g.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_icon_light_normal.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_icon_light_normal.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/record.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/record.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_not_fixed_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_not_fixed_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_https_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_https_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_icon_dark_normal.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_icon_dark_normal.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_tab_indicator_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_tab_indicator_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_off_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_off_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_check_circle_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_check_circle_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/onebox_address_list_icon.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/onebox_address_list_icon.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_all_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_all_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/rewind.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/rewind.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_text_dark_focused.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_text_dark_focused.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/slice_18.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/slice_18.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_icon_light_focused.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_icon_light_focused.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/camera_small.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/camera_small.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_highlight_off_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_highlight_off_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_open_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_open_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_all_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_all_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/c_c_pparked.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/c_c_pparked.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/camera_icon_blank.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/camera_icon_blank.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_edit_white.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_edit_white.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_applications_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_applications_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_camera_enhance_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_camera_enhance_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/g_p_s_low.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/g_p_s_low.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_point_start.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_point_start.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_explore_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_explore_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_action_distance.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_action_distance.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_applications_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_applications_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icons.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icons.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_announcement_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_announcement_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_https_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_https_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_clear_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_clear_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/cameradarkbg.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/cameradarkbg.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_outline_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_outline_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/hud_focus_ring_success.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/hud_focus_ring_success.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_open_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_open_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/gpsok.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/gpsok.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_scrubber_control_off_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_scrubber_control_off_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_action_cam.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_action_cam.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_fixed_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_fixed_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_back_arrow.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_back_arrow.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_room_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_room_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_camera_enhance_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_camera_enhance_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_autorenew_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_autorenew_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_myprofile_accent.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_myprofile_accent.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_explore_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_explore_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/home.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/home.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_error.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_error.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_file_upload_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_file_upload_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_outline_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_outline_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_nav_arrow.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_nav_arrow.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/introbutton_behaviour_progress.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.matthew-tamlin/sliding-intro-screen/2.1.1/res/drawable-hdpi-v4/introbutton_behaviour_progress.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_accent_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_accent_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/size_icon.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/size_icon.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_highlight_off_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_highlight_off_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/arrow_up.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/arrow_up.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/chevron.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/chevron.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/uploading_pause.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/uploading_pause.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_announcement_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_announcement_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_text_light_disabled.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_text_light_disabled.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_back_white.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_back_white.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_icon_dark_pressed.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_icon_dark_pressed.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/introbutton_behaviour_previous.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.matthew-tamlin/sliding-intro-screen/2.1.1/res/drawable-hdpi-v4/introbutton_behaviour_previous.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_backup_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_backup_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_more_horiz_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_more_horiz_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/copy_8.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/copy_8.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_text_dark_pressed.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_text_dark_pressed.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_pause_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_pause_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_menu_selectall_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_menu_selectall_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_camera_enhance_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_camera_enhance_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_voice_search_api_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_voice_search_api_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_upload_speed_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_upload_speed_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_open_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_open_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/fast_forward.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/fast_forward.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_explore_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_explore_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/button_record_inactive.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/button_record_inactive.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_off_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_off_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_local_see_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_local_see_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_icon_light_disabled.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_icon_light_disabled.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_not_fixed_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_not_fixed_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cached_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cached_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_delete_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_delete_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_btn_radio_to_on_mtrl_015.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_btn_radio_to_on_mtrl_015.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_popup_background_mtrl_mult.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_popup_background_mtrl_mult.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/next.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/next.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_fixed_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_fixed_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_normal.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_normal.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/gps_bad.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/gps_bad.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_room_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_room_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_all_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_all_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_text_light_focused.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_text_light_focused.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_spinner_mtrl_am_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_spinner_mtrl_am_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_play_arrow_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_play_arrow_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cloud_off_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cloud_off_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_applications_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_applications_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_textfield_default_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_textfield_default_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/previous.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/previous.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_icon_dark_disabled.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_icon_dark_disabled.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_room_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_room_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_delete_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_delete_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/button_record.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/button_record.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_delete_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_delete_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_explore_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_explore_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/gps_good.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/gps_good.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/camera_dark_b_g.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/camera_dark_b_g.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/tracks.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/tracks.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_file_upload_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_file_upload_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_text_light_pressed.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_text_light_pressed.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_announcement_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_announcement_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_action_connected_obd_icon.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_action_connected_obd_icon.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_open_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_open_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_empty.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_empty.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/play.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/play.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cached_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cached_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_outline_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_outline_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_room_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_room_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_menu_moreoverflow_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_menu_moreoverflow_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_menu_copy_mtrl_am_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_menu_copy_mtrl_am_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_focused.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_focused.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_text_dark_pressed.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_text_dark_pressed.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_backup_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_backup_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/triangle_ls.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/triangle_ls.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_backup_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_backup_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/clear_keyterm.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/clear_keyterm.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_backup_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_backup_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_text_light_disabled.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_text_light_disabled.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_star_half_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_star_half_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_not_fixed_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_not_fixed_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_search_api_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_search_api_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cloud_off_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cloud_off_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_widget_gps_on.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_widget_gps_on.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_textfield_search_default_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_textfield_search_default_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_autorenew_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_autorenew_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_check_circle_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_check_circle_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_outline_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_outline_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_delete_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_delete_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_explore_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_explore_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/search_1_pressed_states_copy.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/search_1_pressed_states_copy.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_full_open_on_phone.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_full_open_on_phone.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cached_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cached_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_no_gps.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_no_gps.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_highlight_off_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_highlight_off_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_setting.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_setting.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_https_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_https_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/close.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/close.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_icon_light_disabled.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_icon_light_disabled.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/delete.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/delete.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/maximize.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/maximize.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cancel_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cancel_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cached_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cached_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/uploading_stop.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/uploading_stop.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_text_light_normal.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_text_light_normal.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/size_dark_b_g.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/size_dark_b_g.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_point_position.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_point_position.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_access_time_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_access_time_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_applications_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_applications_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_https_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_https_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_all_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_all_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ab_share_pack_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ab_share_pack_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_applications_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_applications_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_check_circle_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_check_circle_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_not_fixed_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_not_fixed_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/copy_7.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/copy_7.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_action_storage.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_action_storage.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/sign_inout.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/sign_inout.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_map_gray.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_map_gray.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_room_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_room_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_https_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_https_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_map_white.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_map_white.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_camera_enhance_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_camera_enhance_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_back_black.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_back_black.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_menu_paste_mtrl_am_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_menu_paste_mtrl_am_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/back.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/back.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_play_arrow_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_play_arrow_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/close_dark_b_g.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/close_dark_b_g.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_map_accent.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_map_accent.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cached_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cached_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_off_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_off_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_file_upload_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_file_upload_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_star_half_black_16dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_star_half_black_16dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/stop_player.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/stop_player.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_open_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_open_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_fixed_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_fixed_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_announcement_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_announcement_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_icon_light_pressed.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_icon_light_pressed.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/images.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/images.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_text_dark_disabled.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_text_dark_disabled.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_recording_pin.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_recording_pin.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_open_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_open_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_explore_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_explore_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/profile_dark_b_g.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/profile_dark_b_g.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_save.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_save.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_room_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_room_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_person.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_person.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_camera_gray.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_camera_gray.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_done_black_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_done_black_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_btn_rating_star_off_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_btn_rating_star_off_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cancel_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cancel_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_upload_white.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_upload_white.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_camera_enhance_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_camera_enhance_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/hud_focus_ring_fail.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/hud_focus_ring_fail.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_explore_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_explore_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_star_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_star_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_menu_gray_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_menu_gray_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_autorenew_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_autorenew_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_google_signin_btn_icon_light_focused.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_google_signin_btn_icon_light_focused.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/triangle.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/triangle.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_off_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_off_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_osv_record_red.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_osv_record_red.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/onebox_search_list_icon.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/onebox_search_list_icon.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_fixed_black_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_fixed_black_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_list_divider_mtrl_alpha.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_list_divider_mtrl_alpha.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_launcher.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/fab_add.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/OpenStreetView/fab/unspecified/res/drawable-hdpi-v4/fab_add.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_cancel_black.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_cancel_black.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_autorenew_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_autorenew_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/o_b_d_icon.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/o_b_d_icon.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/common_plus_signin_btn_text_dark_normal.9.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable-hdpi-v4/common_plus_signin_btn_text_dark_normal.9.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/icon_point_end.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/icon_point_end.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/menu.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/menu.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_lock_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_lock_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_room_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_room_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_cancel_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_cancel_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_access_time_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_access_time_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_check_circle_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_check_circle_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_menu_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_menu_white_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_ic_clear_mtrl_alpha.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_ic_clear_mtrl_alpha.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/search.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/search.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_highlight_off_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_highlight_off_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_not_fixed_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_not_fixed_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_settings_applications_white_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_settings_applications_white_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/g_p_s_medium.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/g_p_s_medium.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_fixed_white_18dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_fixed_white_18dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_check_circle_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_check_circle_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/abc_scrubber_control_to_pressed_mtrl_005.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable-hdpi-v4/abc_scrubber_control_to_pressed_mtrl_005.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/distancedarkbg.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/distancedarkbg.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/search_1_pressed_states_copy_19.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/search_1_pressed_states_copy_19.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_check_circle_white_24dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_check_circle_white_24dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_off_black_48dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_off_black_48dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_pause_black_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_pause_black_36dp.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/gps_medium.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/gps_medium.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable-hdpi-v4/ic_gps_not_fixed_white_36dp.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable-hdpi/ic_gps_not_fixed_white_36dp.png"
+    }
+]

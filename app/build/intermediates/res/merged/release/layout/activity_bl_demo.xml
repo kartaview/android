@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/buttonOn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="On"/>
+    <Button
+        android:id="@+id/buttonDesc"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Make Discoverable"/>
+    <Button
+        android:id="@+id/buttonSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Search"/>
+    <Button
+        android:id="@+id/buttonOff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bluetooth Off"/>
+
+    <ListView
+        android:id="@+id/listViewPaired"
+        android:layout_width="match_parent"
+        android:layout_height="120dp">
+
+    </ListView>
+
+    <ListView
+        android:id="@+id/listViewDetected"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </ListView>
+</LinearLayout>

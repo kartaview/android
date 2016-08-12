@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.telenav.vehicledatacollector"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="21"
+        android:targetSdkVersion="23" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <!--
+    Starting from APi 23 location is requested
+    http://developer.android.com/intl/ko/about/versions/marshmallow/android-6.0-changes.html#behavior-hardware-id
+    -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Permission to start Alarm on device reboot -->
+
+
+    <!--
+         Declare this required feature if you want to make the app available to BLE-capable
+        devices only.  If you want to make your app available to devices that don't support BLE,
+        you should omit this in the manifest.  Instead, determine BLE capability by using
+        PackageManager.hasSystemFeature(FEATURE_BLUETOOTH_LE)
+    -->
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="false" />
+
+</manifest>

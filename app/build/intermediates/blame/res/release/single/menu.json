@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/menu/menu_navigation.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/menu/menu_navigation.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/menu/connection_status.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/OpenStreetView/bluetoothobd/unspecified/res/menu/connection_status.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/menu/gridview_menu.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/menu/gridview_menu.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/menu/devices_list.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/menu/devices_list.xml"
+    }
+]

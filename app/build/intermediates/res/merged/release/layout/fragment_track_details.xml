@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1B1C1F"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/track_details_layout"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true">
+
+        <TextView
+            android:id="@+id/current_image_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:drawableLeft="@drawable/camera_small_dark_b_g"
+            android:text="0/0 IMG"
+            android:textColor="@color/text_colour_default"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/image_date_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_marginRight="10dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:text="January 1st | 02:00 AM"
+            android:textColor="@color/text_colour_default"
+            android:textSize="12sp" />
+
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/control_preview_layout"
+        android:layout_below="@+id/track_details_layout">
+
+        <FrameLayout
+            android:id="@+id/image_holder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/preview_background">
+
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/maximize_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:layout_marginRight="19dp"
+            android:layout_marginTop="7dp"
+            android:src="@drawable/maximize" />
+
+        <ImageView
+            android:id="@+id/delete_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="7.7dp"
+            android:layout_marginRight="19dp"
+            android:src="@drawable/delete" />
+
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/control_preview_layout"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_above="@+id/second_long_line"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="100">
+
+        <ImageButton
+            android:id="@+id/previous_button"
+            style="@style/toolbarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="20"
+            android:src="@drawable/previous" />
+
+        <ImageButton
+            android:id="@+id/fast_backward_button"
+            style="@style/toolbarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="20"
+            android:src="@drawable/rewind" />
+
+        <ImageButton
+            android:id="@+id/play_button"
+            style="@style/toolbarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="20"
+            android:src="@drawable/play" />
+
+        <ImageButton
+            android:id="@+id/fast_forward_button"
+            style="@style/toolbarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="20"
+            android:src="@drawable/fast_forward" />
+
+        <ImageButton
+            android:id="@+id/next_button"
+            style="@style/toolbarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="20"
+            android:src="@drawable/next" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/second_long_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@+id/seek_bar_for_preview"
+        android:layout_gravity="center"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="3dp"
+        android:background="#31333B"
+        android:orientation="horizontal">
+
+    </View>
+
+    <SeekBar
+        android:id="@+id/seek_bar_for_preview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="center"
+        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+        android:max="100"
+        android:maxHeight="2dp"
+        android:minHeight="2dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="12dp"
+        android:layout_marginTop="12dp"
+        android:progress="0"
+        android:progressDrawable="@drawable/seeckbar_drawable"
+        android:secondaryProgress="0"
+        android:thumb="@drawable/seek_bar_thumb" />
+
+</RelativeLayout>
+

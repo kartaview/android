@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="action_bar_size">56dp</dimen>
+    <dimen name="horizontal_image_item_width">70dp</dimen>
+
+    <dimen name="onebox_media_item_height">272dp</dimen>
+    <dimen name="onebox_simple_item_height">56dp</dimen>
+    <dimen name="onebox_two_line_item_height">72dp</dimen>
+    <dimen name="onebox_list_divider_height">1dp</dimen>
+    <dimen name="onebox_avatar_padding">72dp</dimen>
+    <dimen name="onebox_default_padding">16dp</dimen>
+    <dimen name="onebox_elevation">3dp</dimen>
+
+    <dimen name="text_size_default">20sp</dimen>
+    <dimen name="settings_item_height">68dp</dimen>
+</resources>
