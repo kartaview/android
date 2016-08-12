@@ -1,0 +1,290 @@
+[
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/my_profile_icon.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/my_profile_icon.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/common_plus_signin_btn_icon_dark.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable/common_plus_signin_btn_icon_dark.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/btn_shutter_photo.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/btn_shutter_photo.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_cab_background_top_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_cab_background_top_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/common_plus_signin_btn_text_dark.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable/common_plus_signin_btn_text_dark.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/list_divider.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/list_divider.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/common_google_signin_btn_icon_dark.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable/common_google_signin_btn_icon_dark.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/image_list_item_background_selector.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/image_list_item_background_selector.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/network_image.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/network_image.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/my_profile.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/my_profile.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_seekbar_thumb_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_seekbar_thumb_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_item_background_holo_dark.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_item_background_holo_dark.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/rounded_grey.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/rounded_grey.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_ratingbar_small_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_ratingbar_small_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_textfield_search_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_textfield_search_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/image_background_selector.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/image_background_selector.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/camera_icon.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/camera_icon.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/obd_icon.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/obd_icon.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_ratingbar_indicator_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_ratingbar_indicator_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_switch_thumb_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_switch_thumb_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/design_fab_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/design/23.4.0/res/drawable/design_fab_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_list_selector_holo_dark.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_list_selector_holo_dark.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/osv_button_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/osv_button_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/globe_image.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/globe_image.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/ripple_card.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/ripple_card.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_spinner_textfield_background_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_spinner_textfield_background_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_edit_text_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_edit_text_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/common_plus_signin_btn_icon_light.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable/common_plus_signin_btn_icon_light.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/common_google_signin_btn_icon_light.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable/common_google_signin_btn_icon_light.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/tr_white_circle.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/tr_white_circle.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_btn_colored_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_btn_colored_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/comunity_image.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/comunity_image.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_list_selector_holo_light.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_list_selector_holo_light.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_btn_check_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_btn_check_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/progress_large_holo.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/progress_large_holo.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/ic_local_see.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/ic_local_see.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/ripple_borderless.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/ripple_borderless.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/osv_logo.png",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/osv_logo.png"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/horizontal_image_item_background_deselected.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/horizontal_image_item_background_deselected.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/transparent_rounded_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/transparent_rounded_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/background_uploading_buttons.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/background_uploading_buttons.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_seekbar_track_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_seekbar_track_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/image_broken_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/image_broken_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_item_background_holo_light.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_item_background_holo_light.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/seek_bar_thumb.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/seek_bar_thumb.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_list_selector_background_transition_holo_light.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_list_selector_background_transition_holo_light.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/map_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/map_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/seeckbar_drawable.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/seeckbar_drawable.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/image_missing.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/image_missing.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/ripple.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/ripple.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_tab_indicator_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_tab_indicator_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_btn_radio_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_btn_radio_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/list_icon.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/list_icon.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/horizontal_image_item_background_selected.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/horizontal_image_item_background_selected.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/toolbar_button_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/toolbar_button_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/dropshadow.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/dropshadow.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_cab_background_internal_bg.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_cab_background_internal_bg.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/design_snackbar_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/design/23.4.0/res/drawable/design_snackbar_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_dialog_material_background_dark.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_dialog_material_background_dark.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_text_cursor_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_text_cursor_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/map_icon.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/map_icon.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/preview_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/preview_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_btn_default_mtrl_shape.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_btn_default_mtrl_shape.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_dialog_material_background_light.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_dialog_material_background_light.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_btn_borderless_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_btn_borderless_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_ratingbar_full_material.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_ratingbar_full_material.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/gps_ok_layout.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/gps_ok_layout.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/image_loading_background.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/drawable/image_loading_background.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/common_google_signin_btn_text_light.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable/common_google_signin_btn_text_light.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/abc_list_selector_background_transition_holo_dark.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/drawable/abc_list_selector_background_transition_holo_dark.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/common_plus_signin_btn_text_light.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable/common_plus_signin_btn_text_light.xml"
+    },
+    {
+        "merged": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/drawable/common_google_signin_btn_text_dark.xml",
+        "source": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-base/9.2.0/res/drawable/common_google_signin_btn_text_dark.xml"
+    }
+]

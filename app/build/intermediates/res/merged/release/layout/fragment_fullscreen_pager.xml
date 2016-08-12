@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_material_dark_1"
+    android:paddingTop="?android:attr/actionBarSize">
+
+    <com.telenav.osv.ui.custom.ScrollDisabledViewPager
+        android:id="@+id/fullscreen_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true">
+
+    </com.telenav.osv.ui.custom.ScrollDisabledViewPager>
+</android.support.design.widget.CoordinatorLayout>

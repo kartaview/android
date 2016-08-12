@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Dot"><attr format="dimension" name="inactiveDiameter"/><attr format="dimension" name="activeDiameter"/><attr format="color" name="inactiveColor"/><attr format="color" name="activeColor"/><attr format="integer" name="transitionDuration"/><attr format="boolean" name="initiallyActive"/></declare-styleable>
+    <declare-styleable name="DotIndicator"><attr format="integer" name="numberOfDots"/><attr format="integer" name="selectedDotIndex"/><attr format="dimension" name="unselectedDotDiameter"/><attr format="dimension" name="selectedDotDiameter"/><attr format="color" name="unselectedDotColor"/><attr format="color" name="selectedDotColor"/><attr format="dimension" name="spacingBetweenDots"/><attr format="integer" name="dotTransitionDuration"/></declare-styleable>
+    <dimen name="divider_line_thickness">0.5dp</dimen>
+    <string name="introActivity_defaultBackButtonText">BACK</string>
+    <string name="introActivity_defaultFinalButtonText">DONE</string>
+    <string name="introActivity_defaultFirstButtonText">RESTART</string>
+    <string name="introActivity_defaultLastButtonText">SKIP</string>
+    <string name="introActivity_defaultNextButtonText">NEXT</string>
+    <style name="HorizontalLine">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/divider_line_thickness</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:background">@android:color/white</item>
+    </style>
+    <style name="NoActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

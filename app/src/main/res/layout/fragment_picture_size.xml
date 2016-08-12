@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:minWidth="300dp"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/picture_size_lable"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="3dp"
+        android:layout_marginTop="10dp"
+        android:text="Resolutions"
+        android:textColor="@color/text_colour_default_light"
+        android:textSize="25sp"
+        android:textStyle="bold" />
+
+
+    <RadioGroup
+        android:id="@+id/picture_size_radio_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    </RadioGroup>
+
+
+    <TextView
+        android:id="@+id/ok_button_selection"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|right"
+        android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:paddingEnd="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingStart="20dp"
+        android:text="Ok"
+        android:textColor="@color/accent_material_dark_1"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

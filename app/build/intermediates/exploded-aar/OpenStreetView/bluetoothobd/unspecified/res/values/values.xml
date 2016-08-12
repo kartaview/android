@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vechile Data Collector</string>
+    <string name="ble_devices">BLE devices</string>
+    <string name="ble_not_supported">BLE not supported</string>
+    <string name="cancel">Cancel</string>
+    <string name="connected">Connected</string>
+    <string name="connecting">Connecting...</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="error_bluetooth_not_supported">Bluetooth not supported</string>
+    <string name="grant_access_to_location_for_ble">You need to grant access to location for searching BLE device</string>
+    <string name="last_received_rpm">Last received RPM value: %1$s at %2$s</string>
+    <string name="menu_connect">Connect</string>
+    <string name="menu_disconnect">Disconnect</string>
+    <string name="menu_scan">Scan</string>
+    <string name="menu_stop">Stop</string>
+    <string name="ok">Ok</string>
+    <string name="permissions_denied">Permissions denied.</string>
+    <string name="permissions_granted">Permissions granted</string>
+    <string name="sdk_not_initialized">SDK is not initialized. Check if the map data path is correct.</string>
+    <string name="since">since</string>
+    <string name="unknown_device">Unknown device</string>
+</resources>

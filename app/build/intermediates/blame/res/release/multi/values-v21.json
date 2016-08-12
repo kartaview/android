@@ -1,0 +1,2118 @@
+[
+    {
+        "outputFile": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/res/merged/release/values-v21/values-v21.xml",
+        "map": [
+            {
+                "to": {
+                    "startLine": 2,
+                    "startColumn": 4,
+                    "startOffset": 55,
+                    "endLine": 4,
+                    "endColumn": 12,
+                    "endOffset": 210
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 53,
+                        "startColumn": 4,
+                        "startOffset": 3311,
+                        "endLine": 55,
+                        "endColumn": 12,
+                        "endOffset": 3468
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 5,
+                    "startColumn": 4,
+                    "startOffset": 215,
+                    "endLine": 9,
+                    "endColumn": 12,
+                    "endOffset": 515
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 88,
+                        "startColumn": 4,
+                        "startOffset": 4865,
+                        "endLine": 92,
+                        "endColumn": 12,
+                        "endOffset": 5169
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 10,
+                    "startColumn": 4,
+                    "startOffset": 520,
+                    "endLine": 14,
+                    "endColumn": 12,
+                    "endOffset": 848
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 94,
+                        "startColumn": 4,
+                        "startOffset": 5177,
+                        "endLine": 98,
+                        "endColumn": 12,
+                        "endOffset": 5509
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 15,
+                    "startColumn": 4,
+                    "startOffset": 853,
+                    "endLine": 33,
+                    "endColumn": 12,
+                    "endOffset": 2159
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 3,
+                        "startColumn": 4,
+                        "startOffset": 148,
+                        "endLine": 21,
+                        "endColumn": 12,
+                        "endOffset": 1472
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 34,
+                    "startColumn": 4,
+                    "startOffset": 2164,
+                    "endLine": 36,
+                    "endColumn": 12,
+                    "endOffset": 2357
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 49,
+                        "startColumn": 4,
+                        "startOffset": 3108,
+                        "endLine": 51,
+                        "endColumn": 12,
+                        "endOffset": 3303
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 37,
+                    "startColumn": 4,
+                    "startOffset": 2362,
+                    "endLine": 39,
+                    "endColumn": 12,
+                    "endOffset": 2557
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 45,
+                        "startColumn": 4,
+                        "startOffset": 2903,
+                        "endLine": 47,
+                        "endColumn": 12,
+                        "endOffset": 3100
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 40,
+                    "startColumn": 4,
+                    "startOffset": 2562,
+                    "endLine": 58,
+                    "endColumn": 12,
+                    "endOffset": 3880
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 23,
+                        "startColumn": 4,
+                        "startOffset": 1480,
+                        "endLine": 41,
+                        "endColumn": 12,
+                        "endOffset": 2816
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 59,
+                    "startColumn": 4,
+                    "startOffset": 3885,
+                    "endColumn": 90,
+                    "endOffset": 3971
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 2,
+                        "startColumn": 4,
+                        "startOffset": 55,
+                        "endColumn": 90,
+                        "endOffset": 141
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 60,
+                    "startColumn": 4,
+                    "startOffset": 3976,
+                    "endColumn": 102,
+                    "endOffset": 4074
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 3,
+                        "startColumn": 4,
+                        "startOffset": 146,
+                        "endColumn": 102,
+                        "endOffset": 244
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 61,
+                    "startColumn": 4,
+                    "startOffset": 4079,
+                    "endColumn": 102,
+                    "endOffset": 4177
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 4,
+                        "startColumn": 4,
+                        "startOffset": 249,
+                        "endColumn": 102,
+                        "endOffset": 347
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 62,
+                    "startColumn": 4,
+                    "startOffset": 4182,
+                    "endColumn": 104,
+                    "endOffset": 4282
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 5,
+                        "startColumn": 4,
+                        "startOffset": 352,
+                        "endColumn": 104,
+                        "endOffset": 452
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 63,
+                    "startColumn": 4,
+                    "startOffset": 4287,
+                    "endColumn": 106,
+                    "endOffset": 4389
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 6,
+                        "startColumn": 4,
+                        "startOffset": 457,
+                        "endColumn": 106,
+                        "endOffset": 559
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 64,
+                    "startColumn": 4,
+                    "startOffset": 4394,
+                    "endColumn": 108,
+                    "endOffset": 4498
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 7,
+                        "startColumn": 4,
+                        "startOffset": 564,
+                        "endColumn": 108,
+                        "endOffset": 668
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 65,
+                    "startColumn": 4,
+                    "startOffset": 4503,
+                    "endColumn": 108,
+                    "endOffset": 4607
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 8,
+                        "startColumn": 4,
+                        "startOffset": 673,
+                        "endColumn": 108,
+                        "endOffset": 777
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 66,
+                    "startColumn": 4,
+                    "startOffset": 4612,
+                    "endColumn": 108,
+                    "endOffset": 4716
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 9,
+                        "startColumn": 4,
+                        "startOffset": 782,
+                        "endColumn": 108,
+                        "endOffset": 886
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 67,
+                    "startColumn": 4,
+                    "startOffset": 4721,
+                    "endColumn": 108,
+                    "endOffset": 4825
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 10,
+                        "startColumn": 4,
+                        "startOffset": 891,
+                        "endColumn": 108,
+                        "endOffset": 995
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 68,
+                    "startColumn": 4,
+                    "startOffset": 4830,
+                    "endColumn": 108,
+                    "endOffset": 4934
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 11,
+                        "startColumn": 4,
+                        "startOffset": 1000,
+                        "endColumn": 108,
+                        "endOffset": 1104
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 69,
+                    "startColumn": 4,
+                    "startOffset": 4939,
+                    "endColumn": 106,
+                    "endOffset": 5041
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 12,
+                        "startColumn": 4,
+                        "startOffset": 1109,
+                        "endColumn": 106,
+                        "endOffset": 1211
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 70,
+                    "startColumn": 4,
+                    "startOffset": 5046,
+                    "endColumn": 102,
+                    "endOffset": 5144
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 13,
+                        "startColumn": 4,
+                        "startOffset": 1216,
+                        "endColumn": 102,
+                        "endOffset": 1314
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 71,
+                    "startColumn": 4,
+                    "startOffset": 5149,
+                    "endColumn": 118,
+                    "endOffset": 5263
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 14,
+                        "startColumn": 4,
+                        "startOffset": 1319,
+                        "endColumn": 118,
+                        "endOffset": 1433
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 72,
+                    "startColumn": 4,
+                    "startOffset": 5268,
+                    "endLine": 73,
+                    "endColumn": 12,
+                    "endOffset": 5418
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 15,
+                        "startColumn": 4,
+                        "startOffset": 1438,
+                        "endLine": 16,
+                        "endColumn": 12,
+                        "endOffset": 1588
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 74,
+                    "startColumn": 4,
+                    "startOffset": 5423,
+                    "endLine": 75,
+                    "endColumn": 12,
+                    "endOffset": 5573
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 17,
+                        "startColumn": 4,
+                        "startOffset": 1593,
+                        "endLine": 18,
+                        "endColumn": 12,
+                        "endOffset": 1743
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 76,
+                    "startColumn": 4,
+                    "startOffset": 5578,
+                    "endColumn": 104,
+                    "endOffset": 5678
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 19,
+                        "startColumn": 4,
+                        "startOffset": 1748,
+                        "endColumn": 104,
+                        "endOffset": 1848
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 77,
+                    "startColumn": 4,
+                    "startOffset": 5683,
+                    "endColumn": 120,
+                    "endOffset": 5799
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 20,
+                        "startColumn": 4,
+                        "startOffset": 1853,
+                        "endColumn": 120,
+                        "endOffset": 1969
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 78,
+                    "startColumn": 4,
+                    "startOffset": 5804,
+                    "endColumn": 100,
+                    "endOffset": 5900
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 21,
+                        "startColumn": 4,
+                        "startOffset": 1974,
+                        "endColumn": 100,
+                        "endOffset": 2070
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 79,
+                    "startColumn": 4,
+                    "startOffset": 5905,
+                    "endLine": 80,
+                    "endColumn": 12,
+                    "endOffset": 6047
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 22,
+                        "startColumn": 4,
+                        "startOffset": 2075,
+                        "endLine": 23,
+                        "endColumn": 12,
+                        "endOffset": 2217
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 81,
+                    "startColumn": 4,
+                    "startOffset": 6052,
+                    "endLine": 82,
+                    "endColumn": 12,
+                    "endOffset": 6188
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 24,
+                        "startColumn": 4,
+                        "startOffset": 2222,
+                        "endLine": 25,
+                        "endColumn": 12,
+                        "endOffset": 2358
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 83,
+                    "startColumn": 4,
+                    "startOffset": 6193,
+                    "endColumn": 102,
+                    "endOffset": 6291
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 26,
+                        "startColumn": 4,
+                        "startOffset": 2363,
+                        "endColumn": 102,
+                        "endOffset": 2461
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 84,
+                    "startColumn": 4,
+                    "startOffset": 6296,
+                    "endColumn": 118,
+                    "endOffset": 6410
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 27,
+                        "startColumn": 4,
+                        "startOffset": 2466,
+                        "endColumn": 118,
+                        "endOffset": 2580
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 85,
+                    "startColumn": 4,
+                    "startOffset": 6415,
+                    "endColumn": 106,
+                    "endOffset": 6517
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 28,
+                        "startColumn": 4,
+                        "startOffset": 2585,
+                        "endColumn": 106,
+                        "endOffset": 2687
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 86,
+                    "startColumn": 4,
+                    "startOffset": 6522,
+                    "endColumn": 102,
+                    "endOffset": 6620
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 29,
+                        "startColumn": 4,
+                        "startOffset": 2692,
+                        "endColumn": 102,
+                        "endOffset": 2790
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 87,
+                    "startColumn": 4,
+                    "startOffset": 6625,
+                    "endLine": 88,
+                    "endColumn": 12,
+                    "endOffset": 6775
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 30,
+                        "startColumn": 4,
+                        "startOffset": 2795,
+                        "endLine": 31,
+                        "endColumn": 12,
+                        "endOffset": 2945
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 89,
+                    "startColumn": 4,
+                    "startOffset": 6780,
+                    "endLine": 90,
+                    "endColumn": 12,
+                    "endOffset": 6946
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 32,
+                        "startColumn": 4,
+                        "startOffset": 2950,
+                        "endLine": 33,
+                        "endColumn": 12,
+                        "endOffset": 3116
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 91,
+                    "startColumn": 4,
+                    "startOffset": 6951,
+                    "endLine": 92,
+                    "endColumn": 12,
+                    "endOffset": 7095
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 34,
+                        "startColumn": 4,
+                        "startOffset": 3121,
+                        "endLine": 35,
+                        "endColumn": 12,
+                        "endOffset": 3265
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 93,
+                    "startColumn": 4,
+                    "startOffset": 7100,
+                    "endLine": 94,
+                    "endColumn": 12,
+                    "endOffset": 7260
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 36,
+                        "startColumn": 4,
+                        "startOffset": 3270,
+                        "endLine": 37,
+                        "endColumn": 12,
+                        "endOffset": 3430
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 95,
+                    "startColumn": 4,
+                    "startOffset": 7265,
+                    "endLine": 96,
+                    "endColumn": 12,
+                    "endOffset": 7417
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 38,
+                        "startColumn": 4,
+                        "startOffset": 3435,
+                        "endLine": 39,
+                        "endColumn": 12,
+                        "endOffset": 3587
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 97,
+                    "startColumn": 4,
+                    "startOffset": 7422,
+                    "endLine": 98,
+                    "endColumn": 12,
+                    "endOffset": 7568
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 40,
+                        "startColumn": 4,
+                        "startOffset": 3592,
+                        "endLine": 41,
+                        "endColumn": 12,
+                        "endOffset": 3738
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 99,
+                    "startColumn": 4,
+                    "startOffset": 7573,
+                    "endColumn": 118,
+                    "endOffset": 7687
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 42,
+                        "startColumn": 4,
+                        "startOffset": 3743,
+                        "endColumn": 118,
+                        "endOffset": 3857
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 100,
+                    "startColumn": 4,
+                    "startOffset": 7692,
+                    "endLine": 101,
+                    "endColumn": 12,
+                    "endOffset": 7836
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 43,
+                        "startColumn": 4,
+                        "startOffset": 3862,
+                        "endLine": 44,
+                        "endColumn": 12,
+                        "endOffset": 4006
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 102,
+                    "startColumn": 4,
+                    "startOffset": 7841,
+                    "endLine": 103,
+                    "endColumn": 12,
+                    "endOffset": 7985
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 45,
+                        "startColumn": 4,
+                        "startOffset": 4011,
+                        "endLine": 46,
+                        "endColumn": 12,
+                        "endOffset": 4155
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 104,
+                    "startColumn": 4,
+                    "startOffset": 7990,
+                    "endColumn": 111,
+                    "endOffset": 8097
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 47,
+                        "startColumn": 4,
+                        "startOffset": 4160,
+                        "endColumn": 111,
+                        "endOffset": 4267
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 105,
+                    "startColumn": 4,
+                    "startOffset": 8102,
+                    "endColumn": 146,
+                    "endOffset": 8244
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 48,
+                        "startColumn": 4,
+                        "startOffset": 4272,
+                        "endColumn": 146,
+                        "endOffset": 4414
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 106,
+                    "startColumn": 4,
+                    "startOffset": 8249,
+                    "endLine": 107,
+                    "endColumn": 12,
+                    "endOffset": 8397
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 49,
+                        "startColumn": 4,
+                        "startOffset": 4419,
+                        "endLine": 50,
+                        "endColumn": 12,
+                        "endOffset": 4567
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 108,
+                    "startColumn": 4,
+                    "startOffset": 8402,
+                    "endLine": 109,
+                    "endColumn": 12,
+                    "endOffset": 8544
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 51,
+                        "startColumn": 4,
+                        "startOffset": 4572,
+                        "endLine": 52,
+                        "endColumn": 12,
+                        "endOffset": 4714
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 110,
+                    "startColumn": 4,
+                    "startOffset": 8549,
+                    "endColumn": 74,
+                    "endOffset": 8619
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 53,
+                        "startColumn": 4,
+                        "startOffset": 4719,
+                        "endColumn": 74,
+                        "endOffset": 4789
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 111,
+                    "startColumn": 4,
+                    "startOffset": 8624,
+                    "endColumn": 88,
+                    "endOffset": 8708
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 54,
+                        "startColumn": 4,
+                        "startOffset": 4794,
+                        "endColumn": 88,
+                        "endOffset": 4878
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 112,
+                    "startColumn": 4,
+                    "startOffset": 8713,
+                    "endColumn": 86,
+                    "endOffset": 8795
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 55,
+                        "startColumn": 4,
+                        "startOffset": 4883,
+                        "endColumn": 86,
+                        "endOffset": 4965
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 113,
+                    "startColumn": 4,
+                    "startOffset": 8800,
+                    "endColumn": 100,
+                    "endOffset": 8896
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 56,
+                        "startColumn": 4,
+                        "startOffset": 4970,
+                        "endColumn": 100,
+                        "endOffset": 5066
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 114,
+                    "startColumn": 4,
+                    "startOffset": 8901,
+                    "endLine": 157,
+                    "endColumn": 12,
+                    "endOffset": 11964
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 57,
+                        "startColumn": 4,
+                        "startOffset": 5071,
+                        "endLine": 100,
+                        "endColumn": 12,
+                        "endOffset": 8134
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 158,
+                    "startColumn": 4,
+                    "startOffset": 11969,
+                    "endLine": 160,
+                    "endColumn": 12,
+                    "endOffset": 12150
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 101,
+                        "startColumn": 4,
+                        "startOffset": 8139,
+                        "endLine": 103,
+                        "endColumn": 12,
+                        "endOffset": 8320
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 161,
+                    "startColumn": 4,
+                    "startOffset": 12155,
+                    "endLine": 204,
+                    "endColumn": 12,
+                    "endOffset": 15230
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 104,
+                        "startColumn": 4,
+                        "startOffset": 8325,
+                        "endLine": 147,
+                        "endColumn": 12,
+                        "endOffset": 11400
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 205,
+                    "startColumn": 4,
+                    "startOffset": 15235,
+                    "endLine": 207,
+                    "endColumn": 12,
+                    "endOffset": 15428
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 148,
+                        "startColumn": 4,
+                        "startOffset": 11405,
+                        "endLine": 150,
+                        "endColumn": 12,
+                        "endOffset": 11598
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 208,
+                    "startColumn": 4,
+                    "startOffset": 15433,
+                    "endLine": 209,
+                    "endColumn": 12,
+                    "endOffset": 15551
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 151,
+                        "startColumn": 4,
+                        "startOffset": 11603,
+                        "endLine": 152,
+                        "endColumn": 12,
+                        "endOffset": 11721
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 210,
+                    "startColumn": 4,
+                    "startOffset": 15556,
+                    "endLine": 211,
+                    "endColumn": 12,
+                    "endOffset": 15674
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 153,
+                        "startColumn": 4,
+                        "startOffset": 11726,
+                        "endLine": 154,
+                        "endColumn": 12,
+                        "endOffset": 11844
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 212,
+                    "startColumn": 4,
+                    "startOffset": 15679,
+                    "endLine": 213,
+                    "endColumn": 12,
+                    "endOffset": 15787
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 155,
+                        "startColumn": 4,
+                        "startOffset": 11849,
+                        "endLine": 156,
+                        "endColumn": 12,
+                        "endOffset": 11957
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 214,
+                    "startColumn": 4,
+                    "startOffset": 15792,
+                    "endLine": 216,
+                    "endColumn": 12,
+                    "endOffset": 15970
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 157,
+                        "startColumn": 4,
+                        "startOffset": 11962,
+                        "endLine": 159,
+                        "endColumn": 12,
+                        "endOffset": 12140
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 217,
+                    "startColumn": 4,
+                    "startOffset": 15975,
+                    "endLine": 218,
+                    "endColumn": 12,
+                    "endOffset": 16101
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 160,
+                        "startColumn": 4,
+                        "startOffset": 12145,
+                        "endLine": 161,
+                        "endColumn": 12,
+                        "endOffset": 12271
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 219,
+                    "startColumn": 4,
+                    "startOffset": 16106,
+                    "endLine": 221,
+                    "endColumn": 12,
+                    "endOffset": 16302
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 162,
+                        "startColumn": 4,
+                        "startOffset": 12276,
+                        "endLine": 164,
+                        "endColumn": 12,
+                        "endOffset": 12472
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 222,
+                    "startColumn": 4,
+                    "startOffset": 16307,
+                    "endColumn": 88,
+                    "endOffset": 16391
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 165,
+                        "startColumn": 4,
+                        "startOffset": 12477,
+                        "endColumn": 88,
+                        "endOffset": 12561
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 223,
+                    "startColumn": 4,
+                    "startOffset": 16396,
+                    "endColumn": 110,
+                    "endOffset": 16502
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 166,
+                        "startColumn": 4,
+                        "startOffset": 12566,
+                        "endColumn": 110,
+                        "endOffset": 12672
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 224,
+                    "startColumn": 4,
+                    "startOffset": 16507,
+                    "endColumn": 126,
+                    "endOffset": 16629
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 167,
+                        "startColumn": 4,
+                        "startOffset": 12677,
+                        "endColumn": 126,
+                        "endOffset": 12799
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 225,
+                    "startColumn": 4,
+                    "startOffset": 16634,
+                    "endColumn": 100,
+                    "endOffset": 16730
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 168,
+                        "startColumn": 4,
+                        "startOffset": 12804,
+                        "endColumn": 100,
+                        "endOffset": 12900
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 226,
+                    "startColumn": 4,
+                    "startOffset": 16735,
+                    "endColumn": 94,
+                    "endOffset": 16825
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 169,
+                        "startColumn": 4,
+                        "startOffset": 12905,
+                        "endColumn": 94,
+                        "endOffset": 12995
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 227,
+                    "startColumn": 4,
+                    "startOffset": 16830,
+                    "endColumn": 122,
+                    "endOffset": 16948
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 170,
+                        "startColumn": 4,
+                        "startOffset": 13000,
+                        "endColumn": 122,
+                        "endOffset": 13118
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 228,
+                    "startColumn": 4,
+                    "startOffset": 16953,
+                    "endColumn": 128,
+                    "endOffset": 17077
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 171,
+                        "startColumn": 4,
+                        "startOffset": 13123,
+                        "endColumn": 128,
+                        "endOffset": 13247
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 229,
+                    "startColumn": 4,
+                    "startOffset": 17082,
+                    "endColumn": 116,
+                    "endOffset": 17194
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 172,
+                        "startColumn": 4,
+                        "startOffset": 13252,
+                        "endColumn": 116,
+                        "endOffset": 13364
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 230,
+                    "startColumn": 4,
+                    "startOffset": 17199,
+                    "endLine": 232,
+                    "endColumn": 12,
+                    "endOffset": 17371
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 173,
+                        "startColumn": 4,
+                        "startOffset": 13369,
+                        "endLine": 175,
+                        "endColumn": 12,
+                        "endOffset": 13541
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 233,
+                    "startColumn": 4,
+                    "startOffset": 17376,
+                    "endColumn": 98,
+                    "endOffset": 17470
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 176,
+                        "startColumn": 4,
+                        "startOffset": 13546,
+                        "endColumn": 98,
+                        "endOffset": 13640
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 234,
+                    "startColumn": 4,
+                    "startOffset": 17475,
+                    "endLine": 235,
+                    "endColumn": 12,
+                    "endOffset": 17605
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 177,
+                        "startColumn": 4,
+                        "startOffset": 13645,
+                        "endLine": 178,
+                        "endColumn": 12,
+                        "endOffset": 13775
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 236,
+                    "startColumn": 4,
+                    "startOffset": 17610,
+                    "endLine": 237,
+                    "endColumn": 12,
+                    "endOffset": 17748
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 179,
+                        "startColumn": 4,
+                        "startOffset": 13780,
+                        "endLine": 180,
+                        "endColumn": 12,
+                        "endOffset": 13918
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 238,
+                    "startColumn": 4,
+                    "startOffset": 17753,
+                    "endLine": 239,
+                    "endColumn": 12,
+                    "endOffset": 17883
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 181,
+                        "startColumn": 4,
+                        "startOffset": 13923,
+                        "endLine": 182,
+                        "endColumn": 12,
+                        "endOffset": 14053
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 240,
+                    "startColumn": 4,
+                    "startOffset": 17888,
+                    "endLine": 241,
+                    "endColumn": 12,
+                    "endOffset": 18002
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 183,
+                        "startColumn": 4,
+                        "startOffset": 14058,
+                        "endLine": 184,
+                        "endColumn": 12,
+                        "endOffset": 14172
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 242,
+                    "startColumn": 4,
+                    "startOffset": 18007,
+                    "endLine": 245,
+                    "endColumn": 12,
+                    "endOffset": 18203
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 185,
+                        "startColumn": 4,
+                        "startOffset": 14177,
+                        "endLine": 188,
+                        "endColumn": 12,
+                        "endOffset": 14373
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 246,
+                    "startColumn": 4,
+                    "startOffset": 18208,
+                    "endLine": 247,
+                    "endColumn": 12,
+                    "endOffset": 18322
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 189,
+                        "startColumn": 4,
+                        "startOffset": 14378,
+                        "endLine": 190,
+                        "endColumn": 12,
+                        "endOffset": 14492
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 248,
+                    "startColumn": 4,
+                    "startOffset": 18327,
+                    "endColumn": 92,
+                    "endOffset": 18415
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 191,
+                        "startColumn": 4,
+                        "startOffset": 14497,
+                        "endColumn": 92,
+                        "endOffset": 14585
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 249,
+                    "startColumn": 4,
+                    "startOffset": 18420,
+                    "endColumn": 110,
+                    "endOffset": 18526
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 192,
+                        "startColumn": 4,
+                        "startOffset": 14590,
+                        "endColumn": 110,
+                        "endOffset": 14696
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 250,
+                    "startColumn": 4,
+                    "startOffset": 18531,
+                    "endColumn": 55,
+                    "endOffset": 18582
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 193,
+                        "startColumn": 4,
+                        "startOffset": 14701,
+                        "endColumn": 55,
+                        "endOffset": 14752
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 251,
+                    "startColumn": 4,
+                    "startOffset": 18587,
+                    "endLine": 252,
+                    "endColumn": 12,
+                    "endOffset": 18689
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 194,
+                        "startColumn": 4,
+                        "startOffset": 14757,
+                        "endLine": 195,
+                        "endColumn": 12,
+                        "endOffset": 14859
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 253,
+                    "startColumn": 4,
+                    "startOffset": 18694,
+                    "endLine": 256,
+                    "endColumn": 12,
+                    "endOffset": 18884
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 196,
+                        "startColumn": 4,
+                        "startOffset": 14864,
+                        "endLine": 199,
+                        "endColumn": 12,
+                        "endOffset": 15054
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 257,
+                    "startColumn": 4,
+                    "startOffset": 18889,
+                    "endLine": 258,
+                    "endColumn": 12,
+                    "endOffset": 18995
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 200,
+                        "startColumn": 4,
+                        "startOffset": 15059,
+                        "endLine": 201,
+                        "endColumn": 12,
+                        "endOffset": 15165
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 259,
+                    "startColumn": 4,
+                    "startOffset": 19000,
+                    "endLine": 260,
+                    "endColumn": 12,
+                    "endOffset": 19128
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 202,
+                        "startColumn": 4,
+                        "startOffset": 15170,
+                        "endLine": 203,
+                        "endColumn": 12,
+                        "endOffset": 15298
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 261,
+                    "startColumn": 4,
+                    "startOffset": 19133,
+                    "endColumn": 94,
+                    "endOffset": 19223
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 204,
+                        "startColumn": 4,
+                        "startOffset": 15303,
+                        "endColumn": 94,
+                        "endOffset": 15393
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 262,
+                    "startColumn": 4,
+                    "startOffset": 19228,
+                    "endColumn": 90,
+                    "endOffset": 19314
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 205,
+                        "startColumn": 4,
+                        "startOffset": 15398,
+                        "endColumn": 90,
+                        "endOffset": 15484
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 263,
+                    "startColumn": 4,
+                    "startOffset": 19319,
+                    "endColumn": 90,
+                    "endOffset": 19405
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 206,
+                        "startColumn": 4,
+                        "startOffset": 15489,
+                        "endColumn": 90,
+                        "endOffset": 15575
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 264,
+                    "startColumn": 4,
+                    "startOffset": 19410,
+                    "endColumn": 116,
+                    "endOffset": 19522
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 207,
+                        "startColumn": 4,
+                        "startOffset": 15580,
+                        "endColumn": 116,
+                        "endOffset": 15692
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 265,
+                    "startColumn": 4,
+                    "startOffset": 19527,
+                    "endLine": 266,
+                    "endColumn": 12,
+                    "endOffset": 19661
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 208,
+                        "startColumn": 4,
+                        "startOffset": 15697,
+                        "endLine": 209,
+                        "endColumn": 12,
+                        "endOffset": 15831
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 267,
+                    "startColumn": 4,
+                    "startOffset": 19666,
+                    "endLine": 269,
+                    "endColumn": 12,
+                    "endOffset": 19818
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 157,
+                        "startColumn": 4,
+                        "startOffset": 8325,
+                        "endLine": 159,
+                        "endColumn": 12,
+                        "endOffset": 8479
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 270,
+                    "startColumn": 4,
+                    "startOffset": 19823,
+                    "endColumn": 68,
+                    "endOffset": 19887
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 43,
+                        "startColumn": 4,
+                        "startOffset": 2824,
+                        "endColumn": 75,
+                        "endOffset": 2895
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 271,
+                    "startColumn": 4,
+                    "startOffset": 19892,
+                    "endLine": 280,
+                    "endColumn": 12,
+                    "endOffset": 20400
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 210,
+                        "startColumn": 4,
+                        "startOffset": 15836,
+                        "endLine": 219,
+                        "endColumn": 12,
+                        "endOffset": 16344
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 281,
+                    "startColumn": 4,
+                    "startOffset": 20405,
+                    "endLine": 290,
+                    "endColumn": 12,
+                    "endOffset": 20925
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 220,
+                        "startColumn": 4,
+                        "startOffset": 16349,
+                        "endLine": 229,
+                        "endColumn": 12,
+                        "endOffset": 16869
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 291,
+                    "startColumn": 4,
+                    "startOffset": 20930,
+                    "endLine": 300,
+                    "endColumn": 12,
+                    "endOffset": 21605
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 230,
+                        "startColumn": 4,
+                        "startOffset": 16874,
+                        "endLine": 239,
+                        "endColumn": 12,
+                        "endOffset": 17549
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 301,
+                    "startColumn": 4,
+                    "startOffset": 21610,
+                    "endColumn": 56,
+                    "endOffset": 21662
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 240,
+                        "startColumn": 4,
+                        "startOffset": 17554,
+                        "endColumn": 56,
+                        "endOffset": 17606
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 302,
+                    "startColumn": 4,
+                    "startOffset": 21667,
+                    "endColumn": 57,
+                    "endOffset": 21720
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/23.4.0/res/values-v21/values-v21.xml",
+                    "position": {
+                        "startLine": 241,
+                        "startColumn": 4,
+                        "startOffset": 17611,
+                        "endColumn": 57,
+                        "endOffset": 17664
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 303,
+                    "startColumn": 4,
+                    "startOffset": 21725,
+                    "endLine": 305,
+                    "endColumn": 12,
+                    "endOffset": 21869
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 107,
+                        "startColumn": 4,
+                        "startOffset": 5816,
+                        "endLine": 109,
+                        "endColumn": 12,
+                        "endOffset": 5962
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 306,
+                    "startColumn": 4,
+                    "startOffset": 21874,
+                    "endLine": 311,
+                    "endColumn": 12,
+                    "endOffset": 22160
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 100,
+                        "startColumn": 4,
+                        "startOffset": 5517,
+                        "endLine": 105,
+                        "endColumn": 12,
+                        "endOffset": 5808
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 312,
+                    "startColumn": 4,
+                    "startOffset": 22165,
+                    "endLine": 321,
+                    "endColumn": 12,
+                    "endOffset": 22766
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 111,
+                        "startColumn": 4,
+                        "startOffset": 5970,
+                        "endLine": 120,
+                        "endColumn": 12,
+                        "endOffset": 6580
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 322,
+                    "startColumn": 4,
+                    "startOffset": 22771,
+                    "endLine": 330,
+                    "endColumn": 12,
+                    "endOffset": 23198
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 57,
+                        "startColumn": 4,
+                        "startOffset": 3476,
+                        "endLine": 65,
+                        "endColumn": 12,
+                        "endOffset": 3911
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 331,
+                    "startColumn": 4,
+                    "startOffset": 23203,
+                    "endColumn": 37,
+                    "endOffset": 23236
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 155,
+                        "startColumn": 4,
+                        "startOffset": 8277,
+                        "endColumn": 44,
+                        "endOffset": 8317
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 332,
+                    "startColumn": 4,
+                    "startOffset": 23241,
+                    "endLine": 336,
+                    "endColumn": 12,
+                    "endOffset": 23502
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 67,
+                        "startColumn": 4,
+                        "startOffset": 3919,
+                        "endLine": 71,
+                        "endColumn": 12,
+                        "endOffset": 4184
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 337,
+                    "startColumn": 4,
+                    "startOffset": 23507,
+                    "endLine": 342,
+                    "endColumn": 12,
+                    "endOffset": 23830
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 81,
+                        "startColumn": 4,
+                        "startOffset": 4529,
+                        "endLine": 86,
+                        "endColumn": 12,
+                        "endOffset": 4857
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 343,
+                    "startColumn": 4,
+                    "startOffset": 23835,
+                    "endLine": 348,
+                    "endColumn": 12,
+                    "endOffset": 24157
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 74,
+                        "startColumn": 4,
+                        "startOffset": 4194,
+                        "endLine": 79,
+                        "endColumn": 12,
+                        "endOffset": 4521
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 349,
+                    "startColumn": 4,
+                    "startOffset": 24162,
+                    "endLine": 357,
+                    "endColumn": 12,
+                    "endOffset": 24676
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 122,
+                        "startColumn": 4,
+                        "startOffset": 6588,
+                        "endLine": 130,
+                        "endColumn": 12,
+                        "endOffset": 7110
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 358,
+                    "startColumn": 4,
+                    "startOffset": 24681,
+                    "endLine": 366,
+                    "endColumn": 12,
+                    "endOffset": 25207
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 132,
+                        "startColumn": 4,
+                        "startOffset": 7118,
+                        "endLine": 140,
+                        "endColumn": 12,
+                        "endOffset": 7652
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 367,
+                    "startColumn": 4,
+                    "startOffset": 25212,
+                    "endLine": 374,
+                    "endColumn": 12,
+                    "endOffset": 25662
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 142,
+                        "startColumn": 4,
+                        "startOffset": 7660,
+                        "endLine": 149,
+                        "endColumn": 12,
+                        "endOffset": 8117
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 375,
+                    "startColumn": 4,
+                    "startOffset": 25667,
+                    "endLine": 377,
+                    "endColumn": 12,
+                    "endOffset": 25809
+                },
+                "from": {
+                    "file": "/Users/Kalman/Documents/workspace/OpenStreetView/app/src/main/res/values-v21/styles.xml",
+                    "position": {
+                        "startLine": 151,
+                        "startColumn": 4,
+                        "startOffset": 8125,
+                        "endLine": 153,
+                        "endColumn": 12,
+                        "endOffset": 8269
+                    }
+                }
+            }
+        ]
+    }
+]

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000">
+
+        <com.skobbler.ngx.map.SKMapViewHolder
+            android:id="@+id/view_group_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:visibility="gone" />
+
+        <View
+            android:id="@+id/chess_board_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/map_background" />
+    </FrameLayout>
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_gravity="bottom|end"
+        android:background="@color/transparent"
+        android:visibility="visible" />
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_gravity="top|start"
+        android:background="@color/transparent"
+        android:visibility="visible" />
+
+
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/record_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:clickable="true"
+        android:src="@drawable/button_record"
+        app:fab_colorNormal="@color/black"
+        app:fab_colorPressed="@color/darker_grey"
+        app:fab_colorRipple="@color/md_grey_600"
+        app:fab_hideAnimation="@anim/fab_scale_down"
+        app:fab_progress_backgroundColor="#00000000"
+        app:fab_progress_color="@color/accent_material_dark_1"
+        app:fab_showAnimation="@anim/fab_scale_up"
+        app:fab_size="normal"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_gravity="bottom|center" />
+
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/position_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:clickable="true"
+        android:src="@drawable/recenter"
+        app:fab_colorNormal="@color/white"
+        app:fab_colorPressed="@color/light_grey"
+        app:fab_colorRipple="@color/md_grey_200"
+        app:fab_hideAnimation="@anim/fab_scale_down"
+        app:fab_progress_backgroundColor="#00000000"
+        app:fab_progress_color="@color/accent_material_dark_1"
+        app:fab_showAnimation="@anim/fab_scale_up"
+        app:fab_size="normal"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom|end"
+        android:layout_alignParentRight="true" />
+</android.support.design.widget.CoordinatorLayout>

@@ -1,0 +1,21 @@
+-keep class com.telenav.osv.application.OSVApplication {
+    <init>();
+    void attachBaseContext(android.content.Context);
+}
+-keep class com.telenav.osv.activity.SplashActivity { <init>(); }
+-keep class com.telenav.osv.activity.MainActivity { <init>(); }
+-keep class com.telenav.osv.service.CameraHandlerService { <init>(); }
+-keep class com.telenav.osv.service.WifiBroadcastReceiver { <init>(); }
+-keep class com.telenav.osv.service.StorageBroadcastReceiver { <init>(); }
+-keep class com.telenav.osv.service.UploadHandlerService { <init>(); }
+-keep class com.google.android.gms.common.api.GoogleApiActivity { <init>(); }
+-keep public class * extends android.app.backup.BackupAgent {
+    <init>();
+}
+-keep public class * extends java.lang.annotation.Annotation {
+    *;
+}
+-keep class com.android.tools.fd.** {
+    *;
+}
+-dontnote com.android.tools.fd.**,android.support.multidex.MultiDexExtractor
