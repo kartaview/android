@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:compat="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/menu_disconnect"
-          android:title="@string/menu_disconnect"
-          android:orderInCategory="101"
-          compat:showAsAction="ifRoom|withText"/>
-</menu>
