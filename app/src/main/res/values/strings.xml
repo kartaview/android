@@ -93,7 +93,7 @@
     <string name="gps_disabled_warning_map">Please enable the GPS in the system settings.</string>
     <string name="enable_gps_title">Enable GPS?</string>
 
-    <string name="theta_ip_address">192.168.1.1</string>
+    <string name="theta_ip_address" translatable="false">192.168.1.1</string>
     <!--<string name="theta_ip_address">172.16.0.254:9176</string>to be used with kodak-->
     <string name="label_btn_shoot">shoot</string>
     <string name="text_camera_notconnected">Not connected</string>
@@ -110,8 +110,8 @@
     <string name="delete_dialog_message">Delete this file?</string>
     <string name="dialog_positive_button">OK</string>
     <string name="label_btn_image_size">Image Size</string>
-    <string name="image_size_2048x1024">2048 x 1024</string>
-    <string name="image_size_5376x2688">5376 x 2688</string>
+    <string name="image_size_2048x1024" translatable="false">2048 x 1024</string>
+    <string name="image_size_5376x2688" translatable="false">5376 x 2688</string>
     <string name="connected_to_spherical_camera">Connected to spherical camera.</string>
     <string name="connect_to_wifi_cam_warning">You need to connect to a wireless camera.</string>
     <string name="camera_not_found">Wireless camera was not found.</string>
@@ -123,7 +123,7 @@
     <string name="feedback_label">Send feedback</string>
     <string name="storage_label">Use removable storage</string>
     <string name="storage_subtitle">Use the removable storage for saving the images.</string>
-    <string name="obd_label">OBDII</string>
+    <string name="obd_label" translatable="false">OBDII</string>
     <string name="obd_subtitle">Connect an OBDII hardware module for more accurate speed measurements</string>
     <string name="disconnect_obd_message">Are you sure you want to disconnect the OBD hardware?</string>
     <string name="disconnect">Disconnect</string>
