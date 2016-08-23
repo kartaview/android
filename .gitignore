@@ -1,0 +1,17 @@
+
+.gradle
+.idea
+/build/
+/app/build/
+/bluetoothobd/build/
+/connectivity/build/
+/fab/build/
+/ffmpeg/build/
+/volley/build/
+/photoview/build/
+/gradle/
+gradlew.bat
+gradlew
+*.iml
+/captures/
+local.properties
