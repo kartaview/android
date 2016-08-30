@@ -131,12 +131,12 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
                 if (mShutterManager.isRecording()) {
                     mRecordingDetailsLayout.setVisibility(View.VISIBLE);
                     if (mCancelAndHomeText instanceof TextView) {
-                        ((TextView) mCancelAndHomeText).setText("Home");
+                        ((TextView) mCancelAndHomeText).setText(R.string.home_label);
                     }
                 } else {
                     mRecordingDetailsLayout.setVisibility(View.INVISIBLE);
                     if (mCancelAndHomeText instanceof TextView) {
-                        ((TextView) mCancelAndHomeText).setText("Cancel");
+                        ((TextView) mCancelAndHomeText).setText(R.string.cancel_label);
                     }
                 }
                 refreshDetails();
@@ -148,6 +148,35 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         initLayouts();
+
+        if (mCameraHandlerService != null && mCameraHandlerService.mShutterManager != null) {
+            int orientation = activity.getResources().getConfiguration().orientation;
+            boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
+            if (mShutterManager.isRecording()) {
+                showDetails(portrait);
+                if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, false)) {
+                    final Snackbar snack = Snackbar.make(view, R.string.turn_off_screen_hint, Snackbar
+                            .LENGTH_INDEFINITE);
+
+                    snack.setAction(R.string.got_it_label, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, true);
+                        }
+                    });
+                    snack.show();
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            snack.dismiss();
+                        }
+                    }, 5000);
+                }
+            } else {
+                hideDetails(portrait);
+            }
+            refreshDetails();
+        }
         Log.d(TAG, "onConfigurationChanged: ");
     }
 
@@ -188,12 +217,12 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
             if (mShutterManager.isRecording()) {
                 mRecordingDetailsLayout.setVisibility(View.VISIBLE);
                 if (mCancelAndHomeText instanceof TextView) {
-                    ((TextView) mCancelAndHomeText).setText("Home");
+                    ((TextView) mCancelAndHomeText).setText(R.string.home_label);
                 }
             } else {
                 mRecordingDetailsLayout.setVisibility(View.INVISIBLE);
                 if (mCancelAndHomeText instanceof TextView) {
-                    ((TextView) mCancelAndHomeText).setText("Cancel");
+                    ((TextView) mCancelAndHomeText).setText(R.string.cancel_label);
                 }
             }
             refreshDetails();
@@ -251,11 +280,11 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
     private String getAccuracyStatus(float accuracy) {
         String textAccuracy;
         if (accuracy <= LocationManager.ACCURACY_GOOD) {
-            textAccuracy = "GPS OK";
+            textAccuracy = getString(R.string.gps_ok_label);
         } else if (accuracy <= LocationManager.ACCURACY_MEDIUM) {
-            textAccuracy = "GPS Medium";
+            textAccuracy = getString(R.string.gps_medium_label);
         } else {
-            textAccuracy = "GPS Bad";
+            textAccuracy = getString(R.string.gps_bad_label);
         }
         Log.d(TAG, "Accuracy refreshGPSDetails is: " + textAccuracy);
         return textAccuracy;
@@ -309,7 +338,7 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
 
                     if (mCameraHandlerService.mShutterManager.getPictureIndex() == 5 && !appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_TAP_TO_SHOOT, false)) {
                         Snackbar snack = Snackbar.make(view, R.string.tap_to_shoot_hint, Snackbar.LENGTH_LONG);
-                        snack.setAction("Got it", new View.OnClickListener() {
+                        snack.setAction(R.string.got_it_label, new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_TAP_TO_SHOOT, true);
@@ -327,7 +356,7 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
         mShutterButton.started();
         if (portrait) {
             if (mCancelAndHomeText instanceof TextView) {
-                ((TextView) mCancelAndHomeText).setText("Home");
+                ((TextView) mCancelAndHomeText).setText(R.string.home_label);
             }
         }
     }
@@ -337,7 +366,7 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
         mShutterButton.stopped();
         if (portrait) {
             if (mCancelAndHomeText instanceof TextView) {
-                ((TextView) mCancelAndHomeText).setText("Cancel");
+                ((TextView) mCancelAndHomeText).setText(R.string.cancel_label);
             }
         }
     }
@@ -349,10 +378,10 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
         if (started) {
             showDetails(portrait);
             if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, false)) {
-                final Snackbar snack = Snackbar.make(view, "You can turn off the screen or put the app in the background.", Snackbar
+                final Snackbar snack = Snackbar.make(view, R.string.turn_off_screen_hint, Snackbar
                         .LENGTH_INDEFINITE);
 
-                snack.setAction("Got it", new View.OnClickListener() {
+                snack.setAction(R.string.got_it_label, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, true);

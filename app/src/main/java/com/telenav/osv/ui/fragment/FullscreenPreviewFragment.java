@@ -175,17 +175,6 @@ public class FullscreenPreviewFragment extends Fragment {
         if (mGlide != null) {
             mGlide.clearMemory();
         }
-
-        try {
-            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void setFABHidden() {

@@ -1,6 +1,7 @@
 
 .gradle
 .idea
+.DS_Store
 /build/
 /app/build/
 /bluetoothobd/build/

@@ -29,9 +29,9 @@ import java.util.List;
  * Created by adrianbostan on 06/07/16.
  */
 
-public class PictureSizeFragment extends DialogFragment implements View.OnClickListener {
+public class PictureSizeDialogFragment extends DialogFragment implements View.OnClickListener {
 
-    public final static String TAG = PictureSizeFragment.class.getSimpleName();
+    public final static String TAG = PictureSizeDialogFragment.class.getSimpleName();
 
     /**
      * the view of the fragment
@@ -154,6 +154,6 @@ public class PictureSizeFragment extends DialogFragment implements View.OnClickL
             public void run() {
                 dismiss();
             }
-        }, 500);
+        }, 200);
     }
 }

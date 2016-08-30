@@ -283,10 +283,10 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         txtTitleHeader.setText(overallRank);
         txtWeekPositionValue.setText(weeklyRank);
 
-        String imagesText = "Images: ";
-        String tracksText = "Tracks: ";
-        String distanceText = "Distance: ";
-        String obdText = "OBD: ";
+        String imagesText = activity.getString(R.string.account_images_label);
+        String tracksText = activity.getString(R.string.account_tracks_label);
+        String distanceText = activity.getString(R.string.account_distance_label);
+        String obdText = activity.getString(R.string.account_obd_label);
 
         txtImagesNumber.setText(getSpannable(imagesText, totalPhotos));
         txtTracksNumber.setText(getSpannable(tracksText, totalTracks));

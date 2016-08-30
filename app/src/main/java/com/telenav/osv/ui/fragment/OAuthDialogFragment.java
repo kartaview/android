@@ -82,7 +82,7 @@ public class OAuthDialogFragment extends DialogFragment {
         webViewOauth = (WebView) v.findViewById(R.id.web_oauth);
         progressBar = (ProgressBar) v.findViewById(R.id.progressbar);
         progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
-        getDialog().setTitle("Log in to osm");
+        getDialog().setTitle(R.string.osm_login_label);
 //        progressbar = (ProgressBar) v.findViewById(R.id.progressbar);
         return v;
     }

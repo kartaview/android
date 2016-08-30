@@ -11,6 +11,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -387,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                 String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
 
                 if (userName.equals("")) {
-                    showSnackBar(R.string.login_to_upload_warning, Snackbar.LENGTH_LONG, "Login", new Runnable() {
+                    showSnackBar(R.string.login_to_upload_warning, Snackbar.LENGTH_LONG, getString(R.string.login_label), new Runnable() {
                         @Override
                         public void run() {
                             showLogInScreen();
@@ -610,7 +611,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
     public void openScreen(final int screen, final Object extra) {
         if (mUploadHandlerService == null || mCameraHandlerService == null) {
-            showSnackBar("Loading components, just a minute...", Snackbar.LENGTH_SHORT);
+            showSnackBar(getString(R.string.loading_components_message), Snackbar.LENGTH_SHORT);
             return;
         }
         mHandler.post(new Runnable() {
@@ -870,7 +871,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     case R.id.menu_upload:
                         if (Sequence.getLocalSequencesSize() <= 0) {
                             drawerLayout.closeDrawers();
-                            showSnackBar("You have no local recordings.", Snackbar.LENGTH_LONG);
+                            showSnackBar(getString(R.string.no_local_recordings_message), Snackbar.LENGTH_LONG);
                             return true;
                         }
                         if (addMap) {
@@ -882,7 +883,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     case R.id.menu_profile:
                         String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
                         if (userName.equals("")) {
-                            showSnackBar(R.string.login_to_see_online_warning, Snackbar.LENGTH_LONG, "Login", new Runnable() {
+                            showSnackBar(R.string.login_to_see_online_warning, Snackbar.LENGTH_LONG, getString(R.string.login_label), new Runnable() {
                                 @Override
                                 public void run() {
                                     showLogInScreen();
@@ -1235,13 +1236,13 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     private void showExitDialog() {
         if (mExitDialog == null) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog);
-            mExitDialog = builder.setMessage("Are you sure you want to exit the app?").setTitle("Open Street View").setPositiveButton("Exit",
+            mExitDialog = builder.setMessage(R.string.exit_app_message).setTitle(R.string.app_name_formatted).setPositiveButton(R.string.exit_label,
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             finish();
                         }
-                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    }).setNegativeButton(R.string.cancel_label, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                 }
@@ -1580,7 +1581,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     @Override
     public void onUploadFinished(int successful, int unsuccessful) {
         if (successful + unsuccessful != 0) {
-            showSnackBar("Upload finished: " + successful + " successful, " + unsuccessful + " failed.", Snackbar.LENGTH_LONG);
+            showSnackBar(getString(R.string.p_upload_finished) + successful + getString(R.string.p_successful) + unsuccessful + getString(R.string.p_failed), Snackbar.LENGTH_LONG);
             mUploadManager.resetUploadStats();
         }
     }
@@ -1888,7 +1889,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
     private void createDialogUpdateVersion() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog);
-        builder.setMessage("There is a new version available for OpenStreetView.").setTitle("Update").setNeutralButton("Update now", new DialogInterface.OnClickListener() {
+        builder.setMessage(R.string.update_available_message).setTitle(R.string.update_label).setNeutralButton(R.string.update_now_label, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 runOnUiThread(new Runnable() {
@@ -1896,7 +1897,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     public void run() {
                         try {
                             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + "com.telenav.streetview")));
-                        } catch (android.content.ActivityNotFoundException anfe) {
+                        } catch (ActivityNotFoundException anfe) {
                             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + "com.telenav.streetview")));
                         }
                     }
@@ -1923,7 +1924,6 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         if (count > 0) {
             String title = "";
             boolean showBack = false;
-            // By default action bar background is dark grey and text color is white
             int backgroundColor = R.color.darker_grey, textColor = R.color.white;
             boolean isLight = false;
             int colorSignature = -1;
@@ -1933,26 +1933,31 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                 sb.append(fm.getBackStackEntryAt(i).getName()).append(" ");
             }
             Log.d(TAG, "onBackStackChanged: " + sb.toString());
+            boolean stopLocationUpdates = false;
+            boolean startLocationUpdates = false;
 //            Log.d(TAG, "onBackStackChanged: " + tag);
             switch (tag) {
                 case MapFragment.TAG:
                     title = "";
                     backgroundColor = R.color.white;
                     isLight = true;
+                    startLocationUpdates = true;
                     break;
                 case SettingsFragment.TAG:
                     showBack = true;
-                    title = "Settings";
+                    title = getString(R.string.settings_label);
                     isLight = true;
                     backgroundColor = R.color.white;
                     textColor = R.color.dark_grey_action_bar;
+                    stopLocationUpdates = true;
                     break;
                 case ProfileFragment.TAG:
                     isLight = false;
                     showBack = true;
-                    title = "Hey " + appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME) + "!";
+                    title = getString(R.string.hey_label) + appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME) + "!";
                     backgroundColor = R.color.action_bar_blue;
                     textColor = R.color.white;
+                    stopLocationUpdates = true;
                     break;
                 case CameraPreviewFragment.TAG + "&":
                 case MapFragment.TAG + "&":
@@ -1961,6 +1966,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     enableLandscape(true);
                     startImmersiveMode();
                     hideActionBar();
+                    getApp().getLocationManager().startLocationUpdates();
                     return;
                 case UploadProgressFragment.TAG:
                     backgroundColor = R.color.dark_grey_action_bar;
@@ -1968,34 +1974,48 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     isLight = false;
                     textColor = R.color.gray_text_color;
                     colorSignature = R.color.white;
-                    title = "Uploading Track";
+                    title = getString(R.string.uploading_track_label);
+                    stopLocationUpdates = true;
                     break;
                 case WaitingFragment.TAG:
                     isLight = true;
                     showBack = true;
                     backgroundColor = R.color.white;
                     textColor = R.color.dark_grey_action_bar;
-                    title = "Waiting upload";
+                    title = getString(R.string.waiting_upload_label);
                     colorSignature = R.color.signature_waiting_upload;
                     waitingFragment.setupUploadButton();
+                    stopLocationUpdates = true;
                     break;
                 case HintsFragment.TAG:
                     hideActionBar();
                     return;
                 case TrackPreviewFragment.TAG:
                     hideActionBar();
+                    getApp().getLocationManager().startLocationUpdates();
                     return;
                 case NearbyFragment.TAG:
                     isLight = false;
                     showBack = true;
-                    title = "Nearby";
+                    title = getString(R.string.nearby_label);
                     backgroundColor = R.color.dark_grey_action_bar;
                     textColor = R.color.white;
+                    startLocationUpdates = true;
                     break;
             }
             enableLandscape(false);
             stopImmersiveMode();
             showActionBar(title, showBack, backgroundColor, textColor, isLight, colorSignature);
+            if (stopLocationUpdates) {
+                if (mCameraHandlerService != null
+                        && mCameraHandlerService.mShutterManager != null
+                        && !mCameraHandlerService.mShutterManager.isRecording()) {
+                    getApp().getLocationManager().stopLocationUpdates();
+                }
+            }
+            if (startLocationUpdates) {
+                getApp().getLocationManager().startLocationUpdates();
+            }
         } else {
 //            if (mapFragment != null) {
 //                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();

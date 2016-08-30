@@ -112,12 +112,12 @@ public class HintsFragment extends Fragment {
             String[] thirdHint = new String[2];
             String[] fourthHint = new String[2];
 
-            secondHint[0] = "Phone mount";
-            secondHint[1] = "Check that the front hood of the car and the phone’s mount are not visible in the pictures.";
-            thirdHint[0] = "Windshield";
-            thirdHint[1] = "Try to keep your car’s windshield clean.";
-            fourthHint[0] = "Camera Focus";
-            fourthHint[1] = "You can tap on screen to focus. Long press locks it.";
+            secondHint[0] = getString(R.string.hint_mount_label);
+            secondHint[1] = getString(R.string.hint_mount_message);
+            thirdHint[0] = getString(R.string.hint_windshield_label);
+            thirdHint[1] = getString(R.string.hint_windshield_message);
+            fourthHint[0] = getString(R.string.hint_focus_label);
+            fourthHint[1] = getString(R.string.hint_focus_message);
 
 
             hints.add(secondHint);
@@ -148,9 +148,9 @@ public class HintsFragment extends Fragment {
                 frameLayout = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
                 frameLayout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
                 viewTitleHint = (TextView) frameLayout.findViewById(R.id.title_hint_text_vertical);
-                viewTitleHint.setText("Landscape");
+                viewTitleHint.setText(R.string.hint_landscape_label);
                 viewHintDescription = (TextView) frameLayout.findViewById(R.id.hint_text_vertical);
-                viewHintDescription.setText("Record in landscape mode to capture better images. Turn your phone if possible.");
+                viewHintDescription.setText(R.string.hint_landscape_message);
                 views.add(frameLayout);
                 numberOfItems = hints.size() + 1;
             } else {

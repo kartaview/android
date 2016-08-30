@@ -1,6 +1,5 @@
 package com.telenav.osv.ui.fragment;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import android.app.Activity;
@@ -165,7 +164,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                 public boolean onLongClick(View v) {
                     view.findViewById(R.id.debug_setting_container).setVisibility(View.VISIBLE);
                     view.findViewById(R.id.debugText).setVisibility(View.VISIBLE);
-                    activity.showSnackBar("A wild debug settings appeared!", Snackbar.LENGTH_LONG);
+                    activity.showSnackBar(getString(R.string.debug_settings_notification), Snackbar.LENGTH_LONG);
                     return true;
                 }
             });
@@ -183,13 +182,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         shutterSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_AUTO_SHUTTER));
         switch (appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE)) {
             case PreferenceTypes.V_OBD_WIFI:
-                obdTypeText.setText("Wi-Fi");
+                obdTypeText.setText(R.string.wifi_label);
                 break;
             case PreferenceTypes.V_OBD_BLE:
-                obdTypeText.setText("BLE");
+                obdTypeText.setText(R.string.ble_label);
                 break;
             case PreferenceTypes.V_OBD_BT:
-                obdTypeText.setText("BT");
+                obdTypeText.setText(R.string.bt_label);
                 break;
         }
 
@@ -376,7 +375,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (UploadManager.sUploadStatus != UploadManager.STATUS_IDLE) {
-                    activity.showSnackBar("Not allowed while uploading!", Snackbar.LENGTH_LONG);
+                    activity.showSnackBar(getString(R.string.not_allowed_while_upload), Snackbar.LENGTH_LONG);
                     return;
                 }
                 appPrefs.saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, isChecked);
@@ -483,10 +482,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         switch (v.getId()) {
             case R.id.picture_size_container:
                 if (appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_AUTO_SHUTTER)) {
-                    activity.showSnackBar("Resolution not available while fast recording is on", Snackbar.LENGTH_LONG);
+                    activity.showSnackBar(getString(R.string.resolution_selection_not_available), Snackbar.LENGTH_LONG);
                 } else {
-                    PictureSizeFragment fragmentPictureSize = new PictureSizeFragment();
-                    fragmentPictureSize.show(activity.getSupportFragmentManager(), PictureSizeFragment.TAG);
+                    PictureSizeDialogFragment fragmentPictureSize = new PictureSizeDialogFragment();
+                    fragmentPictureSize.show(activity.getSupportFragmentManager(), PictureSizeDialogFragment.TAG);
                 }
                 break;
             case R.id.obd_selector_container:
@@ -505,13 +504,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                             activity.getApp().getOBDManager().setConnectionListeners(list);
                             switch (appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE)) {
                                 case PreferenceTypes.V_OBD_WIFI:
-                                    obdTypeText.setText("Wi-Fi");
+                                    obdTypeText.setText(R.string.wifi_label);
                                     break;
                                 case PreferenceTypes.V_OBD_BLE:
-                                    obdTypeText.setText("BLE");
+                                    obdTypeText.setText(R.string.ble_label);
                                     break;
                                 case PreferenceTypes.V_OBD_BT:
-                                    obdTypeText.setText("BT");
+                                    obdTypeText.setText(R.string.bt_label);
                                     break;
                             }
                         }
@@ -526,7 +525,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                     if (obdManager.isBluetooth()) {
                         if (obdManager.isBle()) {
                             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                                activity.showSnackBar("Unfortunately the Bluetooth Low Energy OBD works on Lollipop or higher right now.", Snackbar.LENGTH_LONG);
+                                activity.showSnackBar(getString(R.string.ble_android_not_supported), Snackbar.LENGTH_LONG);
                                 break;
                             }
 
@@ -678,17 +677,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onDetach() {
         super.onDetach();
-
-        try {
-            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
