@@ -12,7 +12,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.widget.Toast;
-import com.crashlytics.android.Crashlytics;
 import com.telenav.ffmpeg.FFMPEG;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
@@ -29,7 +28,6 @@ import com.telenav.osv.utils.ComputingDistance;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
 import com.telenav.osv.utils.Utils;
-import io.fabric.sdk.android.Fabric;
 
 /**
  * This class is responsible for taking the pictures frmo the camera.
@@ -283,9 +281,9 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
             }
             if (mSequence == null) {
                 if (mSequencePath == null) {
-                    if (Fabric.isInitialized()) {
-                        Crashlytics.logException(new RecordinStoppedException("Recording stopped because Sequence pointer is null"));
-                    }
+//                    if (Fabric.isInitialized()) {
+//                        Crashlytics.logException(new RecordinStoppedException("Recording stopped because Sequence pointer is null"));
+//                    }
                     stopSequence();
                     mHandler.postDelayed(new Runnable() {
                         @Override
@@ -362,7 +360,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                                     Toast.makeText(mContext, "Reached storage limit, stopping recording.", Toast.LENGTH_LONG).show();
                                 }
                             } catch (Exception e) {
-                                Crashlytics.logException(e);
+//                                Crashlytics.logException(e);
                                 Toast.makeText(mContext, "Reached storage limit, stopping recording.", Toast.LENGTH_LONG).show();
                             }
                             stopSequence();
@@ -411,10 +409,10 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                         @Override
                         public void run() {
 
-                            if (Fabric.isInitialized()) {
-                                Crashlytics.logException(new RecordinStoppedException("Recording stopped because SQL"));
-                                Crashlytics.logException(e);
-                            }
+//                            if (Fabric.isInitialized()) {
+//                                Crashlytics.logException(new RecordinStoppedException("Recording stopped because SQL"));
+//                                Crashlytics.logException(e);
+//                            }
                             stopSequence();
                             mHandler.postDelayed(new Runnable() {
                                 @Override
@@ -541,9 +539,9 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
             ffmpeg = new FFMPEG();
         } catch (ExceptionInInitializerError e) {
             Log.d(TAG, "startSequence: " + Log.getStackTraceString(e));
-            if (Fabric.isInitialized()) {
-                Crashlytics.logException(e);
-            }
+//            if (Fabric.isInitialized()) {
+//                Crashlytics.logException(e);
+//            }
             Log.e(TAG, "startSequence: could not init ffmpeg");
             Toast.makeText(mContext, "Could not initialize encoder", Toast.LENGTH_SHORT).show();
             stopSequence();

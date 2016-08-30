@@ -4,13 +4,11 @@ import android.content.Context;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import com.crashlytics.android.Crashlytics;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
-import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by Kalman on 10/7/2015.

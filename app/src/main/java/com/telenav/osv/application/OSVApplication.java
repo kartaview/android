@@ -9,7 +9,6 @@ import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.support.multidex.MultiDexApplication;
-import com.crashlytics.android.Crashlytics;
 import com.skobbler.ngx.reversegeocode.SKReverseGeocoderManager;
 import com.telenav.osv.activity.SplashActivity;
 import com.telenav.osv.db.SequenceDB;
@@ -26,7 +25,6 @@ import com.telenav.osv.manager.UploadManager;
 import com.telenav.osv.service.CameraHandlerService;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
-import io.fabric.sdk.android.Fabric;
 
 /**
  * Manages the application itself (on top of the activity), mainly to force Camera getting
@@ -67,13 +65,13 @@ public class OSVApplication extends MultiDexApplication {
 
             Log.e(TAG, "uncaughtException: " + Log.getStackTraceString(ex));
             isDebug = Utils.isDebugBuild(OSVApplication.this);
-            if (!isDebug) {
-                try {
-                    Crashlytics.logException(ex);
-                } catch (Exception e) {
-                    Log.d(TAG, "uncaughtException: Crashlitics not initialized, cannot send logs.");
-                }
-            }
+//            if (!isDebug) {
+//                try {
+//                    Crashlytics.logException(ex);
+//                } catch (Exception e) {
+//                    Log.d(TAG, "uncaughtException: Crashlitics not initialized, cannot send logs.");
+//                }
+//            }
             if (thread.getId() == sUiThreadId) {
                 if (mCamManager != null) {
                     Log.e(TAG, "Uncaught exception! Closing down camera safely firsthand");
@@ -89,7 +87,7 @@ public class OSVApplication extends MultiDexApplication {
                         appPrefs.saveIntPreference(PreferenceTypes.K_RESTART_COUNTER, restartedUntilNow + 1);
                         Intent mStartActivity = new Intent(OSVApplication.this, SplashActivity.class);
                         mStartActivity.putExtra(SplashActivity.RESTART_FLAG, true);
-                        if (restartedUntilNow == 0) {
+//                        if (restartedUntilNow == 0) {
 //                            mStartActivity.putExtra(SplashActivity.RESTART_PAGE, MainActivity.sCurrentScreen);
 //                            mStartActivity.putExtra(SplashActivity.RESTART_FRAGMENT, MainActivity.sFragmentOverlayTag);
 //                            if (MainActivity.sLastSequence != -1) {
@@ -97,7 +95,7 @@ public class OSVApplication extends MultiDexApplication {
 //                                mStartActivity.putExtra(SplashActivity.RESTART_SEQUENCE_ID, MainActivity.sLastSequence);
 //                                mStartActivity.putExtra(SplashActivity.RESTART_SEQUENCE_INDEX, MainActivity.sLastSequenceIndex);
 //                            }
-                        }
+//                        }
                         int mPendingIntentId = 123456;
                         PendingIntent mPendingIntent = PendingIntent.getActivity(OSVApplication.this, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
                         AlarmManager mgr = (AlarmManager) OSVApplication.this.getSystemService(Context.ALARM_SERVICE);
@@ -140,14 +138,14 @@ public class OSVApplication extends MultiDexApplication {
         Utils.isDebugEnabled(this);
         try {
             if (!isDebug) {
-                Fabric fabric = new Fabric.Builder(OSVApplication.this)
-                        .kits(new Crashlytics())
-//                        .debuggable(true)
-                        .build();
-                Fabric.with(fabric);
-//                Fabric.with(this, new Crashlytics());
-                Crashlytics.setUserIdentifier(appPrefs.getStringPreference(PreferenceTypes.K_USER_ID));
-                Crashlytics.setUserName(appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME));
+//                Fabric fabric = new Fabric.Builder(OSVApplication.this)
+//                        .kits(new Crashlytics())
+////                        .debuggable(true)
+//                        .build();
+//                Fabric.with(fabric);
+////                Fabric.with(this, new Crashlytics());
+//                Crashlytics.setUserIdentifier(appPrefs.getStringPreference(PreferenceTypes.K_USER_ID));
+//                Crashlytics.setUserName(appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME));
                 Log.d(TAG, "Crashlytics: initialized");
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -158,12 +156,12 @@ public class OSVApplication extends MultiDexApplication {
                             float savedVersion = appPrefs.getFloatPreference(PreferenceTypes.K_VERSION_CODE);
                             if (savedVersion != version) {
                                 appPrefs.saveFloatPreference(PreferenceTypes.K_VERSION_CODE, version);
-                                if (Fabric.isInitialized()) {
-                                    String arch = System.getProperty("os.arch");
+//                                if (Fabric.isInitialized()) {
+//                                    String arch = System.getProperty("os.arch");
 //                                    Crashlytics.logException(new UpgradeException("OSV", "New versionCode detected! " + version + " architecture " + arch));
 //                                    Crashlytics.log(3, "OSV", "New versionCode detected! " + version);
 //                                    Crashlytics.log("New versionCode! " + version);
-                                }
+//                                }
                                 Log.d(TAG, "onCreate: new versionCode! " + version);
                             }
                         } catch (Exception e) {

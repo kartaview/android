@@ -1,8 +1,3 @@
-buildscript {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-    }
-}
 apply plugin: 'com.android.application'
 
 android {
@@ -88,13 +83,6 @@ android {
 //    }
 }
 
-crashlytics {
-    enableNdk true
-    androidNdkOut //what would be the obj here?
-    androidNdkLibsOut 'src/main/jniLibs' //path for my jni libraries
-
-}
-
 
 
 task appDebug(dependsOn: [':app:assembleAppDebug'])
@@ -118,7 +106,6 @@ dependencies {
     compile 'oauth.signpost:signpost-commonshttp4:1.2.1.2'
     compile 'com.pnikosis:materialish-progress:1.5'
     compile 'com.matthew-tamlin:sliding-intro-screen:2.1.1'
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') { transitive = true; }
     compile project(':photoview')
     compile project(':volley')
     compile project(':fab')
