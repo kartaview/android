@@ -187,7 +187,7 @@ public class ProfileFragment extends Fragment implements RequestResponseListener
             mSequencesRecyclerView.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
 
         } else {
-            GridLayoutManager glm = new GridLayoutManager(getContext(), 2);
+            GridLayoutManager glm = new GridLayoutManager(activity, 2);
             glm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
                 @Override
                 public int getSpanSize(int position) {
@@ -265,8 +265,8 @@ public class ProfileFragment extends Fragment implements RequestResponseListener
         } catch (NumberFormatException e) {
             Log.d(TAG, "getProfileDetails: " + Log.getStackTraceString(e));
         }
-        totalDistanceFormatted = Utils.formatDistanceFromKiloMeters(getContext(), totalDistanceNum);
-        obdDistanceFormatted = Utils.formatDistanceFromKiloMeters(getContext(), obdDistanceNum);
+        totalDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, totalDistanceNum);
+        obdDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, obdDistanceNum);
         mSequencesRecyclerView.post(new Runnable() {
             @Override
             public void run() {
@@ -378,8 +378,8 @@ public class ProfileFragment extends Fragment implements RequestResponseListener
                         } catch (NumberFormatException e) {
                             Log.d(TAG, "getProfileDetails: " + Log.getStackTraceString(e));
                         }
-                        totalDistanceFormatted = Utils.formatDistanceFromKiloMeters(getContext(), totalDistanceNum);
-                        obdDistanceFormatted = Utils.formatDistanceFromKiloMeters(getContext(), obdDistanceNum);
+                        totalDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, totalDistanceNum);
+                        obdDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, obdDistanceNum);
                         activity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

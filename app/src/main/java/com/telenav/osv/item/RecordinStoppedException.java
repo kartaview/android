@@ -1,7 +1,5 @@
 package com.telenav.osv.item;
 
-import java.util.Scanner;
-
 /**
  * Created by Kalman on 06/06/16.
  */

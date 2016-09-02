@@ -355,7 +355,7 @@ public class UploadManager implements Response.ErrorListener {
                 runInBackground(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(TAG, "uploadVideo: error uploading image: " + onlineSequenceID + "/" + video.getName());
+                        Log.d(TAG, "uploadVideo: error uploading video: " + onlineSequenceID + "/" + video.getName());
                         int apiCode = 0;
                         if (error.networkResponse != null && error.networkResponse.data != null) {
                             try {
@@ -406,7 +406,7 @@ public class UploadManager implements Response.ErrorListener {
                 runInBackground(new Runnable() {
                     @Override
                     public void run() {
-//                        Log.d(TAG, "uploadVideo: image uploaded successfully: " + sequenceID + "/" + img.getName());
+                        Log.d(TAG, "uploadVideo: video uploaded successfully: " + onlineSequenceID + "/" + video.getName());
                         SequenceDB.instance.deleteVideo(video, sequence.sequenceId, sequenceIndex);
                         videoUploaderQueue.markDone(sequence, true);
                         listener.requestFinished(RequestListener.STATUS_SUCCESS_IMAGE);

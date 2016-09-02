@@ -211,7 +211,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
                         }
                     }
                 } else {
-//                uploadProgressListener.onUploadFinished(mUploadManager.getSuccessfulUploadsValue(), mUploadManager.getFailedUploadsValue());dcsdf
+//                    uploadProgressListener.onUploadFinished(mUploadManager.getSuccessfulUploadsValue(), mUploadManager.getFailedUploadsValue());
                 }
             }
         }

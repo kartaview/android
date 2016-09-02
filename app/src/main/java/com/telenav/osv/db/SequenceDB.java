@@ -133,6 +133,18 @@ public class SequenceDB {
         return database.insertOrThrow(VIDEO_TABLE, null, values);
     }
 
+    public long insertVideoIfNotAdded(int seqId, int videoIndex, String filePath) {
+        if (getNumberOfVideos(seqId, videoIndex) <= 0) {
+            ContentValues values = new ContentValues();
+            values.put(VIDEO_SEQ_ID, seqId);
+            values.put(VIDEO_INDEX, videoIndex);
+            values.put(VIDEO_FILE_PATH, filePath);
+            values.put(VIDEO_FRAME_COUNT, -1);
+            return database.insert(VIDEO_TABLE, null, values);
+        }
+        return 0;
+    }
+
     public long insertPhoto(int seqId,int videoIndex, int seqIndex, String filePath, double lat, double lon, float accuracy, int orientation) {
         ContentValues values = new ContentValues();
         values.put(FRAME_SEQ_ID, seqId);
@@ -226,6 +238,10 @@ public class SequenceDB {
 
     public long getNumberOfVideos(int localSequenceId) {
         return DatabaseUtils.queryNumEntries(database, VIDEO_TABLE, VIDEO_SEQ_ID + "=?", new String[]{"" + localSequenceId});
+    }
+
+    private long getNumberOfVideos(int localSequenceId, int videoIndex) {
+        return DatabaseUtils.queryNumEntries(database, VIDEO_TABLE, VIDEO_SEQ_ID + "=? AND " + VIDEO_INDEX + "=?", new String[]{"" + localSequenceId, "" + videoIndex});
     }
 
     public int getOriginalFrameCount(int sequenceId) {

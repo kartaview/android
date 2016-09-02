@@ -17,7 +17,6 @@ import android.view.OrientationEventListener;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.external.WifiCamManager;
 import com.telenav.osv.external.view.WifiCamSurfaceView;
 import com.telenav.osv.listener.CameraReadyListener;
 import com.telenav.osv.listener.RecordingStateChangeListener;
@@ -59,7 +58,7 @@ public class CameraHandlerService extends Service implements CameraReadyListener
 
     private Handler mHandler;
 
-    public int mOrientation = 0;
+    public int mOrientation = -1;
 
     private UploadProgressListener mUploadProgressListener;
 
@@ -73,6 +72,7 @@ public class CameraHandlerService extends Service implements CameraReadyListener
         mHandler = new Handler(Looper.getMainLooper());
 
         mLocationManager = ((OSVApplication) getApplication()).getLocationManager();
+        mLocationManager.connect();
 
     }
 
@@ -126,8 +126,8 @@ public class CameraHandlerService extends Service implements CameraReadyListener
         intent.putExtra(MainActivity.K_OPEN_CAMERA, true);
         PendingIntent pnextIntent = PendingIntent.getActivity(this, 0, intent, 0);
         Notification notification = new NotificationCompat.Builder(this)
-                .setContentTitle("OSV")
-                .setContentText("Sequence recording...")
+                .setContentTitle(getString(R.string.app_short_name))
+                .setContentText(getString(R.string.notification_sequence_recording_label))
                 .setSmallIcon(R.drawable.ic_recording_pin)
                 .setOngoing(true)
                 .setWhen(0)
@@ -162,7 +162,7 @@ public class CameraHandlerService extends Service implements CameraReadyListener
         CameraManager.instance.forceCloseCamera();
 
         if (mLocationManager != null) {
-            mLocationManager.stopLocationUpdates();
+            mLocationManager.disconnect();
         }
         super.onDestroy();
     }

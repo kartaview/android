@@ -68,6 +68,7 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_upload_progress, null);
+        Log.d(TAG, "onCreateView: newly creating views");
         activity = (MainActivity) getActivity();
         init(activity);
         return view;
@@ -100,6 +101,9 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
         if (activity.mUploadHandlerService != null) {
             onUploadServiceConnected(activity.mUploadHandlerService);
             mUploadHandlerService.addUploadProgressListener(this);
+        }
+        if ((activity.mUploadHandlerService == null || !activity.mUploadHandlerService.mUploadManager.isUploading()) && isAdded()) {
+            activity.onBackPressed();
         }
     }
 

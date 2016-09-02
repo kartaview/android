@@ -13,4 +13,6 @@
 
     <dimen name="text_size_default">20sp</dimen>
     <dimen name="settings_item_height">68dp</dimen>
+
+    <dimen name="tap_to_focus_view">60dp</dimen>
 </resources>

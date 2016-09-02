@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -62,6 +61,10 @@ public class LocationManager implements GoogleApiClient.ConnectionCallbacks, Goo
 
     private SpeedManager mSpeedManager;
 
+    private boolean shouldStartUpdates = false;
+
+    private boolean mConnected = false;
+
 
     public LocationManager(Context context) {
         mContext = context;
@@ -118,14 +121,13 @@ public class LocationManager implements GoogleApiClient.ConnectionCallbacks, Goo
 
     public void setLocationListener(LocationEventListener listener) {
         mLocationListener = listener;
-        setupGoogleApiClient();
     }
 
     /**
      * initialization of the google api client
      */
-    protected void setupGoogleApiClient() {
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+    public void connect() {
+        if (mGoogleApiClient != null && mConnected) {
             return;
         }
         mGoogleApiClient = new GoogleApiClient.Builder(mContext)
@@ -134,12 +136,13 @@ public class LocationManager implements GoogleApiClient.ConnectionCallbacks, Goo
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
+        Log.d(TAG, "connect: connecting google api ");
     }
 
     @Override
     public void onConnected(Bundle bundle) {
+        mConnected = true;
         try {
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, createLocationRequest(), this);
             ((OSVApplication) mContext.getApplicationContext()).getOBDManager().addConnectionListener(mSpeedManager);
             Location loc = LocationServices.FusedLocationApi.getLastLocation(
                     mGoogleApiClient);
@@ -150,9 +153,14 @@ public class LocationManager implements GoogleApiClient.ConnectionCallbacks, Goo
                     mLocationListener.onLocationChanged(mActualLocation);
                 }
             }
+            if (shouldStartUpdates) {
+                shouldStartUpdates = false;
+                startLocationUpdates();
+            }
         } catch (Exception e){
+            mConnected = false;
             Log.d(TAG, "onConnected: error " + e);
-            setupGoogleApiClient();
+            connect();
         }
     }
 
@@ -200,6 +208,7 @@ public class LocationManager implements GoogleApiClient.ConnectionCallbacks, Goo
     @Override
     public void onConnectionSuspended(int i) {
         Log.d(TAG, "onConnectionSuspended: connection suspended");
+        mConnected = false;
     }
 
     @Override
@@ -217,8 +226,6 @@ public class LocationManager implements GoogleApiClient.ConnectionCallbacks, Goo
             mCurrentBearing = location.getBearing();
             if (accuracyListener != null) {
                 accuracyListener.onAccuracyChanged(location.getAccuracy());
-            } else {
-                Log.d(TAG, "onLocationChanged: no accuracy listener.");
             }
             if (mSpeedManager != null) {
                 mSpeedManager.onLocationChanged(location);
@@ -230,6 +237,7 @@ public class LocationManager implements GoogleApiClient.ConnectionCallbacks, Goo
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        mConnected = false;
         Log.d(TAG, "onConnectionFailed: " + connectionResult.getErrorMessage());
 //        final int googlePlayServicesCheck = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext);
 //
@@ -243,17 +251,46 @@ public class LocationManager implements GoogleApiClient.ConnectionCallbacks, Goo
 //        dialog.show();
     }
 
-    public void stopLocationUpdates() {
+    public void disconnect() {
+        Log.d(TAG, "disconnect: disconnecting google api");
         if (mActualLocation != null) {
             appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) mActualLocation.getLatitude());
             appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LON, (float) mActualLocation.getLongitude());
         }
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+        if (mGoogleApiClient != null && mConnected) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
         if (mSpeedManager != null) {
             ((OSVApplication) mContext.getApplicationContext()).getOBDManager().removeConnectionListener(mSpeedManager);
+        }
+        mConnected = false;
+    }
+
+    public boolean startLocationUpdates() {
+        Log.d(TAG, "startLocationUpdates: successfull: " + (mGoogleApiClient != null && mConnected));
+        if (mGoogleApiClient != null && mConnected) {
+            try {
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, createLocationRequest(), this);
+            } catch (Exception e) {
+                return false;
+            }
+            return true;
+        } else {
+            shouldStartUpdates = true;
+            connect();
+        }
+        return false;
+    }
+
+    public void stopLocationUpdates() {
+        Log.d(TAG, "stopLocationUpdates: successfull: " + (mGoogleApiClient != null && mConnected));
+        if (mActualLocation != null) {
+            appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) mActualLocation.getLatitude());
+            appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LON, (float) mActualLocation.getLongitude());
+        }
+        if (mGoogleApiClient != null && mConnected) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         }
     }
 

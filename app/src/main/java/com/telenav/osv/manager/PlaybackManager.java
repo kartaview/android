@@ -3,6 +3,8 @@ package com.telenav.osv.manager;
 import java.util.ArrayList;
 import android.view.View;
 import android.widget.SeekBar;
+import com.skobbler.ngx.SKCoordinate;
+import com.telenav.osv.item.ImageCoordinate;
 import com.telenav.osv.item.ImageFile;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.ui.fragment.TrackPreviewFragment;
@@ -44,7 +46,7 @@ public abstract class PlaybackManager {
 
     public abstract Sequence getSequence();
 
-    public abstract ArrayList<ImageFile> getImages();
+    public abstract ArrayList<SKCoordinate> getTrack();
 
     public interface PlaybackListener {
         void onPlaying();
@@ -56,5 +58,7 @@ public abstract class PlaybackManager {
         void onPrepared();
 
         void onProgressChanged(int index);
+
+        void onExit();
     }
 }

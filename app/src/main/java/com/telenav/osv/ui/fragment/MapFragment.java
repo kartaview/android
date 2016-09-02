@@ -2,13 +2,11 @@ package com.telenav.osv.ui.fragment;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -62,14 +60,12 @@ import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.db.SequenceDB;
-import com.telenav.osv.http.RequestListener;
 import com.telenav.osv.http.RequestResponseListener;
-import com.telenav.osv.item.ImageFile;
+import com.telenav.osv.item.ImageCoordinate;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.listener.LoadAllSequencesListener;
 import com.telenav.osv.listener.LocationEventListener;
 import com.telenav.osv.manager.PlaybackManager;
-import com.telenav.osv.manager.UploadManager;
 import com.telenav.osv.ui.list.ImageListAdapter;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
@@ -173,7 +169,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     /**
      * the list of images with coordinates used for previewing a sequence
      */
-    private ArrayList<ImageFile> mPreviewNodes;
+    private ArrayList<ImageCoordinate> mPreviewNodes;
 
     private MainActivity activity;
 
@@ -287,22 +283,14 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     @Override
     public void onDetach() {
         super.onDetach();
-
-        try {
-            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        if (activity != null) {
+            activity.getApp().getLocationManager().startLocationUpdates();
+        }
     }
 
 
@@ -506,7 +494,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                     }
                 });
             } else if (mCurrentMode == MODE_PREVIEW && mPlayer != null) {
-                displaySequence(mPlayer.getImages(), !mPlayer.isOnline());
+                displaySequence(mPlayer.getTrack(), !mPlayer.isOnline());
             }
         }
     }
@@ -742,7 +730,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                     if (ok) {
                         activity.openScreen(MainActivity.SCREEN_NEARBY, result);
                     } else {
-                        activity.showSnackBar("Nothing here.", Snackbar.LENGTH_SHORT);
+                        activity.showSnackBar(getString(R.string.nearby_no_result_label), Snackbar.LENGTH_SHORT);
                     }
 
                 }
@@ -974,83 +962,83 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     }
 
 
-    public void displaySequence(final Sequence sequence, boolean isLocal, final int selectedIndex) {
-        displaySequence(sequence, isLocal, selectedIndex, null);
-    }
-
-    public void displaySequence(final Sequence sequence, boolean isLocal, final int selectedIndex, final RequestListener listener) {
-        if (sequence == null) {
-            return;
-        }
-//        mLoadingIndicator.setVisibility(View.VISIBLE);
-        if (!activity.getCurrentFragment().equals(TAG)) {
-            activity.openScreen(MainActivity.SCREEN_MAP);
-        }
-        if (isLocal) {
-        } else {
-            final ArrayList<ImageFile> nodes = new ArrayList<>();
-            UploadManager uploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
-            final int finalSeqId = sequence.sequenceId;
-            uploadManager.listImages(sequence.sequenceId, new RequestResponseListener() {
-                @Override
-                public void requestFinished(final int status, final String result) {
-                    if (status == RequestResponseListener.STATUS_FAILED) {
-                        Log.d(TAG, "displaySequence: failed, " + result);
-                        return;
-                    }
-                    if (result != null && !result.isEmpty()) {
-                        try {
-                            JSONObject obj = new JSONObject(result);
-                            JSONArray array = obj.getJSONObject("osv").getJSONArray("photos");
-                            for (int i = 0; i < array.length(); i++) {
-                                String link = UploadManager.URL_DOWNLOAD_PHOTO + array.getJSONObject(i).getString("lth_name");
-                                String thumbLink = "";
-                                try {
-                                    thumbLink = UploadManager.URL_DOWNLOAD_PHOTO + array.getJSONObject(i).getString("th_name");
-                                } catch (Exception e) {
-                                    Log.d(TAG, "displaySequence: " + e.getLocalizedMessage());
-                                }
-                                int index = array.getJSONObject(i).getInt("sequence_index");
-                                int id = array.getJSONObject(i).getInt("id");
-                                double lat = array.getJSONObject(i).getDouble("lat");
-                                double lon = array.getJSONObject(i).getDouble("lng");
-                                if (lat != 0.0 && lon != 0.0) {
-                                    nodes.add(new ImageFile(finalSeqId, link, thumbLink, id, index, new SKCoordinate(lon, lat), false));
-                                }
-                            }
-                            Collections.sort(nodes, new Comparator<ImageFile>() {
-                                @Override
-                                public int compare(ImageFile lhs, ImageFile rhs) {
-                                    return lhs.index - rhs.index;
-                                }
-                            });
-                            Log.d(TAG, "listImages: id=" + finalSeqId + " length=" + nodes.size());
-                            activity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-//                                    MainActivity.sLastSequence = sequence.sequenceId;
-                                    displaySequence(nodes, false);
-                                }
-                            });
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-
-                @Override
-                public void requestFinished(final int status) {
-
-                }
-            });
-        }
-    }
+//    public void displaySequence(final Sequence sequence, boolean isLocal, final int selectedIndex) {
+//        displaySequence(sequence, isLocal, selectedIndex, null);
+//    }
+//
+//    public void displaySequence(final Sequence sequence, boolean isLocal, final int selectedIndex, final RequestListener listener) {
+//        if (sequence == null) {
+//            return;
+//        }
+////        mLoadingIndicator.setVisibility(View.VISIBLE);
+//        if (!activity.getCurrentFragment().equals(TAG)) {
+//            activity.openScreen(MainActivity.SCREEN_MAP);
+//        }
+//        if (isLocal) {
+//        } else {
+//            final ArrayList<ImageFile> nodes = new ArrayList<>();
+//            UploadManager uploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
+//            final int finalSeqId = sequence.sequenceId;
+//            uploadManager.listImages(sequence.sequenceId, new RequestResponseListener() {
+//                @Override
+//                public void requestFinished(final int status, final String result) {
+//                    if (status == RequestResponseListener.STATUS_FAILED) {
+//                        Log.d(TAG, "displaySequence: failed, " + result);
+//                        return;
+//                    }
+//                    if (result != null && !result.isEmpty()) {
+//                        try {
+//                            JSONObject obj = new JSONObject(result);
+//                            JSONArray array = obj.getJSONObject("osv").getJSONArray("photos");
+//                            for (int i = 0; i < array.length(); i++) {
+//                                String link = UploadManager.URL_DOWNLOAD_PHOTO + array.getJSONObject(i).getString("lth_name");
+//                                String thumbLink = "";
+//                                try {
+//                                    thumbLink = UploadManager.URL_DOWNLOAD_PHOTO + array.getJSONObject(i).getString("th_name");
+//                                } catch (Exception e) {
+//                                    Log.d(TAG, "displaySequence: " + e.getLocalizedMessage());
+//                                }
+//                                int index = array.getJSONObject(i).getInt("sequence_index");
+//                                int id = array.getJSONObject(i).getInt("id");
+//                                double lat = array.getJSONObject(i).getDouble("lat");
+//                                double lon = array.getJSONObject(i).getDouble("lng");
+//                                if (lat != 0.0 && lon != 0.0) {
+//                                    nodes.add(new ImageFile(finalSeqId, link, thumbLink, id, index, new SKCoordinate(lon, lat), false));
+//                                }
+//                            }
+//                            Collections.sort(nodes, new Comparator<ImageFile>() {
+//                                @Override
+//                                public int compare(ImageFile lhs, ImageFile rhs) {
+//                                    return lhs.index - rhs.index;
+//                                }
+//                            });
+//                            Log.d(TAG, "listImages: id=" + finalSeqId + " length=" + nodes.size());
+//                            activity.runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+////                                    MainActivity.sLastSequence = sequence.sequenceId;
+//                                    displaySequence(nodes, false);
+//                                }
+//                            });
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
+//
+//                @Override
+//                public void requestFinished(final int status) {
+//
+//                }
+//            });
+//        }
+//    }
 
     /**
      * displays a specific sequence, other sequences get cleared
      * @param nodes the coordinates and the images
      */
-    public void displaySequence(final ArrayList<ImageFile> nodes, boolean isLocal) {
+    public void displaySequence(final ArrayList<SKCoordinate> nodes, boolean isLocal) {
         Log.d(TAG, "displaySequence: ");
         // set the nodes on the polyline
         if (nodes != null && nodes.size() != 0 && mapView != null) {
@@ -1064,71 +1052,19 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
 //            } else {
 //                activity.hideActionBar();
 //            }
-            mPreviewNodes = (ArrayList<ImageFile>) nodes.clone();
+            mPreviewNodes = (ArrayList<ImageCoordinate>) nodes.clone();
             final ArrayList<SKCoordinate> coords = new ArrayList<>();
-            for (ImageFile img : nodes) {
-                coords.add(img.coords);
+            for (SKCoordinate img : nodes) {
+                coords.add(img);
             }
             displayPolyline(coords, sequenceId, isLocal);
             zoomToPolyline(coords, (int) Utils.dpToPx(activity, 15), (int) Utils.dpToPx(activity, 15));
-            //zooming to bounding box
-
-//            imageListView.setVisibility(View.VISIBLE);
-//            imageListView.setSnappingToCenter(true);
-//            imageListAdapter = new ImageListAdapter(activity, nodes);
-//            imageListView.setAdapter(imageListAdapter);
-//            imageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                @Override
-//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    showFullScreen(true, position - 1);
-//                    imageListView.setSelection(position);
-//                }
-//            });
-//            imageListView.setOnTouchListener(new View.OnTouchListener() {
-//                @Override
-//                public boolean onTouch(View v, MotionEvent event) {
-//                    FullscreenPreviewFragment.mHasFocus = false;
-//                    return false;
-//                }
-//            });
-//            imageListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//                @Override
-//                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//                    if (!FullscreenPreviewFragment.mHasFocus) {
-//                        viewFrame(position);
-//                    }
-//                }
-//
-//                @Override
-//                public void onNothingSelected(AdapterView<?> parent) {
-//                    Log.d(TAG, "onNothingSelected: ");
-//                }
-//            });
-//            mFullscreenListener = new FullscreenPreviewFragment.OnPageSelectedListener() {
-//                @Override
-//                public void onPageSelected(int index) {
-//                    imageListView.setSelection(index + 1);
-//                    viewFrame(index);
-//                }
-//            };
             mapView.deleteAnnotation(VIA_POINT_ICON_ID);
             mSelectedPositionAnnotation = new SKAnnotation(VIA_POINT_ICON_ID);
             mSelectedPositionAnnotation.setAnnotationType(SKAnnotation.SK_ANNOTATION_TYPE_MARKER);
             mSelectedPositionAnnotation.setAnnotationView(blueAnnotationView);
-            mSelectedPositionAnnotation.setLocation(mPreviewNodes.get(0).coords);
+            mSelectedPositionAnnotation.setLocation(nodes.get(0));
             mapView.addAnnotation(mSelectedPositionAnnotation, SKAnimationSettings.ANIMATION_PULSE_CCP);
-//            MainActivity.sLastSequenceIndex = selectedIndex;
-//            imageListView.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    zoomToPolyline(coords, (int) Utils.dpToPx(activity, 25), imageListView.getHeight() + (int) Utils.dpToPx(activity, 20));
-//                    mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
-//                    imageListView.setSelection(selectedIndex + 1);
-//                    if (listener != null) {
-//                        listener.requestFinished(RequestListener.STATUS_SUCCESS_LIST_IMAGES);
-//                    }
-//                }
-//            });
         } else {
             Log.d(TAG, "displaySequence: nodes size is 0");
         }
@@ -1221,11 +1157,12 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         if (mLocalSequences != null) {
             mLocalSequences.clear();
         }
-        mapView.deleteAllAnnotationsAndCustomPOIs();
-        mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+        if (mapView != null) {
+            mapView.deleteAllAnnotationsAndCustomPOIs();
+            mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+        }
         System.gc();
         diplayLocalSequences();
-//        refreshDisplayedSequences();
     }
 
     /**
@@ -1236,7 +1173,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         if (mPreviewNodes == null || mPreviewNodes.size() <= index) {
             return;
         }
-        mSelectedPositionAnnotation.setLocation(mPreviewNodes.get(index).coords);
+        mSelectedPositionAnnotation.setLocation(mPreviewNodes.get(index));
         mapView.updateAnnotation(mSelectedPositionAnnotation);
 
     }
@@ -1375,18 +1312,25 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     @Override
     public void onPrepared() {
         Log.d(TAG, "onPrepared: ");
-        mapView.post(new Runnable() {
-            @Override
-            public void run() {
-                displaySequence(mPlayer.getImages(), !mPlayer.isOnline());
-            }
-        });
+        if (mapView != null) {
+            mapView.post(new Runnable() {
+                @Override
+                public void run() {
+                    displaySequence(mPlayer.getTrack(), !mPlayer.isOnline());
+                }
+            });
+        }
     }
 
     @Override
     public void onProgressChanged(int index) {
         Log.d(TAG, "onProgressChanged: " + index);
         viewFrame(index);
+    }
+
+    @Override
+    public void onExit() {
+        removeSequence();
     }
 
     public void bringToFront() {

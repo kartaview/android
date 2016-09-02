@@ -212,7 +212,6 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
     @Override
     public void onDestroyView() {
         if (mPlayer != null) {
-            mPlayer.removePlaybackListener(this);
             mPlayer.destroy();
         }
         super.onDestroyView();
@@ -232,13 +231,14 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                 }
                 break;
             case R.id.play_button:
-                if (mPlayer != null) {
-                    if (mPlayer.isPlaying()) {
-                        mPlayer.pause();
-                    } else {
-                        mPlayer.play();
-                    }
-                }
+                activity.showSnackBar("Sorry, playback functionality is still under construction.", Snackbar.LENGTH_LONG);
+//                if (mPlayer != null) {
+//                    if (mPlayer.isPlaying()) {
+//                        mPlayer.pause();
+//                    } else {
+//                        mPlayer.play();
+//                    }
+//                }
                 break;
             case R.id.fast_forward_button:
                 if (mPlayer != null) {
@@ -259,7 +259,7 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                     if (mSequence.online) {
                         builder.setMessage(activity.getString(R.string.delete_online_track));
                     } else {
-                        //TODO for local
+                        builder.setMessage(activity.getString(R.string.delete_local_track));
                     }
                     builder.setTitle(activity.getString(R.string.delete_track_title)).setNegativeButton(R.string.no,
                             new DialogInterface.OnClickListener() {
@@ -273,7 +273,7 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                             if (mSequence.online) {
                                 deleteOnlineTrack();
                             } else {
-                                //TODO for local
+                                deleteLocalTrack();
                             }
                         }
                     }).create().show();
@@ -315,7 +315,9 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                         if (status == STATUS_FAILED) {
                             activity.showSnackBar(R.string.something_wrong_try_again, Snackbar.LENGTH_SHORT);
                         } else {
-                            activity.onBackPressed();
+                            if (isAdded()) {
+                                activity.onBackPressed();
+                            }
                             mHandler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -327,6 +329,27 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                 });
             }
         });
+    }
+
+    private void deleteLocalTrack() {
+        if (mSequence != null) {
+            activity.enableProgressBar(true);
+            Sequence.removeSequence(mSequence.sequenceId);
+            if (mSequence.folder.exists()) {
+                mSequence.folder.delete();
+            }
+
+            activity.enableProgressBar(false);
+            if (isAdded()) {
+                activity.onBackPressed();
+            }
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
+                }
+            }, 250);
+        }
     }
 
 
@@ -355,30 +378,44 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onPrepared() {
-        if (mCurrentImageText != null) {
-            mCurrentImageText.setText(getSpannable("0", "/" + mPlayer.getImages().size() + " IMG"));
-            if (mSequence != null && mSequence.title != null) {
-                String date = "";
-                try {
-                    date = Utils.niceDateFormat.format(Utils.numericDateFormat.parse(mSequence.title));
-                } catch (Exception e) {
-                    Log.d(TAG, "onPrepared: " + e.getLocalizedMessage());
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mCurrentImageText != null) {
+                    mCurrentImageText.setText(getSpannable("0", "/" + mPlayer.getLength() + " IMG"));
                 }
-                String[] parts = date.split("\\|");
-                if (parts.length > 1) {
-                    mImageDateText.setText(getSpannable(parts[0], "|" + parts[1]));
+                if (mImageDateText != null) {
+                    if (mSequence != null) {
+                        if (mSequence.title != null) {
+                            String date = "";
+                            try {
+                                date = Utils.niceDateFormat.format(Utils.numericDateFormat.parse(mSequence.title));
+                            } catch (Exception e) {
+                                Log.d(TAG, "onPrepared: " + e.getLocalizedMessage());
+                            }
+                            String[] parts = date.split("\\|");
+                            if (parts.length > 1) {
+                                mImageDateText.setText(getSpannable(parts[0], "|" + parts[1]));
+                            }
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     @Override
     public void onProgressChanged(int index) {
         if (mPlayer != null) {
             if (mCurrentImageText != null) {
-                mCurrentImageText.setText(getSpannable("" + index, "/" + mPlayer.getImages().size() + " IMG"));
+                mCurrentImageText.setText(getSpannable("" + index, "/" + mPlayer.getLength() + " IMG"));
             }
         }
+    }
+
+    @Override
+    public void onExit() {
+
     }
 
     @Override

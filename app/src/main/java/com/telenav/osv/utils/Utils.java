@@ -38,7 +38,6 @@ import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import com.crashlytics.android.Crashlytics;
 import com.faraji.environment3.Environment3;
 import com.faraji.environment3.NoSecondaryStorageException;
 import com.google.common.io.ByteStreams;
@@ -52,9 +51,6 @@ import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.item.OSVFile;
-
-import io.fabric.sdk.android.Fabric;
-
 
 public class Utils {
 
@@ -590,9 +586,9 @@ public class Utils {
         } catch (Exception e) {
             Log.i(TAG, "Fail to access external storage", e);
 
-            if (Fabric.isInitialized()) {
-                Crashlytics.logException(e);
-            }
+//            if (Fabric.isInitialized()) {
+//                Crashlytics.logException(e);
+//            }
         }
         return UNKNOWN_SIZE;
     }

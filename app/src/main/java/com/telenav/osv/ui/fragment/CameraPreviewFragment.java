@@ -1,6 +1,7 @@
 package com.telenav.osv.ui.fragment;
 
 import java.lang.reflect.Field;
+import android.animation.ObjectAnimator;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.hardware.Camera;
@@ -114,6 +115,9 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
 
     private FrameLayout mRecordingFeedbackLayout;
 
+    private ImageView mFocusIndicator;
+
+    private FrameLayout mFocusLockedIndicator;
 
     @Nullable
     @Override
@@ -144,6 +148,8 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
         }
         mOBDIcon = (TextView) mCameraPreview.findViewById(R.id.obd_icon);
         mGPSIcon = (ImageView) mCameraPreview.findViewById(R.id.gps_icon);
+        mFocusIndicator = (ImageView) mRecordingFeedbackLayout.findViewById(R.id.focus_indicator);
+        mFocusLockedIndicator = (FrameLayout) mRecordingFeedbackLayout.findViewById(R.id.focus_locked_indicator);
         mOBDIconHolder = (FrameLayout) mCameraPreview.findViewById(R.id.obd_icon_holder);
         mOBDUnit = (TextView) mCameraPreview.findViewById(R.id.obd_icon_unit);
         signDetectionHolder = (ImageView) mCameraPreview.findViewById(R.id.sign_detection_container);
@@ -251,7 +257,7 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
 
     @Override
     public void onShutter() {
-        activity.runOnUiThread(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 final View fadingView = mCameraPreview.findViewById(R.id.save_fading_view);
@@ -313,7 +319,7 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
 
     /**
      * @param portrait
-     * @param previewWidthF scaled to screen size
+     * @param previewWidthF  scaled to screen size
      * @param previewHeightF scaled to screen size
      */
     public void resizePreview(final boolean portrait, final int previewWidthF, final int previewHeightF) {
@@ -488,14 +494,6 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
     @Override
     public void onDetach() {
         super.onDetach();
-
-        try {
-            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-
-        } catch (Exception e) {
-        }
     }
 
 //    @Override
@@ -568,33 +566,32 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
                 if (mPaused || mCameraHandlerService == null) return false;
                 // A single tap equals to touch-to-focus
-                if (mCameraHandlerService.mShutterManager.isRecording()) {
-                    if (mIsSmall) {
+                if (mFocusManager != null) {
+                    float indicatorSize = getResources().getDimension(R.dimen.tap_to_focus_view);
+                    setFocusViewOnScreen(mFocusIndicator, e, indicatorSize);
+                    ObjectAnimator circleFade = ObjectAnimator.ofFloat(mFocusIndicator, View.ALPHA, 1f, 0f);
+                    circleFade.setDuration(1000);
+                    circleFade.start();
+                    if (mCameraHandlerService.mShutterManager.isRecording() && mIsSmall) {
                         activity.switchPreviews();
                     } else {
-                        LocationManager lm = mCameraHandlerService.mLocationManager;
-                        if (mCameraHandlerService.mLocationManager.hasPosition()) {
-                            double dist = ComputingDistance.distanceBetween(lm.getActualLocation().getLongitude(), lm.getActualLocation().getLatitude(), lm.getPreviousLocation()
-                                    .getLongitude(), lm.getPreviousLocation().getLatitude());
-                            mCameraHandlerService.mShutterManager.takeSnapshot(lm.getActualLocation(), lm.getAccuracy(), dist);
-                        } else {
-                            activity.showSnackBar("No gps position.", Snackbar.LENGTH_SHORT);
-                        }
+                        mFocusManager.focusOnTouch(e, mGLSurfaceView.getWidth(), mGLSurfaceView.getHeight(), indicatorSize / 2, false);
                     }
-                } else if (mFocusManager != null) {
-                    mFocusManager.refocus();
                 }
-
             }
             return super.onSingleTapConfirmed(e);
         }
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            if (mFocusManager != null) {
-                mFocusManager.refocus();
+            if (mCameraHandlerService.mShutterManager.isRecording()) {
+                LocationManager lm = mCameraHandlerService.mLocationManager;
+                if (mCameraHandlerService.mLocationManager.hasPosition()) {
+                    double dist = ComputingDistance.distanceBetween(lm.getActualLocation().getLongitude(), lm.getActualLocation().getLatitude(), lm.getPreviousLocation()
+                            .getLongitude(), lm.getPreviousLocation().getLatitude());
+                    mCameraHandlerService.mShutterManager.takeSnapshot(lm.getActualLocation(), lm.getAccuracy(), dist);
+                }
             }
-
             return super.onDoubleTap(e);
         }
 
@@ -607,5 +604,42 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             return true;
         }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            float indicatorSize = getResources().getDimension(R.dimen.tap_to_focus_view);
+            setFocusViewOnScreen(mFocusLockedIndicator, e, indicatorSize);
+            ObjectAnimator circleFade = ObjectAnimator.ofFloat(mFocusLockedIndicator, View.ALPHA, 1f, 0f);
+            circleFade.setDuration(1000);
+            circleFade.start();
+            if (mFocusManager != null) {
+                mFocusManager.focusOnTouch(e, mGLSurfaceView.getWidth(), mGLSurfaceView.getHeight(), indicatorSize / 2f, true);
+            }
+        }
+    }
+
+    private void setFocusViewOnScreen(View v, MotionEvent e, float indicatorSize) {
+        float x = e.getRawX();
+        float y = e.getRawY();
+        float r = indicatorSize / 2f;
+        float left, top;
+
+        if (x - r < 0) {
+            left = 0;
+        } else if (x + r > mGLSurfaceView.getWidth()) {
+            left = mGLSurfaceView.getWidth() - 2f * r;
+        } else {
+            left = x - r;
+        }
+        if (y - r < 0) {
+            top = 0;
+        } else if (y + r > mGLSurfaceView.getHeight()) {
+            top = mGLSurfaceView.getHeight() - 2f * r;
+        } else {
+            top = y - r;
+        }
+        v.setVisibility(View.VISIBLE);
+        v.setX(left);
+        v.setY(top);
     }
 }
