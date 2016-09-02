@@ -12,13 +12,13 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.widget.Toast;
-import com.crashlytics.android.Crashlytics;
 import com.telenav.ffmpeg.FFMPEG;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.http.RequestListener;
+import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.RecordinStoppedException;
 import com.telenav.osv.item.SensorData;
 import com.telenav.osv.item.Sequence;
@@ -27,9 +27,7 @@ import com.telenav.osv.ui.fragment.SettingsFragment;
 import com.telenav.osv.utils.ComputingDistance;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
-import com.telenav.osv.utils.Size;
 import com.telenav.osv.utils.Utils;
-import io.fabric.sdk.android.Fabric;
 
 /**
  * This class is responsible for taking the pictures frmo the camera.
@@ -38,13 +36,9 @@ import io.fabric.sdk.android.Fabric;
 public class ShutterManager implements Camera.ShutterCallback, ObdManager.ConnectionListener {
     public final static String TAG = "ShutterManager";
 
-    private static final int MAX_FRAMES_PER_VIDEO = 50;
+    private final Object shutterSynObject = new Object();
 
     private RecordingStateChangeListener mRecordingStateListener;
-
-//    private final WifiCamManager mWifiCameraManager;
-
-    private final Object shutterSynObject = new Object();
 
     private Handler mBackgroundHandler;
 
@@ -54,11 +48,9 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
 
     private Sequence mSequence;
 
+    private String mSequencePath;
+
     private int mIndex = 0;
-
-    private int mVideoIndex = 0;
-
-    private int mSectionFrameCount = 0;
 
     private int mImageCounter = 0;
 
@@ -280,58 +272,45 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
         public void onPictureTaken(final byte[] jpegData, Camera camera) {
             CameraManager.instance.restartPreviewIfNeeded();
             if (mFocusManager != null) {
-                mFocusManager.checkFocus();
+                mFocusManager.checkFocusManual();
             }
             mHandler.removeCallbacks(mIdleRunnable);
             mCameraIdle = true;
             if (!recording) {
-//                if (Fabric.isInitialized()) {
-//                    Crashlytics.logException(new RecordinStoppedException("picture not saved because recording boolean is false"));
-//                }
                 return;
             }
             if (mSequence == null) {
-                if (Fabric.isInitialized()) {
-                    Crashlytics.logException(new RecordinStoppedException("Recording stopped because Sequence pointer is null"));
+                if (mSequencePath == null) {
+//                    if (Fabric.isInitialized()) {
+//                        Crashlytics.logException(new RecordinStoppedException("Recording stopped because Sequence pointer is null"));
+//                    }
+                    stopSequence();
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            startSequence();
+                        }
+                    }, 1000);
+                    return;
+                } else {
+                    mSequence = new Sequence(new OSVFile(mSequencePath));
                 }
-                stopSequence();
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        startSequence();
-                    }
-                }, 1000);
-                return;
             }
             synchronized (shutterSynObject) {
                 mIndex++;
-                mSectionFrameCount++;
-                final int mIndexF = mIndex;
-                final int mVideoIndexF = mVideoIndex;
                 final int mSequenceIdF = mSequence.sequenceId;
+                final int mIndexF = mIndex;
                 final Location mLocationF = mLocation;
                 final float mAccuracyF = mAccuracy;
                 final int mOrientationF = mOrientation;
-                final String mFolderPath = mSequence.folder.getPath();
-                if (mSectionFrameCount >= MAX_FRAMES_PER_VIDEO) {
-                    mSectionFrameCount = 0;
-                    mVideoIndex++;
-                    final int mVideoIndexFF = mVideoIndex;
-                    mBackgroundHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d(TAG, "saveFrame: starting new video file with startIndex " + mVideoIndexFF);
-                            String path = mFolderPath + "/" + mVideoIndexFF + ".mp4";
-                            Size sizeF = CameraManager.instance.getPictureSizeOriented();
-                            int ret = ffmpeg.nextFile(path, sizeF.width, sizeF.height);
-                            SequenceDB.instance.insertVideo(mSequenceIdF, mVideoIndexFF, path);
-                            if (ret != 0) {
-                                Log.e(TAG, "saveFrame: could not create next video file");
-                            }
-                        }
-                    });
+                String path;
+                if (mSequence != null && mSequence.folder != null) {
+                    path = mSequence.folder.getPath();
+                } else {
+                    path = mSequencePath;
                 }
-                saveFrame(jpegData, mIndexF, mVideoIndexF, mSequenceIdF, mFolderPath, mLocationF, mAccuracyF, mOrientationF, System.currentTimeMillis());
+                final String mFolderPath = path;
+                saveFrame(jpegData, mSequenceIdF, mIndexF, mFolderPath, mLocationF, mAccuracyF, mOrientationF, System.currentTimeMillis());
             }
         }
     };
@@ -354,9 +333,8 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
 //        }
     }
 
-    private void saveFrame(final byte[] jpegData, final int mIndexF, final int mVideoIndexF, final int mSequenceIdF, final String folderPathF, final Location mLocationF, final
-    float mAccuracyF, final
-    int mOrientationF, final long mTimestampF) {
+    private void saveFrame(final byte[] jpegData, final int mSequenceIdF, final int mIndexF, final String folderPathF, final Location mLocationF, final
+    float mAccuracyF, final int mOrientationF, final long mTimestampF) {
         if (mHandlerThread.getState() == Thread.State.TERMINATED) {
             mHandlerThread = new HandlerThread("ShutterManager", Process.THREAD_PRIORITY_FOREGROUND);
             mHandlerThread.start();
@@ -374,15 +352,15 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                             boolean needToRestart = false;
                             try {
                                 if (Utils.checkSDCard(mContext)) {
-                                    ((OSVApplication) mContext).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE
-                                            , !((OSVApplication) mContext).getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE));
+                                    mContext.getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE
+                                            , !mContext.getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE));
                                     needToRestart = true;
                                     Toast.makeText(mContext, "Reached current storage limit, switching storage.", Toast.LENGTH_LONG).show();
                                 } else {
                                     Toast.makeText(mContext, "Reached storage limit, stopping recording.", Toast.LENGTH_LONG).show();
                                 }
                             } catch (Exception e) {
-                                Crashlytics.logException(e);
+//                                Crashlytics.logException(e);
                                 Toast.makeText(mContext, "Reached storage limit, stopping recording.", Toast.LENGTH_LONG).show();
                             }
                             stopSequence();
@@ -398,18 +376,30 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                 }
                 CameraManager.instance.stopDetection();
                 final long time = System.currentTimeMillis();
-                int ret = ffmpeg.encode(jpegData);
-                Log.d(TAG, "saveFrame: encoding done in " + (System.currentTimeMillis() - time) + " ms");
+                int[] ret = ffmpeg.encode(jpegData);
+                Log.d(TAG, "saveFrame: encoding done in " + (System.currentTimeMillis() - time) + " ms ,  video file " + ret[0] + " and frame " + ret[1]);
                 CameraManager.instance.startDetection();
 
-                if (ret < 0) {
+                if (ret[0] < 0 || ret[1] < 0) {
+                    synchronized (shutterSynObject) {
+                        mIndex--;
+                    }
                     if (imageSavedListener != null) {
                         imageSavedListener.onShutter();
                     }
+                    if (ret[0] < 0) {
+                        Toast.makeText(mContext, "Could not initialize/create first mp4 file. Try again please.", Toast.LENGTH_SHORT).show();
+                        stopSequence();
+                    }
                     return;
                 }
+                int mVideoIndexF = ret[0];
                 SensorManager.logSensorData(new SensorData(mIndexF, mVideoIndexF, mLocationF, mTimestampF));
                 SensorManager.flushToDisk();
+                try {
+                    SequenceDB.instance.insertVideoIfNotAdded(mSequenceIdF, mVideoIndexF, folderPathF + "/" + mVideoIndexF + ".mp4");
+                } catch (Exception ignored) {}
+
                 try {
                     SequenceDB.instance.insertPhoto(mSequenceIdF, mVideoIndexF, mIndexF, folderPathF + "/" + mVideoIndexF + ".mp4", mLocationF.getLatitude(),
                             mLocationF.getLongitude(), mAccuracyF, mOrientationF);
@@ -419,10 +409,10 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                         @Override
                         public void run() {
 
-                            if (Fabric.isInitialized()) {
-                                Crashlytics.logException(new RecordinStoppedException("Recording stopped because SQL"));
-                                Crashlytics.logException(e);
-                            }
+//                            if (Fabric.isInitialized()) {
+//                                Crashlytics.logException(new RecordinStoppedException("Recording stopped because SQL"));
+//                                Crashlytics.logException(e);
+//                            }
                             stopSequence();
                             mHandler.postDelayed(new Runnable() {
                                 @Override
@@ -535,10 +525,11 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
         mSequence = SequenceDB.instance.createNewSequence(mContext
                 , mLocationManager.getActualLocation().getLatitude()
                 , mLocationManager.getActualLocation().getLongitude()
-                , false //todo no 360 cam yet
+                , false //no 360 cam yet
                 , mContext.getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE)
                 , OSVApplication.VERSION_NAME
                 , ((OSVApplication) mContext.getApplicationContext()).getOBDManager().isConnected());
+        mSequencePath = mSequence.folder.getPath();
         if (mSequence == null) {
             Toast.makeText(mContext, "Could not create new Recording folder. Please try again.", Toast.LENGTH_SHORT).show();
             recording = false;
@@ -548,9 +539,9 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
             ffmpeg = new FFMPEG();
         } catch (ExceptionInInitializerError e) {
             Log.d(TAG, "startSequence: " + Log.getStackTraceString(e));
-            if (Fabric.isInitialized()) {
-                Crashlytics.logException(e);
-            }
+//            if (Fabric.isInitialized()) {
+//                Crashlytics.logException(e);
+//            }
             Log.e(TAG, "startSequence: could not init ffmpeg");
             Toast.makeText(mContext, "Could not initialize encoder", Toast.LENGTH_SHORT).show();
             stopSequence();
@@ -561,19 +552,10 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
             stopSequence();
             return;
         }
-        Size size = CameraManager.instance.getPictureSizeOriented();
-        if (size == null) {
-            Log.e(TAG, "startSequence: could not connect camera");
-            Toast.makeText(mContext, "Could not access camera", Toast.LENGTH_SHORT).show();
-            stopSequence();
-            return;
-        }
         int ret = -1;
         try {
-            ret = ffmpeg.initial(size.width, size.height, mSequence.folder.getPath() + "/" + mVideoIndex + ".mp4");
-        } catch (Exception e) {
-
-        }
+            ret = ffmpeg.initial(mSequence.folder.getPath() + "/");
+        } catch (Exception ignored) {}
         if (ret != 0) {
             Log.e(TAG, "startSequence: could not create video file");
             Toast.makeText(mContext, "Could not create video file.", Toast.LENGTH_SHORT).show();
@@ -595,11 +577,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                     mContext.getOBDManager().addConnectionListener(ShutterManager.this);
                     mContext.getOBDManager().connect();
                 }
-                String path = mSequence.folder.getPath() + "/" + mVideoIndex + ".mp4";
-                SequenceDB.instance.insertVideo(mSequence.sequenceId, mVideoIndex, path);
                 mIndex = 0;
-                mVideoIndex = 0;
-                mSectionFrameCount = 0;
 
                 mImageCounter = 0;
                 mAproximateDistance = 0;
@@ -665,10 +643,9 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
         }
         final Sequence finalSequence = mSequence;
         mSequence = null;
+        mSequencePath = null;
         mIndex = 0;
         mImageCounter = 0;
-        mVideoIndex = 0;
-        mSectionFrameCount = 0;
         mAproximateDistance = 0;
         mRecordingStateListener.onRecordingStatusChanged(false);
         mBackgroundHandler.post(new Runnable() {
@@ -679,7 +656,6 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                 }
                 mSensorManager.onPauseOrStop();
                 if (ffmpeg != null) {
-                    ffmpeg.flush();
                     int ret = ffmpeg.close();
                 }
 
@@ -730,6 +706,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                     }
                 }
                 mSequence = null;
+                mSequencePath = null;
             }
         });
     }

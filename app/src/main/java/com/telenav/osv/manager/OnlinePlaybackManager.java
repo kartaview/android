@@ -20,12 +20,16 @@ import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.StringSignature;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.http.RequestResponseListener;
+import com.telenav.osv.item.ImageCoordinate;
 import com.telenav.osv.item.ImageFile;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
@@ -46,7 +50,9 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     private final Sequence mSequence;
 
-    public ArrayList<ImageFile> images = new ArrayList<>();
+    public ArrayList<ImageFile> mImages = new ArrayList<>();
+
+    public ArrayList<SKCoordinate> mTrack = new ArrayList<>();
 
     private final MainActivity activity;
 
@@ -64,13 +70,19 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     private int mModifier = 1;
 
+    private boolean mImageLoaded = true;
+
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
             if (mPager != null) {
+                if (!mImageLoaded) {
+                    mPlayHandler.postDelayed(mRunnable, PLAYBACK_RATE);
+                    return;
+                }
                 mPager.setCurrentItem(mPager.getCurrentItem() + mModifier, false);
                 int current = mPager.getCurrentItem();
-                if (current + mModifier >= 0 || current + mModifier <= images.size()) {
+                if (current + mModifier >= 0 || current + mModifier <= mImages.size()) {
                     mPlayHandler.postDelayed(mRunnable, PLAYBACK_RATE);
                 } else {
                     pause();
@@ -80,6 +92,20 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
     };
 
     private ArrayList<PlaybackListener> mPlaybackListeners = new ArrayList<>();
+
+    private RequestListener<? super String, GlideDrawable> mGlideListener = new RequestListener<String, GlideDrawable>() {
+        @Override
+        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+            mImageLoaded = true;
+            return false;
+        }
+
+        @Override
+        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+            mImageLoaded = true;
+            return false;
+        }
+    };
 
     public OnlinePlaybackManager(MainActivity act, Sequence sequence) {
         activity = act;
@@ -91,6 +117,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
     private void loadFrames() {
         activity.enableProgressBar(true);
         final ArrayList<ImageFile> nodes = new ArrayList<>();
+        final ArrayList<ImageCoordinate> track = new ArrayList<>();
         UploadManager uploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
         final int finalSeqId = mSequence.sequenceId;
         uploadManager.listImages(mSequence.sequenceId, new RequestResponseListener() {
@@ -123,7 +150,9 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                             double lat = array.getJSONObject(i).getDouble("lat");
                             double lon = array.getJSONObject(i).getDouble("lng");
                             if (lat != 0.0 && lon != 0.0) {
-                                nodes.add(new ImageFile(finalSeqId, link, thumbLink, id, index, new SKCoordinate(lon, lat), false));
+                                ImageCoordinate coord = new ImageCoordinate(lon, lat, index);
+                                nodes.add(new ImageFile(finalSeqId, link, thumbLink, id, index, coord, false));
+                                track.add(coord);
                             }
                         }
                         Collections.sort(nodes, new Comparator<ImageFile>() {
@@ -132,12 +161,19 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                                 return lhs.index - rhs.index;
                             }
                         });
+                        Collections.sort(track, new Comparator<ImageCoordinate>() {
+                            @Override
+                            public int compare(ImageCoordinate lhs, ImageCoordinate rhs) {
+                                return lhs.index - rhs.index;
+                            }
+                        });
                         Log.d(TAG, "listImages: id=" + finalSeqId + " length=" + nodes.size());
                         activity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                images = nodes;
-                                mSeekbar.setMax(images.size());
+                                mImages = nodes;
+                                mTrack = new ArrayList<SKCoordinate>(track);
+                                mSeekbar.setMax(mImages.size());
                                 mSeekbar.setProgress(0);
                                 mPagerAdapter.notifyDataSetChanged();
                                 for (PlaybackListener pl : mPlaybackListeners) {
@@ -302,12 +338,19 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     @Override
     public int getLength() {
+        if (mImages != null) {
+            return mImages.size();
+        }
         return 0;
     }
 
     @Override
     public void destroy() {
         stop();
+        for (PlaybackListener pl : mPlaybackListeners) {
+            pl.onExit();
+        }
+        mPlaybackListeners.clear();
         mGlide.clearMemory();
     }
 
@@ -333,9 +376,8 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         return mSequence;
     }
 
-    @Override
-    public ArrayList<ImageFile> getImages() {
-        return images;
+    public ArrayList<SKCoordinate> getTrack() {
+        return mTrack;
     }
 
     @Override
@@ -371,7 +413,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
         @Override
         public int getCount() {
-            return images.size();
+            return mImages.size();
         }
 
         @Override
@@ -389,27 +431,28 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                     mGlide.trimMemory(OFFSCREEN_LIMIT);
                 }
                 DrawableRequestBuilder<String> builder = Glide.with(activity)
-                        .load(images.get(position).link)
+                        .load(mImages.get(position).link)
                         .fitCenter()
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .skipMemoryCache(false)
-                        .signature(new StringSignature(images.get(position).coords.getLatitude() + "," + images.get(position).coords.getLongitude() + " full"))
+                        .signature(new StringSignature(mImages.get(position).coords.getLatitude() + "," + mImages.get(position).coords.getLongitude() + " full"))
                         .priority(Priority.NORMAL)
                         .error(R.drawable.image_broken_background)
-                        .listener(MainActivity.mGlideRequestListener);
-                if (!images.get(position).thumb.equals("") && images.get(position).file == null) {
+                        .listener(mGlideListener);
+                if (!mImages.get(position).thumb.equals("") && mImages.get(position).file == null) {
                     builder.thumbnail(Glide.with(activity)
-                            .load(images.get(position).thumb)
+                            .load(mImages.get(position).thumb)
                             .fitCenter()
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .skipMemoryCache(false)
-                            .signature(new StringSignature(images.get(position).coords.getLatitude() + "," + images.get(position).coords.getLongitude()))
+                            .signature(new StringSignature(mImages.get(position).coords.getLatitude() + "," + mImages.get(position).coords.getLongitude()))
                             .priority(Priority.IMMEDIATE)
                             .error(R.drawable.image_broken_background)
                             .listener(MainActivity.mGlideRequestListener));
-                } else if (images.get(position).file != null) {
+                } else if (mImages.get(position).file != null) {
                     builder.thumbnail(0.2f);
                 }
+                mImageLoaded = false;
                 builder.into((ImageView) view);
             }
             container.addView(view);

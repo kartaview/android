@@ -77,7 +77,7 @@
     <string name="restart_needed">Application restart needed to apply changes.</string>
     <string name="hdr_not_supported">HDR not supported.</string>
     <string name="upload_cancelled">Upload cancelled.</string>
-    <string name="resuming_upload">Uploading...</string>
+    <string name="resuming_upload">Uploading…</string>
     <string name="upload_paused">Upload paused.</string>
     <string name="app_restarted">Application was restarted due to an error. Crash logs were sent.</string>
     <string name="upload_sequence_warning">Upload recording and remove local files?</string>
@@ -128,9 +128,9 @@
     <string name="disconnect_obd_message">Are you sure you want to disconnect the OBD hardware?</string>
     <string name="disconnect">Disconnect</string>
     <string name="obd_selector_subtitle">Select the type of OBD module you use, Bluetooth, Wifi or BLE</string>
-    <string name="delete_online_track">Are you sure you want to delete this sequence from the server?</string>
+    <string name="delete_online_track">Are you sure you want to delete this track from the server?</string>
+    <string name="delete_local_track">Are you sure you want to delete this track from the phone\'s storage?</string>
     <string name="delete_track_title">Delete track</string>
-
 
 
     <string name="my_profile">My Profile</string>
@@ -139,9 +139,53 @@
     <string name="camera">Camera</string>
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
-
-
-
+    <string name="home_label">Home</string>
+    <string name="turn_off_screen_hint">You can turn off the screen or put the app in the background.</string>
+    <string name="got_it_label">Got it</string>
+    <string name="gps_ok_label">GPS OK</string>
+    <string name="gps_medium_label">GPS Medium</string>
+    <string name="gps_bad_label">GPS Bad</string>
+    <string name="notification_sequence_recording_label">Sequence recording…</string>
+    <string name="app_short_name">OSV</string>
+    <string name="no_gps_message">No gps position.</string>
+    <string name="hint_mount_label">Phone mount</string>
+    <string name="hint_mount_message">Check that the front hood of the car and the phone’s mount are not visible in the pictures.</string>
+    <string name="hint_windshield_label">Windshield</string>
+    <string name="hint_windshield_message">Try to keep your car’s windshield clean.</string>
+    <string name="hint_focus_label">Camera Focus</string>
+    <string name="hint_focus_message">You can tap on screen to focus. Long press locks it.</string>
+    <string name="hint_landscape_label">Landscape</string>
+    <string name="hint_landscape_message">Record in landscape mode to capture better images. Turn your phone if possible.</string>
+    <string name="login_label">Login</string>
+    <string name="loading_components_message">Loading components, just a minute…</string>
+    <string name="no_local_recordings_message">You have no local recordings.</string>
+    <string name="exit_app_message">Are you sure you want to exit the app?</string>
+    <string name="app_name_formatted">Open Street View</string>
+    <string name="exit_label">Exit</string>
+    <string name="p_upload_finished">"Upload finished: "</string>
+    <string name="p_successful">" successful, "</string>
+    <string name="p_failed">" failed."</string>
+    <string name="update_available_message">There is a new version available for OpenStreetView.</string>
+    <string name="update_label">Update</string>
+    <string name="update_now_label">Update now</string>
+    <string name="settings_label">Settings</string>
+    <string name="hey_label">"Hey "</string>
+    <string name="uploading_track_label">Uploading Track</string>
+    <string name="waiting_upload_label">Waiting upload</string>
+    <string name="nearby_label">Nearby</string>
+    <string name="nearby_no_result_label">Nothing here.</string>
+    <string name="osm_login_label">Log in to osm</string>
+    <string name="account_images_label">"Images: "</string>
+    <string name="account_tracks_label">"Tracks: "</string>
+    <string name="account_distance_label">"Distance: "</string>
+    <string name="account_obd_label">"OBD: "</string>
+    <string name="debug_settings_notification">A wild debug settings appeared!</string>
+    <string name="wifi_label">Wi-Fi</string>
+    <string name="ble_label">BLE</string>
+    <string name="bt_label">BT</string>
+    <string name="not_allowed_while_upload">Not allowed while uploading!</string>
+    <string name="resolution_selection_not_available">Resolution selection not available while fast recording is on</string>
+    <string name="ble_android_not_supported">Unfortunately the Bluetooth Low Energy OBD works on Lollipop or higher right now.</string>
 
 
 </resources>

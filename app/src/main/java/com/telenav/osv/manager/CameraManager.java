@@ -33,7 +33,6 @@ import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.listener.CameraReadyListener;
 import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Size;
 import com.telenav.osv.utils.Utils;
 
 //import com.skobbler.sensorlib.SensorLib;
@@ -66,7 +65,7 @@ public class CameraManager {
 
     private Camera.Parameters mParameters;
 
-    private int mOrientation = 0;
+    private int mOrientation = -1;
 
     private CameraReadyListener mCameraReadyListener;
 
@@ -235,6 +234,11 @@ public class CameraManager {
                         mCameraReadyListener.onCameraReady();
                     }
                     mPreview.notifyCameraChanged(true);
+                }
+                if (mOrientation != -1) {
+                    int temp = mOrientation;
+                    mOrientation = -1;
+                    setOrientation(temp);
                 }
             }
         });
@@ -425,35 +429,6 @@ public class CameraManager {
         return mParameters;
     }
 
-    public Size getPictureSizeOriented() {
-        Camera.Parameters params = getParameters();
-        if (mCamera == null || params == null) {
-            return null;
-        }
-        setRecordingOrientation(mOrientation);
-        Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
-        int rotation = 0;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            rotation = (info.orientation - mOrientation + 360) % 360;
-        } else {  // back-facing camera
-            rotation = (info.orientation + mOrientation) % 360;
-        }
-        boolean normal = false;
-        if (info.orientation == 90 || info.orientation == 270) {
-            normal = true;
-        }
-        Size size = new Size(0, 0);
-        if ((rotation == 0 || rotation == 180) && normal) {
-            size.width = params.getPictureSize().width;
-            size.height = params.getPictureSize().height;
-        } else {
-            size.width = params.getPictureSize().height;
-            size.height = params.getPictureSize().width;
-        }
-        return size;
-    }
-
     public void destroySensorLib() {
 //        if (mSensorLib != null) {
 //            mSensorLib.destroy();
@@ -597,7 +572,6 @@ public class CameraManager {
         try {
             if (mOrientation == orientation) return;
 
-            mOrientation = orientation;
             // Rotate the pictures accordingly (display is kept at 90 degrees)
             Camera.CameraInfo info =
                     new android.hardware.Camera.CameraInfo();
@@ -611,46 +585,26 @@ public class CameraManager {
             } else {  // back-facing camera
                 rotation = (info.orientation + orientation) % 360;
             }
-            //for video we dont need to set the rotation
-//            if (mCamera != null) {
-//                synchronized (syncObject) {
-//                    mParameters.setRotation(rotation);
-//                    mCamera.setParameters(mParameters);
-//                    Log.d(TAG, "setOrientation: rotation set : info.orientation(" + info.orientation + ") + orientation(" + orientation + ") %360 = " + rotation);
-//                }
-//            } else {
-//                Log.w(TAG, "setOrientation: camera is null");
-//            }
+            //for video we do need to set the rotation
+            if (mCamera != null) {
+                synchronized (syncObject) {
+                    mOrientation = orientation;
+                    try {
+                        mParameters.setRotation(rotation);
+                        mCamera.setParameters(mParameters);
+                        Log.d(TAG, "setOrientation: camera rotation set : info.orientation(" + info.orientation + ") + orientation(" + orientation + ") %360 = " + rotation);
+                    } catch (Exception e) {
+                        mOrientation = -1;
+                        Log.d(TAG, "setOrientation: rotation is" + rotation + "  ,error: " + Log.getStackTraceString(e));
+                    }
+                }
+            } else {
+                Log.w(TAG, "setOrientation: camera is null");
+            }
         } catch (RuntimeException e) {
             Log.d(TAG, "setOrientation: exception: " + e.getLocalizedMessage());
         }
         updateDisplayOrientation();
-    }
-
-    public void setRecordingOrientation(int orientation) {//todo do this shit but switch w h
-        mOrientation = orientation;
-        Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
-        int rotation = 0;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            rotation = (info.orientation - orientation + 360) % 360;
-        } else {  // back-facing camera
-            rotation = (info.orientation + orientation) % 360;
-        }
-        //for video we dont need to set the rotation
-        if (mCamera != null) {
-            synchronized (syncObject) {
-                try {
-                    mParameters.setRotation(rotation);
-                    mCamera.setParameters(mParameters);
-                    Log.d(TAG, "setOrientation: rotation set : info.orientation(" + info.orientation + ") + orientation(" + orientation + ") %360 = " + rotation);
-                } catch (Exception e) {
-                    Log.d(TAG, "setRecordingOrientation: rotation is " + rotation + "  " + Log.getStackTraceString(e));
-                }
-            }
-        } else {
-            Log.w(TAG, "setOrientation: camera is null");
-        }
     }
 
     public void restartPreviewIfNeeded() {
@@ -741,8 +695,10 @@ public class CameraManager {
         mAutoFocusMoveCallback = cb;
 
         List<String> focusModes = mParameters.getSupportedFocusModes();
-        if (mCamera != null && focusModes != null && focusModes.contains(
-                Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+        if (mCamera != null && focusModes != null
+                && (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)
+                || focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
+                || focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))) {
             try {
                 mCamera.setAutoFocusMoveCallback(cb);
             } catch (RuntimeException e) {
@@ -801,6 +757,30 @@ public class CameraManager {
 
         mSurfaceTexture = new SurfaceTexture(texture[0]);
     }
+
+    public void cancelAutoFocus() {
+        if (mCamera != null) {
+            try {
+                // cancel af
+                mCamera.cancelAutoFocus();
+            } catch (Exception e) {
+                Log.w(TAG, "cancelAutoFocus: " + Log.getStackTraceString(e));
+            }
+        }
+    }
+
+    public void setParameters(Camera.Parameters params) {
+        if (mCamera != null) {
+            synchronized (syncObject) {
+                try {
+                    mCamera.setParameters(params);
+                } catch (Exception e) {
+                    Log.w(TAG, "setParameters: " + Log.getStackTraceString(e));
+                }
+            }
+        }
+    }
+
 
     /**
      * The CameraPreview class handles the Camera preview feed

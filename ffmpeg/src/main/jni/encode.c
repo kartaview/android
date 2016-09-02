@@ -44,10 +44,18 @@ int jpg_buff_pos;
 //for filtering (rotate)
 const char *filter_rotate_cw = "transpose=clock";
 const char *filter_rotate_ccw = "transpose=cclock";
-const char *filter_flip_vert = "vflip";
+const char *filter_flip_vert = "vflip,hflip";
 AVFilterContext *buffersink_ctx;
+AVFilterContext *buffersink_ctx_cc;
+AVFilterContext *buffersink_ctx_flip;
+
 AVFilterContext *buffersrc_ctx;
+AVFilterContext *buffersrc_ctx_cc;
+AVFilterContext *buffersrc_ctx_flip;
+
 AVFilterGraph *filter_graph;
+AVFilterGraph *filter_graph_cc;
+AVFilterGraph *filter_graph_flip;
 
 //for encoding
 AVFormatContext *ofmt_ctx;
@@ -58,6 +66,41 @@ int total_framecnt = 0;
 int FPS = 4;
 
 
+struct sigaction psa, oldPsa;
+
+
+char *folder_path;
+
+int video_index = -1;
+
+void handleCrash(int signalNumber, siginfo_t *sigInfo, void *context) {
+    static volatile sig_atomic_t fatal_error_in_progress = 0;
+    if (fatal_error_in_progress) //Stop a signal loop.
+        _exit(1);
+    fatal_error_in_progress = 1;
+
+    char *j;
+    asprintf(&j, "Crash Signal: %d, crashed on: %x, UID: %ld\n", signalNumber, (long) sigInfo->si_addr, (long) sigInfo->si_uid);  //%x prints out the faulty memory address in hex
+    LOGE("%s", j);
+
+//    getStackTrace();
+//    sigaction(signalNumber, &oldPsa, NULL);
+}
+
+void initSignalHandler() {
+    LOGI("Crash handler started");
+
+    psa.sa_sigaction = handleCrash;
+    psa.sa_flags = SA_SIGINFO;
+
+    //sigaction(SIGBUS, &psa, &oldPsa);
+    sigaction(SIGSEGV, &psa, &oldPsa);
+    //sigaction(SIGSYS, &psa, &oldPsa);
+    //sigaction(SIGFPE, &psa, &oldPsa);
+    //sigaction(SIGILL, &psa, &oldPsa);
+    //sigaction(SIGHUP, &psa, &oldPsa);
+}
+
 void custom_log(void *ptr, int level, const char *fmt, va_list vl) {
     FILE *fp = fopen("/storage/emulated/0/av_log.txt", "a+");
     if (fp) {
@@ -65,6 +108,15 @@ void custom_log(void *ptr, int level, const char *fmt, va_list vl) {
         fflush(fp);
         fclose(fp);
     }
+}
+
+void remove_char(char *str, char c) {
+    char *pr = str, *pw = str;
+    while (*pr) {
+        *pw = *pr++;
+        pw += (*pw != c);
+    }
+    *pw = '\0';
 }
 
 int read_packet(void *opaque, uint8_t *buf, int buf_size) {
@@ -86,6 +138,9 @@ int initializeEncoder(const char *out_path, int width, int height) {
     if (!pCodec) {
         LOGE("Can not find encoder!\n");
         return -1;
+    }
+    if (!ofmt_ctx) {
+        LOGE("Could not create format CTX");
     }
     h264_codec_ctx = avcodec_alloc_context3(pCodec);
     h264_codec_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
@@ -152,7 +207,9 @@ int initializeEncoder(const char *out_path, int width, int height) {
         return -1;
     }
     //Write File Header
-    avformat_write_header(ofmt_ctx, NULL);
+    if (avformat_write_header(ofmt_ctx, NULL) < 0) {
+        LOGE("Failed to write header to output format context");
+    }
     total_framecnt = 0;
     framecnt = 0;
 
@@ -161,9 +218,130 @@ int initializeEncoder(const char *out_path, int width, int height) {
     return 0;
 }
 
-static int init_filters(const char *filters_descr) {
+int flush() {
+    int ret;
+    int got_frame;
+    AVPacket enc_pkt;
+    if (!ofmt_ctx || !ofmt_ctx->streams || !ofmt_ctx->streams[0] || !ofmt_ctx->streams[0]->codec || !ofmt_ctx->streams[0]->codec->codec) {
+        return 0;
+    }
+    LOGI("Flushing encoder");
+    LOGI("----------------------------------------------");
+    if (!(ofmt_ctx->streams[0]->codec->codec->capabilities & CODEC_CAP_DELAY)) {
+        LOGI("No CODEC_CAP_DELAY compatibility");
+        return 0;
+    }
+    LOGI("trying to flush remaining frames, total = %i, written %i", total_framecnt, framecnt);
+    while (total_framecnt > framecnt) {
+        enc_pkt.data = NULL;
+        enc_pkt.size = 0;
+        av_init_packet(&enc_pkt);
+        ret = avcodec_encode_video2(ofmt_ctx->streams[0]->codec, &enc_pkt,
+                                    NULL, &got_frame);
+        LOGI("flushing frame code %i", ret);
+        if (ret < 0)
+            LOGE("error flushing frame");
+        break;
+        if (!got_frame) {
+            ret = 0;
+            LOGI("obtained no frame");
+            break;
+        }
+        framecnt++;
+        pkt.stream_index = video_st->index;
+
+        //Write PTS
+        AVRational time_base = ofmt_ctx->streams[0]->time_base;//{ 1, 1000 };
+//        AVRational r_framerate1 = {60, 2};//{ 50, 2 };
+        AVRational time_base_q = {1, AV_TIME_BASE};
+        //Duration between 2 frames (us)
+        int64_t calc_duration = (int64_t) ((double) (AV_TIME_BASE) * (1 / FPS));
+        //Parameters
+        enc_pkt.pts = av_rescale_q(framecnt * calc_duration, time_base_q, time_base);
+        enc_pkt.dts = enc_pkt.pts;
+        enc_pkt.duration = av_rescale_q(calc_duration, time_base_q, time_base);
+
+        enc_pkt.pos = -1;
+
+//        LOGI("pts = %i , dts = &i , dur = %i",pkt.pts,pkt.dts,pkt.duration);
+
+        ofmt_ctx->duration = enc_pkt.duration * framecnt;
+
+        /* mux encoded frame */
+        ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
+        if (ret < 0)
+            break;
+        LOGI("Flush Encoder: Succeed to encode 1 frame!\tsize:%5d\n", enc_pkt.size);
+    }
+    //Write file trailer
+    if (ofmt_ctx && ofmt_ctx->pb && framecnt > 0) {
+        int retval = av_write_trailer(ofmt_ctx);
+        LOGI("Writing file trailer %i", retval);
+        if (retval < 0) {
+            char arr[200];
+            av_strerror(retval, (char *) &arr, 200);
+            LOGE("Error while writing file trailer: %s", (char *) &arr);
+        }
+    }
+    if (total_framecnt == 0 && framecnt == 0 && ofmt_ctx) {
+        LOGI("entered remove file");
+        remove(ofmt_ctx->filename);
+        LOGI("finished remove file");
+    }
+    return 0;
+}
+
+int nextFile(jint width, jint height) {
+    flush();
+    char *out_path = (char *) malloc(1024);
+    video_index++;
+    int ret = video_index;
+    sprintf(out_path, "%s%i.mp4\0", folder_path, video_index);
+    remove_char(out_path, 11);//removing vertical tab
+    LOGI("Creating new file %s", out_path);
+    if (sws_ctx) {
+        sws_freeContext(sws_ctx);
+        sws_ctx = NULL;
+    }
+
+
+    if (h264_codec_ctx) {
+        if (h264_codec_ctx->codec && h264_codec_ctx->codec == pCodec) {
+            if (!h264_codec_ctx->codec || !h264_codec_ctx->codec->name) {
+                LOGE("'kali crash codec is null while releasing");
+            }
+            avcodec_close(h264_codec_ctx);
+        } else {
+            LOGE("Codecs are not the same withing context");
+        }
+    }
+    h264_codec_ctx = NULL;
+
+    if (ofmt_ctx) {
+//        if (ofmt_ctx->filename && strlen(ofmt_ctx->filename) != 0) {
+//            free(ofmt_ctx->filename);
+//        }
+        if (ofmt_ctx->streams && ofmt_ctx->pb) {
+            avio_close(ofmt_ctx->pb);
+        }
+        avformat_free_context(ofmt_ctx);
+        ofmt_ctx = NULL;
+        LOGI("KALI setting null ofmtcontext at nextfile");
+    }
+    int res = initializeEncoder(out_path, width, height);
+    if (res < 0) {
+        ret = res;
+    }
+    return ret;
+}
+
+static int init_filter(AVFilterGraph **filt_graph, AVFilterContext **bufsink_ctx, AVFilterContext **bufsrc_ctx, const char *filters_descr) {
+    LOGI("Initializing filter %s", filters_descr);
     char args[512];
     int ret = 0;
+    AVFilterGraph *filter_graph = *filt_graph;
+    AVFilterContext *buffersink_ctx = *bufsink_ctx;
+    AVFilterContext *buffersrc_ctx = *bufsrc_ctx;
     AVFilter *buffersrc = avfilter_get_by_name("buffer");
     AVFilter *buffersink = avfilter_get_by_name("buffersink");
     AVFilterInOut *outputs = avfilter_inout_alloc();
@@ -187,7 +365,7 @@ static int init_filters(const char *filters_descr) {
     ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
                                        args, NULL, filter_graph);
     if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot create buffer source\n");
+        LOGE("Cannot create buffer source");
         goto end;
     }
 
@@ -195,14 +373,14 @@ static int init_filters(const char *filters_descr) {
     ret = avfilter_graph_create_filter(&buffersink_ctx, buffersink, "out",
                                        NULL, NULL, filter_graph);
     if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot create buffer sink\n");
+        LOGE("Cannot create buffer sink");
         goto end;
     }
 
     ret = av_opt_set_int_list(buffersink_ctx, "pix_fmts", pix_fmts,
                               AV_PIX_FMT_NONE, AV_OPT_SEARCH_CHILDREN);
     if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot set output pixel format\n");
+        LOGE("Cannot set output pixel format");
         goto end;
     }
 
@@ -258,111 +436,143 @@ static int init_filters(const char *filters_descr) {
 //            avfilter_free(buffersrc_ctx);
 //        }
     }
-
+    if (filter_graph) {
+        *(filt_graph) = filter_graph;
+        *(bufsink_ctx) = buffersink_ctx;
+        *(bufsrc_ctx) = buffersrc_ctx;
+    }
     return ret;
 }
 
 
-int decodeJpegData(jbyte *jpeg, int length) {
+int filter(int rotation) {
+
+    int ret_val;
+    AVFilterGraph *filt_graph;
+    AVFilterContext *buf_src_ctx;
+    AVFilterContext *buf_sink_ctx;
+    const char *filter_type;
+    switch (rotation) {
+        case 6:
+            LOGI("Selecting cw rotate filter");
+            filt_graph = filter_graph;
+            buf_sink_ctx = buffersink_ctx;
+            buf_src_ctx = buffersrc_ctx;
+            filter_type = filter_rotate_cw;
+            break;
+        case 3:
+            LOGI("Selecting vertical flip filter");
+            filt_graph = filter_graph_flip;
+            buf_sink_ctx = buffersink_ctx_flip;
+            buf_src_ctx = buffersrc_ctx_flip;
+            filter_type = filter_flip_vert;
+            break;
+        case 8:
+            LOGI("Selecting ccw rotate filter");
+            filt_graph = filter_graph_cc;
+            buf_sink_ctx = buffersink_ctx_cc;
+            buf_src_ctx = buffersrc_ctx_cc;
+            filter_type = filter_rotate_ccw;
+            break;
+        case 1:
+        default:
+            LOGI("No need to rotate");
+            return 0;
+    }
+    if (!filt_graph) {
+        if ((init_filter(&filt_graph, &buf_sink_ctx, &buf_src_ctx, filter_type)) < 0) {
+            LOGE("Filter init failed");
+            return -1;
+        }
+        switch (rotation) {
+            case 6:
+                filter_graph = filt_graph;
+                buffersink_ctx = buf_sink_ctx;
+                buffersrc_ctx = buf_src_ctx;
+                break;
+            case 3:
+                filter_graph_flip = filt_graph;
+                buffersink_ctx_flip = buf_sink_ctx;
+                buffersrc_ctx_flip = buf_src_ctx;
+                break;
+            case 8:
+                filter_graph_cc = filt_graph;
+                buffersink_ctx_cc = buf_sink_ctx;
+                buffersrc_ctx_cc = buf_src_ctx;
+                break;
+        }
+    }
+    LOGI("Filtering...");
+    if (av_buffersrc_add_frame_flags(buf_src_ctx, yuvframe, AV_BUFFERSRC_FLAG_KEEP_REF) < 0) {//AV_BUFFERSRC_FLAG_PUSH
+        LOGE("Error while feeding the filtergraph");
+        return -1;
+    }
+    AVFrame *filt_frame = av_frame_alloc();
+    /* pull filtered frames from the filtergraph */
+    while (1) {
+        ret_val = av_buffersink_get_frame(buf_sink_ctx, filt_frame);
+        if (ret_val == AVERROR(EAGAIN) || ret_val == AVERROR_EOF)
+            return 0;// formatCheck;
+        if (ret_val < 0)
+            return -1; //goto formatCheck;
+        if (yuvframe) {
+            av_frame_free(&yuvframe);
+        }
+        yuvframe = filt_frame;
+        break;
+        LOGI("Applied filter");
+    }
+    return 0;
+}
+
+int *decodeJpegData(jbyte *jpeg, int length) {
     jpg_buff_len = length;
     jpg_buff = (unsigned char *) jpeg;
     jpg_buff_pos = 0;
-
-    LOGI("decode jpeg data");
+    int *ret = (int *) malloc(2 * sizeof(int));
+    ret[0] = -1;
+    ret[1] = 0;
     yuvframe = av_frame_alloc();
     av_init_packet(&jpg_pkt);
     int frameFinished = 0;
     av_read_frame(jpg_fmt_ctx, &jpg_pkt);
-    int ret = avcodec_decode_video2(jpg_codec_ctx, yuvframe, &frameFinished, &jpg_pkt);
-//    const char *out_path = "/sdcard/jpegmeta.txt";
-//    av_dump_format(jpg_fmt_ctx,0,out_path,1);
-    // TAGS reading
-    if (ret <= 0) {
+    int ret2 = avcodec_decode_video2(jpg_codec_ctx, yuvframe, &frameFinished, &jpg_pkt);
+    if (ret2 <= 0) {
         LOGI("error obtaining frame from byte array");
-        return -1;
+        ret[1] = -1;
+        return ret;
     }
     AVDictionaryEntry *tag = av_dict_get(yuvframe->metadata, "Orientation", NULL, AV_DICT_MATCH_CASE);
     if (tag) {
         LOGI("ORIENTATION IS %s=%s\n", tag->key, tag->value);
-        int ret_val;
-        if (!filter_graph) {
-            switch (atoi(tag->value)) {
-                case 6:
-                    LOGI("Initializing cw rotate filter");
-                    if ((init_filters(filter_rotate_cw)) < 0) {
-                        LOGE("Filter init failed");
-                        return -1;
-                        goto formatCheck;
-                    }
-                    break;
-                case 3:
-                    LOGI("Initializing vertical flip filter");
-                    if ((init_filters(filter_flip_vert)) < 0) {
-                        LOGE("Filter init failed");
-                        return -1;
-                        goto formatCheck;
-                    }
-                    break;
-                case 8:
-                    LOGI("Initializing ccw rotate filter");
-                    if ((init_filters(filter_rotate_ccw)) < 0) {
-                        LOGE("Filter init failed");
-                        return -1;
-                        goto formatCheck;
-                    }
-                    break;
-                case 1:
-                default:
-                    LOGI("No need to rotate");
-                    goto formatCheck;
-            }
-        }
-        LOGI("Filtering...");
-        if (av_buffersrc_add_frame_flags(buffersrc_ctx, yuvframe, AV_BUFFERSRC_FLAG_KEEP_REF) < 0) {//AV_BUFFERSRC_FLAG_PUSH
-            av_log(NULL, AV_LOG_ERROR, "Error while feeding the filtergraph\n");
-            LOGE("Error while feeding the filtergraph");
-            goto formatCheck;
-        }
-        AVFrame *filt_frame = av_frame_alloc();
-        /* pull filtered frames from the filtergraph */
-        while (1) {
-            ret_val = av_buffersink_get_frame(buffersink_ctx, filt_frame);
-            if (ret_val == AVERROR(EAGAIN) || ret_val == AVERROR_EOF)
-                goto formatCheck;
-            if (ret_val < 0)
-                goto formatCheck;
-            if (yuvframe) {
-                av_frame_free(&yuvframe);
-            }
-            yuvframe = filt_frame;
-            break;
-            LOGI("Applied filter");
-        }
-        if (filter_graph && framecnt >= 49) {
-            avfilter_graph_free(&filter_graph);
-        }
-
-
+        filter(atoi(tag->value));
     }
-    formatCheck:
+    int retval = 0;
+    if (!h264_codec_ctx || yuvframe->height != h264_codec_ctx->height || yuvframe->width != h264_codec_ctx->width || framecnt > 50) {
+        retval = nextFile(yuvframe->width, yuvframe->height);
+    }
+    if (retval < 0) {
+        ret[0] = -1;
+        return ret;
+    }
+    ret[0] = video_index;
     if (yuvframe->format != AV_PIX_FMT_YUVJ420P && yuvframe->format != AV_PIX_FMT_YUV420P) {
         LOGI("converting to proper color format...");
 //        swsscale the shit out of this motherfucker
-        if (sws_ctx) {
-            sws_freeContext(sws_ctx);
-            sws_ctx = NULL;
+        if (!sws_ctx) {
+            sws_ctx = sws_getContext(yuvframe->width, yuvframe->height, (enum AVPixelFormat) yuvframe->format,
+                                     yuvframe->width, yuvframe->height, AV_PIX_FMT_YUV420P,
+                                     SWS_BICUBIC, NULL, NULL, NULL);
         }
-        sws_ctx = sws_getContext(yuvframe->width, yuvframe->height, (enum AVPixelFormat) yuvframe->format,
-                                 yuvframe->width, yuvframe->height, AV_PIX_FMT_YUV420P,
-                                 SWS_BICUBIC, NULL, NULL, NULL);
         AVFrame *temp = av_frame_alloc();
-        av_image_fill_arrays(temp->data, temp->linesize, NULL, AV_PIX_FMT_YUVJ420P, yuvframe->width, yuvframe->height, 2);
-        av_image_alloc(temp->data, temp->linesize, yuvframe->width, yuvframe->height, AV_PIX_FMT_YUVJ420P, 2);
+        av_image_fill_arrays(temp->data, temp->linesize, NULL, AV_PIX_FMT_YUVJ420P, yuvframe->width, yuvframe->height, 1);
+        av_image_alloc(temp->data, temp->linesize, yuvframe->width, yuvframe->height, AV_PIX_FMT_YUVJ420P, 1);
         temp->format = AV_PIX_FMT_YUVJ420P;
-        ret = sws_scale(sws_ctx, (const uint8_t *const *) yuvframe->data, yuvframe->linesize, 0, yuvframe->height, temp->data, temp->linesize);
-        if (ret <= 0) {
-            LOGE("Something went wrong while color space conversion returned %i", ret);
+        int ret3 = sws_scale(sws_ctx, (const uint8_t *const *) yuvframe->data, yuvframe->linesize, 0, yuvframe->height, temp->data, temp->linesize);
+        if (ret3 <= 0) {
+            LOGE("Something went wrong while color space conversion returned %i", ret3);
             av_frame_free(&temp);
+            ret[1] = -1;
             goto end;
         }
         if (temp->width == 0 || temp->height == 0) {
@@ -377,142 +587,17 @@ int decodeJpegData(jbyte *jpeg, int length) {
         yuvframe = temp;
     }
     end:
-    av_packet_unref(&jpg_pkt);
+    if (&jpg_pkt) {
+        av_packet_unref(&jpg_pkt);
+    }
     LOGI("Decoded jpeg data successfully");
-    return 0;
+    return ret;
 }
 
-JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_flush(JNIEnv *env, jobject obj) {
-    int ret;
-    int got_frame;
-    AVPacket enc_pkt;
-    LOGI("Flushing encoder");
-    LOGI("----------------------------------------------");
-    if (!(ofmt_ctx
-          && ofmt_ctx->streams[0]
-          && ofmt_ctx->streams[0]->codec
-          && ofmt_ctx->streams[0]->codec->codec)) {
-        LOGI("Context null");
-        return 0;
-    }
-    if (!(ofmt_ctx->streams[0]->codec->codec->capabilities & CODEC_CAP_DELAY)) {
-        LOGI("No CODEC_CAP_DELAY compatibility");
-        return 0;
-    }
-    LOGI("trying to flush remaining frames, total = %i, written %i", total_framecnt, framecnt);
-    while (total_framecnt > framecnt) {
-        enc_pkt.data = NULL;
-        enc_pkt.size = 0;
-        av_init_packet(&enc_pkt);
-        ret = avcodec_encode_video2(ofmt_ctx->streams[0]->codec, &enc_pkt,
-                                    NULL, &got_frame);
-        LOGI("flushing frame code %i", ret);
-        if (ret < 0)
-            LOGE("error flushing frame");
-        break;
-        if (!got_frame) {
-            ret = 0;
-            LOGI("obtained no frame");
-            break;
-        }
-        framecnt++;
-        pkt.stream_index = video_st->index;
 
-        //Write PTS
-        AVRational time_base = ofmt_ctx->streams[0]->time_base;//{ 1, 1000 };
-//        AVRational r_framerate1 = {60, 2};//{ 50, 2 };
-        AVRational time_base_q = {1, AV_TIME_BASE};
-        //Duration between 2 frames (us)
-        int64_t calc_duration = (int64_t) ((double) (AV_TIME_BASE) * (1 / FPS));
-        //Parameters
-        enc_pkt.pts = av_rescale_q(framecnt * calc_duration, time_base_q, time_base);
-        enc_pkt.dts = enc_pkt.pts;
-        enc_pkt.duration = av_rescale_q(calc_duration, time_base_q, time_base);
-
-        enc_pkt.pos = -1;
-
-//        LOGI("pts = %i , dts = &i , dur = %i",pkt.pts,pkt.dts,pkt.duration);
-
-        ofmt_ctx->duration = enc_pkt.duration * framecnt;
-
-        /* mux encoded frame */
-        ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
-        if (ret < 0)
-            break;
-        LOGI("Flush Encoder: Succeed to encode 1 frame!\tsize:%5d\n", enc_pkt.size);
-    }
-    //Write file trailer
-    if (ofmt_ctx && framecnt > 0) {
-        LOGI("Writing file trailer %i", ofmt_ctx);
-        av_write_trailer(ofmt_ctx);
-        LOGI("Wrote file trailer");
-    }
-    if (total_framecnt == 0 && framecnt == 0 && ofmt_ctx) {
-        LOGI("entered remove file");
-        remove(ofmt_ctx->filename);
-        LOGI("finished remove file");
-    }
-    return 0;
-}
-
-JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_nextFile(JNIEnv *env, jobject obj, jstring s_, jint width, jint height) {
-    const char *out_path = (*env)->GetStringUTFChars(env, s_, 0);
-    Java_com_telenav_ffmpeg_FFMPEG_flush(env, obj);
-
-    if (sws_ctx) {
-        sws_freeContext(sws_ctx);
-        sws_ctx = NULL;
-    }
-    if (video_st) {
-        avcodec_close(video_st->codec);
-    }
-
-    if (ofmt_ctx && ofmt_ctx->pb) {
-        avio_close(ofmt_ctx->pb);
-    }
-
-    if (ofmt_ctx) {
-        avformat_free_context(ofmt_ctx);
-        ofmt_ctx = NULL;
-    }
-    initializeEncoder(out_path, width, height);
-    (*env)->ReleaseStringUTFChars(env, s_, out_path);
-    return 0;
-}
-
-struct sigaction psa, oldPsa;
-
-
-void handleCrash(int signalNumber, siginfo_t *sigInfo, void *context) {
-    static volatile sig_atomic_t fatal_error_in_progress = 0;
-    if (fatal_error_in_progress) //Stop a signal loop.
-        _exit(1);
-    fatal_error_in_progress = 1;
-
-    char *j;
-    asprintf(&j, "Crash Signal: %d, crashed on: %x, UID: %ld\n", signalNumber, (long) sigInfo->si_addr, (long) sigInfo->si_uid);  //%x prints out the faulty memory address in hex
-    LOGE("%s", j);
-
-//    getStackTrace();
-//    sigaction(signalNumber, &oldPsa, NULL);
-}
-
-void initSignalHandler() {
-    LOGI("Crash handler started");
-
-    psa.sa_sigaction = handleCrash;
-    psa.sa_flags = SA_SIGINFO;
-
-    //sigaction(SIGBUS, &psa, &oldPsa);
-    sigaction(SIGSEGV, &psa, &oldPsa);
-    //sigaction(SIGSYS, &psa, &oldPsa);
-    //sigaction(SIGFPE, &psa, &oldPsa);
-    //sigaction(SIGILL, &psa, &oldPsa);
-    //sigaction(SIGHUP, &psa, &oldPsa);
-}
-
-JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_initial(JNIEnv *env, jobject obj, jint width, jint height, jstring file) {
+JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_initial(JNIEnv *env, jobject obj, jstring folder) {
     //FFmpeg av_log() callback
+    int ret = 0;
     av_log_set_callback(custom_log);
 //    crashlytics_ctx = crashlytics_init();
 
@@ -526,6 +611,7 @@ JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_initial(JNIEnv *env, jobje
     jpg_inf = av_find_input_format("mjpeg");
     if (jpg_inf == NULL) {
         LOGI("probe failed\n");
+        ret = -1;
     }
     jpg_avbuff = (unsigned char *) av_malloc(4096);
 
@@ -535,23 +621,29 @@ JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_initial(JNIEnv *env, jobje
     jpg_fmt_ctx->pb = ioctx;
     if (avformat_open_input(&jpg_fmt_ctx, "memory/jpegdata", jpg_inf, NULL) != 0) {
         LOGI("error opening AVFormatContext\n");
+        ret = -1;
     }
 
     jpg_codec_ctx = jpg_fmt_ctx->streams[0]->codec;
     jpg_codec_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
     jpg_codec_ctx->color_range = AVCOL_RANGE_JPEG;
     jpg_codec = avcodec_find_decoder(jpg_codec_ctx->codec_id);
-    avcodec_open2(jpg_codec_ctx, jpg_codec, NULL);
-
-    const char *out_path = (*env)->GetStringUTFChars(env, file, 0);
-    initializeEncoder(out_path, width, height);
-    (*env)->ReleaseStringUTFChars(env, file, out_path);
-    return 0;
+    if (avcodec_open2(jpg_codec_ctx, jpg_codec, NULL) < 0) {
+        ret = -1;
+    }
+    video_index = -1;
+    const char *temp = (*env)->GetStringUTFChars(env, folder, 0);
+    folder_path = (char *) malloc(1024);
+    size_t length = strlen(temp);
+    strncpy(folder_path, temp, length);
+    folder_path[length] = '\0';
+    (*env)->ReleaseStringUTFChars(env, folder, temp);
+    return ret;
 }
 
 
-JNIEXPORT int JNICALL Java_com_telenav_ffmpeg_FFMPEG_encode(JNIEnv *env, jobject obj, jbyteArray jpeg) {
-    int ret;
+JNIEXPORT jintArray JNICALL Java_com_telenav_ffmpeg_FFMPEG_encode(JNIEnv *env, jobject obj, jbyteArray jpeg) {
+    int *ret;
     int enc_got_frame = 0;
     LOGI("Encoding frame");
     LOGI("----------------------------------------------");
@@ -560,37 +652,35 @@ JNIEXPORT int JNICALL Java_com_telenav_ffmpeg_FFMPEG_encode(JNIEnv *env, jobject
 
     ret = decodeJpegData(in, (*env)->GetArrayLength(env, jpeg));
 
-    if (ret < 0) {
+    if (ret[0] < 0 || ret[1] < 0) {
         LOGE("Error while decoding frame");
-        return -1;
+        goto returning;
     }
-    LOGI("decoded jpeg data");
     pkt.data = NULL;
     pkt.size = 0;
     av_init_packet(&pkt);
 
     if (!&pkt || !yuvframe || !h264_codec_ctx) {
         LOGE("Error while encoding, not initialized correctly");
-        return -1;
+        goto returning;
     }
-    LOGI("Encoding frame with w %i h %i, to file with w %i h %i", yuvframe->width, yuvframe->height, h264_codec_ctx->width, h264_codec_ctx->height);
+//    LOGI("Encoding frame with w %i h %i, to file with w %i h %i", yuvframe->width, yuvframe->height, h264_codec_ctx->width, h264_codec_ctx->height);
     if (yuvframe->height != h264_codec_ctx->height || yuvframe->width != h264_codec_ctx->width) {
         LOGE("Error while encoding frame, incorrect frame orientation");
-        ret = -1;
-
-        if (filter_graph) {
-            avfilter_graph_free(&filter_graph);
-        }
+        ret[1] = -1;
         goto skip;
     }
 
-    LOGI("encoding video frame with height %i, width %i", yuvframe->height, yuvframe->width);
-    ret = avcodec_encode_video2(h264_codec_ctx, &pkt, yuvframe, &enc_got_frame);
-    LOGI("encoded video frame, success = %i", ret);
+//    LOGI("encoding video frame with height %i, width %i", yuvframe->height, yuvframe->width);
+    if (avcodec_encode_video2(h264_codec_ctx, &pkt, yuvframe, &enc_got_frame) < 0) {
+        ret[1] = -1;
+    }
+    LOGI("encoded video frame, success = %i", ret[1]);
     skip:
     total_framecnt++;
     if (enc_got_frame == 1) {
         LOGI("Succeed to encode frame: %5d\tsize:%5d\n", framecnt, pkt.size);
+        ret[1] = framecnt;
         framecnt++;
         pkt.stream_index = video_st->index;
 
@@ -619,42 +709,88 @@ JNIEXPORT int JNICALL Java_com_telenav_ffmpeg_FFMPEG_encode(JNIEnv *env, jobject
 //        int64_t now_time = av_gettime() - start_time;
 //        if (pts_time > now_time)
 //            av_usleep(pts_time - now_time);
-
-        ret = av_interleaved_write_frame(ofmt_ctx, &pkt);
-        LOGI("Wrote frame, result = %i", ret);
-        av_packet_unref(&pkt);
-        ret = 0;
+        if (ofmt_ctx && ofmt_ctx->streams && ofmt_ctx->streams[0]) {
+            int ret2 = av_interleaved_write_frame(ofmt_ctx, &pkt);
+            LOGI("Wrote frame, result = %i", ret2);
+            av_packet_unref(&pkt);
+            if (ret2 < 0) {
+                LOGE("Error writing frame");
+                ret[1] = -1;
+            }
+            if (!(ofmt_ctx && ofmt_ctx->streams && ofmt_ctx->streams[0])) {
+                LOGI("KALI ofmt_ctx is broken after interleaved write frame");
+            }
+        } else {
+            if (ofmt_ctx)
+                LOGE("File format CTX is NULL");
+            else if (ofmt_ctx->streams)
+                LOGE("File format CTX streams are NULL");
+            else if (ofmt_ctx->streams[0])
+                LOGE("File format CTX stream[0] is NULL");
+            ret[1] = -1;
+        }
     } else {
         LOGI("No frame yet.");
     }
-    av_frame_free(&yuvframe);
+    returning:
+    if (yuvframe) {
+        av_frame_free(&yuvframe);
+    }
     (*env)->ReleaseByteArrayElements(env, jpeg, in, JNI_ABORT);
-    return ret;
+
+    jintArray retArray = (*env)->NewIntArray(env, 2);
+    (*env)->SetIntArrayRegion(env, retArray, 0, 2, ret);
+    return retArray;
 }
 
 JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_close(JNIEnv *env, jobject obj) {
+    flush();
     LOGI("Closing encoder");
     LOGI("----------------------------------------------");
     if (filter_graph) {
         avfilter_graph_free(&filter_graph);
     }
+    if (filter_graph_cc) {
+        avfilter_graph_free(&filter_graph_cc);
+    }
+    if (filter_graph_flip) {
+        avfilter_graph_free(&filter_graph_flip);
+    }
     if (jpg_codec_ctx) {
+        if (!jpg_codec_ctx->codec || !jpg_codec_ctx->codec->name) {
+            LOGE("'kali crash codec is null while releasing jpeg");
+        }
         avcodec_close(jpg_codec_ctx);
+        LOGI("Closed jpeg decoder");
     }
     if (sws_ctx) {
         sws_freeContext(sws_ctx);
         sws_ctx = NULL;
     }
-    if (video_st)
-        avcodec_close(video_st->codec);
 
-    if (ofmt_ctx && ofmt_ctx->pb) {
-        avio_close(ofmt_ctx->pb);
+    if (h264_codec_ctx) {
+        if (h264_codec_ctx->codec && h264_codec_ctx->codec == pCodec) {
+            if (!h264_codec_ctx->codec || !h264_codec_ctx->codec->name || !pCodec) {
+                LOGE("'kali crash codec is null while releasing");
+            }
+            avcodec_close(h264_codec_ctx);
+            LOGI("Closed h264 encoder");
+        } else {
+            LOGE("Codecs are not the same withing context");
+        }
     }
+    h264_codec_ctx = NULL;
 
     if (ofmt_ctx) {
+//        if (ofmt_ctx->filename && strlen(ofmt_ctx->filename) != 0) {
+//            free(ofmt_ctx->filename);
+//        }
+        if (ofmt_ctx->streams && ofmt_ctx->pb) {
+            avio_close(ofmt_ctx->pb);
+        }
         avformat_free_context(ofmt_ctx);
         ofmt_ctx = NULL;
+        LOGI("KALI setting null ofmtcontext at close");
     }
 
     if (jpg_fmt_ctx) {
@@ -669,6 +805,9 @@ JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_close(JNIEnv *env, jobject
     }
     if (total_framecnt == 0 && framecnt == 0) {
         return 1;
+    }
+    if (folder_path) {
+        free(folder_path);
     }
 
     LOGI("Done");

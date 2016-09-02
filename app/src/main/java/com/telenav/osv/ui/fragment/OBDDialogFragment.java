@@ -119,7 +119,7 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
             public void run() {
                 dismiss();
             }
-        }, 500);
+        }, 200);
     }
 
     public interface OnTypeSelectedListener {

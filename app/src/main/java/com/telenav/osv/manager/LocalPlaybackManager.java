@@ -10,7 +10,9 @@ import android.os.HandlerThread;
 import android.os.Process;
 import android.view.Surface;
 import android.widget.SeekBar;
+import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.db.SequenceDB;
+import com.telenav.osv.item.ImageCoordinate;
 import com.telenav.osv.item.ImageFile;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.Sequence;
@@ -39,6 +41,8 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
 
     private Surface mSurface;
 
+    private ArrayList<SKCoordinate> mTrack = new ArrayList<>();
+
     private FFmpegMediaPlayer mCurrentPlayer = null;
 
     private int mTotalDuration;
@@ -60,52 +64,53 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
             public void run() {
                 final ArrayList<VideoFile> nodes = new ArrayList<>();
                 try {
-                    Cursor records = SequenceDB.instance.getVideos(mSequence.sequenceId);
-                    if (records != null && records.getCount() > 0) {
-                        while (!records.isAfterLast()) {
-                            try {
-                                String path = records.getString(records.getColumnIndex(SequenceDB.VIDEO_FILE_PATH));
-                                int index = records.getInt(records.getColumnIndex(SequenceDB.VIDEO_INDEX));
-                                OSVFile video = new OSVFile(path);
-                                nodes.add(new VideoFile(video, index));
-                            } catch (Exception e) {
-                                Log.d(TAG, "LocalPlaybackManager: " + Log.getStackTraceString(e));
-                            }
-                            records.moveToNext();
-                        }
-                        Collections.sort(nodes, new Comparator<VideoFile>() {
-                            @Override
-                            public int compare(VideoFile lhs, VideoFile rhs) {
-                                return lhs.startIndex - rhs.startIndex;
-                            }
-                        });
-                        for (VideoFile vf : nodes) {
-                            try {
-                                FFmpegMediaPlayer player = new FFmpegMediaPlayer();
-                                player.setOnSeekCompleteListener(LocalPlaybackManager.this);
-                                player.setOnBufferingUpdateListener(LocalPlaybackManager.this);
-                                player.setOnCompletionListener(LocalPlaybackManager.this);
-                                player.setOnErrorListener(LocalPlaybackManager.this);
-                                player.setOnInfoListener(LocalPlaybackManager.this);
-                                player.setOnPreparedListener(LocalPlaybackManager.this);
-                                player.setDataSource(vf.link);
-
-                                if (mPlayers.size() > 0) {
-                                    mPlayers.get(mPlayers.size() - 1).setNextMediaPlayer(player);
-                                } else {
-                                    mCurrentPlayer = player;
-                                }
-                                mPlayers.add(player);
-                            } catch (Exception e) {
-                                Log.d(TAG, "LocalPlaybackManager: " + Log.getStackTraceString(e));
-                            }
-                        }
-                    } else {
-                        Log.d(TAG, "displaySequence: cursor has 0 elements");
-                    }
-                    if (records != null) {
-                        records.close();
-                    }
+//                    Cursor records = SequenceDB.instance.getVideos(mSequence.sequenceId);//todo no playback for this release
+//                    if (records != null && records.getCount() > 0) {
+//                        while (!records.isAfterLast()) {
+//                            try {
+//                                String path = records.getString(records.getColumnIndex(SequenceDB.VIDEO_FILE_PATH));
+//                                int index = records.getInt(records.getColumnIndex(SequenceDB.VIDEO_INDEX));
+//                                OSVFile video = new OSVFile(path);
+//                                nodes.add(new VideoFile(video, index));
+//                            } catch (Exception e) {
+//                                Log.d(TAG, "LocalPlaybackManager: " + Log.getStackTraceString(e));
+//                            }
+//                            records.moveToNext();
+//                        }
+//                        Collections.sort(nodes, new Comparator<VideoFile>() {
+//                            @Override
+//                            public int compare(VideoFile lhs, VideoFile rhs) {
+//                                return lhs.startIndex - rhs.startIndex;
+//                            }
+//                        });
+//                        for (VideoFile vf : nodes) {
+//                            try {
+//                                FFmpegMediaPlayer player = new FFmpegMediaPlayer();
+//                                player.setOnSeekCompleteListener(LocalPlaybackManager.this);
+//                                player.setOnBufferingUpdateListener(LocalPlaybackManager.this);
+//                                player.setOnCompletionListener(LocalPlaybackManager.this);
+//                                player.setOnErrorListener(LocalPlaybackManager.this);
+//                                player.setOnInfoListener(LocalPlaybackManager.this);
+//                                player.setOnPreparedListener(LocalPlaybackManager.this);
+//                                player.setDataSource(vf.link);
+//
+//                                if (mPlayers.size() > 0) {
+//                                    mPlayers.get(mPlayers.size() - 1).setNextMediaPlayer(player);
+//                                } else {
+//                                    mCurrentPlayer = player;
+//                                }
+//                                mPlayers.add(player);
+//                            } catch (Exception e) {
+//                                Log.d(TAG, "LocalPlaybackManager: " + Log.getStackTraceString(e));
+//                            }
+//                        }
+//                    } else {
+//                        Log.d(TAG, "displaySequence: cursor has 0 elements");
+//                    }
+//                    if (records != null) {
+//                        records.close();
+//                    }
+                    mTrack = new ArrayList<>(mSequence.polyline.getNodes());
                 } catch (Exception e) {
                     Log.d(TAG, "displaySequence: " + e.getLocalizedMessage());
                 }
@@ -120,6 +125,10 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
             public void run() {
                 mSeekBar = seekBar;
                 mSeekBar.setOnSeekBarChangeListener(LocalPlaybackManager.this);
+                mSeekBar.setMax(mTrack.size());
+                for (PlaybackListener pl : mPlaybackListeners) {
+                    pl.onPrepared();
+                }
 //                mSeekBar.setMax(mTotalDuration);
 //                Log.d(TAG, "setSeekBar: total duration = " + mTotalDuration);
             }
@@ -132,15 +141,17 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
             @Override
             public void run() {
                 mSurface = (Surface) surface;
-                mCurrentPlayer.setSurface(mSurface);
-                try {
-                    mCurrentPlayer.prepare();
-                    int duration = mCurrentPlayer.getDuration();
-                    mTotalDuration = mTotalDuration + duration;
-                    mSeekBar.setMax(mTotalDuration);
-//                    Log.d(TAG, "run: duration after = " + mCurrentPlayer.getDuration());
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (mCurrentPlayer != null) {
+                    mCurrentPlayer.setSurface(mSurface);
+//                    try {
+//                        mCurrentPlayer.prepare();//todo this starts playback
+//                        int duration = mCurrentPlayer.getDuration();
+//                        mTotalDuration = mTotalDuration + duration;
+//                        mSeekBar.setMax(mTotalDuration);
+////                    Log.d(TAG, "run: duration after = " + mCurrentPlayer.getDuration());
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
                 }
             }
         });
@@ -148,7 +159,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
 
     @Override
     public int getLength() {
-        return mTotalDuration;
+        return mTrack.size();
 //        return mCurrentPlayer.getDuration();
     }
 
@@ -164,8 +175,11 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
         });
     }
 
-    public int getCurrentPosition(){
-        return mCurrentPlayer.getCurrentPosition();
+    public int getCurrentPosition() {
+        if (mCurrentPlayer != null) {
+            return mCurrentPlayer.getCurrentPosition();
+        }
+        return 0;
     }
 
     @Override
@@ -189,6 +203,10 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
                         }
                     }
                 }
+                for (PlaybackListener pl : mPlaybackListeners) {
+                    pl.onExit();
+                }
+                mPlaybackListeners.clear();
             }
         });
     }
@@ -215,9 +233,8 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
         return mSequence;
     }
 
-    @Override
-    public ArrayList<ImageFile> getImages() {
-        return null;
+    public ArrayList<SKCoordinate> getTrack() {
+        return mTrack;
     }
 
     @Override
@@ -281,11 +298,18 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        for (PlaybackListener pl : mPlaybackListeners) {
+            pl.onProgressChanged(progress);
+        }
+
         if (!mPrepared || !mTouching) {
             return;
         }
         Log.d(TAG, "onProgressChanged: " + progress);
-        mCurrentPlayer.seekTo(progress);
+        if (fromUser) {
+//            mCurrentPlayer.seekTo(progress);
+        }
+
     }
 
     @Override
@@ -295,7 +319,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
         }
         mTouching = true;
         Log.d(TAG, "onStartTrackingTouch: ");
-        mCurrentPlayer.start();
+//        mCurrentPlayer.start();
     }
 
     @Override
@@ -319,7 +343,25 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
 
     @Override
     public void play() {
-
+        if (mCurrentPlayer != null) {
+            if (!isPlaying()) {
+                mMediaHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            mCurrentPlayer.prepare();//todo this starts playback
+                            int duration = mCurrentPlayer.getDuration();
+                            mTotalDuration = mTotalDuration + duration;
+                            mSeekBar.setMax(mTotalDuration);
+//                    Log.d(TAG, "run: duration after = " + mCurrentPlayer.getDuration());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            } else {
+            }
+        }
     }
 
     @Override
@@ -344,6 +386,6 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
 
     @Override
     public boolean isPlaying() {
-        return mCurrentPlayer.isPlaying();
+        return (mCurrentPlayer != null && mCurrentPlayer.isPlaying());
     }
 }
