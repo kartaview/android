@@ -55,7 +55,7 @@
     <string name="tip_map_screen">Tip: Select a track from the map in order to visualise the photos</string>
     <string name="disclaimer_label">Disclaimer</string>
     <string name="recording_disclaimer">You are starting a recording session. You can turn off the screen or put the app in the background.</string>
-    <string name="tap_to_shoot_hint">Tip: Tap on the preview to manually take a photo.</string>
+    <string name="tap_to_shoot_hint">Tip: Double-tap on the preview to manually take a photo.</string>
     <string name="upload_all_label">Upload all</string>
     <string name="upload_all_warning">Upload all recordings and remove local files?</string>
     <string name="upload_all_warning_title">Uploading all recordings</string>

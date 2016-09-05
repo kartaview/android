@@ -49,7 +49,7 @@
     <string name="text_camera_synthesizing">Synthèse de la photo</string>
     <string name="text_camera_standby">Patientez</string>
     <string name="text_camera_notconnected">Pas connecté</string>
-    <string name="tap_to_shoot_hint">Astuce: Tapez sur l\'apperçu pour prendre une photo manuellement.</string>
+    <string name="tap_to_shoot_hint">Astuce: Tapez deux fois sur l\'apperçu pour prendre une photo manuellement.</string>
     <string name="storage_subtitle">Utiliser le stockage amovible pour enregistrer les photos.</string>
     <string name="storage_label">Utiliser le stockage amovible</string>
     <string name="stop_value_string">Arrêter</string>
