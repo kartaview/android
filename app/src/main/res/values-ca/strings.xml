@@ -22,7 +22,6 @@
     <string name="upload_paused">Pujada pausada.</string>
     <string name="upload_on_data_label">Pujada en dades</string>
     <string name="upload_automatically_label">Pujada automàtica</string>
-    <string name="theta_ip_address">192.168.1.1</string>
     <string name="upload_all_warning_title">Pujant tots els enregistraments</string>
     <string name="upload_all_label">Pujar tot</string>
     <string name="upload_all_warning">Pujar tots els enregistraments i eliminar els fitxers locals?</string>
