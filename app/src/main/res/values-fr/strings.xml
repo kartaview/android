@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="delete_dialog_message">Suprimer ce fichier?</string>
     <string name="all_recordings_label">Tous les enregistrements publics</string>
     <string name="descr_image">Image</string>
@@ -122,7 +122,7 @@
     <string name="account_images_label">Images:</string>
     <string name="account_obd_label">OBD:</string>
     <string name="account_tracks_label">Pistes:</string>
-    <string name="app_name">Débug OSV</string>
+    <string name="app_name">OSV</string>
     <string name="debug_settings_notification">Des paramètres de débug ont apparu!</string>
     <string name="delete_local_track">Êtes vous sûr de vouloir supprimer cette piste de votre téléphone?</string>
     <string name="exit_app_message">Êtes vous sûr de vouloir quitter?</string>

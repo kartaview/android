@@ -27,6 +27,7 @@ AVFrame *yuvframe;
 AVPacket pkt;
 FILE *file;
 
+#define FRAME_COUNT_LIMIT 64
 crashlytics_context_t *crashlytics_ctx;
 
 //for jpeg decode
@@ -248,27 +249,22 @@ int flush() {
             break;
         }
         framecnt++;
-        pkt.stream_index = video_st->index;
+        enc_pkt.stream_index = video_st->index;
 
-        //Write PTS
-        AVRational time_base = ofmt_ctx->streams[0]->time_base;//{ 1, 1000 };
-//        AVRational r_framerate1 = {60, 2};//{ 50, 2 };
+        AVRational time_base = ofmt_ctx->streams[0]->time_base;
         AVRational time_base_q = {1, AV_TIME_BASE};
-        //Duration between 2 frames (us)
-        int64_t calc_duration = (int64_t) ((double) (AV_TIME_BASE) * (1 / FPS));
-        //Parameters
+        int64_t calc_duration = (int64_t) ((double) (AV_TIME_BASE) / (double) FPS);
         enc_pkt.pts = av_rescale_q(framecnt * calc_duration, time_base_q, time_base);
         enc_pkt.dts = enc_pkt.pts;
         enc_pkt.duration = av_rescale_q(calc_duration, time_base_q, time_base);
-
         enc_pkt.pos = -1;
-
-//        LOGI("pts = %i , dts = &i , dur = %i",pkt.pts,pkt.dts,pkt.duration);
-
         ofmt_ctx->duration = enc_pkt.duration * framecnt;
-
         /* mux encoded frame */
-        ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
+        if (ofmt_ctx && ofmt_ctx->streams && ofmt_ctx->streams[0]) {
+            ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
+        } else {
+            ret = -1;
+        }
         if (ret < 0)
             break;
         LOGI("Flush Encoder: Succeed to encode 1 frame!\tsize:%5d\n", enc_pkt.size);
@@ -548,7 +544,7 @@ int *decodeJpegData(jbyte *jpeg, int length) {
         filter(atoi(tag->value));
     }
     int retval = 0;
-    if (!h264_codec_ctx || yuvframe->height != h264_codec_ctx->height || yuvframe->width != h264_codec_ctx->width || framecnt > 50) {
+    if (!h264_codec_ctx || yuvframe->height != h264_codec_ctx->height || yuvframe->width != h264_codec_ctx->width || framecnt >= FRAME_COUNT_LIMIT) {
         retval = nextFile(yuvframe->width, yuvframe->height);
     }
     if (retval < 0) {
@@ -684,31 +680,16 @@ JNIEXPORT jintArray JNICALL Java_com_telenav_ffmpeg_FFMPEG_encode(JNIEnv *env, j
         framecnt++;
         pkt.stream_index = video_st->index;
 
-//        //Write PTS
-//        AVRational time_base = ofmt_ctx->streams[0]->time_base;//{ 1, 1000 };
-//        AVRational r_framerate1 = {12, 2};//{ 50, 2 };
-//        AVRational time_base_q = {1, AV_TIME_BASE};
-//        //Duration between 2 frames (us)
-//        int64_t calc_duration = (double) (AV_TIME_BASE) * (1 / av_q2d(r_framerate1));
-//        //Parameters
-//        //enc_pkt.pts = (double)(framecnt*calc_duration)*(double)(av_q2d(time_base_q)) / (double)(av_q2d(time_base));
-//        pkt.pts = av_rescale_q(framecnt * calc_duration, time_base_q, time_base);
-//        pkt.dts = pkt.pts;
-//        pkt.duration = av_rescale_q(calc_duration, time_base_q, time_base); //(double)(calc_duration)*(double)(av_q2d(time_base_q)) / (double)(av_q2d(time_base));
-//        pkt.pos = -1;
-        pkt.pts = framecnt - 1;
-        pkt.dts = pkt.pts - 2;
-        pkt.duration = 1; //(double)(calc_duration)*(double)(av_q2d(time_base_q)) / (double)(av_q2d(time_base));
+        AVRational time_base = ofmt_ctx->streams[0]->time_base;
+        AVRational time_base_q = {1, AV_TIME_BASE};
+        int64_t calc_duration = (int64_t) ((double) (AV_TIME_BASE) / (double) FPS);
+        pkt.pts = av_rescale_q(framecnt * calc_duration, time_base_q, time_base);
+        pkt.dts = pkt.pts;
+        pkt.duration = av_rescale_q(calc_duration, time_base_q, time_base);
         pkt.pos = -1;
+        ofmt_ctx->duration = pkt.duration * framecnt;
+//        LOGI("pts = %f , dts = %f , dur = %i , totaldur = %f",(double) pkt.pts,(double) pkt.dts,pkt.duration,(double) ofmt_ctx->duration);
 
-//        ofmt_ctx->duration = pkt.duration * framecnt;
-
-//        LOGI("pts = %f , dts = %f , dur = %i , totaldur = %f", (double) pkt.pts, (double) pkt.dts, pkt.duration, (double) ofmt_ctx->duration);
-        //Delay
-//        int64_t pts_time = av_rescale_q(pkt.dts, time_base, time_base_q);
-//        int64_t now_time = av_gettime() - start_time;
-//        if (pts_time > now_time)
-//            av_usleep(pts_time - now_time);
         if (ofmt_ctx && ofmt_ctx->streams && ofmt_ctx->streams[0]) {
             int ret2 = av_interleaved_write_frame(ofmt_ctx, &pkt);
             LOGI("Wrote frame, result = %i", ret2);

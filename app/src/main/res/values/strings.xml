@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en">
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation" tools:locale="en">
     <string name="shutter_button">Shutter button</string>
     <string name="cannot_connect_hal">Unable to connect to camera, phone might need to be restarted.</string>
 
@@ -93,7 +93,7 @@
     <string name="gps_disabled_warning_map">Please enable the GPS in the system settings.</string>
     <string name="enable_gps_title">Enable GPS?</string>
 
-    <string name="theta_ip_address" translatable="false">192.168.1.1</string>
+    <string name="theta_ip_address">192.168.1.1</string>
     <!--<string name="theta_ip_address">172.16.0.254:9176</string>to be used with kodak-->
     <string name="label_btn_shoot">shoot</string>
     <string name="text_camera_notconnected">Not connected</string>
@@ -110,8 +110,8 @@
     <string name="delete_dialog_message">Delete this file?</string>
     <string name="dialog_positive_button">OK</string>
     <string name="label_btn_image_size">Image Size</string>
-    <string name="image_size_2048x1024" translatable="false">2048 x 1024</string>
-    <string name="image_size_5376x2688" translatable="false">5376 x 2688</string>
+    <string name="image_size_2048x1024">2048 x 1024</string>
+    <string name="image_size_5376x2688">5376 x 2688</string>
     <string name="connected_to_spherical_camera">Connected to spherical camera.</string>
     <string name="connect_to_wifi_cam_warning">You need to connect to a wireless camera.</string>
     <string name="camera_not_found">Wireless camera was not found.</string>
@@ -123,7 +123,7 @@
     <string name="feedback_label">Send feedback</string>
     <string name="storage_label">Use removable storage</string>
     <string name="storage_subtitle">Use the removable storage for saving the images.</string>
-    <string name="obd_label" translatable="false">OBDII</string>
+    <string name="obd_label">OBDII</string>
     <string name="obd_subtitle">Connect an OBDII hardware module for more accurate speed measurements</string>
     <string name="disconnect_obd_message">Are you sure you want to disconnect the OBD hardware?</string>
     <string name="disconnect">Disconnect</string>
@@ -146,7 +146,7 @@
     <string name="gps_medium_label">GPS Medium</string>
     <string name="gps_bad_label">GPS Bad</string>
     <string name="notification_sequence_recording_label">Sequence recording…</string>
-    <string name="app_short_name" translatable="false">OSV</string>
+    <string name="app_short_name">OSV</string>
     <string name="no_gps_message">No gps position.</string>
     <string name="hint_mount_label">Phone mount</string>
     <string name="hint_mount_message">Check that the front hood of the car and the phone’s mount are not visible in the pictures.</string>
@@ -160,7 +160,7 @@
     <string name="loading_components_message">Loading components, just a minute…</string>
     <string name="no_local_recordings_message">You have no local recordings.</string>
     <string name="exit_app_message">Are you sure you want to exit the app?</string>
-    <string name="app_name_formatted" translatable="false">Open Street View</string>
+    <string name="app_name_formatted">Open Street View</string>
     <string name="exit_label">Exit</string>
     <string name="p_upload_finished">"Upload finished: "</string>
     <string name="p_successful">" successful, "</string>
@@ -180,12 +180,79 @@
     <string name="account_distance_label">"Distance: "</string>
     <string name="account_obd_label">"OBD: "</string>
     <string name="debug_settings_notification">A wild debug settings appeared!</string>
-    <string name="wifi_label" translatable="false">Wi-Fi</string>
-    <string name="ble_label" translatable="false">BLE</string>
-    <string name="bt_label" translatable="false">BT</string>
+    <string name="wifi_label">Wi-Fi</string>
+    <string name="ble_label">BLE</string>
+    <string name="bt_label">BT</string>
     <string name="not_allowed_while_upload">Not allowed while uploading!</string>
     <string name="resolution_selection_not_available">Resolution selection not available while fast recording is on</string>
     <string name="ble_android_not_supported">Unfortunately the Bluetooth Low Energy OBD works on Lollipop or higher right now.</string>
+    <string name="connecting_label">Connecting…</string>
+    <string name="no_obd_detected_message">No OBD Detected! Check your connection.</string>
+    <string name="restart_label">Restart</string>
+    <string name="not_connected_label">Not connected</string>
+    <string name="reached_current_storage_limit_message">Reached current storage limit, switching storage.</string>
+    <string name="reached_storage_limit">Reached storage limit, stopping recording.</string>
+    <string name="encoding_error_message">Could not initialize/create mp4 file. Try again please.</string>
+    <string name="error_creating_folder_message">Could not create new Recording folder. Please try again.</string>
+    <string name="ffmpeg_init_error_message">Could not initialize encoder</string>
+    <string name="error_creating_video_file_message">Could not create video file.</string>
+    <string name="upload_failed_message">Upload failed. Please retry later.</string>
+    <string name="upload_finished_message">"Track upload finished. "</string>
+    <string name="uploading_images_message">Uploading images…</string>
+    <string name="resume_label">Resume</string>
+    <string name="pause_label">Pause</string>
+    <string name="track_upload_paused">"Track upload paused… "</string>
+    <string name="track_upload_resuming">"Track upload resuming… "</string>
+    <string name="track_upload_cancelled">"Track upload cancelled. "</string>
+    <string name="uploading_images">"Uploading images… "</string>
+    <string name="error_creating_sequence">Error creating sequence.</string>
+    <string name="not_logged_in">Not logged in.</string>
+    <string name="pause_caps_label">PAUSE</string>
+    <string name="continue_caps_label">CONTINUE</string>
+    <string name="waiting_fragment_upload_paused">Upload Paused</string>
+    <string name="uploading_label">Uploading…</string>
+    <string name="clear_history_label">Clear History</string>
+    <string name="sdcard_missing_message">SDcard is missing.</string>
+    <string name="refresh_label">Refresh</string>
+    <string name="upload_label">Upload</string>
+    <string name="no_internet_connection">No internet connection.</string>
+    <string name="resolutions_label">Resolutions</string>
+    <string name="this_week_label">This week</string>
+    <string name="overall_ranking_label">Overall ranking</string>
+    <string name="obd_type_label">OBD type</string>
+    <string name="bluetooth_low_energy_label">Bluetooth Low Energy</string>
+    <string name="bluetooth_label">Bluetooth</string>
+    <string name="account_label">Account</string>
+    <string name="fast_recording_mode_on">Fast recording mode ON</string>
+    <string name="focus_locked">Locked</string>
+    <string name="stop_caps_label">STOP</string>
+    <string name="fast_recording_mode">Fast recording mode</string>
+    <string name="fast_recording_text">While recording, the app will take ~5 frames per second in a lower resolution.</string>
+    <string name="resolution_label">Resolution</string>
+    <string name="resolution_text">Select the resolution for taking pictures</string>
+    <string name="connection_type">Connection type</string>
+    <string name="feedback_text">Feedback</string>
+    <string name="about_label">About</string>
+    <string name="tips_label">Tips</string>
+    <string name="tips_message">See how to improve your recordings</string>
+    <string name="application_version_label">Application version</string>
+    <string name="debug_label">Debug</string>
+    <string name="debug_features_label">Debug features</string>
+    <string name="current_server_label">Current server</string>
+    <string name="hdr_recording_label">HDR recording</string>
+    <string name="hdr_recording_text">Use HDR for the images in the recordings if available. May produce better quality images.</string>
+    <string name="debug_speed_label">Show speed and distance filter</string>
+    <string name="debug_speed_text">Show the current distance filter and speed.</string>
+    <string name="remember_login_credentials_label">Remember login credentials</string>
+    <string name="remember_login_credentials_text">Remembers login credentials after first login. Clears credentials after setting to off.</string>
+    <string name="ble_not_supported">BLE not supported</string>
+    <string name="error_bluetooth_not_supported">Bluetooth not supported</string>
+    <string name="unknown_device">Unknown device</string>
+    <string name="connected">Connected</string>
+    <string name="ble_devices">BLE devices</string>
+    <string name="sdk_not_initialized">SDK is not initialized. Check if the map data path is correct.</string>
+    <string name="map_visibility_subtitle">Map display increases battery and data consumption.</string>
+    <string name="map_visibility_label">Show map while recording</string>
 
 
 </resources>

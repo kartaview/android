@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -21,10 +22,13 @@ import com.telenav.osv.utils.Log;
 /**
  * Created by Kalman on 10/6/2015.
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class VideoRequest<T> extends StringRequest {
 
 
     private static final String FILE_PART_NAME = "video";
+
+    private static final String PARAM_TOKEN = "access_token";
 
     private static final String TAG = "VideoRequest";
 
@@ -36,15 +40,22 @@ public class VideoRequest<T> extends StringRequest {
 
     private final OSVFile mVideoFile;
 
-    private MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
+    private final String mToken;
 
-    public VideoRequest(String url, ErrorListener errorListener, Listener<String> listener, OSVFile videoFile, int sequenceID, int sequenceIndex) {
+    private ProgressiveEntity mProgressiveEntity;
+
+    private ProgressiveEntity.DataProgressListener mDataProgressListener;
+
+    public VideoRequest(String url, ErrorListener errorListener, Listener<String> listener, ProgressiveEntity.DataProgressListener dataProgressListener, String token, OSVFile
+            videoFile, int sequenceID, int sequenceIndex) {
         super(Method.POST, url, listener, errorListener);
 
         mListener = listener;
         mVideoFile = videoFile;
         mSequenceId = sequenceID;
         mSequenceIndex = sequenceIndex;
+        mToken = token;
+        mDataProgressListener = dataProgressListener;
 
         buildMultipartEntity();
     }
@@ -64,6 +75,8 @@ public class VideoRequest<T> extends StringRequest {
     }
 
     private void buildMultipartEntity() {
+        MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
+        mBuilder.addTextBody(PARAM_TOKEN, mToken);
         mBuilder.addTextBody("sequenceId", "" + mSequenceId);
         mBuilder.addTextBody("sequenceIndex", "" + mSequenceIndex);
         if (!mVideoFile.exists()) {
@@ -72,19 +85,26 @@ public class VideoRequest<T> extends StringRequest {
         mBuilder.addBinaryBody(FILE_PART_NAME, mVideoFile, ContentType.create("video/mp4"), mVideoFile.getName());
         mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
+        HttpEntity mEntity = mBuilder.build();
+        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener);
+
     }
 
     @Override
     public String getBodyContentType() {
-        String contentTypeHeader = mBuilder.build().getContentType().getValue();
-        return contentTypeHeader;
+        return mProgressiveEntity.getContentType().getValue();
     }
 
     @Override
-    public byte[] getBody() throws AuthFailureError {
+    public HttpEntity getMultipartEntity() {
+        return mProgressiveEntity;
+    }
+
+    @Override
+    public byte[] getBody() throws AuthFailureError {//todo this should not be called, but lets leave it to be sure
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
-            mBuilder.build().writeTo(bos);
+            mProgressiveEntity.writeTo(bos);
         } catch (IOException e) {
             VolleyLog.e("IOException writing to ByteArrayOutputStream bos, building the multipart request.");
         }

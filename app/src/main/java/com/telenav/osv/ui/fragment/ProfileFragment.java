@@ -327,7 +327,7 @@ public class ProfileFragment extends Fragment implements RequestResponseListener
     }
 
     private void loadMoreResults() {
-        mUploadManager.listSequences(this, mCurrentPageToList, NUMBER_OF_ITEMS_PER_PAGE, null, null, true);
+        mUploadManager.listSequences(this, mCurrentPageToList, NUMBER_OF_ITEMS_PER_PAGE);
     }
 
 

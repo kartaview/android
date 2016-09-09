@@ -5,6 +5,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.Handler;
@@ -23,6 +24,7 @@ import com.telenav.osv.manager.SensorManager;
 import com.telenav.osv.manager.ShutterManager;
 import com.telenav.osv.manager.UploadManager;
 import com.telenav.osv.service.CameraHandlerService;
+import com.telenav.osv.ui.fragment.ProfileFragment;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
@@ -155,6 +157,13 @@ public class OSVApplication extends MultiDexApplication {
                             float version = pInfo.versionCode;
                             float savedVersion = appPrefs.getFloatPreference(PreferenceTypes.K_VERSION_CODE);
                             if (savedVersion != version) {
+                                if (version == 42) {
+                                    if (mUploadManager != null) {
+                                        mUploadManager.logOut();
+                                    }
+                                    SharedPreferences prefs = getSharedPreferences(ProfileFragment.PREFS_NAME, MODE_PRIVATE);
+                                    prefs.edit().clear().apply();
+                                }
                                 appPrefs.saveFloatPreference(PreferenceTypes.K_VERSION_CODE, version);
 //                                if (Fabric.isInitialized()) {
 //                                    String arch = System.getProperty("os.arch");
@@ -193,7 +202,7 @@ public class OSVApplication extends MultiDexApplication {
         mCamManager = CameraManager.instance;
         mUploadManager = new UploadManager(this);
         mSequenceDB = new SequenceDB(this);
-        mLocationManager = new LocationManager(this);
+        mLocationManager = LocationManager.get(this);
         mSensorManager = new SensorManager(this);
         mShutterManager = new ShutterManager(this);
         consistencyCheck();

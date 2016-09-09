@@ -13,7 +13,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import com.telenav.osv.utils.Log;
-import com.telenav.vehicledatacollector.obd.OBDHelper;
+import com.telenav.osv.obd.OBDHelper;
 
 /**
  * Created by Kalman on 3/17/16.

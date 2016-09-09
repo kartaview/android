@@ -15,7 +15,7 @@
             android:layout_above="@+id/no_internet_image_view"
             android:layout_marginBottom="10dp"
             android:gravity="center"
-            android:text="No internet connection"
+            android:text="@string/no_internet_connection"
             android:textColor="@color/text_colour_default"
             android:textSize="18sp" />
 

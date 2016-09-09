@@ -31,7 +31,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -51,8 +50,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -62,7 +59,6 @@ import android.widget.Toast;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.target.Target;
 import com.facebook.network.connectionclass.ConnectionQuality;
-import com.github.clans.fab.FloatingActionButton;
 import com.google.android.gms.common.api.Status;
 import com.skobbler.ngx.SKMaps;
 import com.telenav.osv.R;
@@ -72,14 +68,13 @@ import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.http.RequestListener;
 import com.telenav.osv.http.RequestResponseListener;
 import com.telenav.osv.item.Sequence;
+import com.telenav.osv.listener.ImageSavedListener;
 import com.telenav.osv.listener.RecordingStateChangeListener;
 import com.telenav.osv.listener.UploadProgressListener;
 import com.telenav.osv.manager.CameraManager;
 import com.telenav.osv.manager.LocalPlaybackManager;
-import com.telenav.osv.manager.LocationManager;
 import com.telenav.osv.manager.OnlinePlaybackManager;
 import com.telenav.osv.manager.PlaybackManager;
-import com.telenav.osv.manager.ShutterManager;
 import com.telenav.osv.manager.UploadManager;
 import com.telenav.osv.service.CameraHandlerService;
 import com.telenav.osv.service.UploadHandlerService;
@@ -103,7 +98,7 @@ import com.telenav.osv.utils.Utils;
  */
 
 public class MainActivity extends AppCompatActivity implements RecordingStateChangeListener, UploadProgressListener, FragmentManager
-        .OnBackStackChangedListener, View.OnClickListener, Camera.ShutterCallback {
+        .OnBackStackChangedListener, View.OnClickListener, Camera.ShutterCallback, ImageSavedListener {
 
     /**
      * Intent extra used when opening app from recording notification
@@ -124,8 +119,6 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     public static final int SCREEN_UPLOAD_PROGRESS = 5;
 
     public static final int SCREEN_WAITING = 6;
-
-    public static final int SCREEN_TRACK_DETAIL = 7;
 
     public static final int SCREEN_RECORDING_HINTS = 8;
 
@@ -242,9 +235,11 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             }
             if (waitingFragment != null) {
                 waitingFragment.onUploadServiceConnected(mUploadHandlerService);
+                mUploadHandlerService.addUploadProgressListener(waitingFragment);
             }
             if (uploadProgressFragment != null) {
                 uploadProgressFragment.onUploadServiceConnected(mUploadHandlerService);
+                mUploadHandlerService.addUploadProgressListener(uploadProgressFragment);
             }
             if (mBoundCameraHandler) {
                 enableProgressBar(false);
@@ -254,6 +249,12 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mUploadHandlerService.removeUploadProgressListener(MainActivity.this);
+            if (waitingFragment != null) {
+                mUploadHandlerService.removeUploadProgressListener(waitingFragment);
+            }
+            if (uploadProgressFragment != null) {
+                mUploadHandlerService.removeUploadProgressListener(uploadProgressFragment);
+            }
             mUploadHandlerService = null;
             mBoundUploadHandler = false;
 
@@ -276,11 +277,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
     private boolean mScreenModeParalell = false;
 
-    private FloatingActionButton recordButton;
-
     private ActionBar mActionBar;
-
-    private boolean mMenuOpen = false;
 
     private NavigationView navigationView;
 
@@ -321,6 +318,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             mBoundCameraHandler = true;
 
             mCameraHandlerService.setRecordingListener(MainActivity.this);
+            mCameraHandlerService.mShutterManager.setShutterCallback(MainActivity.this);
             mCameraHandlerService.mShutterManager.setImageSavedListener(MainActivity.this);
             if (cameraPreviewFragment == null) {
                 cameraPreviewFragment = new CameraPreviewFragment();
@@ -347,6 +345,8 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
     private AlertDialog mExitDialog;
 
+    private int mCurrentScreen = SCREEN_MAP;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.initializeLibrary(this);
@@ -354,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         OSVApplication.sUiThreadId = Thread.currentThread().getId();
-        mUploadManager = ((OSVApplication) getApplication()).getUploadManager();
+        mUploadManager = getApp().getUploadManager();
         appPrefs = ((OSVApplication) getApplication()).getAppPrefs();
         progressBar = (ProgressBar) findViewById(R.id.progressbar);
         progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
@@ -614,6 +614,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             showSnackBar(getString(R.string.loading_components_message), Snackbar.LENGTH_SHORT);
             return;
         }
+        mCurrentScreen = screen;
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -957,8 +958,8 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     @Override
     protected void onResume() {
         super.onResume();
-        LocationManager.checkGooglePlaySevices(this);
-        mUploadManager = ((OSVApplication) getApplication()).getUploadManager();
+        getApp().getLocationManager().checkGooglePlaySevices(this);
+        mUploadManager = getApp().getUploadManager();
         enableProgressBar(false);
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {//set status bar color
 //            Window window = getWindow();
@@ -1198,7 +1199,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                         removeUpperFragments();
                         try {
                             getSupportFragmentManager().popBackStackImmediate();
-                        } catch (IllegalStateException e) {
+                        } catch (Exception e) {
                             Log.d(TAG, "error: popBackStackImmediate failed");
                         }
                         openScreen(SCREEN_MAP);
@@ -1213,7 +1214,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     }
                     try {
                         getSupportFragmentManager().popBackStackImmediate();
-                    } catch (IllegalStateException e) {
+                    } catch (Exception e) {
                         Log.d(TAG, "error: popBackStackImmediate failed");
                     }
                 }
@@ -1223,13 +1224,11 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
     @Override
     public boolean onMenuOpened(int featureId, Menu menu) {
-        mMenuOpen = true;
         return super.onMenuOpened(featureId, menu);
     }
 
     @Override
     public void onOptionsMenuClosed(Menu menu) {
-        mMenuOpen = false;
         super.onOptionsMenuClosed(menu);
     }
 
@@ -1400,25 +1399,26 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     }
 
     public void addSmallFragment(Fragment fragment, String tag) {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        if (fragment.isAdded()) {
-            ft.remove(fragment);
-        }
-        ft.add(R.id.content_frame_small, fragment, tag);
-        smallFragment = fragment;
-        ft.commitAllowingStateLoss();
-        positionSmallFragment(isPortrait());
-
-        if (smallFragment == mapFragment) {
-            mapFragment.setMapSmall(true);
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    cameraPreviewFragment.addCameraSurfaceView();
-                }
-            }, 300);
-        } else {
-            cameraPreviewFragment.setPreviewSmall(true);
+        if (appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true)) {
+            smallFragment = fragment;
+            if (smallFragment == mapFragment) {
+                mapFragment.setMapSmall(true);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        cameraPreviewFragment.addCameraSurfaceView();
+                    }
+                }, 300);
+            } else {
+                cameraPreviewFragment.setPreviewSmall(true);
+            }
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            if (fragment.isAdded()) {
+                ft.remove(fragment);
+            }
+            ft.add(R.id.content_frame_small, fragment, tag);
+            ft.commitAllowingStateLoss();
+            positionSmallFragment(isPortrait());
         }
     }
 
@@ -1453,55 +1453,52 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     }
 
     public void switchPreviews() {
-        if (mCameraHandlerService != null && mCameraHandlerService.mShutterManager.isRecording()) {
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            if (mapFragment.isAdded()) {
-                ft.remove(mapFragment);
-            }
-            if (cameraPreviewFragment.isAdded()) {
-                ft.remove(cameraPreviewFragment);
-            }
-            ft.commitAllowingStateLoss();
-            getSupportFragmentManager().executePendingTransactions();
-            ft = getSupportFragmentManager().beginTransaction();
-            if (smallFragment == mapFragment) {
-                cameraPreviewFragment.setPreviewSmall(true);
-                mapFragment.setMapSmall(false);
+        if (appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true)) {
+            if (mCameraHandlerService != null && mCameraHandlerService.mShutterManager.isRecording()) {
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                if (mapFragment.isAdded()) {
+                    ft.remove(mapFragment);
+                }
+                if (cameraPreviewFragment.isAdded()) {
+                    ft.remove(cameraPreviewFragment);
+                }
+                ft.commitAllowingStateLoss();
+                getSupportFragmentManager().executePendingTransactions();
+                ft = getSupportFragmentManager().beginTransaction();
+                if (smallFragment == mapFragment) {
+                    cameraPreviewFragment.setPreviewSmall(true);
+                    mapFragment.setMapSmall(false);
 //                ft.addToBackStack(CameraPreviewFragment.TAG + "&");
-                ft.add(R.id.content_frame_small, cameraPreviewFragment, CameraPreviewFragment.TAG);
-                ft.add(R.id.content_frame_upper, mapFragment, MapFragment.TAG);
-                smallFragment = cameraPreviewFragment;
-                largeFragment = mapFragment;
-            } else {
-                cameraPreviewFragment.setPreviewSmall(false);
-                mapFragment.setMapSmall(true);
+                    ft.add(R.id.content_frame_small, cameraPreviewFragment, CameraPreviewFragment.TAG);
+                    ft.add(R.id.content_frame_upper, mapFragment, MapFragment.TAG);
+                    smallFragment = cameraPreviewFragment;
+                    largeFragment = mapFragment;
+                } else {
+                    cameraPreviewFragment.setPreviewSmall(false);
+                    mapFragment.setMapSmall(true);
 //                ft.addToBackStack(MapFragment.TAG + "&");
-                ft.add(R.id.content_frame_upper, cameraPreviewFragment, CameraPreviewFragment.TAG);
-                ft.add(R.id.content_frame_small, mapFragment, MapFragment.TAG);
-                smallFragment = mapFragment;
-                largeFragment = cameraPreviewFragment;
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        cameraPreviewFragment.addCameraSurfaceView();
-                    }
-                }, 300);
+                    ft.add(R.id.content_frame_upper, cameraPreviewFragment, CameraPreviewFragment.TAG);
+                    ft.add(R.id.content_frame_small, mapFragment, MapFragment.TAG);
+                    smallFragment = mapFragment;
+                    largeFragment = cameraPreviewFragment;
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            cameraPreviewFragment.addCameraSurfaceView();
+                        }
+                    }, 300);
+                }
+                ft.commitAllowingStateLoss();
             }
-            ft.commitAllowingStateLoss();
         }
     }
 
 
     public void logout() {
-        if (!Utils.DEBUG || !appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_SAVE_AUTH)) {
-            final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-            editor.clear();
-            editor.commit();
-            CookieSyncManager.createInstance(this);
-            CookieManager.getInstance().removeAllCookie();
+        if (mUploadManager == null) {
+            mUploadManager = getApp().getUploadManager();
         }
-        appPrefs.saveStringPreference(PreferenceTypes.K_USER_ID, "");
-        appPrefs.saveStringPreference(PreferenceTypes.K_USER_NAME, "");
+        mUploadManager.logOut();
         usernameTextView.setText(" ");
         logOutImage.setVisibility(View.GONE);
         settingsFragment.onLoginChanged(false);
@@ -1574,7 +1571,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     }
 
     @Override
-    public void onUploadCancelled(int total, int remaining) {
+    public void onUploadCancelled(long total, long remaining) {
         showSnackBar(R.string.upload_cancelled, Snackbar.LENGTH_SHORT);
     }
 
@@ -1653,7 +1650,11 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         showSnackBar(getText(resId), duration, button, onClick);
     }
 
-    public void showSnackBar(final CharSequence text, final int duration, final String button, final Runnable onClick) {
+    public void showSnackBar(final int resId, final int duration, final int buttonResId, final Runnable onClick) {
+        showSnackBar(getText(resId), duration, getText(buttonResId), onClick);
+    }
+
+    public void showSnackBar(final CharSequence text, final int duration, final CharSequence button, final Runnable onClick) {
         runOnUiThread(new Runnable() {
 
             public boolean shouldGoUp;
@@ -1876,6 +1877,10 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         }
     }
 
+    public int getCurrentScreen() {
+        return mCurrentScreen;
+    }
+
     public String getCurrentFragment() {
         int count = getSupportFragmentManager().getBackStackEntryCount();
         if (count > 0) {
@@ -2078,11 +2083,17 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
     @Override
     public void onShutter() {
-        if (cameraControlsFragment != null) {
-            cameraControlsFragment.refreshDetails();
-        }
+        Log.d(TAG, "onShutter: called");
         if (cameraPreviewFragment != null) {
             cameraPreviewFragment.onShutter();
+        }
+    }
+
+    @Override
+    public void onImageSaved(boolean saved) {
+        Log.d(TAG, "onImageSaved: called");
+        if (cameraControlsFragment != null) {
+            cameraControlsFragment.refreshDetails();
         }
     }
 

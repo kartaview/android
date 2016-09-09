@@ -19,19 +19,18 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.support.v4.content.LocalBroadcastManager;
 import com.telenav.osv.utils.Log;
-import com.telenav.vehicledatacollector.Constants;
-import com.telenav.vehicledatacollector.VehicleDataListener;
-import com.telenav.vehicledatacollector.obd.OBDCommunication;
-import com.telenav.vehicledatacollector.obd.OBDConnection;
-import com.telenav.vehicledatacollector.obd.OBDHelper;
-//import com.telenav.arp.service.IVehicleOBDConnectionService;
+import com.telenav.osv.obd.Constants;
+import com.telenav.osv.obd.VehicleDataListener;
+import com.telenav.osv.obd.OBDCommunication;
+import com.telenav.osv.obd.OBDConnection;
+import com.telenav.osv.obd.OBDHelper;
 
 /**
  * Created by dianat on 3/11/2016.
  */
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class ObdBleManager extends ObdManager {
-    public static final String VEHICLE_DATA_ACTION = "com.telenav.vehicledatacollector.VEHICLE_DATA";
+    public static final String VEHICLE_DATA_ACTION = "com.telenav.osv.obd.VEHICLE_DATA";
     public static final String VEHICLE_DATA_TYPE_SPEED = "SPEED";
 
     private static int DEFAULT_POLLING_INTERVAL = 1000 * 2;

@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="3dp"
         android:layout_marginTop="10dp"
-        android:text="Resolutions"
+        android:text="@string/resolutions_label"
         android:textColor="@color/text_colour_default_light"
         android:textSize="25sp"
         android:textStyle="bold" />
@@ -42,7 +42,7 @@
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
         android:paddingStart="20dp"
-        android:text="Ok"
+        android:text="@string/ok_label"
         android:textColor="@color/accent_material_dark_1"
         android:textSize="18sp"
         android:textStyle="bold" />

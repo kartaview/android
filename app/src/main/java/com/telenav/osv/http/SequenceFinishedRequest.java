@@ -16,26 +16,22 @@ public class SequenceFinishedRequest<T> extends StringRequest {
 
     private static final String PARAM_USER_ID = "externalUserId";
 
-    private static final String PARAM_USER_TYPE = "userType";
-
-    private static final String PARAM_USER_NAME = "userName";
-
-    private static final String PARAM_CLIENT_TOKEN = "clientToken";
-
     private static final String PARAM_CURRENT_COORD = "currentCoordinate";
 
     private static final String PARAM_SEQUENCE_ID = "sequenceId";
 
+    private static final String PARAM_TOKEN = "access_token";
+
     private final Listener<String> mListener;
 
-    private String userId;
+    private String mToken;
 
     private String sequenceId;
 
-    public SequenceFinishedRequest(String url, ErrorListener errorListener, Listener<String> listener, String userId, String sequenceId) {
+    public SequenceFinishedRequest(String url, ErrorListener errorListener, Listener<String> listener, String token, String sequenceId) {
         super(Method.POST, url, listener, errorListener);
         mListener = listener;
-        this.userId = userId;
+        this.mToken = token;
         this.sequenceId = sequenceId;
     }
 
@@ -56,8 +52,7 @@ public class SequenceFinishedRequest<T> extends StringRequest {
     @Override
     protected Map<String, String> getParams() {
         Map<String, String> params = new HashMap<String, String>();
-        params.put(PARAM_USER_ID, userId);
-        params.put(PARAM_USER_TYPE, "osm");
+        params.put(PARAM_TOKEN, mToken);
         params.put(PARAM_SEQUENCE_ID, sequenceId);
         return params;
     }

@@ -28,8 +28,8 @@ import android.widget.Toast;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.manager.ObdBleManager;
-import com.telenav.vehicledatacollector.Constants;
-import com.telenav.vehicledatacollector.obd.OBDConnection;
+import com.telenav.osv.obd.Constants;
+import com.telenav.osv.obd.OBDConnection;
 import com.telenav.osv.ui.list.LeDeviceAdapter;
 
 /**
@@ -74,11 +74,6 @@ public class BLEDialogFragment extends DialogFragment {
      * shared preferences
      */
     private SharedPreferences preferences;
-
-    /**
-     * is the sdk initialized
-     */
-    private boolean sdkInitialized = false;
 
     private ScanCallback scanCallback = new ScanCallback() {
         @Override
@@ -158,7 +153,7 @@ public class BLEDialogFragment extends DialogFragment {
         // Use this check to determine whether BLE is supported on the device. Then
         // you can selectively disable BLE-related features.
         if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(getActivity(), com.telenav.vehicledatacollector.R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             getActivity().finish();
         }
 
@@ -166,7 +161,7 @@ public class BLEDialogFragment extends DialogFragment {
 
         // Checks if Bluetooth is supported on the device.
         if (bluetoothAdapter == null) {
-            Toast.makeText(getActivity(), com.telenav.vehicledatacollector.R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
             //context.finish();
             //return;
         }
@@ -238,41 +233,6 @@ public class BLEDialogFragment extends DialogFragment {
         super.onDestroy();
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.devices_list, menu);
-        if (!sdkInitialized) {
-            menu.findItem(R.id.menu_stop).setVisible(false);
-            menu.findItem(R.id.menu_scan).setVisible(false);
-            menu.findItem(R.id.menu_refresh).setActionView(null);
-        } else {
-            if (!OBDConnection.getInstance().isScanning()) {
-                menu.findItem(R.id.menu_stop).setVisible(false);
-                menu.findItem(R.id.menu_scan).setVisible(true);
-                menu.findItem(R.id.menu_refresh).setActionView(null);
-            } else {
-                menu.findItem(R.id.menu_stop).setVisible(true);
-                menu.findItem(R.id.menu_scan).setVisible(false);
-                menu.findItem(R.id.menu_refresh).setActionView(
-                        R.layout.actionbar_indeterminate_progress);
-            }
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_scan) {
-            mLeDeviceListAdapter.clear();
-            mLeDeviceListAdapter.notifyDataSetChanged();
-            OBDConnection.getInstance().startScanning(scanCallback);
-            getActivity().invalidateOptionsMenu();
-        } else if (item.getItemId() == R.id.menu_stop) {
-            OBDConnection.getInstance().stopScanning(scanCallback);
-            getActivity().invalidateOptionsMenu();
-        }
-        return true;
-    }
-
     /**
      * Check if scanning is running for refresing the options menu
      */
@@ -295,7 +255,6 @@ public class BLEDialogFragment extends DialogFragment {
      * @param show - true if show the ble devices list, false otherwise
      */
     private void showBleList(boolean show) {
-        sdkInitialized = show;
         bleDevicesLabel.setVisibility((show) ? View.VISIBLE : View.GONE);
         devicesList.setVisibility((show) ? View.VISIBLE : View.GONE);
         sdkNotInitializedTv.setVisibility((show) ? View.GONE : View.VISIBLE);

@@ -32,7 +32,7 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginTop="15dp"
-            android:text="Fast recording mode ON"
+            android:text="@string/fast_recording_mode_on"
             android:textColor="#e16152"
             android:textSize="25sp"
             android:textStyle="bold"
@@ -82,7 +82,7 @@
             android:layout_height="60dp"
             android:layout_gravity="end"
             android:layout_margin="5dp"
-            android:src="@drawable/g_p_s_good" />
+            android:src="@drawable/g_p_s_low" />
 
         <ImageView
             android:id="@+id/focus_indicator"
@@ -101,7 +101,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Locked"
+                android:text="@string/focus_locked"
                 android:textColor="#01579B"
                 android:textSize="7pt" />
 

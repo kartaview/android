@@ -1,6 +1,6 @@
 package com.telenav.osv.ui.list;
 
-import android.content.Context;
+import java.util.List;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
@@ -11,14 +11,12 @@ import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
-import android.text.style.TabStopSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.StringSignature;
@@ -31,8 +29,6 @@ import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.utils.Utils;
 
-import java.util.List;
-
 /**
  * Created by alexandra on 7/12/16.
  */
@@ -40,21 +36,29 @@ import java.util.List;
 public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_HEADER = 0;
+
     private static final int TYPE_ITEM = 1;
+
     private static final int TYPE_ITEM_NO_INTERNET = 2;
 
     private final boolean showHeader;
-    private boolean mInternetAvailable;
 
     List<Sequence> mSequenceList;
 
     MainActivity activity;
 
+    private boolean mInternetAvailable;
+
     private TextView txtWeekPositionValue;
+
     private TextView txtImagesNumber;
+
     private TextView txtTracksNumber;
+
     private TextView txtDistance;
+
     private TextView txtObd;
+
     private TextView txtTitleHeader;
 
     public SequenceAdapter(List<Sequence> results, MainActivity activity) {
@@ -69,7 +73,7 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         mInternetAvailable = Utils.isInternetAvailable(this.activity);
     }
 
-    public void setOnline(boolean online){
+    public void setOnline(boolean online) {
         mInternetAvailable = online;
     }
 
@@ -126,7 +130,7 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             } else if (holder instanceof SequenceHolder) {
                 SequenceHolder sequenceHolder = (SequenceHolder) holder;
-                final Sequence sequence = mSequenceList.get(position);
+                final Sequence sequence = mSequenceList.get(Math.min(position, mSequenceList.size() - 1));
 
                 Glide.with(activity)
                         .load(sequence.thumblink)
@@ -247,14 +251,57 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+    public void refreshDetails(String[] totalDistanceFormatted, String[] obdDistanceFormatted, String totalPhotos, String overallRank, String totalTracks, String weeklyRank) {
+        if (txtTitleHeader != null) {
+            txtTitleHeader.setText(overallRank);
+        }
+        if (txtWeekPositionValue != null) {
+            txtWeekPositionValue.setText(weeklyRank);
+        }
+        if (activity != null) {
+            String imagesText = activity.getString(R.string.account_images_label);
+            String tracksText = activity.getString(R.string.account_tracks_label);
+            String distanceText = activity.getString(R.string.account_distance_label);
+            String obdText = activity.getString(R.string.account_obd_label);
+
+            if (txtImagesNumber != null) {
+                txtImagesNumber.setText(getSpannable(imagesText, totalPhotos));
+            }
+            if (txtTracksNumber != null) {
+                txtTracksNumber.setText(getSpannable(tracksText, totalTracks));
+            }
+            if (txtDistance != null) {
+                txtDistance.setText(getSpannable(distanceText, totalDistanceFormatted[0] + " " + totalDistanceFormatted[1]));
+            }
+            if (txtObd != null) {
+                txtObd.setText(getSpannable(obdText, obdDistanceFormatted[0] + " " + obdDistanceFormatted[1]));
+            }
+        }
+    }
+
+    public SpannableString getSpannable(String first, String second) {
+        SpannableString styledString = new SpannableString(first + second);
+        styledString.setSpan(new StyleSpan(Typeface.NORMAL), 0, first.length(), 0);
+        styledString.setSpan(new StyleSpan(Typeface.BOLD), first.length(), second.length() + first.length(), 0);
+        styledString.setSpan(new AbsoluteSizeSpan(15, true), 0, first.length(), 0);
+        styledString.setSpan(new AbsoluteSizeSpan(15, true), first.length(), second.length() + first.length(), 0);
+        styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.md_grey_600)), 0, first.length(), 0);
+        styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default)), first.length(), second.length() + first.length(), 0);
+        return styledString;
+    }
 
     public static class SequenceHolder extends RecyclerView.ViewHolder {
 
         View container;
+
         ImageView imageItem;
+
         TextView addressTextItem;
+
         TextView totalImagesTextItem;
+
         TextView dateTimeTextItem;
+
         TextView totalLengthTextItem;
 
 
@@ -277,32 +324,6 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(v);
             container = v;
         }
-    }
-
-    public void refreshDetails(String[] totalDistanceFormatted, String[] obdDistanceFormatted, String totalPhotos, String overallRank, String totalTracks, String weeklyRank) {
-        txtTitleHeader.setText(overallRank);
-        txtWeekPositionValue.setText(weeklyRank);
-
-        String imagesText = activity.getString(R.string.account_images_label);
-        String tracksText = activity.getString(R.string.account_tracks_label);
-        String distanceText = activity.getString(R.string.account_distance_label);
-        String obdText = activity.getString(R.string.account_obd_label);
-
-        txtImagesNumber.setText(getSpannable(imagesText, totalPhotos));
-        txtTracksNumber.setText(getSpannable(tracksText, totalTracks));
-        txtDistance.setText(getSpannable(distanceText, totalDistanceFormatted[0] + " " + totalDistanceFormatted[1]));
-        txtObd.setText(getSpannable(obdText, obdDistanceFormatted[0] + " " + obdDistanceFormatted[1]));
-    }
-
-    public SpannableString getSpannable(String first, String second) {
-        SpannableString styledString = new SpannableString(first + second);
-        styledString.setSpan(new StyleSpan(Typeface.NORMAL), 0, first.length(), 0);
-        styledString.setSpan(new StyleSpan(Typeface.BOLD), first.length(), second.length() + first.length(), 0);
-        styledString.setSpan(new AbsoluteSizeSpan(15, true), 0, first.length(), 0);
-        styledString.setSpan(new AbsoluteSizeSpan(15, true), first.length(), second.length() + first.length(), 0);
-        styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.md_grey_600)), 0, first.length(), 0);
-        styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default)), first.length(), second.length() + first.length(), 0);
-        return styledString;
     }
 
     class HeaderViewHolder extends RecyclerView.ViewHolder {

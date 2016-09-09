@@ -20,7 +20,7 @@ public interface UploadProgressListener extends ConnectionClassManager.Connectio
 
     void onUploadResumed();
 
-    void onUploadCancelled(int total, int remaining);
+    void onUploadCancelled(long total, long remaining);
 
     void onUploadFinished(int successful, int unsuccessful);
 

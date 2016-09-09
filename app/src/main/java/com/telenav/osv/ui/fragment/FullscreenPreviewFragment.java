@@ -1,6 +1,5 @@
 package com.telenav.osv.ui.fragment;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import android.app.ActivityManager;
 import android.content.Context;

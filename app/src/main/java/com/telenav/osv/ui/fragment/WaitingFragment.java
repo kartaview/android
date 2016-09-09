@@ -66,17 +66,11 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
         localSequencesAdapter = new SequenceListAdapter(activity, new ArrayList<>(localSequences.values()), false);
         localListView.setAdapter(localSequencesAdapter);
         uploadButton = (Button) view.findViewById(R.id.upload_button);
-        if (activity.mUploadHandlerService != null) {
-            activity.mUploadHandlerService.addUploadProgressListener(this);
-        }
         return view;
     }
 
     @Override
     public void onDestroyView() {
-        if (activity.mUploadHandlerService != null) {
-            activity.mUploadHandlerService.removeUploadProgressListener(this);
-        }
         super.onDestroyView();
     }
 
@@ -84,11 +78,10 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         localSequencesAdapter.notifyDataSetChanged();
-
     }
 
     public void onUploadServiceConnected(UploadHandlerService service) {
-
+        setupUploadButton();
     }
 
     @Override
@@ -108,9 +101,9 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
         if (uploadButton != null) {
             if (uploadManager != null && uploadManager.isUploading()) {
                 if (uploadManager.isPaused()) {
-                    uploadButton.setText("Upload Paused");
+                    uploadButton.setText(R.string.waiting_fragment_upload_paused);
                 } else {
-                    uploadButton.setText("Uploading...");
+                    uploadButton.setText(R.string.uploading_label);
                 }
                 uploadButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -119,7 +112,7 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
                     }
                 });
             } else if (SequenceDB.instance.getNumberOfFrames() <= 0) {
-                uploadButton.setText("Clear History");
+                uploadButton.setText(R.string.clear_history_label);
                 uploadButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -128,12 +121,12 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
                         localSequencesAdapter.data.clear();
                         localSequencesAdapter.data = new ArrayList<>(Sequence.getLocalSequences().values());
                         localSequencesAdapter.notifyDataSetChanged();
-                        uploadButton.setText("Upload all");
+                        uploadButton.setText(R.string.upload_all_label);
                         activity.onBackPressed();
                     }
                 });
             } else {
-                uploadButton.setText("Upload all");
+                uploadButton.setText(R.string.upload_all_label);
                 uploadButton.setOnClickListener(activity.actionUploadAllListener);
             }
 
@@ -238,7 +231,7 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
     }
 
     @Override
-    public void onUploadCancelled(int total, int remaining) {
+    public void onUploadCancelled(long total, long remaining) {
         setupUploadButton();
         if (localSequencesAdapter != null) {
             localSequencesAdapter.notifyDataSetChanged();
@@ -385,7 +378,6 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
                 holder.addressTitle.setText(sequence.address.equals("") ? "<location>" : sequence.address);
 
             }
-
             holder.addressTitle.setTag(sequence);
             ProgressListener pl = new ProgressListener(activity, sequence, holder);
             sequence.addProgressListener(pl);
@@ -396,6 +388,9 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
                     sequence.mIsExternal = true;
                 }
 
+            }
+            if (sequence.mIsExternal) {
+                holder.addressTitle.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.ic_sd_storage_black_18dp)), null, null, null);
             }
 
             String distanceText = "";
@@ -416,10 +411,10 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
 //                                activity.showSnackBar("Under construction - local video preview is not yet fully implemented.", Snackbar.LENGTH_LONG);
                                 activity.openScreen(MainActivity.SCREEN_PREVIEW, sequence);
                             } else {
-                                activity.showSnackBar("SDcard is missing.", Snackbar.LENGTH_LONG);
+                                activity.showSnackBar(getString(R.string.sdcard_missing_message), Snackbar.LENGTH_LONG);
                             }
                         } else {
-                            activity.showSnackBar("SDcard is missing!", Snackbar.LENGTH_SHORT);
+                            activity.showSnackBar(getString(R.string.sdcard_missing_message), Snackbar.LENGTH_SHORT);
                         }
                     }
 

@@ -80,7 +80,7 @@ public class ShutterButton extends ImageView implements View.OnClickListener {
             }
             if (!((OSVApplication) mContext.getApplicationContext()).getLocationManager().hasPosition()) {
                 if (getContext() instanceof MainActivity) {
-                    ((MainActivity) getContext()).showSnackBar("No GPS position.", Snackbar.LENGTH_SHORT);
+                    ((MainActivity) getContext()).showSnackBar(R.string.no_gps_message, Snackbar.LENGTH_SHORT);
                 }
                 return;
             }

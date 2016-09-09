@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -22,15 +23,8 @@ import com.telenav.osv.utils.Log;
 /**
  * Created by Kalman on 10/6/2015.
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class SequenceRequest<T> extends StringRequest {
-
-    private static final String PARAM_USER_ID = "externalUserId";
-
-    private static final String PARAM_USER_TYPE = "userType";
-
-    private static final String PARAM_USER_NAME = "userName";
-
-    private static final String PARAM_CLIENT_TOKEN = "clientToken";
 
     private static final String PARAM_CURRENT_COORD = "currentCoordinate";
 
@@ -44,7 +38,11 @@ public class SequenceRequest<T> extends StringRequest {
 
     private static final String PARAM_PLATFORM = "platformName";
 
+    private static final String PARAM_TOKEN = "access_token";
+
     private static final String TAG = "SequenceRequest";
+
+    private static final String PARAM_UPLOAD_SOURCE = "uploadSource";
 
     public final int mLocalSequenceId;
 
@@ -56,28 +54,26 @@ public class SequenceRequest<T> extends StringRequest {
 
     private boolean mOBD;
 
-    private String mUserId;
-
     private String mStartCoord;
 
     private String mToken;
 
-    private String mUserName;
+    private ProgressiveEntity mProgressiveEntity;
 
-    private MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
+    private ProgressiveEntity.DataProgressListener mDataProgressListener;
 
-    public SequenceRequest(String url, ErrorListener errorListener, Listener<String> listener, int localSequenceId, String userId, String token, String username, String startCoord, OSVFile file,
+    public SequenceRequest(String url, ErrorListener errorListener, Listener<String> listener, ProgressiveEntity.DataProgressListener dataProgressListener, int localSequenceId,
+                           String token, String startCoord, OSVFile file,
                            String appVersion, boolean obd) {
         super(Request.Method.POST, url, listener, errorListener);
         mListener = listener;
         mLocalSequenceId = localSequenceId;
-        mUserId = userId;
         mToken = token;
-        mUserName = username;
         mStartCoord = startCoord;
         mMetadata = file;
         mAppVersion = appVersion;
         mOBD = obd;
+        mDataProgressListener = dataProgressListener;
 
         buildMultipartEntity();
     }
@@ -98,16 +94,14 @@ public class SequenceRequest<T> extends StringRequest {
 
     @Override
     protected Map<String, String> getParams() {
-        Map<String, String> params = new HashMap<String, String>();
-        return params;
+        return new HashMap<>();
     }
 
 
     private void buildMultipartEntity() {
-        mBuilder.addTextBody(PARAM_USER_ID, mUserId);
-        mBuilder.addTextBody(PARAM_USER_TYPE, "osm");
-        mBuilder.addTextBody(PARAM_CLIENT_TOKEN, mToken);
-        mBuilder.addTextBody(PARAM_USER_NAME, mUserName);
+        MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
+        mBuilder.addTextBody(PARAM_TOKEN, mToken);
+        mBuilder.addTextBody(PARAM_UPLOAD_SOURCE, "Android");
         mBuilder.addTextBody(PARAM_CURRENT_COORD, mStartCoord);
         mBuilder.addTextBody(PARAM_OBD_INFO, String.valueOf(mOBD ? 1 : 0));
         mBuilder.addTextBody(PARAM_PLATFORM, "Android");
@@ -126,19 +120,25 @@ public class SequenceRequest<T> extends StringRequest {
         }
         mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
+        HttpEntity mEntity = mBuilder.build();
+        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener);
     }
 
     @Override
     public String getBodyContentType() {
-        String contentTypeHeader = mBuilder.build().getContentType().getValue();
-        return contentTypeHeader;
+        return mProgressiveEntity.getContentType().getValue();
+    }
+
+    @Override
+    public HttpEntity getMultipartEntity() {
+        return mProgressiveEntity;
     }
 
     @Override
     public byte[] getBody() throws AuthFailureError {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
-            mBuilder.build().writeTo(bos);
+            mProgressiveEntity.writeTo(bos);
         } catch (Exception e) {
             VolleyLog.e("IOException writing to ByteArrayOutputStream bos, building the multipart request. " + e.getLocalizedMessage());
         }

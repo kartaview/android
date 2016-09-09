@@ -12,46 +12,29 @@ import com.android.volley.toolbox.StringRequest;
 /**
  * Created by Kalman on 10/6/2015.
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ListSequencesRequest extends StringRequest {
-
-    private static final String PARAM_USER_ID = "externalUserId";
-
-    private static final String PARAM_USERNAME = "userName";
-
-    private static final String PARAM_USER_TYPE = "userType";
 
     private static final String PARAM_PAGE_NUMBER = "page";
 
     private static final String PARAM_NUMBER_OF_RESULT = "ipp";
 
-    private static final String PARAM_BB_TOP_LEFT = "bbTopLeft";
-
-    private static final String PARAM_BB_BOTTOM_RIGHT = "bbBottomRight";
-
-    public final String mBbTopLeft;
-
-    public final String mBbBottomRight;
+    private static final String PARAM_TOKEN = "access_token";
 
     private final Listener<String> mListener;
-
-    private final String mUserName;
 
     private final int mPageIndex;
 
     private final int mResultsToLoad;
 
-    private final String mUserId;
+    private final String mToken;
 
-    public ListSequencesRequest(String url, ErrorListener errorListener, Listener<String> listener, String userId, String username, int pageNr, int numberOfResults, String
-            bbTopLeft, String bbBottomRight) {
+    public ListSequencesRequest(String url, ErrorListener errorListener, Listener<String> listener, String token, int pageNr, int numberOfResults) {
         super(Method.POST, url, listener, errorListener);
-        mUserId = userId;
-        mUserName = username;
+        mToken = token;
         mListener = listener;
         mPageIndex = pageNr;
         mResultsToLoad = numberOfResults;
-        mBbTopLeft = bbTopLeft;
-        mBbBottomRight = bbBottomRight;
     }
 
     @Override
@@ -75,17 +58,11 @@ public class ListSequencesRequest extends StringRequest {
                 || params.equals(Collections.emptyMap())) {
             params = new HashMap<>();
         }
-        if (!mUserId.equals("") && !mUserName.equals("")) {
-            params.put(PARAM_USER_ID, mUserId);
-            params.put(PARAM_USER_TYPE, "osm");
-            params.put(PARAM_USERNAME, mUserName);
+        if (mToken != null && !mToken.equals("")) {
+            params.put(PARAM_TOKEN, mToken);
         }
         params.put(PARAM_PAGE_NUMBER, mPageIndex + "");
         params.put(PARAM_NUMBER_OF_RESULT, mResultsToLoad + "");
-        if (mBbBottomRight != null && mBbTopLeft != null) {
-            params.put(PARAM_BB_TOP_LEFT, mBbTopLeft);
-            params.put(PARAM_BB_BOTTOM_RIGHT, mBbBottomRight);
-        }
         return params;
     }
 

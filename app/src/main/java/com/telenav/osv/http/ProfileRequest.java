@@ -15,15 +15,15 @@ import java.util.Map;
 
 public class ProfileRequest extends StringRequest {
 
-    private static final String PARAM_USER_ID = "externalUserId";
+    private static final String PARAM_USER_NAME = "username";
 
     private final Response.Listener<String> mListener;
 
-    private final String mUserId;
+    private final String mName;
 
-    public ProfileRequest(String url, Response.ErrorListener errorListener, Response.Listener<String> listener, String userId) {
+    public ProfileRequest(String url, Response.ErrorListener errorListener, Response.Listener<String> listener, String name) {
         super(Request.Method.POST, url, listener, errorListener);
-        mUserId = userId;
+        mName = name;
         mListener = listener;
     }
 
@@ -48,7 +48,7 @@ public class ProfileRequest extends StringRequest {
                 || params.equals(Collections.emptyMap())) {
             params = new HashMap<>();
         }
-        params.put(PARAM_USER_ID, mUserId);
+        params.put(PARAM_USER_NAME, mName);
         return params;
     }
 

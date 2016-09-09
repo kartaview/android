@@ -526,20 +526,22 @@ public class CameraManager {
     /**
      * Takes a snapshot
      */
-    public void takeSnapshot(final Camera.ShutterCallback shutterCallback,
-                             final Camera.PictureCallback raw, final Camera.PictureCallback jpeg) {
+    public boolean takeSnapshot(final Camera.ShutterCallback shutterCallback,
+                                final Camera.PictureCallback raw, final Camera.PictureCallback jpeg) {
 
-        Log.v(TAG, "takePicture");
+        Log.v(TAG, "takePicture: entered");
         if (mCamera != null) {
             mCameraHandler.post(new Runnable() {
                 public void run() {
                     synchronized (syncObject) {
                         try {
+                            Log.d(TAG, "takePicture: trying to take a picture...");
                             mCamera.takePicture(shutterCallback, raw, jpeg);
+                            Log.d(TAG, "takePicture: success");
                         } catch (RuntimeException e) {
-                            Log.e(TAG, "Unable to take picture", e);
+                            Log.e(TAG, "takePicture: Unable to take picture", e);
                             if (e.getLocalizedMessage().contains("error=-38")) {
-                                Log.e(TAG, "Unable to take picture during debug", e);
+                                Log.e(TAG, "takePicture: Unable to take picture during debug", e);
                             } else {
                                 forceCloseCamera();
                                 open();
@@ -549,10 +551,13 @@ public class CameraManager {
                     }
                 }
             });
+            return true;
         } else {
+            Log.w(TAG, "takePicture: camera is null");
             forceCloseCamera();
             open();
         }
+        return false;
     }
 
     /**
@@ -614,9 +619,13 @@ public class CameraManager {
                     // Normally, we should use safeStartPreview everywhere. However, some
                     // cameras implicitly stops preview, and we don't know. So we just force
                     // it here.
-                    mCamera.startPreview();
+                    if (mCamera != null) {
+                        mCamera.startPreview();
+                    } else {
+                        Log.w(TAG, "restartPreviewIfNeeded: camera is null");
+                    }
                 } catch (Exception e) {
-                    Log.d(TAG, "restartPreviewIfNeeded: " + Log.getStackTraceString(e));
+                    Log.w(TAG, "restartPreviewIfNeeded: " + Log.getStackTraceString(e));
                 }
 
                 mIsPreviewStarted = true;
@@ -714,13 +723,13 @@ public class CameraManager {
      * @return
      */
     public boolean enableHDR(boolean enable) {//todo hardcoded hdr disabled
-        if (enable && false) {
+        if (enable) {
             if (mParameters.getSceneMode().equals(Camera.Parameters.SCENE_MODE_HDR)) {
                 return true;
             }
             synchronized (syncObject) {
                 if (mParameters.getSupportedSceneModes() != null) {
-                    if (mParameters.getSupportedSceneModes().contains(Camera.Parameters.SCENE_MODE_HDR)) {
+                    if (mParameters.getSupportedSceneModes().contains(Camera.Parameters.SCENE_MODE_HDR) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         mSceneMode = Camera.Parameters.SCENE_MODE_HDR;
                     } else {
                         return false;

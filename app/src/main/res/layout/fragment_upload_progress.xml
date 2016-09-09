@@ -143,12 +143,12 @@
             app:matProg_barWidth="6dp"
             app:matProg_progressIndeterminate="false"
             app:matProg_rimColor="#31333B"
+            app:matProg_spinSpeed="0.45"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
     </RelativeLayout>
-
 
     <android.support.percent.PercentRelativeLayout
         android:id="@+id/buttons_layout"
@@ -174,7 +174,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="sans-serif-light"
-                android:text="PAUSE"
+                android:text="@string/pause_caps_label"
                 android:gravity="center"
                 android:textColor="@color/gray_text_color"
                 android:drawableLeft="@drawable/uploading_pause"
@@ -200,7 +200,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="sans-serif-light"
-                android:text="STOP"
+                android:text="@string/stop_caps_label"
                 android:textColor="@color/gray_text_color"
                 android:drawableLeft="@drawable/uploading_stop"
                 android:gravity="center"

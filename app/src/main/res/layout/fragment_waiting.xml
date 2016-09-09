@@ -27,7 +27,7 @@
         android:background="@color/hint_purple"
         android:gravity="center"
         android:orientation="horizontal"
-        android:text="Upload all"
+        android:text="@string/upload_all_label"
         android:textColor="@color/white"
         android:textSize="18sp" />
 

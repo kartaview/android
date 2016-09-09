@@ -102,6 +102,7 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
     private static void appendLog(String string) {
         try {
             mGzipOutputStream.write(string.getBytes());
+        } catch (IOException io) {
         } catch (Exception e) {
             Log.d(TAG, "compress: " + Log.getStackTraceString(e));
         }

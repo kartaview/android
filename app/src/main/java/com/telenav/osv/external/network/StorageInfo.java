@@ -11,16 +11,16 @@ public class StorageInfo {
     long mTotalSpace = 0;
 
     /**
-     * Acquire remaining number of images that can be shot
-     * @return Remaining number of images that can be shot
+     * Acquire remaining number of mImages that can be shot
+     * @return Remaining number of mImages that can be shot
      */
     public int getFreeSpaceInImages() {
         return mRemainingPictures;
     }
 
     /**
-     * Set remaining number of images that can be shot
-     * @param remainingPictures Remaining number of images that can be shot
+     * Set remaining number of mImages that can be shot
+     * @param remainingPictures Remaining number of mImages that can be shot
      */
     public void setFreeSpaceInImages(int remainingPictures) {
         mRemainingPictures = remainingPictures;

@@ -12,6 +12,7 @@ import com.android.volley.toolbox.StringRequest;
 /**
  * Created by Kalman on 10/6/2015.
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class NearbyRequest extends StringRequest {
 
     private static final String PARAM_LAT = "lat";

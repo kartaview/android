@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_margin="10dp"
-            android:text="This week"
+            android:text="@string/this_week_label"
             android:textColor="@color/text_colour_default"
             android:textSize="20sp" />
 
@@ -28,7 +28,7 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_margin="10dp"
-            android:text="Overall ranking"
+            android:text="@string/overall_ranking_label"
             android:textColor="@color/text_colour_default"
             android:textSize="20sp" />
 
@@ -78,7 +78,7 @@
                 android:id="@+id/images_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Images:"
+                android:text="@string/account_images_label"
                 android:textColor="@color/text_colour_default"
                 android:textSize="12sp" />
 
@@ -87,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:text="Tracks:"
+                android:text="@string/account_tracks_label"
                 android:textColor="@color/text_colour_default"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -106,7 +106,7 @@
                 android:id="@+id/distance_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Distance:"
+                android:text="@string/account_distance_label"
                 android:textColor="@color/text_colour_default"
                 android:textSize="12sp" />
 
@@ -115,7 +115,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                android:text="OBD:"
+                android:text="@string/account_obd_label"
                 android:textColor="@color/text_colour_default"
                 android:textSize="12sp" />
 

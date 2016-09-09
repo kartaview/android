@@ -231,14 +231,17 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                 }
                 break;
             case R.id.play_button:
-                activity.showSnackBar("Sorry, playback functionality is still under construction.", Snackbar.LENGTH_LONG);
-//                if (mPlayer != null) {
-//                    if (mPlayer.isPlaying()) {
-//                        mPlayer.pause();
-//                    } else {
-//                        mPlayer.play();
-//                    }
-//                }
+                if (mPlayer != null && !mPlayer.isOnline()) {
+                    activity.showSnackBar("Sorry, playback functionality is still under construction.", Snackbar.LENGTH_LONG);
+                } else {
+                    if (mPlayer != null) {
+                        if (mPlayer.isPlaying()) {
+                            mPlayer.pause();
+                        } else {
+                            mPlayer.play();
+                        }
+                    }
+                }
                 break;
             case R.id.fast_forward_button:
                 if (mPlayer != null) {

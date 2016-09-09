@@ -85,18 +85,18 @@ android {
 
 
 
-task appDebug(dependsOn: [':app:assembleAppDebug'])
-task appRelease(dependsOn: [':app:assembleAppRelease'])
+task appDebug(dependsOn: [':app:assembleDebug'])
+task appRelease(dependsOn: [':app:assembleRelease'])
 
 
 dependencies {
     compile fileTree(include: '*.jar', dir: 'libs')
-    compile 'com.android.support:support-v4:24.1.1'
-    compile 'com.android.support:appcompat-v7:24.1.1'
-    compile 'com.android.support:design:24.1.1'
-    compile 'com.android.support:cardview-v7:24.1.1'
-    compile 'com.android.support:recyclerview-v7:24.1.1'
-    compile 'com.android.support:percent:24.1.1'
+    compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.android.support:appcompat-v7:24.2.0'
+    compile 'com.android.support:design:24.2.0'
+    compile 'com.android.support:cardview-v7:24.2.0'
+    compile 'com.android.support:recyclerview-v7:24.2.0'
+    compile 'com.android.support:percent:24.2.0'
     compile 'com.google.android.gms:play-services-location:9.4.0'
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.google.guava:guava:18.0'
@@ -108,8 +108,6 @@ dependencies {
     compile 'com.matthew-tamlin:sliding-intro-screen:2.1.1'
     compile project(':photoview')
     compile project(':volley')
-    compile project(':fab')
     compile project(':connectivity')
-    compile project(':bluetoothobd')
     compile project(':ffmpeg')
 }

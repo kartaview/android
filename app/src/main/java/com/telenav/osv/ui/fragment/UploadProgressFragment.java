@@ -85,10 +85,12 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
         if (activity == null) {
             activity = (MainActivity) getActivity();
         }
-        if (activity.mUploadHandlerService != null) {
-            onUploadServiceConnected(activity.mUploadHandlerService);
-            mUploadHandlerService.addUploadProgressListener(this);
-        }
+//        if (activity.mUploadHandlerService != null) {
+//            onUploadServiceConnected(activity.mUploadHandlerService);
+//            mUploadHandlerService.addUploadProgressListener(this);
+//        } else {
+//            Log.d(TAG, "onAttach: progress fuck");
+//        }
     }
 
     @Override
@@ -100,19 +102,11 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
         }
         if (activity.mUploadHandlerService != null) {
             onUploadServiceConnected(activity.mUploadHandlerService);
-            mUploadHandlerService.addUploadProgressListener(this);
+//            mUploadHandlerService.addUploadProgressListener(this);
         }
         if ((activity.mUploadHandlerService == null || !activity.mUploadHandlerService.mUploadManager.isUploading()) && isAdded()) {
             activity.onBackPressed();
         }
-    }
-
-    @Override
-    public void onDetach() {
-        if (mUploadHandlerService != null) {
-            mUploadHandlerService.removeUploadProgressListener(this);
-        }
-        super.onDetach();
     }
 
     public void init(MainActivity activity) {
@@ -137,12 +131,12 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
             activity.refreshSignatureValue((size - remainingRecordings) + "/" + size);
             if (!mUploadHandlerService.mUploadManager.isPaused()) {
                 pauseButton.setOnClickListener(activity.pauseOnClickListener);
-                pauseText.setText("PAUSE");
+                pauseText.setText(R.string.pause_caps_label);
                 pauseText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable(R.drawable.uploading_pause), null, null, null);
             } else {
 //            ((ImageView) pauseButton.findViewById(R.id.pause_icon)).setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_play_arrow_black_36dp));
                 pauseButton.setOnClickListener(activity.resumeOnClickListener);
-                pauseText.setText("CONTINUE");
+                pauseText.setText(R.string.continue_caps_label);
                 pauseText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.uploading_resume)), null, null, null);
 
             }
@@ -168,7 +162,7 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
             pauseButton.setOnClickListener(activity.pauseOnClickListener);
         }
         if (pauseText != null) {
-            pauseText.setText("PAUSE");
+            pauseText.setText(R.string.pause_caps_label);
             pauseText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable(R.drawable.uploading_pause), null, null, null);
         }
     }
@@ -186,7 +180,7 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
     }
 
     @Override
-    public void onUploadCancelled(int total, int remaining) {
+    public void onUploadCancelled(long total, long remaining) {
         if (progressbar != null) {
             progressbar.setVisibility(View.VISIBLE);
             progressbar.setProgress(0);
@@ -260,7 +254,7 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
     @Override
     public void onUploadPaused() {
         if (pauseButton != null) {
-            pauseText.setText("CONTINUE");
+            pauseText.setText(R.string.continue_caps_label);
             pauseText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.uploading_resume)), null, null, null);
             pauseButton.setOnClickListener(activity.resumeOnClickListener);
         }
@@ -270,7 +264,7 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
     @Override
     public void onUploadResumed() {
         if (pauseButton != null && pauseText != null) {
-            pauseText.setText("PAUSE");
+            pauseText.setText(R.string.pause_caps_label);
             pauseText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.uploading_pause)), null, null, null);
             pauseButton.setOnClickListener(activity.pauseOnClickListener);
         }
@@ -290,7 +284,7 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        final long size = mUploadHandlerService.mUploadManager.getTotalSizeValue();
+                        final long size = mUploadHandlerService.mUploadManager.getRemainingSizeValue();
                         final double seconds = (size / 1024d / (bw / 8d));
                         if (activity != null) {
                             activity.runOnUiThread(new Runnable() {
@@ -313,34 +307,22 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
     }
 
     public void updateStats(final long mTotalSize, final long remaining) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final int progress = (int) (((mTotalSize - remaining) * 100) / mTotalSize);
-                if (activity != null) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (remainingText != null) {
-                                remainingText.setText(Utils.formatSize(mTotalSize - remaining));
-                            }
-                            if (totalText != null) {
-                                totalText.setText(Utils.formatSize(mTotalSize));
-                            }
-                            if (progressbar != null && progress > 0) {
-                                float progressf = ((float) progress / 100f);
-                                Log.d(TAG, "updateStats: progressbar progress is " + progressf);
-                                progressbar.setProgress(progressf);
-                            }
-                            if (percentText != null) {
-                                percentText.setText(progress + "");
-                            }
-                            }
-                    });
-                }
-
-            }
-        }).start();
+        if (remainingText != null) {
+            remainingText.setText(Utils.formatSize(mTotalSize - remaining));
+        }
+        if (totalText != null) {
+            totalText.setText(Utils.formatSize(mTotalSize));
+        }
+        final int progress = (int) (((mTotalSize - remaining) * 100) / mTotalSize);
+        final int oldProgress = (int) (progressbar.getProgress() * 100f);
+        if (progressbar != null && progress >= 0 && progress != oldProgress) {
+            float progressf = ((float) progress / 100f);
+//            Log.d(TAG, "updateStats: new progress is " + progressf);
+            progressbar.setProgress(progressf);
+        }
+        if (percentText != null && progress >= 0) {
+            percentText.setText(progress + "");
+        }
     }
 
     private String formatETA(double seconds) {

@@ -17,7 +17,7 @@
         android:layout_marginBottom="3dp"
         android:layout_marginTop="10dp"
         android:textColor="@color/text_colour_default_light"
-        android:text="OBD type"
+        android:text="@string/obd_type_label"
         android:textSize="25sp"
         android:textStyle="bold" />
 
@@ -30,19 +30,19 @@
             android:id="@+id/obd_radio_wifi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Wi-Fi" />
+            android:text="@string/wifi_label" />
 
         <RadioButton
             android:id="@+id/obd_radio_ble"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bluetooth Low Energy" />
+            android:text="@string/bluetooth_low_energy_label" />
 
         <RadioButton
             android:id="@+id/obd_radio_bt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bluetooth"
+            android:text="@string/bluetooth_label"
             android:visibility="gone" />
     </RadioGroup>
 

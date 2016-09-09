@@ -28,7 +28,7 @@
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:paddingStart="20dp"
-                android:text="Account"
+                android:text="@string/account_label"
                 android:textColor="@color/accent_material_dark_1" />
 
             <TextView
@@ -58,7 +58,7 @@
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:paddingStart="20dp"
-                android:text="Settings"
+                android:text="@string/settings"
                 android:textColor="@color/accent_material_dark_1" />
 
 
@@ -95,7 +95,7 @@
                         android:paddingStart="20dp"
                         android:text="@string/data_setting_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <android.support.v7.widget.SwitchCompat
@@ -151,7 +151,7 @@
                         android:paddingStart="20dp"
                         android:text="@string/auto_setting_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <android.support.v7.widget.SwitchCompat
@@ -209,7 +209,7 @@
                         android:paddingStart="20dp"
                         android:text="@string/storage_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <android.support.v7.widget.SwitchCompat
@@ -267,7 +267,7 @@
                         android:paddingStart="20dp"
                         android:text="@string/metric_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <android.support.v7.widget.SwitchCompat
@@ -326,71 +326,11 @@
                         android:paddingStart="20dp"
                         android:text="@string/sensorlib_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <android.support.v7.widget.SwitchCompat
                     android:id="@+id/sensor_switch"
-                    style="@style/textStyle.Light"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:checked="false"
-                    android:gravity="center_vertical"
-                    android:paddingEnd="20dp"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:paddingStart="20dp" />
-            </RelativeLayout>
-
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/md_grey_300"
-                android:visibility="gone"/>
-
-            <RelativeLayout
-                android:id="@+id/debug_shutter_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ripple"
-                android:clickable="true"
-                android:paddingBottom="20dp"
-                android:paddingTop="20dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_toLeftOf="@+id/debug_shutter_switch"
-                    android:layout_toStartOf="@+id/debug_shutter_switch"
-                    android:orientation="vertical">
-
-                    <TextView
-                        style="@style/textStyle.Light"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="20dp"
-                        android:paddingStart="20dp"
-                        android:text="Fast recording mode" />
-
-                    <TextView
-                        style="@style/textStyle.Light"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="20dp"
-                        android:paddingStart="20dp"
-                        android:text="While recording, the app will take ~5 frames per second in a lower resolution."
-                        android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
-                </LinearLayout>
-
-                <android.support.v7.widget.SwitchCompat
-                    android:id="@+id/debug_shutter_switch"
                     style="@style/textStyle.Light"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -410,8 +350,43 @@
                 android:layout_height="1dp"
                 android:background="@color/md_grey_300" />
 
-            <RelativeLayout
+
+            <LinearLayout
                 android:id="@+id/picture_size_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ripple"
+                android:clickable="true"
+                android:orientation="vertical"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/resolution_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/resolution_text"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/md_grey_300" />
+
+            <RelativeLayout
+                android:id="@+id/map_visibility_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/ripple"
@@ -423,6 +398,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/map_visibility_switch"
+                    android:layout_toStartOf="@+id/map_visibility_switch"
                     android:orientation="vertical">
 
                     <TextView
@@ -431,7 +408,7 @@
                         android:layout_height="wrap_content"
                         android:paddingLeft="20dp"
                         android:paddingStart="20dp"
-                        android:text="Resolution" />
+                        android:text="@string/map_visibility_label" />
 
                     <TextView
                         style="@style/textStyle.Light"
@@ -439,10 +416,25 @@
                         android:layout_height="wrap_content"
                         android:paddingLeft="20dp"
                         android:paddingStart="20dp"
-                        android:text="Select the resolution for taking pictures"
+                        android:text="@string/map_visibility_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
+
+                <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/map_visibility_switch"
+                    style="@style/textStyle.Light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:checked="true"
+                    android:gravity="center_vertical"
+                    android:paddingEnd="20dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:paddingStart="20dp" />
             </RelativeLayout>
 
             <TextView
@@ -455,7 +447,7 @@
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:paddingStart="20dp"
-                android:text="OBDII"
+                android:text="@string/obd_label"
                 android:textColor="@color/accent_material_dark_1" />
 
             <RelativeLayout
@@ -482,7 +474,7 @@
                         android:layout_height="wrap_content"
                         android:paddingLeft="20dp"
                         android:paddingStart="20dp"
-                        android:text="Connection type" />
+                        android:text="@string/connection_type" />
 
                     <TextView
                         android:id="@+id/obd_selector_subtitle"
@@ -495,7 +487,7 @@
                         android:paddingStart="20dp"
                         android:text="@string/obd_selector_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <TextView
@@ -511,7 +503,7 @@
                     android:paddingLeft="20dp"
                     android:paddingRight="20dp"
                     android:paddingStart="20dp"
-                    android:text="Wi - Fi"
+                    android:text="@string/wifi_label"
                     android:textColor="@color/accent_material_dark_1" />
             </RelativeLayout>
 
@@ -544,7 +536,7 @@
                         android:layout_height="wrap_content"
                         android:paddingLeft="20dp"
                         android:paddingStart="20dp"
-                        android:text="Not Connected" />
+                        android:text="@string/not_connected_label" />
 
                     <TextView
                         android:id="@+id/obd_subtitle"
@@ -557,7 +549,7 @@
                         android:paddingStart="20dp"
                         android:text="@string/obd_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <ProgressBar
@@ -590,7 +582,7 @@
                     android:paddingLeft="20dp"
                     android:paddingRight="20dp"
                     android:paddingStart="20dp"
-                    android:text="Connect"
+                    android:text="@string/connect"
                     android:textColor="@color/accent_material_dark_1" />
             </RelativeLayout>
 
@@ -604,34 +596,28 @@
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:paddingStart="20dp"
-                android:text="Feedback"
+                android:text="@string/feedback_text"
                 android:textColor="@color/accent_material_dark_1" />
 
-            <RelativeLayout
+            <LinearLayout
                 android:id="@+id/feedback_setting_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/ripple"
                 android:clickable="true"
+                android:orientation="vertical"
                 android:paddingBottom="20dp"
                 android:paddingTop="20dp">
 
-                <LinearLayout
+                <TextView
+                    style="@style/textStyle.Light"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:orientation="vertical">
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/feedback_label" />
 
-                    <TextView
-                        style="@style/textStyle.Light"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="20dp"
-                        android:paddingStart="20dp"
-                        android:text="@string/feedback_label" />
-
-                </LinearLayout>
-            </RelativeLayout>
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/aboutText"
@@ -644,83 +630,71 @@
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:paddingStart="20dp"
-                android:text="About"
+                android:text="@string/about_label"
                 android:textColor="@color/accent_material_dark_1" />
 
-            <RelativeLayout
+            <LinearLayout
                 android:id="@+id/about_setting_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/ripple"
                 android:clickable="true"
+                android:orientation="vertical"
                 android:paddingBottom="20dp"
                 android:paddingTop="20dp">
 
-                <LinearLayout
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/tips_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:orientation="vertical">
+                    android:paddingEnd="20dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/tips_message"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-                    <TextView
-                        style="@style/textStyle.Light"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="20dp"
-                        android:paddingStart="20dp"
-                        android:text="Tips" />
-
-                    <TextView
-                        style="@style/textStyle.Light"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingEnd="20dp"
-                        android:paddingLeft="20dp"
-                        android:paddingRight="20dp"
-                        android:paddingStart="20dp"
-                        android:text="See how to improve your recordings"
-                        android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
-                </LinearLayout>
-            </RelativeLayout>
-
-            <RelativeLayout
+            <LinearLayout
                 android:id="@+id/about_version"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/ripple"
                 android:clickable="true"
+                android:orientation="vertical"
                 android:paddingBottom="20dp"
                 android:paddingTop="20dp">
 
-                <LinearLayout
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/application_version_label" />
+
+                <TextView
+                    android:id="@+id/version_text"
+                    style="@style/textStyle.Light"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:orientation="vertical">
-
-                    <TextView
-                        style="@style/textStyle.Light"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="20dp"
-                        android:paddingStart="20dp"
-                        android:text="Application version" />
-
-                    <TextView
-                        android:id="@+id/version_text"
-                        style="@style/textStyle.Light"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingEnd="20dp"
-                        android:paddingLeft="20dp"
-                        android:paddingRight="20dp"
-                        android:paddingStart="20dp"
-                        android:text=""
-                        android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
-                </LinearLayout>
-            </RelativeLayout>
+                    android:paddingEnd="20dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:paddingStart="20dp"
+                    android:text=""
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/debugText"
@@ -733,7 +707,7 @@
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:paddingStart="20dp"
-                android:text="Debug"
+                android:text="@string/debug_label"
                 android:textColor="@color/accent_material_dark_1"
                 android:visibility="gone" />
 
@@ -761,7 +735,7 @@
                         android:layout_height="wrap_content"
                         android:paddingLeft="20dp"
                         android:paddingStart="20dp"
-                        android:text="Debug features" />
+                        android:text="@string/debug_features_label" />
 
                     <TextView
                         style="@style/textStyle.Light"
@@ -771,7 +745,7 @@
                         android:paddingStart="20dp"
                         android:text="@string/debug_switch_subtitle"
                         android:textColor="@color/text_colour_secondary_light"
-                        android:textSize="14dp" />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <android.support.v7.widget.SwitchCompat
@@ -802,155 +776,92 @@
                     android:layout_height="1dp"
                     android:background="@color/md_grey_300" />
 
-                <RelativeLayout
+                <LinearLayout
                     android:id="@+id/debug_server_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/ripple"
                     android:clickable="true"
+                    android:orientation="vertical"
                     android:paddingBottom="20dp"
                     android:paddingTop="20dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:orientation="vertical">
-
-                        <TextView
-                            style="@style/textStyle.Light"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:text="Current server" />
-
-                        <TextView
-                            android:id="@+id/server_text"
-                            style="@style/textStyle.Light"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:text="staging.openstreetview.com"
-                            android:textColor="@color/text_colour_secondary_light"
-                            android:textSize="14dp" />
-                    </LinearLayout>
-                </RelativeLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/md_grey_300" />
-
-                <RelativeLayout
-                    android:id="@+id/debug_hdr_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/ripple"
-                    android:clickable="true"
-                    android:paddingBottom="20dp"
-                    android:paddingTop="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_toLeftOf="@+id/debug_hdr_switch"
-                        android:layout_toStartOf="@+id/debug_hdr_switch"
-                        android:orientation="vertical">
-
-                        <TextView
-                            style="@style/textStyle.Light"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:text="HDR recording" />
-
-                        <TextView
-                            style="@style/textStyle.Light"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:text="Use HDR for the images in the recordings if available. May produce better quality images."
-                            android:textColor="@color/text_colour_secondary_light"
-                            android:textSize="14dp" />
-                    </LinearLayout>
-
-                    <android.support.v7.widget.SwitchCompat
-                        android:id="@+id/debug_hdr_switch"
+                    <TextView
                         style="@style/textStyle.Light"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentRight="true"
-                        android:layout_centerVertical="true"
-                        android:checked="false"
-                        android:gravity="center_vertical"
-                        android:paddingEnd="20dp"
-                        android:paddingLeft="20dp"
-                        android:paddingRight="20dp"
-                        android:paddingStart="20dp" />
-                </RelativeLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/md_grey_300" />
-
-                <RelativeLayout
-                    android:id="@+id/debug_public_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/ripple"
-                    android:clickable="true"
-                    android:paddingBottom="20dp"
-                    android:paddingTop="20dp">
-
-                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_toLeftOf="@+id/debug_public_switch"
-                        android:layout_toStartOf="@+id/debug_public_switch"
-                        android:orientation="vertical">
-
-                        <TextView
-                            style="@style/textStyle.Light"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:text="Show public recordings" />
-
-                        <TextView
-                            style="@style/textStyle.Light"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingLeft="20dp"
-                            android:paddingStart="20dp"
-                            android:text="You can view the public recordings in the recordings screen using a toggle."
-                            android:textColor="@color/text_colour_secondary_light"
-                            android:textSize="14dp" />
-                    </LinearLayout>
-
-                    <android.support.v7.widget.SwitchCompat
-                        android:id="@+id/debug_public_switch"
-                        style="@style/textStyle.Light"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentRight="true"
-                        android:layout_centerVertical="true"
-                        android:checked="false"
-                        android:gravity="center_vertical"
-                        android:paddingEnd="20dp"
                         android:paddingLeft="20dp"
-                        android:paddingRight="20dp"
-                        android:paddingStart="20dp" />
-                </RelativeLayout>
+                        android:paddingStart="20dp"
+                        android:text="@string/current_server_label" />
+
+                    <TextView
+                        android:id="@+id/server_text"
+                        style="@style/textStyle.Light"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="20dp"
+                        android:paddingStart="20dp"
+                        android:text="openstreetview.com"
+                        android:textColor="@color/text_colour_secondary_light"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!--<View-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="1dp"-->
+                <!--android:background="@color/md_grey_300" />-->
+
+                <!--<RelativeLayout-->
+                <!--android:id="@+id/debug_hdr_container"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:background="@drawable/ripple"-->
+                <!--android:clickable="true"-->
+                <!--android:paddingBottom="20dp"-->
+                <!--android:paddingTop="20dp">-->
+
+                <!--<LinearLayout-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_centerVertical="true"-->
+                <!--android:layout_toLeftOf="@+id/debug_hdr_switch"-->
+                <!--android:layout_toStartOf="@+id/debug_hdr_switch"-->
+                <!--android:orientation="vertical">-->
+
+                <!--<TextView-->
+                <!--style="@style/textStyle.Light"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:paddingLeft="20dp"-->
+                <!--android:paddingStart="20dp"-->
+                <!--android:text="@string/hdr_recording_label" />-->
+
+                <!--<TextView-->
+                <!--style="@style/textStyle.Light"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:paddingLeft="20dp"-->
+                <!--android:paddingStart="20dp"-->
+                <!--android:text="@string/hdr_recording_text"-->
+                <!--android:textColor="@color/text_colour_secondary_light"-->
+                <!--android:textSize="14sp" />-->
+                <!--</LinearLayout>-->
+
+                <!--<android.support.v7.widget.SwitchCompat-->
+                <!--android:id="@+id/debug_hdr_switch"-->
+                <!--style="@style/textStyle.Light"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignParentEnd="true"-->
+                <!--android:layout_alignParentRight="true"-->
+                <!--android:layout_centerVertical="true"-->
+                <!--android:checked="false"-->
+                <!--android:gravity="center_vertical"-->
+                <!--android:paddingEnd="20dp"-->
+                <!--android:paddingLeft="20dp"-->
+                <!--android:paddingRight="20dp"-->
+                <!--android:paddingStart="20dp" />-->
+                <!--</RelativeLayout>-->
 
                 <View
                     android:layout_width="match_parent"
@@ -980,7 +891,7 @@
                             android:layout_height="wrap_content"
                             android:paddingLeft="20dp"
                             android:paddingStart="20dp"
-                            android:text="Show speed and distance filter" />
+                            android:text="@string/debug_speed_label" />
 
                         <TextView
                             style="@style/textStyle.Light"
@@ -988,9 +899,9 @@
                             android:layout_height="wrap_content"
                             android:paddingLeft="20dp"
                             android:paddingStart="20dp"
-                            android:text="Show the current distance filter and speed."
+                            android:text="@string/debug_speed_text"
                             android:textColor="@color/text_colour_secondary_light"
-                            android:textSize="14dp" />
+                            android:textSize="14sp" />
                     </LinearLayout>
 
                     <android.support.v7.widget.SwitchCompat
@@ -1012,23 +923,25 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/md_grey_300" />
+                    android:background="@color/md_grey_300"
+                    android:visibility="visible" />
 
                 <RelativeLayout
-                    android:id="@+id/debug_delete_container"
+                    android:id="@+id/debug_shutter_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/ripple"
                     android:clickable="true"
                     android:paddingBottom="20dp"
-                    android:paddingTop="20dp">
+                    android:paddingTop="20dp"
+                    android:visibility="visible">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
-                        android:layout_toLeftOf="@+id/debug_delete_switch"
-                        android:layout_toStartOf="@+id/debug_delete_switch"
+                        android:layout_toLeftOf="@+id/debug_shutter_switch"
+                        android:layout_toStartOf="@+id/debug_shutter_switch"
                         android:orientation="vertical">
 
                         <TextView
@@ -1037,7 +950,7 @@
                             android:layout_height="wrap_content"
                             android:paddingLeft="20dp"
                             android:paddingStart="20dp"
-                            android:text="Enable delete recording" />
+                            android:text="@string/fast_recording_mode" />
 
                         <TextView
                             style="@style/textStyle.Light"
@@ -1045,13 +958,13 @@
                             android:layout_height="wrap_content"
                             android:paddingLeft="20dp"
                             android:paddingStart="20dp"
-                            android:text="Enables a delete button in the extended recording list found in the Recordings screen."
+                            android:text="@string/fast_recording_text"
                             android:textColor="@color/text_colour_secondary_light"
-                            android:textSize="14dp" />
+                            android:textSize="14sp" />
                     </LinearLayout>
 
                     <android.support.v7.widget.SwitchCompat
-                        android:id="@+id/debug_delete_switch"
+                        android:id="@+id/debug_shutter_switch"
                         style="@style/textStyle.Light"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -1094,7 +1007,7 @@
                             android:layout_height="wrap_content"
                             android:paddingLeft="20dp"
                             android:paddingStart="20dp"
-                            android:text="Remember login credentials" />
+                            android:text="@string/remember_login_credentials_label" />
 
                         <TextView
                             style="@style/textStyle.Light"
@@ -1102,9 +1015,9 @@
                             android:layout_height="wrap_content"
                             android:paddingLeft="20dp"
                             android:paddingStart="20dp"
-                            android:text="Remembers login credentials after first login. Clears credentials after setting to off."
+                            android:text="@string/remember_login_credentials_text"
                             android:textColor="@color/text_colour_secondary_light"
-                            android:textSize="14dp" />
+                            android:textSize="14sp" />
                     </LinearLayout>
 
                     <android.support.v7.widget.SwitchCompat

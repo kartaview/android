@@ -29,7 +29,7 @@ import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.widget.CompoundButton;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
@@ -41,12 +41,11 @@ import com.telenav.osv.manager.CameraManager;
 import com.telenav.osv.manager.ObdManager;
 import com.telenav.osv.manager.UploadManager;
 import com.telenav.osv.service.UploadHandlerService;
-import com.telenav.osv.ui.custom.ScrollViewImpl;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
 import com.telenav.osv.utils.Utils;
-import com.telenav.vehicledatacollector.Constants;
-import com.telenav.vehicledatacollector.obd.OBDConnection;
+import com.telenav.osv.obd.Constants;
+import com.telenav.osv.obd.OBDConnection;
 
 /**
  * Created by Kalman on 10/2/2015.
@@ -69,6 +68,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     private SwitchCompat metricSwitch;
 
+    private SwitchCompat mapSwitch;
+
     private SwitchCompat signDetectionSwitch;
 
     private ApplicationPreferences appPrefs;
@@ -85,34 +86,27 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     private SwitchCompat authSwitch;
 
-    private SwitchCompat deleteSwitch;
-
-    private SwitchCompat hdrSwitch;
+//    private SwitchCompat hdrSwitch;
 
     private SwitchCompat shutterSwitch;
-
-    private SwitchCompat publicSwitch;
 
     private SwitchCompat speedSwitch;
 
     private TextView serverText;
 
-    private ScrollViewImpl scrollView;
+    private LinearLayout mFeedbackButton;
 
-    private RelativeLayout mFeedbackButton;
-
-    private RelativeLayout mWebsiteButton;
+    private LinearLayout mWebsiteButton;
 
     private SwitchCompat storageSwitch;
 
     private TextView mObdTitle;
+
     private TextView mObdButton;
 
     private View mOBDProgressBar;
 
     private TextView obdTypeText;
-
-//    private View mWebsiteText;
 
     @Nullable
     @Override
@@ -121,12 +115,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         activity = (MainActivity) getActivity();
         appPrefs = ((OSVApplication) activity.getApplication()).getAppPrefs();
         logInButton = (TextView) view.findViewById(R.id.login_button);
-        mFeedbackButton = (RelativeLayout) view.findViewById(R.id.feedback_setting_container);
-        mWebsiteButton = (RelativeLayout) view.findViewById(R.id.about_setting_container);
+        mFeedbackButton = (LinearLayout) view.findViewById(R.id.feedback_setting_container);
+        mWebsiteButton = (LinearLayout) view.findViewById(R.id.about_setting_container);
         autoSwitch = (SwitchCompat) view.findViewById(R.id.auto_upload_switch);
         dataSwitch = (SwitchCompat) view.findViewById(R.id.data_switch);
         storageSwitch = (SwitchCompat) view.findViewById(R.id.storage_switch);
         metricSwitch = (SwitchCompat) view.findViewById(R.id.metric_switch);
+        mapSwitch = (SwitchCompat) view.findViewById(R.id.map_visibility_switch);
         signDetectionSwitch = (SwitchCompat) view.findViewById(R.id.sensor_switch);
 
         shutterSwitch = (SwitchCompat) view.findViewById(R.id.debug_shutter_switch);
@@ -134,7 +129,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         mObdTitle = (TextView) view.findViewById(R.id.obd_title);
         mObdButton = (TextView) view.findViewById(R.id.obd_button);
         mOBDProgressBar = view.findViewById(R.id.obd_progressbar);
-        scrollView = (ScrollViewImpl) view.findViewById(R.id.scroll_view);
         if (Utils.checkSDCard(activity)) {
             view.findViewById(R.id.storage_container).setVisibility(View.VISIBLE);
             view.findViewById(R.id.storage_separator).setVisibility(View.VISIBLE);
@@ -152,6 +146,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         view.findViewById(R.id.auto_setting_container).setOnClickListener(this);
         view.findViewById(R.id.data_setting_container).setOnClickListener(this);
         view.findViewById(R.id.metric_container).setOnClickListener(this);
+        view.findViewById(R.id.map_visibility_container).setOnClickListener(this);
         view.findViewById(R.id.sensor_lib_container).setOnClickListener(this);
         view.findViewById(R.id.debug_shutter_container).setOnClickListener(this);
         view.findViewById(R.id.picture_size_container).setOnClickListener(this);
@@ -177,6 +172,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         autoSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO));
         dataSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED));
         metricSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC));
+        mapSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true));
         signDetectionSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_SIGN_DETECTION));
 
         shutterSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_AUTO_SHUTTER));
@@ -200,9 +196,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     private void setupDebugSettings() {
         debugSwitch = (SwitchCompat) view.findViewById(R.id.debug_switch);
         authSwitch = (SwitchCompat) view.findViewById(R.id.debug_auth_switch);
-        deleteSwitch = (SwitchCompat) view.findViewById(R.id.debug_delete_switch);
-        hdrSwitch = (SwitchCompat) view.findViewById(R.id.debug_hdr_switch);
-        publicSwitch = (SwitchCompat) view.findViewById(R.id.debug_public_switch);
+//        hdrSwitch = (SwitchCompat) view.findViewById(R.id.debug_hdr_switch);
         speedSwitch = (SwitchCompat) view.findViewById(R.id.debug_speed_switch);
         serverText = (TextView) view.findViewById(R.id.server_text);
         boolean isDebug = appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED, false);
@@ -217,10 +211,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
         view.findViewById(R.id.debug_setting_container).setOnClickListener(this);
         view.findViewById(R.id.debug_auth_container).setOnClickListener(this);
-        view.findViewById(R.id.debug_delete_container).setOnClickListener(this);
-        view.findViewById(R.id.debug_hdr_container).setOnClickListener(this);
+//        view.findViewById(R.id.debug_hdr_container).setOnClickListener(this);
         view.findViewById(R.id.debug_server_container).setOnClickListener(this);
-        view.findViewById(R.id.debug_public_container).setOnClickListener(this);
         view.findViewById(R.id.debug_speed_container).setOnClickListener(this);
 
         debugSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -252,34 +244,21 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             }
         });
 
-        deleteSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_DELETE_VISIBLE, isChecked);
-            }
-        });
+//        hdrSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_HDR, isChecked);
+//                if (activity.mCameraHandlerService != null && activity.mCameraHandlerService.mCameraReady) {
+//                    boolean enabled = CameraManager.instance.enableHDR(isChecked);
+//                    if (enabled != isChecked) {
+//                        hdrSwitch.setChecked(enabled);
+//                        appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_HDR, enabled);
+//                        activity.showSnackBar(R.string.hdr_not_supported, Snackbar.LENGTH_SHORT);
+//                    }
+//                }
+//            }
+//        });
 
-        hdrSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_HDR, isChecked);
-                if (activity.mCameraHandlerService != null && activity.mCameraHandlerService.mCameraReady) {
-                    boolean enabled = CameraManager.instance.enableHDR(isChecked);
-                    if (enabled != isChecked) {
-                        hdrSwitch.setChecked(enabled);
-                        appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_HDR, enabled);
-                        activity.showSnackBar(R.string.hdr_not_supported, Snackbar.LENGTH_SHORT);
-                    }
-                }
-            }
-        });
-
-        publicSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_PUBLIC_VISIBLE, isChecked);
-            }
-        });
         speedSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -288,11 +267,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         });
 
         authSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_SAVE_AUTH, false));
-        deleteSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_DELETE_VISIBLE, false));
 //        hdrSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_HDR, false));
 //        shutterSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_AUTO_SHUTTER, false));
-        hdrSwitch.setChecked(false);
-        publicSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_PUBLIC_VISIBLE, false));
+//        hdrSwitch.setChecked(false);
         speedSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_SPEED_DIST, false));
     }
 
@@ -416,6 +393,23 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                 }
             }
         });
+        mapSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                appPrefs.saveBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, isChecked);
+            }
+        });
+        signDetectionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                appPrefs.saveBooleanPreference(PreferenceTypes.K_SIGN_DETECTION, isChecked);
+                if (isChecked) {
+                    CameraManager.instance.initSensorLib();
+                } else {
+                    CameraManager.instance.destroySensorLib();
+                }
+            }
+        });
         shutterSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -532,7 +526,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                             // Use this check to determine whether BLE is supported on the device. Then
                             // you can selectively disable BLE-related features.
                             if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                                activity.showSnackBar(com.telenav.vehicledatacollector.R.string.ble_not_supported, Snackbar.LENGTH_SHORT);
+                                activity.showSnackBar(R.string.ble_not_supported, Snackbar.LENGTH_SHORT);
                                 return;
                             }
 
@@ -540,7 +534,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
                             // Checks if Bluetooth is supported on the device.
                             if (bluetoothAdapter == null) {
-                                activity.showSnackBar(com.telenav.vehicledatacollector.R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
+                                activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
                                 return;
                             }
 
@@ -566,9 +560,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                             mOBDProgressBar.setVisibility(View.VISIBLE);
                             view.findViewById(R.id.obd_container).setEnabled(false);
                             mObdButton.setVisibility(View.GONE);
-                            mObdTitle.setText("Connecting...");
+                            mObdTitle.setText(R.string.connecting_label);
                         } else {
-                            activity.showSnackBar("No OBD Detected! Check your connection.", Snackbar.LENGTH_LONG, "Wi-Fi", new Runnable() {
+                            activity.showSnackBar(R.string.no_obd_detected_message, Snackbar.LENGTH_LONG, R.string.wifi_label, new Runnable() {
                                 @Override
                                 public void run() {
                                     startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
@@ -604,6 +598,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             case R.id.metric_container:
                 metricSwitch.setChecked(!metricSwitch.isChecked());
                 break;
+            case R.id.map_visibility_container:
+                mapSwitch.setChecked(!mapSwitch.isChecked());
+                break;
             case R.id.sensor_lib_container:
                 signDetectionSwitch.setChecked(!signDetectionSwitch.isChecked());
                 break;
@@ -613,18 +610,15 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             case R.id.debug_auth_container:
                 authSwitch.setChecked(!authSwitch.isChecked());
                 break;
-            case R.id.debug_delete_container:
-                deleteSwitch.setChecked(!deleteSwitch.isChecked());
-                break;
-            case R.id.debug_hdr_container:
-                hdrSwitch.setChecked(!hdrSwitch.isChecked());
-                break;
+//            case R.id.debug_hdr_container:
+//                hdrSwitch.setChecked(!hdrSwitch.isChecked());
+//                break;
             case R.id.debug_server_container:
                 if (mUploadHandlerService != null && mUploadHandlerService.mUploadManager != null) {
                     mUploadHandlerService.mUploadManager.mCurrentServer = (mUploadHandlerService.mUploadManager.mCurrentServer + 1) % 3;
                     appPrefs.saveIntPreference(PreferenceTypes.K_DEBUG_SERVER_TYPE, mUploadHandlerService.mUploadManager.mCurrentServer);
                     serverText.setText(UploadManager.URL_ENV[mUploadHandlerService.mUploadManager.mCurrentServer]);
-                    activity.showSnackBar(R.string.restart_needed, Snackbar.LENGTH_SHORT, "Restart", new Runnable() {
+                    activity.showSnackBar(R.string.restart_needed, Snackbar.LENGTH_SHORT, getString(R.string.restart_label), new Runnable() {
                         @Override
                         public void run() {
                             Intent mStartActivity = new Intent(activity, SplashActivity.class);
@@ -640,9 +634,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             case R.id.debug_shutter_container:
                 shutterSwitch.setChecked(!shutterSwitch.isChecked());
                 break;
-            case R.id.debug_public_container:
-                publicSwitch.setChecked(!publicSwitch.isChecked());
-                break;
             case R.id.debug_speed_container:
                 speedSwitch.setChecked(!speedSwitch.isChecked());
                 break;
@@ -652,8 +643,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onConnected() {
-        mObdTitle.setText("Connected");
-        mObdButton.setText("Disconnect");
+        mObdTitle.setText(R.string.connected);
+        mObdButton.setText(R.string.disconnect);
         mObdButton.setVisibility(View.VISIBLE);
         view.findViewById(R.id.obd_container).setEnabled(true);
         mOBDProgressBar.setVisibility(View.GONE);
@@ -662,8 +653,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onDisconnected() {
-        mObdTitle.setText("Not connected");
-        mObdButton.setText("Connect");
+        mObdTitle.setText(R.string.not_connected_label);
+        mObdButton.setText(R.string.connect);
         mObdButton.setVisibility(View.VISIBLE);
         view.findViewById(R.id.obd_container).setEnabled(true);
         mOBDProgressBar.setVisibility(View.GONE);
@@ -686,7 +677,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                 mOBDProgressBar.setVisibility(View.VISIBLE);
                 view.findViewById(R.id.obd_container).setEnabled(false);
                 mObdButton.setVisibility(View.GONE);
-                mObdTitle.setText("Connecting...");
+                mObdTitle.setText(R.string.connecting_label);
             }
         } catch (Exception e) {
             Log.d(TAG, "onTypeSelected: exception " + Log.getStackTraceString(e));

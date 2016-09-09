@@ -29,6 +29,8 @@ public class LocalPlaybackManager extends PlaybackManager implements FFmpegMedia
         FFmpegMediaPlayer.OnErrorListener, FFmpegMediaPlayer.OnInfoListener, FFmpegMediaPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener {
     public static final String TAG = "LocalPlaybackManager";
 
+    public static final double FRAME_DURATION = 250_000;
+
     private final Handler mMediaHandler;
 
     private final HandlerThread mHandlerThread;

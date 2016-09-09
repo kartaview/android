@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Map;
+import org.apache.http.HttpEntity;
 import android.net.TrafficStats;
 import android.net.Uri;
 import android.os.Handler;
@@ -570,6 +571,10 @@ public abstract class Request<T> implements Comparable<Request<T>> {
         String trafficStatsTag = "0x" + Integer.toHexString(getTrafficStatsTag());
         return (mCanceled ? "[X] " : "[ ] ") + getUrl() + " " + trafficStatsTag + " "
                 + getPriority() + " " + mSequence;
+    }
+
+    public HttpEntity getMultipartEntity() {
+        return null;
     }
 
     /**

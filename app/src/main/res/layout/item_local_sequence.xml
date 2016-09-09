@@ -19,6 +19,7 @@
         android:text="Strada Mihail Emil, Cluj-Napoca"
         android:paddingLeft="16dp"
         android:layout_marginTop="12dp"
+        android:drawablePadding="5dp"
         android:textColor="@color/md_grey_900"
         android:textSize="16sp" />
 
@@ -53,8 +54,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingLeft="16dp"
+            android:gravity="center_vertical"
             android:drawableLeft="@drawable/camera_small"
-            android:text="12344 IMG"
+            android:text="0 IMG"
             android:textColor="@color/md_grey_700"
             android:textSize="14sp" />
 
@@ -65,7 +67,8 @@
             android:layout_weight="1"
             android:drawableLeft="@drawable/distance"
             android:paddingLeft="16dp"
-            android:text="12,5 KM"
+            android:gravity="center_vertical"
+            android:text="0 KM"
             android:textColor="@color/md_grey_700"
             android:textSize="14sp" />
 
@@ -75,7 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingLeft="16dp"
-            android:text="05.02.16 "
+            android:text="01.01.16 "
             android:textColor="@color/md_grey_700"
             android:textSize="14sp" />
 

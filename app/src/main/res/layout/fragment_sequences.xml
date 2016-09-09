@@ -57,7 +57,7 @@
             android:layout_centerInParent="true"
             android:layout_margin="30dp"
             android:gravity="center"
-            android:text="Looks like you don't have any recordings."
+            android:text="@string/no_local_recordings_message"
             android:textSize="30sp" />
 
         <TextView
@@ -90,7 +90,7 @@
             android:layout_margin="30dp"
             android:alpha="50"
             android:gravity="center"
-            android:text="No internet connection."
+            android:text="@string/no_internet_connection"
             android:textSize="30sp" />
 
         <ImageView

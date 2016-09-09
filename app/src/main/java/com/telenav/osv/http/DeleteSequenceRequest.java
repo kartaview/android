@@ -13,27 +13,26 @@ import com.android.volley.toolbox.StringRequest;
 /**
  * Created by Kalman on 10/6/2015.
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class DeleteSequenceRequest extends StringRequest {
 
     private static final String PARAM_SEQUENCE_ID = "sequenceId";
 
-    private static final String PARAM_USER_ID = "externalUserId";
-
-    private static final String PARAM_USER_TYPE = "userType";
+    private static final String PARAM_TOKEN = "access_token";
 
     private final Listener<String> mListener;
 
     private final int mSequenceId;
 
-    private final String mUserId;
+    private final String mToken;
 
     protected Map<String, String> headers;
 
     private MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
 
-    public DeleteSequenceRequest(String url, ErrorListener errorListener, Listener<String> listener, int sequenceId, String userId) {
+    public DeleteSequenceRequest(String url, ErrorListener errorListener, Listener<String> listener, int sequenceId, String token) {
         super(Method.POST, url, listener, errorListener);
-        mUserId = userId;
+        mToken = token;
         mSequenceId = sequenceId;
         mListener = listener;
     }
@@ -56,8 +55,7 @@ public class DeleteSequenceRequest extends StringRequest {
     protected Map<String, String> getParams() {
         Map<String, String> params = new HashMap<String, String>();
         params.put(PARAM_SEQUENCE_ID, mSequenceId + "");
-        params.put(PARAM_USER_ID, mUserId);
-        params.put(PARAM_USER_TYPE, "osm");
+        params.put(PARAM_TOKEN, mToken);
         return params;
     }
 

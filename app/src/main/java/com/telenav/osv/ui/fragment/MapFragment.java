@@ -1,12 +1,10 @@
 package com.telenav.osv.ui.fragment;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.json.JSONObject;
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -20,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -27,7 +26,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import com.github.clans.fab.FloatingActionButton;
 import com.google.android.gms.common.api.Status;
 import com.skobbler.ngx.SKCoordinate;
 import com.skobbler.ngx.map.SKAnimationSettings;
@@ -227,6 +225,8 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
 
     private int mCurrentMode = MODE_IDLE;
 
+    private ArrayList<SKCoordinate> mCurrentTrack = new ArrayList<>();
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -239,13 +239,12 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         HandlerThread handlerThread = new HandlerThread("Loader", Thread.NORM_PRIORITY);
         handlerThread.start();
         mBackgroundHandler = new Handler(handlerThread.getLooper());
-        dottedPolyline = new Polyline(10);
+        dottedPolyline = new Polyline(10000156);
         mapViewGroup.onResume();
         if (headingOn) {
             startOrientationSensor();
         }
         recordButton = (FloatingActionButton) view.findViewById(R.id.record_button);
-        recordButton.bringToFront();
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -253,23 +252,12 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
             }
         });
         positionButton = (FloatingActionButton) view.findViewById(R.id.position_button);
-        positionButton.bringToFront();
         positionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onPositionerClicked();
             }
         });
-        if (activity.mCameraHandlerService != null && activity.mCameraHandlerService.mShutterManager != null && activity.mCameraHandlerService.mShutterManager.isRecording()) {
-            mRecordingMode = true;
-        }
-        if (mCurrentMode != MODE_IDLE) {
-            recordButton.setVisibility(View.INVISIBLE);
-            positionButton.setVisibility(View.INVISIBLE);
-        } else {
-            recordButton.setVisibility(View.VISIBLE);
-            positionButton.setVisibility(View.VISIBLE);
-        }
         boundingBoxUS = new SKBoundingBox(49.384358, -124.848974, 24.396308, -66.885444);
         activity.getApp().getLocationManager().setLocationListener(this);
         return view;
@@ -278,6 +266,22 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (activity.mCameraHandlerService != null && activity.mCameraHandlerService.mShutterManager != null && activity.mCameraHandlerService.mShutterManager.isRecording()) {
+            mRecordingMode = true;
+            mCurrentMode = MODE_RECORDING;
+        }
+        if (mCurrentMode != MODE_IDLE
+                || activity.getCurrentScreen() == MainActivity.SCREEN_RECORDING
+                || activity.getCurrentScreen() == MainActivity.SCREEN_RECORDING_HINTS
+                || activity.getCurrentScreen() == MainActivity.SCREEN_PREVIEW) {
+            recordButton.setVisibility(View.INVISIBLE);
+            positionButton.setVisibility(View.INVISIBLE);
+            Log.d(TAG, "onCreateView: kali hide");
+        } else {
+            recordButton.setVisibility(View.VISIBLE);
+            positionButton.setVisibility(View.VISIBLE);
+            Log.d(TAG, "onCreateView: kali show");
+        }
     }
 
     @Override
@@ -363,10 +367,14 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         chessBackground.setVisibility(View.GONE);
         mapView = mapHolder.getMapSurfaceView();
         mapView.setZOrderMediaOverlay(true);
+        if (activity.mCameraHandlerService != null && activity.mCameraHandlerService.mShutterManager != null && activity.mCameraHandlerService.mShutterManager.isRecording()) {
+            mRecordingMode = true;
+            mCurrentMode = MODE_RECORDING;
+        }
         if (mCurrentMode == MODE_IDLE) {
             mapHolder.showAllAttributionTextViews();
-            positionButton.setVisibility(View.VISIBLE);
-            recordButton.setVisibility(View.VISIBLE);
+//            positionButton.setVisibility(View.VISIBLE);
+//            recordButton.setVisibility(View.VISIBLE);
 //            mapView.post(new Runnable() {
 //                @Override
 //                public void run() {
@@ -397,7 +405,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                             FragmentManager fm = activity.getSupportFragmentManager();
                             if (activity.getCurrentFragment().equals(TAG) && fm != null && fm.getBackStackEntryCount() == 1) {
                                 if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_TAP_ON_MAP, false)) {
-                                    activity.showSnackBar(R.string.tip_map_screen, Snackbar.LENGTH_LONG, "Got it", new Runnable() {
+                                    activity.showSnackBar(R.string.tip_map_screen, Snackbar.LENGTH_LONG, R.string.got_it_label, new Runnable() {
                                         @Override
                                         public void run() {
                                             appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_TAP_ON_MAP, true);
@@ -463,8 +471,6 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
             mIsMapCreated = true;
         } else {
             mapHolder.hideAllAttributionTextViews();
-            positionButton.setVisibility(View.GONE);
-            recordButton.setVisibility(View.GONE);
             if (mCurrentMode == MODE_RECORDING) {
                 ((OSVApplication) activity.getApplication()).getUploadManager().cancelTracks();
                 mBackgroundHandler.removeCallbacksAndMessages(null);
@@ -496,7 +502,21 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
             } else if (mCurrentMode == MODE_PREVIEW && mPlayer != null) {
                 displaySequence(mPlayer.getTrack(), !mPlayer.isOnline());
             }
+//            positionButton.setVisibility(View.INVISIBLE);
+//            recordButton.setVisibility(View.INVISIBLE);
         }
+        mapView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mCurrentMode != MODE_IDLE) {
+//                    recordButton.setVisibility(View.INVISIBLE);
+//                    positionButton.setVisibility(View.INVISIBLE);
+                } else {
+//                    recordButton.setVisibility(View.VISIBLE);
+//                    positionButton.setVisibility(View.VISIBLE);
+                }
+            }
+        }, 800);
     }
 
     /**
@@ -925,13 +945,23 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         }
         if (isFirstPosition) {
             isFirstPosition = false;
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
+            final double latitude = location.getLatitude();
+            final double longitude = location.getLongitude();
             if (!appPrefs.getBooleanPreference(PreferenceTypes.K_RUN_COUNTER)) {
                 appPrefs.saveBooleanPreference(PreferenceTypes.K_RUN_COUNTER, true);
                 setMetrics(latitude, longitude);
             }
             setSignDetectionRegion(latitude, longitude);
+            mapView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (latitude == 0 && longitude == 0) {
+                        mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
+                    } else {
+                        mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+                    }
+                }
+            });
 
         }
 
@@ -1233,7 +1263,8 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         mapView.addPolyline(dottedPolyline);
 
         SKPosition position = SKPositionerManager.getInstance().getCurrentGPSPosition(true);
-        dottedPolyline.getNodes().add(position.getCoordinate());
+        mCurrentTrack.add(position.getCoordinate());
+        dottedPolyline.setNodes(mCurrentTrack);
 
 
     }
@@ -1272,6 +1303,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         mCurrentMode = mode;
         switch (mode) {
             case MODE_IDLE:
+                mCurrentTrack.clear();
                 removeSequence();
                 mRecordingMode = false;
                 recordButton.setVisibility(View.VISIBLE);

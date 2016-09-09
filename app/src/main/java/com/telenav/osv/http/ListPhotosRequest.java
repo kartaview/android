@@ -12,23 +12,22 @@ import com.android.volley.toolbox.StringRequest;
 /**
  * Created by Kalman on 10/6/2015.
  */
+@SuppressWarnings("HardCodedStringLiteral")
 public class ListPhotosRequest extends StringRequest {
 
     private static final String PARAM_SEQUENCE_ID = "sequenceId";
 
-    private static final String PARAM_USER_ID = "externalUserId";
-
-    private static final String PARAM_USER_TYPE = "userType";
+    private static final String PARAM_TOKEN = "access_token";
 
     private final Listener<String> mListener;
 
     private final int mSequenceId;
 
-    private final String mUserId;
+    private final String mToken;
 
-    public ListPhotosRequest(String url, ErrorListener errorListener, Listener<String> listener, int sequenceId, String userId) {
+    public ListPhotosRequest(String url, ErrorListener errorListener, Listener<String> listener, int sequenceId, String token) {
         super(Method.POST, url, listener, errorListener);
-        mUserId = userId;
+        mToken = token;
         mSequenceId = sequenceId;
         mListener = listener;
     }
@@ -55,9 +54,8 @@ public class ListPhotosRequest extends StringRequest {
             params = new HashMap<>();
         }
         params.put(PARAM_SEQUENCE_ID, mSequenceId + "");
-        if (mUserId != null && !mUserId.equals("")) {
-//            params.put(PARAM_USER_ID, mUserId);
-//            params.put(PARAM_USER_TYPE, "osm");
+        if (mToken != null && !mToken.equals("")) {
+            params.put(PARAM_TOKEN, mToken);
         }
         return params;
     }

@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.widget.Toast;
 import com.telenav.ffmpeg.FFMPEG;
+import com.telenav.osv.R;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
@@ -22,6 +23,7 @@ import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.RecordinStoppedException;
 import com.telenav.osv.item.SensorData;
 import com.telenav.osv.item.Sequence;
+import com.telenav.osv.listener.ImageSavedListener;
 import com.telenav.osv.listener.RecordingStateChangeListener;
 import com.telenav.osv.ui.fragment.SettingsFragment;
 import com.telenav.osv.utils.ComputingDistance;
@@ -68,7 +70,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
 
     private FocusManager mFocusManager;
 
-    private Camera.ShutterCallback imageSavedListener;
+    private ImageSavedListener imageSavedListener;
 
     private long mTimestamp;
 
@@ -90,10 +92,6 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
     };
 
     private long mLastSnapshotTime = 0;
-
-    private int mPictureWidth;
-
-    private int mPictureHeight;
 
     private FFMPEG ffmpeg;
 
@@ -335,6 +333,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
 
     private void saveFrame(final byte[] jpegData, final int mSequenceIdF, final int mIndexF, final String folderPathF, final Location mLocationF, final
     float mAccuracyF, final int mOrientationF, final long mTimestampF) {
+        Log.d(TAG, "saveFrame: posting frame data to handler");
         if (mHandlerThread.getState() == Thread.State.TERMINATED) {
             mHandlerThread = new HandlerThread("ShutterManager", Process.THREAD_PRIORITY_FOREGROUND);
             mHandlerThread.start();
@@ -345,6 +344,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
             public void run() {
                 int reserved = SettingsFragment.MIN_FREE_SPACE;
                 int available = (int) Utils.getAvailableSpace(mContext);
+                Log.d(TAG, "saveFrame: entered data handler");
                 if (available <= reserved) {
                     mHandler.post(new Runnable() {
                         @Override
@@ -355,9 +355,9 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                                     mContext.getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE
                                             , !mContext.getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE));
                                     needToRestart = true;
-                                    Toast.makeText(mContext, "Reached current storage limit, switching storage.", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(mContext, R.string.reached_current_storage_limit_message, Toast.LENGTH_LONG).show();
                                 } else {
-                                    Toast.makeText(mContext, "Reached storage limit, stopping recording.", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(mContext, R.string.reached_storage_limit, Toast.LENGTH_LONG).show();
                                 }
                             } catch (Exception e) {
 //                                Crashlytics.logException(e);
@@ -372,6 +372,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                     return;
                 }
                 if (jpegData == null) {
+                    Log.w(TAG, "saveFrame: jpegData is null");
                     return;
                 }
                 CameraManager.instance.stopDetection();
@@ -385,10 +386,10 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                         mIndex--;
                     }
                     if (imageSavedListener != null) {
-                        imageSavedListener.onShutter();
+                        imageSavedListener.onImageSaved(false);
                     }
                     if (ret[0] < 0) {
-                        Toast.makeText(mContext, "Could not initialize/create first mp4 file. Try again please.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mContext, R.string.encoding_error_message, Toast.LENGTH_SHORT).show();
                         stopSequence();
                     }
                     return;
@@ -426,53 +427,53 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                 }
                 mImageCounter++;
                 if (imageSavedListener != null) {
-                    imageSavedListener.onShutter();
+                    imageSavedListener.onImageSaved(true);
                 }
             }
         });
     }
 
-    private void writeExifLocation(String path, double lat, double lon) throws IOException {
-        ExifInterface exif = new ExifInterface(path);
-        //String latitudeStr = "90/1,12/1,30/1";
-        double alat = Math.abs(lat);
-        String dms = Location.convert(alat, Location.FORMAT_SECONDS);
-        String[] splits = dms.split(":");
-        String[] secnds = (splits[2]).split("\\.");
-        String seconds;
-        if (secnds.length == 0) {
-            seconds = splits[2];
-        } else {
-            seconds = secnds[0];
-        }
-
-        String latitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
-        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
-
-        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat > 0 ? "N" : "S");
-
-        double alon = Math.abs(lon);
-
-
-        dms = Location.convert(alon, Location.FORMAT_SECONDS);
-        splits = dms.split(":");
-        secnds = (splits[2]).split("\\.");
-
-        if (secnds.length == 0) {
-            seconds = splits[2];
-        } else {
-            seconds = secnds[0];
-        }
-        String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
-
-        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitudeStr);
-        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon > 0 ? "E" : "W");
-//        if (mBearing != 0.0f) {
-//            exif.setAttribute("GPSImgDirection", String.valueOf(mBearing));
-//            exif.setAttribute("GPSTrack", String.valueOf(mBearing));
+//    private void writeExifLocation(String path, double lat, double lon) throws IOException {
+//        ExifInterface exif = new ExifInterface(path);
+//        //String latitudeStr = "90/1,12/1,30/1";
+//        double alat = Math.abs(lat);
+//        String dms = Location.convert(alat, Location.FORMAT_SECONDS);
+//        String[] splits = dms.split(":");
+//        String[] secnds = (splits[2]).split("\\.");
+//        String seconds;
+//        if (secnds.length == 0) {
+//            seconds = splits[2];
+//        } else {
+//            seconds = secnds[0];
 //        }
-        exif.saveAttributes();
-    }
+//
+//        String latitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
+//        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, latitudeStr);
+//
+//        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, lat > 0 ? "N" : "S");
+//
+//        double alon = Math.abs(lon);
+//
+//
+//        dms = Location.convert(alon, Location.FORMAT_SECONDS);
+//        splits = dms.split(":");
+//        secnds = (splits[2]).split("\\.");
+//
+//        if (secnds.length == 0) {
+//            seconds = splits[2];
+//        } else {
+//            seconds = secnds[0];
+//        }
+//        String longitudeStr = splits[0] + "/1," + splits[1] + "/1," + seconds + "/1";
+//
+//        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, longitudeStr);
+//        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lon > 0 ? "E" : "W");
+////        if (mBearing != 0.0f) {
+////            exif.setAttribute("GPSImgDirection", String.valueOf(mBearing));
+////            exif.setAttribute("GPSTrack", String.valueOf(mBearing));
+////        }
+//        exif.saveAttributes();
+//    }
 
     public int getPictureIndex() {
         return mIndex;
@@ -507,16 +508,18 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                 SequenceDB.instance.updateSequenceLocation(mSequence.sequenceId, mLocation.getLatitude(), mLocation.getLongitude());
             }
             mOrientation = (int) Math.toDegrees(SensorManager.mOrientation[0]);
-            CameraManager.instance.takeSnapshot(this, null, mJpegPictureCallback);
+            boolean taken = CameraManager.instance.takeSnapshot(this, null, mJpegPictureCallback);
+            if (taken) {
+                if (mShutterCallback != null) {
+                    mShutterCallback.onShutter();
+                }
+            }
         }
     }
 
     @Override
     public void onShutter() {
         mTimestamp = System.currentTimeMillis();
-        if (mShutterCallback != null) {
-            mShutterCallback.onShutter();
-        }
     }
 
     public void startSequence() {
@@ -531,7 +534,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                 , ((OSVApplication) mContext.getApplicationContext()).getOBDManager().isConnected());
         mSequencePath = mSequence.folder.getPath();
         if (mSequence == null) {
-            Toast.makeText(mContext, "Could not create new Recording folder. Please try again.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.error_creating_folder_message, Toast.LENGTH_SHORT).show();
             recording = false;
             return;
         }
@@ -543,12 +546,12 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
 //                Crashlytics.logException(e);
 //            }
             Log.e(TAG, "startSequence: could not init ffmpeg");
-            Toast.makeText(mContext, "Could not initialize encoder", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.ffmpeg_init_error_message, Toast.LENGTH_SHORT).show();
             stopSequence();
             return;
         } catch (NoClassDefFoundError | UnsatisfiedLinkError e) {
             Log.e(TAG, "startSequence: could not init ffmpeg");
-            Toast.makeText(mContext, "Could not initialize encoder", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.ffmpeg_init_error_message, Toast.LENGTH_SHORT).show();
             stopSequence();
             return;
         }
@@ -558,7 +561,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
         } catch (Exception ignored) {}
         if (ret != 0) {
             Log.e(TAG, "startSequence: could not create video file");
-            Toast.makeText(mContext, "Could not create video file.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.error_creating_video_file_message, Toast.LENGTH_SHORT).show();
             stopSequence();
             return;
         }
@@ -570,7 +573,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
             public void run() {
                 if (mSequence == null || mSequence.folder == null) {
                     Log.e(TAG, "startSequence: could not create video file");
-                    Toast.makeText(mContext, "Could not create video file.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, R.string.error_creating_video_file_message, Toast.LENGTH_SHORT).show();
                     stopSequence();
                 }
                 if (mContext.getOBDManager() != null && mContext.getAppPrefs().getBooleanPreference(PreferenceTypes.K_OBD_CONNECTED)) {
@@ -682,7 +685,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                                         mHandler.post(new Runnable() {
                                             @Override
                                             public void run() {
-                                                Toast.makeText(mContext, "Upload failed. Please retry later.", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(mContext, R.string.upload_failed_message, Toast.LENGTH_SHORT).show();
                                             }
                                         });
                                     } else if (status == STATUS_SUCCESS_SEQUENCE) {
@@ -697,7 +700,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                         Log.d(TAG, "stopSequence: auto upload off, or no connection");
                     }
                 } else {
-                    if (finalSequence != null && SequenceDB.instance.getNumberOfFrames(finalSequence.sequenceId) <= 0) {
+                    if (SequenceDB.instance.getNumberOfFrames(finalSequence.sequenceId) <= 0) {
                         Sequence.removeSequence(finalSequence.sequenceId);
                         if (finalSequence.folder != null) {
                             finalSequence.folder.delete();
@@ -728,7 +731,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
         this.mFocusManager = focusManager;
     }
 
-    public void setImageSavedListener(Camera.ShutterCallback imageSavedListener) {
+    public void setImageSavedListener(ImageSavedListener imageSavedListener) {
         this.imageSavedListener = imageSavedListener;
     }
 

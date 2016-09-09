@@ -53,12 +53,14 @@ struct SwsContext *createScaler(VideoPlayer **ps, AVCodecContext *codec) {
 }
 
 void *createBmp(VideoPlayer **ps, int width, int height) {
+    LOGI("Video Bitmap created");
     VideoPlayer *is = *ps;
 
     return malloc(sizeof(Picture));
 }
 
 void destroyBmp(VideoPlayer **ps, void *bmp) {
+    LOGI("Video Bitmap destroyed");
     Picture *picture = (Picture *) bmp;
 
     if (picture) {

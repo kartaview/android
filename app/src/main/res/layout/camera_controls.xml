@@ -210,7 +210,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:clickable="false"
-                android:text="Cancel"
+                android:text="@string/cancel_label"
                 android:textAlignment="center"
                 android:textColor="@color/text_colour_default"
                 android:textSize="26sp" />

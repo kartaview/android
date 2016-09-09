@@ -75,5 +75,7 @@ public final class PreferenceTypes {
 
     public static final String K_RESOLUTION_HEIGHT = "resolutionHeight";
 
+    public static final String K_RECORDING_MAP_ENABLED = "recordingMapEnabled";
+
     private PreferenceTypes() {}
 }

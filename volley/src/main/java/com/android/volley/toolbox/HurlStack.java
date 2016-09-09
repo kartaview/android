@@ -40,6 +40,7 @@ import org.apache.http.message.BasicStatusLine;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Request.Method;
+import com.android.volley.VolleyLog;
 
 /**
  * An {@link HttpStack} based on {@link HttpURLConnection}.
@@ -164,13 +165,28 @@ public class HurlStack implements HttpStack {
 
     private static void addBodyIfExists(HttpURLConnection connection, Request<?> request)
             throws IOException, AuthFailureError {
-        byte[] body = request.getBody();
-        if (body != null) {
-            connection.setDoOutput(true);
-            connection.addRequestProperty(HEADER_CONTENT_TYPE, request.getBodyContentType());
-            DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-            out.write(body);
-            out.close();
+
+        HttpEntity entity = request.getMultipartEntity();
+        if (entity != null) {
+            try {
+                connection.setDoOutput(true);
+                connection.addRequestProperty(HEADER_CONTENT_TYPE, request.getBodyContentType());
+                entity.writeTo(connection.getOutputStream());
+                try {
+                    connection.getOutputStream().close();
+                } catch (Exception ignored) {}
+            } catch (IOException ioe) {
+                VolleyLog.e("Error writing request body to stream.");
+            }
+        } else {
+            byte[] body = request.getBody();
+            if (body != null) {
+                connection.setDoOutput(true);
+                connection.addRequestProperty(HEADER_CONTENT_TYPE, request.getBodyContentType());
+                DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+                out.write(body);
+                out.close();
+            }
         }
     }
 

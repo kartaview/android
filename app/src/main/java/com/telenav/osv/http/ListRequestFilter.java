@@ -9,8 +9,6 @@ import com.android.volley.RequestQueue;
 public class ListRequestFilter implements RequestQueue.RequestFilter {
     @Override
     public boolean apply(Request<?> request) {
-        boolean cancel = request instanceof ListSequencesRequest
-                && (((ListSequencesRequest) request).mBbBottomRight != null && ((ListSequencesRequest) request).mBbTopLeft != null);
-        return cancel;
+        return request instanceof ListSequencesRequest;
     }
 }

@@ -224,7 +224,7 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
         activity.getApp().getOBDManager().removeConnectionListener(this);
         mPaused = true;
         if (mCameraHandlerService != null) {
-            mCameraHandlerService.mShutterManager.setShutterCallback(null);
+//            mCameraHandlerService.mShutterManager.setShutterCallback(null);
             removeCameraSurfaceView();
         }
         super.onDestroyView();

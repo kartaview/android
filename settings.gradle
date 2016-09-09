@@ -1,1 +1,1 @@
-include ':app', ':volley', ':fab', ':connectivity', ':photoview', ':ffmpeg', ':bluetoothobd'
+include ':app', ':volley', ':connectivity', ':photoview', ':ffmpeg'

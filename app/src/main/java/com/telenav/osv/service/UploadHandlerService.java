@@ -59,6 +59,8 @@ public class UploadHandlerService extends Service implements UploadProgressListe
 
     private PendingIntent cancelIntent;
 
+    private final Object mListenerSyncObject = new Object();
+
 
     @Override
     public void onCreate() {
@@ -179,7 +181,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         if (mNotification.mActions != null) {
             mNotification.mActions.clear();
         }
-        mNotification.setContentText("Track upload finished. ");
+        mNotification.setContentText(getString(R.string.upload_finished_message));
         mNotification.setProgress(0, 0, false);
         mNotification.setOngoing(false);
         mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
@@ -191,19 +193,19 @@ public class UploadHandlerService extends Service implements UploadProgressListe
      * @return true if there is an upload ongoing
      */
     public void addUploadProgressListener(UploadProgressListener uploadProgressListener) {
-        Log.d(TAG, "addUploadProgressListener: " + uploadProgressListener.getClass().getSimpleName());
-        synchronized (mUploadProgressListeners) {
+        synchronized (mListenerSyncObject) {
             if (!mUploadProgressListeners.contains(uploadProgressListener)) {
+                Log.d(TAG, "addUploadProgressListener: " + uploadProgressListener.getClass().getSimpleName());
                 this.mUploadProgressListeners.add(uploadProgressListener);
                 if (UploadManager.sUploadStatus != UploadManager.STATUS_IDLE) {
-                    uploadProgressListener.onUploadStarted(mUploadManager.getOriginalTotalSizeValue());
-                    int total = mUploadManager.getInitialUploadValue();
-                    int remaining = mUploadManager.getRemainingUploadValue();
-                    if (total != 0) {
+                    uploadProgressListener.onUploadStarted(mUploadManager.getTotalSizeValue());
+                    long totalSize = mUploadManager.getTotalSizeValue();
+                    long remainingSize = mUploadManager.getRemainingSizeValue();
+                    if (totalSize != 0) {
                         if (!mUploadManager.isIndexing()) {
                             uploadProgressListener.onIndexingFinished();
                         }
-                        uploadProgressListener.onProgressChanged(total, remaining);
+                        uploadProgressListener.onProgressChanged(totalSize, remainingSize);
                         if (UploadManager.sUploadStatus == UploadManager.STATUS_PAUSED) {
                             uploadProgressListener.onUploadPaused();
                         } else {
@@ -218,7 +220,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     }
 
     public void removeUploadProgressListener(UploadProgressListener listener) {
-        synchronized (mUploadProgressListeners) {
+        synchronized (mListenerSyncObject) {
             Log.d(TAG, "removeUploadProgressListener: " + listener.getClass().getSimpleName());
             this.mUploadProgressListeners.remove(listener);
         }
@@ -232,8 +234,8 @@ public class UploadHandlerService extends Service implements UploadProgressListe
             Intent intent = new Intent(this, MainActivity.class);
             PendingIntent pnextIntent = PendingIntent.getActivity(this, 0, intent, 0);
             mNotification = new NotificationCompat.Builder(this)
-                    .setContentTitle("OSV")
-                    .setContentText("Uploading images...")
+                    .setContentTitle(getString(R.string.app_short_name))
+                    .setContentText(getString(R.string.uploading_images_message))
                     .setSmallIcon(R.drawable.icon_upload_white)
                     .setOngoing(false)
                     .setProgress(100, 0, false)
@@ -253,8 +255,9 @@ public class UploadHandlerService extends Service implements UploadProgressListe
             intent.putExtra(FLAG_CANCEL, true);
             cancelIntent = PendingIntent.getService(getApplicationContext(), 0, intent, 0);
             if (!mUploadManager.isIndexing()) {
-                mNotification.addAction(mUploadManager.isPaused() ? R.drawable.ic_play_arrow_black_36dp : R.drawable.ic_pause_black_36dp, mUploadManager.isPaused() ? "Resume" :
-                        "Pause", pauseIntent);
+                mNotification.addAction(mUploadManager.isPaused() ? R.drawable.ic_play_arrow_black_36dp : R.drawable.ic_pause_black_36dp, mUploadManager.isPaused() ? getString(R
+                        .string.resume_label) :
+                        getString(R.string.pause_label), pauseIntent);
             }
 //            mNotification.addAction(R.drawable.ic_clear_black_36dp, "Cancel", cancelIntent);
         }
@@ -264,25 +267,21 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     }
 
     @Override
-    public void onProgressChanged(long total, final long remaining) {
-
-        long totalSize = mUploadManager.getOriginalTotalSizeValue();
-        final long size = mUploadManager.getTotalSizeValue();
-
-        Log.d(TAG, "onProgressChanged: totalNr = " + total + ", remainingNr = " + remaining + ", totalSize = " + totalSize + ", size = " + size);
+    public void onProgressChanged(long totalSize, final long remainingSize) {
+//        Log.d(TAG, "onProgressChanged: totalSize = " + totalSize + ", remainingSize = " + remainingSize);
         if (totalSize == 0) {
             totalSize = 1;
         }
         initNotificationIfNeeded();
-        updateNotification(totalSize, size);
+        updateNotification(totalSize, remainingSize);
         final long finalTotalSize = totalSize;
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
-                            listener.onProgressChanged(finalTotalSize, size);
+                            listener.onProgressChanged(finalTotalSize, remainingSize);
                         }
                     }
                 }
@@ -295,7 +294,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onImageUploaded(sequence, success);
@@ -311,7 +310,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onSequenceUploaded(sequence);
@@ -327,7 +326,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onIndexingSequence(sequence, remainingUploads);
@@ -346,13 +345,13 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     @Override
     public void onUploadPaused() {
         initNotificationIfNeeded();
-        mNotification.setContentText("Track upload paused... ");
+        mNotification.setContentText(getString(R.string.track_upload_paused));
         mNotification.setOngoing(true);
         mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onUploadPaused();
@@ -366,13 +365,13 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     @Override
     public void onUploadResumed() {
         initNotificationIfNeeded();
-        mNotification.setContentText("Track upload resuming... ");
+        mNotification.setContentText(getString(R.string.track_upload_resuming));
         mNotification.setOngoing(true);
         mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onUploadResumed();
@@ -391,7 +390,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onUploadStarted(mTotalSize);
@@ -408,7 +407,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onUploadingMetadata();
@@ -424,7 +423,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onIndexingFinished();
@@ -440,7 +439,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onPreparing(nrOfFrames);
@@ -452,17 +451,17 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     }
 
     @Override
-    public void onUploadCancelled(final int total, final int remaining) {
+    public void onUploadCancelled(final long total, final long remaining) {
         android.util.Log.d(TAG, "onUploadCancelled: upload cancelled");
         initNotificationIfNeeded();
         stopForeground(true);
-        mNotification.setContentText("Track upload cancelled. ");
+        mNotification.setContentText(getString(R.string.track_upload_cancelled));
         mNotification.setProgress(0, 0, false);
         mNotification.setOngoing(false);
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onUploadCancelled(total, remaining);
@@ -480,7 +479,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             listener.onUploadFinished(successful, unsuccessful);
@@ -498,7 +497,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
                 needsToSetNotification = false;
                 Log.d(TAG, "updateNotification: progress: " + ((total - remaining) * 100) / total);
                 mNotification.setProgress(100, (int) (((total - remaining) * 100L) / total), false);
-                mNotification.setContentText("Uploading images... " + ((total - remaining) * 100) / total + "%");
+                mNotification.setContentText(getString(R.string.uploading_images) + ((total - remaining) * 100) / total + "%");
                 mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
                 mHandler.postDelayed(new Runnable() {
                     @Override
@@ -519,7 +518,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                synchronized (mUploadProgressListeners) {
+                synchronized (mListenerSyncObject) {
                     for (UploadProgressListener listener : mUploadProgressListeners) {
                         if (listener != null) {
                             if (UploadManager.sUploadStatus == UploadManager.STATUS_IDLE || UploadManager.sUploadStatus == UploadManager.STATUS_PAUSED) {
