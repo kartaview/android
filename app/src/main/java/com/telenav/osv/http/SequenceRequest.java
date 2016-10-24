@@ -19,6 +19,7 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.Utils;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -87,8 +88,6 @@ public class SequenceRequest<T> extends StringRequest {
             headers = new HashMap<>();
         }
 
-        headers.put("Accept", "application/json");
-
         return headers;
     }
 
@@ -121,7 +120,7 @@ public class SequenceRequest<T> extends StringRequest {
         mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
         HttpEntity mEntity = mBuilder.build();
-        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener);
+        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener, Utils.fileSize(mMetadata));
     }
 
     @Override

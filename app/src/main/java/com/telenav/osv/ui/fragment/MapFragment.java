@@ -6,7 +6,6 @@ import java.util.List;
 import org.json.JSONObject;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -28,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import com.google.android.gms.common.api.Status;
 import com.skobbler.ngx.SKCoordinate;
+import com.skobbler.ngx.SKMaps;
 import com.skobbler.ngx.map.SKAnimationSettings;
 import com.skobbler.ngx.map.SKAnnotation;
 import com.skobbler.ngx.map.SKAnnotationView;
@@ -43,16 +43,11 @@ import com.skobbler.ngx.map.SKMapViewStyle;
 import com.skobbler.ngx.map.SKPOICluster;
 import com.skobbler.ngx.map.SKPolyline;
 import com.skobbler.ngx.map.SKScreenPoint;
-import com.skobbler.ngx.navigation.SKNavigationListener;
-import com.skobbler.ngx.navigation.SKNavigationManager;
-import com.skobbler.ngx.navigation.SKNavigationSettings;
-import com.skobbler.ngx.navigation.SKNavigationState;
 import com.skobbler.ngx.positioner.SKPosition;
 import com.skobbler.ngx.positioner.SKPositionerManager;
-import com.skobbler.ngx.trail.SKTrailManager;
-import com.skobbler.ngx.trail.SKTrailType;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.activity.SplashActivity;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
@@ -71,7 +66,7 @@ import com.telenav.osv.utils.Utils;
 /**
  * Created by Kalman on 11/9/15.
  */
-public class MapFragment extends Fragment implements SKMapSurfaceListener, SensorEventListener, LocationEventListener, SKNavigationListener, PlaybackManager.PlaybackListener {
+public class MapFragment extends Fragment implements SKMapSurfaceListener, SensorEventListener, LocationEventListener, PlaybackManager.PlaybackListener {
 
     public final static String TAG = "MapFragment";
 
@@ -169,7 +164,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
      */
     private ArrayList<ImageCoordinate> mPreviewNodes;
 
-    private MainActivity activity;
+    private OSVActivity activity;
 
     private ImageListAdapter imageListAdapter;
 
@@ -230,9 +225,11 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (!SKMaps.getInstance().isSKMapsInitialized()) {
+            Utils.initializeLibrary(getActivity());
+        }
         view = inflater.inflate(R.layout.fragment_map, null);
-        Log.d(TAG, "onCreateView: ");
-        activity = (MainActivity) getActivity();
+        activity = (OSVActivity) getActivity();
         appPrefs = ((OSVApplication) activity.getApplication()).getAppPrefs();
         mapViewGroup = (SKMapViewHolder) view.findViewById(R.id.view_group_map);
         mapViewGroup.setMapSurfaceListener(this);
@@ -240,6 +237,13 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         handlerThread.start();
         mBackgroundHandler = new Handler(handlerThread.getLooper());
         dottedPolyline = new Polyline(10000156);
+        dottedPolyline.setLineSize(0);
+        dottedPolyline.setOutlineSize(4);
+        dottedPolyline.setOutlineDottedPixelsSkip(25);
+        dottedPolyline.setOutlineDottedPixelsSolid(25);
+        dottedPolyline.setColor(new float[]{0f / 255f, 122f / 255f, 255f / 255f, 1.0f}); //washed out accent color
+        dottedPolyline.setOutlineColor(new float[]{0f / 255f, 122f / 255f, 255f / 255f, 1.0f});
+
         mapViewGroup.onResume();
         if (headingOn) {
             startOrientationSensor();
@@ -260,6 +264,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         });
         boundingBoxUS = new SKBoundingBox(49.384358, -124.848974, 24.396308, -66.885444);
         activity.getApp().getLocationManager().setLocationListener(this);
+        Log.d(TAG, "onCreateView: ");
         return view;
     }
 
@@ -276,11 +281,9 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                 || activity.getCurrentScreen() == MainActivity.SCREEN_PREVIEW) {
             recordButton.setVisibility(View.INVISIBLE);
             positionButton.setVisibility(View.INVISIBLE);
-            Log.d(TAG, "onCreateView: kali hide");
         } else {
             recordButton.setVisibility(View.VISIBLE);
             positionButton.setVisibility(View.VISIBLE);
-            Log.d(TAG, "onCreateView: kali show");
         }
     }
 
@@ -327,7 +330,9 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
 
     public void onPositionerClicked() {
         if (mIsMapCreated) {
-            if (!activity.getApp().getLocationManager().isGPSEnabled()) {
+            if (!activity.checkPermissionsForGPS()) {
+                //do nothing
+            } else if (!activity.getApp().getLocationManager().isGPSEnabled()) {
                 activity.resolveLocationProblem(false);
             } else {
                 if (activity.getApp().getLocationManager().hasPosition()) {
@@ -366,11 +371,35 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         View chessBackground = view.findViewById(R.id.chess_board_background);
         chessBackground.setVisibility(View.GONE);
         mapView = mapHolder.getMapSurfaceView();
+        mapView.getMapSettings().setCityPoisShown(false);
+        mapView.getMapSettings().setGeneratedPoisShown(false);
+        mapView.getMapSettings().setImportantPoisShown(false);
+        mapView.getMapSettings().setMapPoiIconsShown(false);
+        mapView.getMapSettings().setHouseNumbersShown(false);
         mapView.setZOrderMediaOverlay(true);
         if (activity.mCameraHandlerService != null && activity.mCameraHandlerService.mShutterManager != null && activity.mCameraHandlerService.mShutterManager.isRecording()) {
             mRecordingMode = true;
             mCurrentMode = MODE_RECORDING;
         }
+        annotationViewList = new ArrayList<ImageView>();
+        redAnnotationView = new SKAnnotationView();
+        ImageView iv = new ImageView(activity);
+        iv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        iv.setImageDrawable(activity.getResources().getDrawable(R.drawable.icon_point_end));
+        redAnnotationView.setView(iv);
+        annotationViewList.add(iv);
+        greenAnnotationView = new SKAnnotationView();
+        ImageView iv2 = new ImageView(activity);
+        iv2.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        iv2.setImageDrawable(activity.getResources().getDrawable(R.drawable.icon_point_start));
+        greenAnnotationView.setView(iv2);
+        annotationViewList.add(iv2);
+        blueAnnotationView = new SKAnnotationView();
+        ImageView iv3 = new ImageView(activity);
+        iv3.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        iv3.setImageDrawable(activity.getResources().getDrawable(R.drawable.icon_point_position));
+        blueAnnotationView.setView(iv3);
+        annotationViewList.add(iv3);
         if (mCurrentMode == MODE_IDLE) {
             mapHolder.showAllAttributionTextViews();
 //            positionButton.setVisibility(View.VISIBLE);
@@ -420,43 +449,14 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
 
             mapView.clearAllOverlays();
             //fix for black textures, we keep a ref to the image views
-            annotationViewList = new ArrayList<ImageView>();
-            redAnnotationView = new SKAnnotationView();
-            ImageView iv = new ImageView(activity);
-            iv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            iv.setImageDrawable(activity.getResources().getDrawable(R.drawable.icon_point_end));
-            redAnnotationView.setView(iv);
-            annotationViewList.add(iv);
-            greenAnnotationView = new SKAnnotationView();
-            ImageView iv2 = new ImageView(activity);
-            iv2.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            iv2.setImageDrawable(activity.getResources().getDrawable(R.drawable.icon_point_start));
-            greenAnnotationView.setView(iv2);
-            annotationViewList.add(iv2);
-            blueAnnotationView = new SKAnnotationView();
-            ImageView iv3 = new ImageView(activity);
-            iv3.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            iv3.setImageDrawable(activity.getResources().getDrawable(R.drawable.icon_point_position));
-            blueAnnotationView.setView(iv3);
-            annotationViewList.add(iv3);
             activity.continueAfterCrash();
             if (mIsMapCreated) {
                 diplayLocalSequences();
 //                refreshDisplayedSequences();
-                if (SKNavigationManager.getInstance().getNavigationMode() == SKNavigationSettings.SKNavigationMode.CAR.getValue()) {
-                    SKNavigationManager.getInstance().stopNavigation();
-                }
                 setHeading(false);
                 mapView.getMapSettings().setMapRotationEnabled(true);
                 mapView.getMapSettings().setMapPanningEnabled(true);
                 mapView.getMapSettings().setMapZoomingEnabled(true);
-                SKTrailManager.getInstance().setTrailType(new SKTrailType(true, new float[]{104f / 255f, 189f / 255f, 227f / 255f, 1.0f}, 5));
-                SKTrailManager.getInstance().setShowTrail(false);
-                SKTrailManager.getInstance().clearTrail();
-//                SKTrailType sk = new SKTrailType()
-//                SKTrailSettings trailSettings = new SKTrailSettings();
-//                trailSettings.setPedestrianTrailEnabled(false, 1);
-//                mapView.getMapSettings().setTrailSettings(trailSettings);
                 mapView.post(new Runnable() {
                     @Override
                     public void run() {
@@ -469,6 +469,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                 });
             }
             mIsMapCreated = true;
+            mapView.getMapSettings().setFollowerMode(SKMapSettings.SKMapFollowerMode.NONE);
         } else {
             mapHolder.hideAllAttributionTextViews();
             if (mCurrentMode == MODE_RECORDING) {
@@ -478,21 +479,12 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                 mapView.clearAllOverlays();
                 mapView.deleteAllAnnotationsAndCustomPOIs();
                 mapView.setZOrderMediaOverlay(true);
-                SKNavigationSettings navSettings = new SKNavigationSettings();
-                navSettings.setNavigationMode(SKNavigationSettings.SKNavigationMode.CAR);
-                navSettings.setNavigationType(SKNavigationSettings.SKNavigationType.REAL);
-                SKNavigationManager.getInstance().setNavigationListener(this);
-                SKNavigationManager.getInstance().startNavigation(navSettings);
                 setHeading(true);
                 mapView.getMapSettings().setMapRotationEnabled(false);
                 mapView.getMapSettings().setMapPanningEnabled(false);
                 mapView.getMapSettings().setMapZoomingEnabled(false);
-                SKTrailManager.getInstance().setTrailType(new SKTrailType(false, new float[]{104f / 255f, 189f / 255f, 227f / 255f, 1.0f}, 5));
-                SKTrailManager.getInstance().setShowTrail(true);
-//            SKTrailSettings trailSettings = new SKTrailSettings();
-//            trailSettings.setPedestrianTrailEnabled(true, 1);
-//            mapView.getMapSettings().setTrailSettings(trailSettings);
                 mapView.setZoom(16);
+                mapView.getMapSettings().setFollowerMode(SKMapSettings.SKMapFollowerMode.NAVIGATION);
                 mapView.post(new Runnable() {
                     @Override
                     public void run() {
@@ -500,7 +492,10 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                     }
                 });
             } else if (mCurrentMode == MODE_PREVIEW && mPlayer != null) {
-                displaySequence(mPlayer.getTrack(), !mPlayer.isOnline());
+                mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
+                if (mPlayer != null) {
+                    displaySequence(mPlayer.getTrack(), !mPlayer.isOnline(),mPlayer.getSequence().skipToValue);
+                }
             }
 //            positionButton.setVisibility(View.INVISIBLE);
 //            recordButton.setVisibility(View.INVISIBLE);
@@ -623,16 +618,6 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     }
 
     @Override
-    public void onMapRegionChanged(SKCoordinateRegion skCoordinateRegion) {
-
-    }
-
-    @Override
-    public void onMapRegionChangeStarted(SKCoordinateRegion skCoordinateRegion) {
-
-    }
-
-    @Override
     public void onMapRegionChangeEnded(SKCoordinateRegion skCoordinateRegion) {
         if (mCurrentMode == MODE_IDLE && mapView != null) {
             SKBoundingBox bb = mapView.getBoundingBoxForRegion(skCoordinateRegion);
@@ -665,11 +650,6 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     }
 
     @Override
-    public void onCompassSelected() {
-
-    }
-
-    @Override
     public void onCurrentPositionSelected() {
         if (mRecordingMode || mIsSmall) {
             return;
@@ -683,31 +663,6 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
             return;
         }
         mNeedsToSelectSequence = true;
-    }
-
-    @Override
-    public void onInternationalisationCalled(int i) {
-
-    }
-
-    @Override
-    public void onDebugInfo(double v, float v1, double v2) {
-
-    }
-
-    @Override
-    public void onBoundingBoxImageRendered(int i) {
-
-    }
-
-    @Override
-    public void onGLInitializationError(String s) {
-
-    }
-
-    @Override
-    public void onScreenshotReady(Bitmap bitmap) {
-
     }
 
     @Override
@@ -766,18 +721,10 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     }
 
     @Override
-    public void onRotateMap() {
-
-    }
-
-    @Override
     public void onInternetConnectionNeeded() {
-
-    }
-
-    @Override
-    public void onMapActionDown(SKScreenPoint skScreenPoint) {
-//        mNeedsToSelectSequence = true;
+        if (activity != null) {
+            activity.showSnackBar(R.string.map_no_internet_connection, Snackbar.LENGTH_LONG);
+        }
     }
 
     @Override
@@ -933,14 +880,9 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
-
-    @Override
     public void onLocationChanged(Location location) {
         SKPositionerManager.getInstance().reportNewGPSPosition(new SKPosition(location.getLongitude(), location.getLatitude()));
-        if (mapView != null && !mRecordingMode) {
+        if (mapView != null && mCurrentMode == MODE_IDLE) {
             mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
         }
         if (isFirstPosition) {
@@ -952,19 +894,23 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                 setMetrics(latitude, longitude);
             }
             setSignDetectionRegion(latitude, longitude);
-            mapView.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (latitude == 0 && longitude == 0) {
-                        mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
-                    } else {
-                        mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+            if (mapView != null) {
+                mapView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mapView != null && mCurrentMode == MODE_IDLE) {
+                            if (latitude == 0 && longitude == 0) {
+                                mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
+                            } else {
+                                mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+                            }
+                        }
                     }
-                }
-            });
+                });
+            }
 
         }
-
+        refreshTrackPolyline();
     }
 
     @Override
@@ -1068,7 +1014,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
      * displays a specific sequence, other sequences get cleared
      * @param nodes the coordinates and the images
      */
-    public void displaySequence(final ArrayList<SKCoordinate> nodes, boolean isLocal) {
+    public void displaySequence(final ArrayList<SKCoordinate> nodes, boolean isLocal, int startIndex) {
         Log.d(TAG, "displaySequence: ");
         // set the nodes on the polyline
         if (nodes != null && nodes.size() != 0 && mapView != null) {
@@ -1093,7 +1039,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
             mSelectedPositionAnnotation = new SKAnnotation(VIA_POINT_ICON_ID);
             mSelectedPositionAnnotation.setAnnotationType(SKAnnotation.SK_ANNOTATION_TYPE_MARKER);
             mSelectedPositionAnnotation.setAnnotationView(blueAnnotationView);
-            mSelectedPositionAnnotation.setLocation(nodes.get(0));
+            mSelectedPositionAnnotation.setLocation(nodes.get(startIndex));
             mapView.addAnnotation(mSelectedPositionAnnotation, SKAnimationSettings.ANIMATION_PULSE_CCP);
         } else {
             Log.d(TAG, "displaySequence: nodes size is 0");
@@ -1201,6 +1147,7 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
      */
     private void viewFrame(int index) {
         if (mPreviewNodes == null || mPreviewNodes.size() <= index) {
+            Log.d(TAG, "viewFrame: sorry returning");
             return;
         }
         mSelectedPositionAnnotation.setLocation(mPreviewNodes.get(index));
@@ -1208,85 +1155,14 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
 
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-//        if (imageListView != null) {
-//            imageListView.refreshHeader();
-//        }
-    }
+    public void refreshTrackPolyline() {
+        if (mRecordingMode && dottedPolyline != null && mapView != null) {
+            mapView.addPolyline(dottedPolyline);
 
-    @Override
-    public void onDestinationReached() {
-
-    }
-
-    @Override
-    public void onSignalNewAdviceWithInstruction(String s) {
-
-    }
-
-    @Override
-    public void onSignalNewAdviceWithAudioFiles(String[] strings, boolean b) {
-
-    }
-
-    @Override
-    public void onSpeedExceededWithAudioFiles(String[] strings, boolean b) {
-
-    }
-
-    @Override
-    public void onSpeedExceededWithInstruction(String s, boolean b) {
-
-    }
-
-    @Override
-    public void onUpdateNavigationState(SKNavigationState skNavigationState) {
-
-    }
-
-    @Override
-    public void onReRoutingStarted() {
-
-    }
-
-    @Override
-    public void onFreeDriveUpdated(String s, String s1, String s2, SKNavigationState.SKStreetType skStreetType, double v, double v1) {
-
-        dottedPolyline.setLineSize(0);
-        dottedPolyline.setOutlineSize(14);
-        dottedPolyline.setOutlineDottedPixelsSkip(25);
-        dottedPolyline.setOutlineDottedPixelsSolid(25);
-        dottedPolyline.setColor(new float[]{0f / 255f, 122f / 255f, 255f / 255f, 1.0f}); //washed out accent color
-        dottedPolyline.setOutlineColor(new float[]{0f / 255f, 122f / 255f, 255f / 255f, 1.0f});
-        mapView.addPolyline(dottedPolyline);
-
-        SKPosition position = SKPositionerManager.getInstance().getCurrentGPSPosition(true);
-        mCurrentTrack.add(position.getCoordinate());
-        dottedPolyline.setNodes(mCurrentTrack);
-
-
-    }
-
-    @Override
-    public void onViaPointReached(int i) {
-
-    }
-
-    @Override
-    public void onVisualAdviceChanged(boolean b, boolean b1, SKNavigationState skNavigationState) {
-
-    }
-
-    @Override
-    public void onTunnelEvent(boolean b) {
-
-    }
-
-    @Override
-    public void onFcdTripStarted(String s) {
-
+            SKPosition position = SKPositionerManager.getInstance().getCurrentGPSPosition(true);
+            mCurrentTrack.add(position.getCoordinate());
+            dottedPolyline.setNodes(mCurrentTrack);
+        }
     }
 
     public void setSource(PlaybackManager source) {
@@ -1311,13 +1187,17 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
                 break;
             case MODE_RECORDING:
                 mRecordingMode = true;
-                mapView.bringToFront();
-                recordButton.setVisibility(View.INVISIBLE);
-                positionButton.setVisibility(View.INVISIBLE);
+                if (mapView != null && recordButton != null && positionButton != null) {
+                    mapView.bringToFront();
+                    recordButton.setVisibility(View.INVISIBLE);
+                    positionButton.setVisibility(View.INVISIBLE);
+                }
                 break;
             case MODE_PREVIEW:
-                recordButton.setVisibility(View.INVISIBLE);
-                positionButton.setVisibility(View.INVISIBLE);
+                if (recordButton != null && positionButton != null) {
+                    recordButton.setVisibility(View.INVISIBLE);
+                    positionButton.setVisibility(View.INVISIBLE);
+                }
                 break;
         }
     }
@@ -1327,37 +1207,31 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
     }
 
     @Override
-    public void onPlaying() {
-
-    }
-
-    @Override
-    public void onPaused() {
-
-    }
-
-    @Override
-    public void onStopped() {
-
-    }
-
-    @Override
     public void onPrepared() {
         Log.d(TAG, "onPrepared: ");
         if (mapView != null) {
             mapView.post(new Runnable() {
                 @Override
                 public void run() {
-                    displaySequence(mPlayer.getTrack(), !mPlayer.isOnline());
+                    if (mPlayer != null) {
+                        displaySequence(mPlayer.getTrack(), !mPlayer.isOnline(), mPlayer.getSequence().skipToValue);
+                    }
                 }
             });
         }
     }
 
     @Override
-    public void onProgressChanged(int index) {
-        Log.d(TAG, "onProgressChanged: " + index);
-        viewFrame(index);
+    public void onProgressChanged(final int index) {
+        if (mapView != null) {
+            mapView.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "onProgressChanged: " + index);
+                    viewFrame(index);
+                }
+            });
+        }
     }
 
     @Override
@@ -1386,6 +1260,35 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
         }
     }
 
+    //@formatter:off
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+    public void onMapRegionChanged(SKCoordinateRegion skCoordinateRegion) {}
+
+    public void onMapRegionChangeStarted(SKCoordinateRegion skCoordinateRegion) {}
+
+    public void onRotateMap() {}
+
+    public void onMapActionDown(SKScreenPoint skScreenPoint) {}
+
+    public void onCompassSelected() {}
+
+    public void onInternationalisationCalled(int i) {}
+
+    public void onDebugInfo(double v, float v1, double v2) {}
+
+    public void onBoundingBoxImageRendered(int i) {}
+
+    public void onGLInitializationError(String s) {}
+
+    public void onScreenshotReady(Bitmap bitmap) {}
+
+    public void onPlaying() {}
+
+    public void onPaused() {}
+
+    public void onStopped() {}
+
     /**
      * helper impl.
      */
@@ -1398,6 +1301,4 @@ public class MapFragment extends Fragment implements SKMapSurfaceListener, Senso
             setNodes(new ArrayList<SKCoordinate>());
         }
     }
-
-
 }

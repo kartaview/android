@@ -1,21 +1,3 @@
-/*
- * FFmpegMediaPlayer: A unified interface for playing audio files and streams.
- *
- * Copyright 2016 William Seemann
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #ifndef MEDIAPLAYER_H
 #define MEDIAPLAYER_H
 
@@ -23,47 +5,29 @@
 
 #include <Errors.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <vector>
+#include <deque>
+#include <sys/types.h>
+#include "untrunc/mp4.h"
+#include "untrunc/atom.h"
 
 #ifdef ANDROID
 #include <android/log.h>
-#define LOGE(format, ...)  __android_log_print(ANDROID_LOG_ERROR, "FFMPEG_MEDIAPLAYER_CPP E ", format, ##__VA_ARGS__)
-#define LOGI(format, ...)  __android_log_print(ANDROID_LOG_INFO,  "FFMPEG_MEDIAPLAYER_CPP I ", format, ##__VA_ARGS__)
+#define LOGE(format, ...)  __android_log_print(ANDROID_LOG_ERROR, "FFMPEG_TRACKPLAYER_CPP E ", format, ##__VA_ARGS__)
+#define LOGI(format, ...)  __android_log_print(ANDROID_LOG_INFO,  "FFMPEG_TRACKPLAYER_CPP I ", format, ##__VA_ARGS__)
 #else
 #define LOGE(format, ...)  printf("FFMPEG_MEDIAPLAYER_CPP E " format "\n", ##__VA_ARGS__)
 #define LOGI(format, ...)  printf("FFMPEG_MEDIAPLAYER_CPP I " format "\n", ##__VA_ARGS__)
 #endif
 
+#define DEFAULT_FPS_DELAY 200
+#define FAST_FPS_DELAY 100
+
 extern "C" {
     #include "ffmpeg_mediaplayer.h"
 }
 
-/*enum media_event_type {
-    MEDIA_NOP               = 0, // interface test message
-    MEDIA_PREPARED          = 1,
-    MEDIA_PLAYBACK_COMPLETE = 2,
-    MEDIA_BUFFERING_UPDATE  = 3,
-    MEDIA_SEEK_COMPLETE     = 4,
-    MEDIA_ERROR             = 100,
-};
-
-typedef int media_error_type;
-const media_error_type MEDIA_ERROR_UNKNOWN = 1;
-const media_error_type MEDIA_ERROR_SERVER_DIED = 100;
-
-enum media_player_states {
-    MEDIA_PLAYER_STATE_ERROR        = 0,
-    MEDIA_PLAYER_IDLE               = 1 << 0,
-    MEDIA_PLAYER_INITIALIZED        = 1 << 1,
-    MEDIA_PLAYER_PREPARING          = 1 << 2,
-    MEDIA_PLAYER_PREPARED           = 1 << 3,
-    MEDIA_PLAYER_STARTED            = 1 << 4,
-    MEDIA_PLAYER_PAUSED             = 1 << 5,
-    MEDIA_PLAYER_STOPPED            = 1 << 6,
-    MEDIA_PLAYER_PLAYBACK_COMPLETE  = 1 << 7
-};*/
-
-// ----------------------------------------------------------------------------
-// ref-counted object for callbacks
 class MediaPlayerListener
 {
 public:
@@ -77,15 +41,11 @@ public:
     ~MediaPlayer();
 
             void            disconnect();
-            status_t        setDataSource(const char *url, const char *headers);
-            status_t        setDataSource(int fd, int64_t offset, int64_t length);
-            status_t        setMetadataFilter(char *allow[], char *block[]);
-            status_t        getMetadata(bool update_only, bool apply_filter, AVDictionary **metadata);
+            void            initSigHandler();
+            status_t        setDataSource(const char *url[], int size);
             status_t        setVideoSurface(ANativeWindow* native_window);
             status_t        setListener(MediaPlayerListener *listener);
             MediaPlayerListener * getListener();
-            status_t        prepare();
-            status_t        prepareAsync();
             status_t        start();
             status_t        stop();
             status_t        pause();
@@ -93,49 +53,44 @@ public:
             status_t        getVideoWidth(int *w);
             status_t        getVideoHeight(int *h);
             status_t        seekTo(int msec);
-            status_t        getCurrentPosition(int *msec);
+            status_t        getCurrentPosition(int *gIndex);
             status_t        getDuration(int *msec);
-            status_t        reset();
-            status_t        setAudioStreamType(int type);
+            status_t        setFPSDelay(bool fast);
             status_t        setLooping(int loop);
             bool            isLooping();
-            status_t        setVolume(float leftVolume, float rightVolume);
-            void            notify(int msg, int ext1, int ext, int fromThread);
-            status_t        setAudioSessionId(int sessionId);
-            int             getAudioSessionId();
-            status_t        setAuxEffectSendLevel(float level);
-            int             attachAuxEffect(int effectId);
-            status_t        setNextMediaPlayer(const MediaPlayer* player);
+            status_t        reset();
+            void            notify(void* is,int msg, int ext1, int ext, int fromThread);
 
-    VideoState*                      state;
-        
+    std::deque<size_t>          states;
+    VideoState*                 state;
+    int                         mFpsDelay;
+    int                         mBackwards;
+    int                         mSeeking;
+    ANativeWindow               *native_window;
+
+    int stepFrame(bool forward);
+
+    int setBackwards(bool backwards);
+
+    int seeking(bool i);
+
 private:
             void            clear_l();
-            status_t        seekTo_l(int msec);
-            status_t        prepareAsync_l();
+            void            jumpTo(int fileIndex);
+            status_t        seekTo_l(int video, int index);
+//            status_t        prepareAsync_l();
             status_t        getDuration_l(int *msec);
-            status_t        setDataSource(VideoState *state);
-        
-    //sp<IMediaPlayer>            mPlayer;
-    pthread_mutex_t*            mLock;
-    pthread_mutex_t*            mNotifyLock;
-    //Condition                   mSignal;
+            status_t        setFPSDelay_l(bool fast);
+            status_t        mapGlobalIndexToLocal(int gIndex, std::pair<int, int> *data);
+            int             mapLocalIndexToGlobal(int video, int index);
+            status_t        setDataSource(VideoState*& ps);
+            status_t        setCurrentPlayer(int index);
+
     MediaPlayerListener*        mListener;
-    void*                       mCookie;
-    media_player_states         mCurrentState;
-    int                         mDuration;
-    int                         mCurrentPosition;
-    int                         mSeekPosition;
-    bool                        mPrepareSync;
-    status_t                    mPrepareStatus;
-    int                         mStreamType;
+    media_player_states         mPlayerState;
     bool                        mLoop;
-    float                       mLeftVolume;
-    float                       mRightVolume;
     int                         mVideoWidth;
     int                         mVideoHeight;
-    int                         mAudioSessionId;
-    float                       mSendLevel;
-    };
+};
 
 #endif // MEDIAPLAYER_H

@@ -14,6 +14,8 @@ public abstract class ObdManager {
 
     protected Handler mUIHandler = new Handler(Looper.getMainLooper());
 
+    public static boolean sDisconnected = false;
+
     public abstract boolean connect();
 
     public abstract void disconnect();
@@ -27,11 +29,15 @@ public abstract class ObdManager {
             this.mConnectionListeners.add(listener);
             if (isConnected()) {
                 listener.onConnected();
+            } else if (isConnecting()){
+                listener.onConnecting();
             } else {
                 listener.onDisconnected();
             }
         }
     }
+
+    protected abstract boolean isConnecting();
 
     public void removeConnectionListener(ConnectionListener listener) {
         this.mConnectionListeners.remove(listener);
@@ -48,6 +54,10 @@ public abstract class ObdManager {
                 listener.onConnected();
 
             }
+        } else if (isConnecting()){
+            for (ConnectionListener listener : mConnectionListeners) {
+                listener.onConnecting();
+            }
         } else {
             for (ConnectionListener listener : mConnectionListeners) {
                 listener.onDisconnected();
@@ -61,6 +71,8 @@ public abstract class ObdManager {
 
     public abstract boolean isBle();
 
+    public abstract boolean isWifi();
+
     public abstract void setAuto();
 
     public abstract void reset();
@@ -71,6 +83,8 @@ public abstract class ObdManager {
         void onDisconnected();
 
         void onSpeedObtained(SpeedData speed);
+
+        void onConnecting();
     }
 
     public class SpeedData {

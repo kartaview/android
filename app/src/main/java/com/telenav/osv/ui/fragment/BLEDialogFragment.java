@@ -7,30 +7,31 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.manager.ObdBleManager;
+import com.telenav.osv.obd.BLEConnection;
 import com.telenav.osv.obd.Constants;
-import com.telenav.osv.obd.OBDConnection;
-import com.telenav.osv.ui.list.LeDeviceAdapter;
+import com.telenav.osv.ui.list.BleDeviceAdapter;
 
 /**
  * Created by Kalman on 21/06/16.
@@ -54,11 +55,6 @@ public class BLEDialogFragment extends DialogFragment {
     private ListView devicesList;
 
     /**
-     * text view showed in case the sdk is not initialized
-     */
-    private TextView sdkNotInitializedTv;
-
-    /**
      * the lable of the ble devices list
      */
     private TextView bleDevicesLabel;
@@ -66,7 +62,7 @@ public class BLEDialogFragment extends DialogFragment {
     /**
      * adapter for the devices list
      */
-    private LeDeviceAdapter mLeDeviceListAdapter;
+    private BleDeviceAdapter mLeDeviceListAdapter;
 
     private BluetoothAdapter bluetoothAdapter;
 
@@ -79,12 +75,11 @@ public class BLEDialogFragment extends DialogFragment {
         @Override
         public void onScanResult(int callbackType, final ScanResult result) {
             super.onScanResult(callbackType, result);
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(new Runnable() {
+            if (activity != null) {
+                activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         mLeDeviceListAdapter.addDevice(result.getDevice());
-                        mLeDeviceListAdapter.notifyDataSetChanged();
                     }
                 });
             }
@@ -93,11 +88,29 @@ public class BLEDialogFragment extends DialogFragment {
         @Override
         public void onBatchScanResults(List<ScanResult> results) {
             super.onBatchScanResults(results);
+            if (results.isEmpty()){
+                if (activity != null) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mLeDeviceListAdapter.addDevice(null);
+                        }
+                    });
+                }
+            }
         }
 
         @Override
         public void onScanFailed(int errorCode) {
-            Log.i(TAG, "error code is:" + errorCode);
+            Log.d(TAG, "error code is:" + errorCode);
+            if (activity != null) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLeDeviceListAdapter.addDevice(null);
+                    }
+                });
+            }
         }
     };
 
@@ -114,11 +127,11 @@ public class BLEDialogFragment extends DialogFragment {
             final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
             if (device == null) return;
             // stop the scanning
-            if (OBDConnection.getInstance().isScanning()) {
-                OBDConnection.getInstance().stopScanning(scanCallback);
+            if (BLEConnection.getInstance().isScanning()) {
+                startScanning(false);
             }
             preferences.edit()
-                    .putString(Constants.EXTRAS_DEVICE_ADDRESS, device.getAddress())
+                    .putString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, device.getAddress())
                     .apply();
 
             if (deviceSelectedListener != null) {
@@ -131,7 +144,11 @@ public class BLEDialogFragment extends DialogFragment {
         }
     };
 
-    private MainActivity mActivity;
+    private MainActivity activity;
+
+    private ImageView refreshButton;
+
+    private View.OnClickListener mScanOnClickListener;
 
     public void setDeviceSelectedListener(OnDeviceSelectedListener deviceSelectedListener) {
         this.deviceSelectedListener = deviceSelectedListener;
@@ -142,26 +159,27 @@ public class BLEDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_devices_list, container, false);
-        mActivity = (MainActivity) getActivity();
+        activity = (MainActivity) getActivity();
         try {
-            mObdBleManager = (ObdBleManager) mActivity.getApp().getOBDManager();
+            mObdBleManager = (ObdBleManager) activity.getApp().getOBDManager();
         } catch (ClassCastException e){
-            mObdBleManager = new ObdBleManager(mActivity.getApp());
+            activity.getApp().setObdManager(PreferenceTypes.V_OBD_BLE);
+            mObdBleManager = (ObdBleManager) activity.getApp().getOBDManager();
         }
-        preferences = getActivity().getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
+        preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
 
         // Use this check to determine whether BLE is supported on the device. Then
         // you can selectively disable BLE-related features.
-        if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(getActivity(), R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
-            getActivity().finish();
+        if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(activity, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+            activity.finish();
         }
 
-        bluetoothAdapter = OBDConnection.getInstance().initConnection(getActivity());
+        bluetoothAdapter = BLEConnection.getInstance().initConnection(activity);
 
         // Checks if Bluetooth is supported on the device.
         if (bluetoothAdapter == null) {
-            Toast.makeText(getActivity(), R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
             //context.finish();
             //return;
         }
@@ -184,14 +202,18 @@ public class BLEDialogFragment extends DialogFragment {
     private void initViews() {
         devicesList = (ListView) root.findViewById(R.id.devices_list);
         devicesList.setOnItemClickListener(deviceItemClickListener);
-        sdkNotInitializedTv = (TextView) root.findViewById(R.id.sdk_not_initialized);
-        bleDevicesLabel = (TextView) root.findViewById(R.id.ble_devices_lable);
-
-        mLeDeviceListAdapter = new LeDeviceAdapter(getActivity());
+        bleDevicesLabel = (TextView) root.findViewById(R.id.devices_fragment_title);
+        refreshButton = (ImageView) root.findViewById(R.id.refresh_button);
+        bleDevicesLabel.setText(R.string.ble_devices);
+        mScanOnClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startScanning(true);
+            }
+        };
+        mLeDeviceListAdapter = new BleDeviceAdapter(activity);
         devicesList.setAdapter(mLeDeviceListAdapter);
-        OBDConnection.getInstance().startScanning(scanCallback);
-        refreshScanMenu();
-        showBleList(true);
+        startScanning(true);
     }
 
     @Override
@@ -207,22 +229,39 @@ public class BLEDialogFragment extends DialogFragment {
                 dismiss();
                 return;
             } else if (resultCode == Activity.RESULT_OK) {
-                OBDConnection.getInstance().startScanning(scanCallback);
+                startScanning(true);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void startScanning(boolean start){
+        if (start){
+            Animation animation = new RotateAnimation(0.0f, 360.0f,
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
+                    0.5f);
+            animation.setRepeatCount(-1);
+            animation.setDuration(2000);
+            refreshButton.startAnimation(animation);
+            refreshButton.setOnClickListener(null);
+            BLEConnection.getInstance().startScanning(scanCallback);
+        } else {
+            refreshButton.clearAnimation();
+            refreshButton.setOnClickListener(mScanOnClickListener);
+            BLEConnection.getInstance().stopScanning(scanCallback);
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
         if (bluetoothAdapter.isEnabled()) {
-            OBDConnection.getInstance().stopScanning(scanCallback);
+            startScanning(false);
         }
-        final LeDeviceAdapter leDeviceAdapter = mLeDeviceListAdapter;
-        if (leDeviceAdapter != null) {
-            leDeviceAdapter.clear();
-            leDeviceAdapter.notifyDataSetChanged();
+        final BleDeviceAdapter bleDeviceAdapter = mLeDeviceListAdapter;
+        if (bleDeviceAdapter != null) {
+            bleDeviceAdapter.clear();
+            bleDeviceAdapter.notifyDataSetChanged();
         }
     }
 
@@ -231,33 +270,6 @@ public class BLEDialogFragment extends DialogFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-    }
-
-    /**
-     * Check if scanning is running for refresing the options menu
-     */
-    private void refreshScanMenu() {
-        final Handler handler = new Handler();
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (getActivity() != null) {
-                    getActivity().invalidateOptionsMenu();
-                    handler.postDelayed(this, 10000);
-                }
-            }
-        });
-    }
-
-    /**
-     * show the ble devices or show the "sdk not initialized" message
-     *
-     * @param show - true if show the ble devices list, false otherwise
-     */
-    private void showBleList(boolean show) {
-        bleDevicesLabel.setVisibility((show) ? View.VISIBLE : View.GONE);
-        devicesList.setVisibility((show) ? View.VISIBLE : View.GONE);
-        sdkNotInitializedTv.setVisibility((show) ? View.GONE : View.VISIBLE);
     }
 
     public interface OnDeviceSelectedListener {

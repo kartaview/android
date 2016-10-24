@@ -73,13 +73,18 @@ public class NearbyFragment extends Fragment {
 
     private int mMaxNumberOfResults = 10000;
 
+    private LinearLayoutManager mPortraitLayoutManager;
+
+    private GridLayoutManager mLandscapeLayoutManager;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, null);
 
         activity = (MainActivity) getActivity();
         mSequencesRecyclerView = (RecyclerView) view.findViewById(R.id.sequences_recycle_view);
-
+        mPortraitLayoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
+        mLandscapeLayoutManager = new GridLayoutManager(activity, 2);
         mUploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.profile_swipe_refresh_layout);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -158,18 +163,12 @@ public class NearbyFragment extends Fragment {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mSequencesRecyclerView.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
-
-        } else {
-            GridLayoutManager glm = new GridLayoutManager(getContext(), 2);
-            glm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                @Override
-                public int getSpanSize(int position) {
-                    return (position == 0) ? 2 : 1;
-                }
-            });
-            mSequencesRecyclerView.setLayoutManager(glm);
+        if (activity != null && mSequencesRecyclerView != null) {
+            if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
+            } else {
+                mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
+            }
         }
         super.onConfigurationChanged(newConfig);
     }
@@ -181,34 +180,43 @@ public class NearbyFragment extends Fragment {
         mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity, false);
         mSequencesRecyclerView.setAdapter(mOnlineSequencesAdapter);
 
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
         if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mSequencesRecyclerView.setLayoutManager(layoutManager);
-
+            mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
         } else {
-            GridLayoutManager manager = new GridLayoutManager(activity, 3);
-            manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                @Override
-                public int getSpanSize(int position) {
-                    return (3 - position % 3);
-                }
-            });
+            mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
         }
+
+//
+//        final LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
+//        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+//            mSequencesRecyclerView.setLayoutManager(layoutManager);
+//
+//        } else {
+//            GridLayoutManager manager = new GridLayoutManager(activity, 3);
+//            manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+//                @Override
+//                public int getSpanSize(int position) {
+//                    return (3 - position % 3);
+//                }
+//            });
+//        }
 
         mSequencesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView,
                                    int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+                RecyclerView.LayoutManager lm = mSequencesRecyclerView.getLayoutManager();
+                if (lm instanceof LinearLayoutManager) {
+                    mTotalItemCount = lm.getItemCount() - 1;
+                    mLastVisibleItem = ((LinearLayoutManager)lm).findLastVisibleItemPosition();
 
-                mTotalItemCount = layoutManager.getItemCount() - 1;
-                mLastVisibleItem = layoutManager.findLastVisibleItemPosition();
-
-                if (!mLoading && mTotalItemCount == mLastVisibleItem && mTotalItemCount < mMaxNumberOfResults) {
-                    // End has been reached
-                    mSwipeRefreshLayout.setRefreshing(true);
-                    loadMoreResults();
-                    mLoading = true;
+                    if (!mLoading && mTotalItemCount == mLastVisibleItem && mTotalItemCount < mMaxNumberOfResults) {
+                        // End has been reached
+                        mSwipeRefreshLayout.setRefreshing(true);
+                        loadMoreResults();
+                        mLoading = true;
+                    }
                 }
             }
         });
@@ -243,6 +251,9 @@ public class NearbyFragment extends Fragment {
 
     public void handleNearbyResult(String result) {
         if (result != null && !result.isEmpty()) {
+            if (mOnlineSequences != null){
+                mOnlineSequences.clear();
+            }
             try {
                 JSONObject obj = new JSONObject(result);
                 JSONObject osv = obj.getJSONObject("osv");
@@ -261,6 +272,7 @@ public class NearbyFragment extends Fragment {
                             Log.d(TAG, "handleSequenceListResult: " + e.getLocalizedMessage());
                         }
                         String imgNum = item.getString("photo_no");
+                        String sequenceIndex = item.getString("sequence_index");
                         String distance = item.getString("distance");
                         double lat = item.getDouble("lat");
                         double lon = item.getDouble("lng");
@@ -288,8 +300,10 @@ public class NearbyFragment extends Fragment {
                         Sequence seq = new Sequence(id, date, Integer.valueOf(imgNum), partialAddress, thumbLink, obd, platform, platformVersion, appVersion, (int) (distanceNum
                                 * 1000d));
 //                        seq.processing = !processing.equals("PROCESSING_FINISHED");
+                        seq.isPublic = true;
                         seq.location.setLatitude(lat);
                         seq.location.setLongitude(lon);
+                        seq.skipToValue = Integer.valueOf(sequenceIndex);
                         mOnlineSequences.add(seq);
                     }
                 }

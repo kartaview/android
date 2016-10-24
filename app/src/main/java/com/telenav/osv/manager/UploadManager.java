@@ -131,8 +131,6 @@ public class UploadManager implements Response.ErrorListener {
 
     private static final int TRACKS_IPP = 1000;
 
-    private static final String ACCESS_TOKEN_KEY = "ACCESS_TOKEN";
-
     /**
      * create sequence request url
      */
@@ -297,7 +295,7 @@ public class UploadManager implements Response.ErrorListener {
      * @param sequence parent folder
      * @param video image file
      * @param onlineSequenceID online sequence id
-     * @param sequenceIndex the startIndex of the image
+     * @param sequenceIndex the fileIndex of the image
      * @param listener request listener
      */
     private void uploadVideo(final Sequence sequence, final OSVFile video, final int onlineSequenceID, final int sequenceIndex, final RequestListener listener) {
@@ -325,6 +323,7 @@ public class UploadManager implements Response.ErrorListener {
                             Log.d(TAG, "uploadVideo: " + error.getLocalizedMessage());
                         }
                         if (apiCode == 660) {
+                            sequence.size = sequence.size - Utils.fileSize(video);
                             SequenceDB.instance.deleteVideo(video, sequence.sequenceId, sequenceIndex);
                             videoUploaderQueue.markDone(sequence, true);
                             listener.requestFinished(RequestListener.STATUS_SUCCESS_IMAGE);
@@ -364,6 +363,7 @@ public class UploadManager implements Response.ErrorListener {
                     @Override
                     public void run() {
                         Log.d(TAG, "uploadVideo: video uploaded successfully: " + onlineSequenceID + "/" + video.getName());
+                        sequence.size = sequence.size - Utils.fileSize(video);
                         SequenceDB.instance.deleteVideo(video, sequence.sequenceId, sequenceIndex);
                         videoUploaderQueue.markDone(sequence, true);
                         listener.requestFinished(RequestListener.STATUS_SUCCESS_IMAGE);
@@ -389,6 +389,7 @@ public class UploadManager implements Response.ErrorListener {
     private void createSequence(final Sequence sequence, final RequestListener listener) {
         final int onlineId = SequenceDB.instance.getOnlineId(sequence.sequenceId);
         final OSVFile metafile = new OSVFile(sequence.folder, "track.txt.gz");
+        Log.d(TAG, "createSequence: creating sequence request");
         if (onlineId == -1) {
             Cursor cursor = SequenceDB.instance.getFrames(sequence.sequenceId);
             if (cursor != null && cursor.getCount() > 0) {
@@ -441,6 +442,7 @@ public class UploadManager implements Response.ErrorListener {
                                         SequenceDB.instance.updateSequenceOnlineId(sequence.sequenceId, sequenceID);
                                         sequence.onlineSequenceId = sequenceID;
                                         if (metafile.exists()) {
+                                            sequence.size = sequence.size - Utils.fileSize(metafile);
                                             metafile.delete();
                                         }
                                         uploadSequence(sequence, sequenceID, listener);
@@ -466,6 +468,7 @@ public class UploadManager implements Response.ErrorListener {
                     }
                 }, sequence.sequenceId, getAccessToken(), position, metafile, sequence.appVersion, sequence.obd);
                 seqRequest.setRetryPolicy(new DefaultRetryPolicy(10000, 5, 1f));
+                seqRequest.setShouldCache(false);
                 mCreateQueue.add(seqRequest);
             } else {
                 Log.d(TAG, "createSequence: cursor has 0 elements");
@@ -482,6 +485,7 @@ public class UploadManager implements Response.ErrorListener {
                         @Override
                         public void run() {
                             if (metafile.exists()) {
+                                sequence.size = sequence.size - Utils.fileSize(metafile);
                                 metafile.delete();
                             }
                             uploadSequence(sequence, onlineId, listener);
@@ -515,6 +519,8 @@ public class UploadManager implements Response.ErrorListener {
                     videoUploaderQueue.partialProgressChanged(totalSent, totalSize);
                 }
             }, sequence.sequenceId, getAccessToken(), "", null, sequence.appVersion, sequence.obd);
+            seqReq.setShouldCache(false);
+            seqReq.setRetryPolicy(new DefaultRetryPolicy(10000, 5, 1f));
             mCreateQueue.add(seqReq);//need to add indexing cache notification
         }
     }
@@ -886,7 +892,9 @@ public class UploadManager implements Response.ErrorListener {
 
     public void getProfileDetails(final RequestResponseListener listener) {
         String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-        if (userName.equals("")) {
+        String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
+
+        if (userName.equals("") || token.equals("")) {
             listener.requestFinished(RequestListener.STATUS_FAILED, mContext.getString(R.string.not_logged_in));
             return;
         }
@@ -1003,7 +1011,7 @@ public class UploadManager implements Response.ErrorListener {
 
     private String getAccessToken() {
         if (mAccessToken == null) {
-            mAccessToken = PreferenceManager.getDefaultSharedPreferences(mContext).getString(ACCESS_TOKEN_KEY, null);
+            mAccessToken = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
         }
         return mAccessToken;
     }
@@ -1074,9 +1082,7 @@ public class UploadManager implements Response.ErrorListener {
                                                 try {
                                                     obj = new JSONObject(result);
                                                     accessToken = obj.getJSONObject("osv").getString("access_token");
-                                                    final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
-                                                    editor.putString(ACCESS_TOKEN_KEY, accessToken);
-                                                    editor.apply();
+                                                    appPrefs.saveStringPreference(PreferenceTypes.K_ACCESS_TOKEN, accessToken);
                                                 } catch (JSONException e) {
                                                     Log.d(TAG, "requestFinished: " + Log.getStackTraceString(e));
                                                 }
@@ -1229,8 +1235,9 @@ public class UploadManager implements Response.ErrorListener {
         }
         final Collection<Sequence> sequencesCopy = new ArrayList<>(sequences);
         String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-        String userId = appPrefs.getStringPreference(PreferenceTypes.K_USER_ID);
-        if (userName.equals("") || userId.equals("")) {
+        String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
+
+        if (userName.equals("") || token.equals("")) {
             if (listener != null) {
                 listener.requestFinished(RequestListener.STATUS_FAILED);
             }
@@ -1275,7 +1282,10 @@ public class UploadManager implements Response.ErrorListener {
                     }
                     commitNextSequence();
                 } catch (Exception e) {
-                    Log.d(TAG, "uploadCache: " + e.getLocalizedMessage());
+//                    if (Fabric.isInitialized()) {
+//                        Crashlytics.logException(e);
+//                    }
+                    Log.d(TAG, "uploadCache: " + Log.getStackTraceString(e));
                 }
             }
         });
@@ -1425,10 +1435,22 @@ public class UploadManager implements Response.ErrorListener {
         return mCreateQueue.size();
     }
 
+//    public long getRemainingSizeValue() {
+//        long number = 0;
+//        for (final Sequence sequence : videoUploaderQueue.mSequences) {
+//            Sequence sequence1 = Sequence.getLocalSequence(sequence.sequenceId);
+//            long folderSize = Utils.folderSize(sequence1.folder);
+//            sequence1.size = folderSize;
+//            number = number + folderSize;
+//        }
+//        Log.d(TAG, "getRemainingSizeValue: " + number);
+//        return number;
+//    }
+
     public long getRemainingSizeValue() {
         long number = 0;
         for (final Sequence sequence : videoUploaderQueue.mSequences) {
-            number = number + Utils.folderSize(Sequence.getLocalSequence(sequence.sequenceId).folder);
+            number = number + Sequence.getLocalSequence(sequence.sequenceId).size;
         }
         return number;
     }
@@ -1437,7 +1459,7 @@ public class UploadManager implements Response.ErrorListener {
         if (videoUploaderQueue.mTotalSize == 0) {
             long number = 0;
             for (final Sequence sequence : videoUploaderQueue.mSequences) {
-                number = number + Sequence.getLocalSequence(sequence.sequenceId).size;
+                number = number + Sequence.getLocalSequence(sequence.sequenceId).originalSize;
             }
             videoUploaderQueue.mTotalSize = number;
         }
@@ -1454,13 +1476,14 @@ public class UploadManager implements Response.ErrorListener {
         if (!Utils.DEBUG || !appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_SAVE_AUTH)) {
             final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
             editor.clear();
-            editor.commit();
+            editor.apply();
             CookieSyncManager.createInstance(mContext);
             CookieManager.getInstance().removeAllCookie();
         }
         mAccessToken = null;
 
         appPrefs.saveStringPreference(PreferenceTypes.K_USER_ID, "");
+        appPrefs.saveStringPreference(PreferenceTypes.K_ACCESS_TOKEN, "");
         appPrefs.saveStringPreference(PreferenceTypes.K_USER_NAME, "");
     }
 
@@ -1508,7 +1531,7 @@ public class UploadManager implements Response.ErrorListener {
             mSequences.addAll(sequences);
             for (final Sequence sequence : sequences) {
                 int number = (int) SequenceDB.instance.getNumberOfVideos(sequence.sequenceId);
-                mTotalSize = mTotalSize + sequence.size;
+                mTotalSize = mTotalSize + sequence.originalSize;
                 sequence.numberOfVideos = number;
             }
             Log.d(TAG, "initialize: mTotalSize = " + mTotalSize);

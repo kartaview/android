@@ -22,7 +22,7 @@ import com.telenav.osv.utils.Log;
 import com.telenav.osv.obd.Constants;
 import com.telenav.osv.obd.VehicleDataListener;
 import com.telenav.osv.obd.OBDCommunication;
-import com.telenav.osv.obd.OBDConnection;
+import com.telenav.osv.obd.BLEConnection;
 import com.telenav.osv.obd.OBDHelper;
 
 /**
@@ -186,6 +186,11 @@ public class ObdBleManager extends ObdManager {
     }
 
     @Override
+    protected boolean isConnecting() {
+        return false;
+    }
+
+    @Override
     public boolean isConnected() {
         return isConnected;
     }
@@ -200,6 +205,11 @@ public class ObdBleManager extends ObdManager {
     }
 
     @Override
+    public boolean isWifi() {
+        return false;
+    }
+
+    @Override
     public void setAuto() {
 
     }
@@ -210,7 +220,7 @@ public class ObdBleManager extends ObdManager {
     }
 
     public boolean connect() {
-        final String deviceAddress = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).getString(Constants.EXTRAS_DEVICE_ADDRESS, null);
+        final String deviceAddress = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, null);
 
         if (deviceAddress == null) {
             Log.d(TAG, " stopping service as no saved device");
@@ -222,7 +232,7 @@ public class ObdBleManager extends ObdManager {
             return false;
         }
 
-        BluetoothAdapter bluetoothAdapter = OBDConnection.getInstance().initConnection(mContext);
+        BluetoothAdapter bluetoothAdapter = BLEConnection.getInstance().initConnection(mContext);
 
         // Checks if Bluetooth is supported on the device.
         if (bluetoothAdapter == null) {
@@ -312,8 +322,8 @@ public class ObdBleManager extends ObdManager {
     }
 
     public void onDeviceSelected(BluetoothDevice device) {
-        if (device.getAddress().equals(preferences.getString(Constants.EXTRAS_DEVICE_ADDRESS, ""))) {
-            preferences.edit().putInt(Constants.LAST_CONNECTION_STATUS, Constants.STATUS_CONNECTING).apply();
+        if (device.getAddress().equals(preferences.getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, ""))) {
+            preferences.edit().putInt(Constants.LAST_BLE_CONNECTION_STATUS, Constants.STATUS_CONNECTING).apply();
         }
     }
 

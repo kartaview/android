@@ -1,7 +1,5 @@
 package com.telenav.osv.item;
 
-import com.skobbler.ngx.SKCoordinate;
-
 /**
  *
  * Created by Kalman on 11/18/15.
@@ -12,22 +10,25 @@ public class VideoFile extends RecordingFile {
 
     public int sequenceId;
 
-    public int startIndex;
+    public int fileIndex;
+
+    public int frameCount;
 
     public String link;
 
     public OSVFile file;
 
-    public VideoFile(int sequenceId, String link, int startIndex) {
+    public VideoFile(int sequenceId, String link, int fileIndex) {
         this.sequenceId = sequenceId;
-        this.startIndex = startIndex;
+        this.fileIndex = fileIndex;
         this.link = link;
     }
 
-    public VideoFile(OSVFile video, int startIndex) {
+    public VideoFile(OSVFile video, int fileIndex, int count) {
         this.sequenceId = Sequence.getSequenceId(video.getParentFile());
         this.file = video;
-        this.startIndex = startIndex;
+        this.fileIndex = fileIndex;
+        this.frameCount = count;
         link = "file://" + video.getPath();
     }
 }

@@ -1,6 +1,7 @@
 package com.telenav.osv.application;
 
 import java.util.Date;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -9,15 +10,18 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Process;
 import android.support.multidex.MultiDexApplication;
 import com.skobbler.ngx.reversegeocode.SKReverseGeocoderManager;
+import com.telenav.osv.R;
 import com.telenav.osv.activity.SplashActivity;
 import com.telenav.osv.db.SequenceDB;
-import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.manager.CameraManager;
 import com.telenav.osv.manager.LocationManager;
 import com.telenav.osv.manager.ObdBleManager;
+import com.telenav.osv.manager.ObdBtManager;
 import com.telenav.osv.manager.ObdManager;
 import com.telenav.osv.manager.ObdWifiManager;
 import com.telenav.osv.manager.SensorManager;
@@ -35,6 +39,12 @@ import com.telenav.osv.utils.Utils;
 public class OSVApplication extends MultiDexApplication {
     private final static String TAG = "OSVApplication";
 
+    public static final int START_RECORDING_PERMISSION = 111;
+
+    public static final int CAMERA_PERMISSION = 112;
+    public static final int LOCATION_PERMISSION = 113;
+    public static final int LOCATION_PERMISSION_BT = 114;
+
     public static String PACKAGE_NAME;
 
     public static long sUiThreadId;
@@ -46,6 +56,8 @@ public class OSVApplication extends MultiDexApplication {
     public static Date runTime;
 
     public static String VERSION_NAME = "";
+
+    public boolean isDebug;
 
     private CameraManager mCamManager;
 
@@ -60,12 +72,34 @@ public class OSVApplication extends MultiDexApplication {
 
     private SequenceDB mSequenceDB;
 
-    public boolean isDebug;
+    private LocationManager mLocationManager;
+
+    private SensorManager mSensorManager;
+
+    private ObdManager mOBDManager;
+
+    private ShutterManager mShutterManager;
+
+    private HandlerThread mHandlerThread;
+
+    private Handler mBackgroundHandler;
+
+    private boolean mInit;
+
+    public boolean isMainProcess() {
+        return mIsMainProcess;
+    }
+
+    private boolean mIsMainProcess;
 
     private Thread.UncaughtExceptionHandler mExHandler = new Thread.UncaughtExceptionHandler() {
         public void uncaughtException(Thread thread, Throwable ex) {
-
             Log.e(TAG, "uncaughtException: " + Log.getStackTraceString(ex));
+            if (!mIsMainProcess) {
+                Log.d(TAG, "uncaughtException: ");
+                System.exit(1);
+                return;
+            }
             isDebug = Utils.isDebugBuild(OSVApplication.this);
 //            if (!isDebug) {
 //                try {
@@ -113,17 +147,22 @@ public class OSVApplication extends MultiDexApplication {
         }
     };
 
-    private LocationManager mLocationManager;
-
-    private SensorManager mSensorManager;
-
-    private ObdManager mOBDManager;
-
-    private ShutterManager mShutterManager;
-
     @Override
     public void onCreate() {
         super.onCreate();
+
+        String currentProcName = "";
+        int pid = android.os.Process.myPid();
+        ActivityManager manager = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningAppProcessInfo processInfo : manager.getRunningAppProcesses()) {
+            if (processInfo.pid == pid) {
+                currentProcName = processInfo.processName;
+                break;
+            }
+        }
+        mIsMainProcess = !currentProcName.contains(getString(R.string.playback_process_name));
+        Log.d(TAG, "onCreate: process " + currentProcName);
+
         runTime = new Date(System.currentTimeMillis());
         try {
             if (getExternalFilesDir(null) != null) {
@@ -139,8 +178,8 @@ public class OSVApplication extends MultiDexApplication {
         Log.DEBUG = true;//isDebug || appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED);
         Utils.isDebugEnabled(this);
         try {
-            if (!isDebug) {
-//                Fabric fabric = new Fabric.Builder(OSVApplication.this)
+            if (!isDebug && mIsMainProcess) {
+//                final Fabric fabric = new Fabric.Builder(OSVApplication.this)
 //                        .kits(new Crashlytics())
 ////                        .debuggable(true)
 //                        .build();
@@ -165,11 +204,14 @@ public class OSVApplication extends MultiDexApplication {
                                     prefs.edit().clear().apply();
                                 }
                                 appPrefs.saveFloatPreference(PreferenceTypes.K_VERSION_CODE, version);
+                                if (version <= 50 && Build.VERSION.SDK_INT >= 24){
+                                    appPrefs.saveBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, false);
+                                }
 //                                if (Fabric.isInitialized()) {
 //                                    String arch = System.getProperty("os.arch");
-//                                    Crashlytics.logException(new UpgradeException("OSV", "New versionCode detected! " + version + " architecture " + arch));
-//                                    Crashlytics.log(3, "OSV", "New versionCode detected! " + version);
-//                                    Crashlytics.log("New versionCode! " + version);
+////                                    Crashlytics.logException(new UpgradeException("OSV", "New versionCode detected! " + version + " architecture " + arch));
+////                                    Crashlytics.log(3, "OSV", "New versionCode detected! " + version);
+////                                    Crashlytics.log("New versionCode! " + version);
 //                                }
                                 Log.d(TAG, "onCreate: new versionCode! " + version);
                             }
@@ -196,16 +238,41 @@ public class OSVApplication extends MultiDexApplication {
         mDefaultExHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(mExHandler);
         SKReverseGeocoderManager.getInstance();
-        int obdType = appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE);
-        setObdManager(obdType);
-        new CameraManager(this);
-        mCamManager = CameraManager.instance;
-        mUploadManager = new UploadManager(this);
-        mSequenceDB = new SequenceDB(this);
-        mLocationManager = LocationManager.get(this);
-        mSensorManager = new SensorManager(this);
-        mShutterManager = new ShutterManager(this);
-        consistencyCheck();
+        mHandlerThread = new HandlerThread("BackgroundCreator", Process.THREAD_PRIORITY_BACKGROUND);
+        mHandlerThread.start();
+        mBackgroundHandler = new Handler(mHandlerThread.getLooper());
+        mInit = false;
+        mBackgroundHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mIsMainProcess) {
+                    int obdType = appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE);
+                    setObdManager(obdType);
+                    new CameraManager(OSVApplication.this);
+                    mCamManager = CameraManager.instance;
+                    mUploadManager = new UploadManager(OSVApplication.this);
+                    mSequenceDB = new SequenceDB(OSVApplication.this);
+                    mLocationManager = LocationManager.get(OSVApplication.this);
+                    mSensorManager = new SensorManager(OSVApplication.this);
+                    mShutterManager = new ShutterManager(OSVApplication.this);
+                    consistencyCheck();
+                } else {
+                    int obdType = appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE);
+                    setObdManager(obdType);
+                    mLocationManager = LocationManager.get(OSVApplication.this);
+                    mSequenceDB = new SequenceDB(OSVApplication.this);
+                }
+                mInit = true;
+            }
+        });
+        while (!mInit){
+            Log.d(TAG, "onCreate: waiting on creation of managers");
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void consistencyCheck() {
@@ -247,7 +314,7 @@ public class OSVApplication extends MultiDexApplication {
     }
 
     public void setObdManager(int type) {
-        switch (type){
+        switch (type) {
             case PreferenceTypes.V_OBD_WIFI:
                 mOBDManager = new ObdWifiManager(this);
                 break;
@@ -255,12 +322,12 @@ public class OSVApplication extends MultiDexApplication {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     mOBDManager = new ObdBleManager(this);
                 } else {
-                    appPrefs.saveIntPreference(PreferenceTypes.K_OBD_TYPE, PreferenceTypes.V_OBD_WIFI);
-                    mOBDManager = new ObdWifiManager(this);
+                    appPrefs.saveIntPreference(PreferenceTypes.K_OBD_TYPE, PreferenceTypes.V_OBD_BT);
+                    mOBDManager = new ObdBtManager(this);
                 }
                 break;
             case PreferenceTypes.V_OBD_BT:
-                mOBDManager = new ObdWifiManager(this);//todo change
+                mOBDManager = new ObdBtManager(this);
                 break;
             default:
                 break;

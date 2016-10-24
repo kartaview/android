@@ -1,6 +1,7 @@
 package com.telenav.osv.obd;
 
 
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -8,31 +9,25 @@ import android.bluetooth.le.ScanCallback;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 /**
  * Created by dianat on 3/25/2016.
  */
-@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class OBDConnection {
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+public class BLEConnection {
 
     /**
-     * Default stops scanning after 10 secmLeDeviceListAdapter.notifyDataSetChanged();s.
+     * Default stops scanning after 10 sec
      */
     private static final long DEFAULT_SCAN_PERIOD = 10000;
 
-    private static final String TAG = "OBDConnection";
+    private static final String TAG = "BLEConnection";
 
     /**
      * stop scanning after scanPeriod of time
      */
     private long scanPeriod = DEFAULT_SCAN_PERIOD;
-
-    /**
-     * singleton instance
-     */
-    private static OBDConnection sInstance;
 
     /**
      * bleutooth adapter
@@ -54,15 +49,15 @@ public class OBDConnection {
      */
     private boolean scanning;
 
-    private OBDConnection() {
+    private BLEConnection() {
     }
 
-    public static OBDConnection getInstance() {
+    public static BLEConnection getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
     private static class SingletonHolder {
-        private static final OBDConnection INSTANCE = new OBDConnection();
+        private static final BLEConnection INSTANCE = new BLEConnection();
     }
 
     /**
@@ -77,7 +72,7 @@ public class OBDConnection {
             bluetoothAdapter = bluetoothManager.getAdapter();
             bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
-        if (bluetoothLeScanner != null) {
+        if (bluetoothAdapter != null) {
             bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         }
         return bluetoothAdapter;

@@ -1,7 +1,7 @@
 package com.telenav.osv.ui.fragment;
 
-import java.util.ArrayList;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,86 +12,36 @@ import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import com.telenav.osv.R;
-import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.http.RequestListener;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.item.VideoFile;
 import com.telenav.osv.manager.PlaybackManager;
 import com.telenav.osv.manager.UploadManager;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
-import wseemann.media.FFmpegMediaPlayer;
+import com.telenav.streetview.scalablevideoview.ScalableVideoView;
 
 public class TrackPreviewFragment extends Fragment implements View.OnClickListener, PlaybackManager.PlaybackListener {
 
     public static final String TAG = "TrackPreviewFragment";
 
-    private SurfaceView mSurfaceView;
-
-    private SurfaceHolder mSurfaceHolder;
-
-    private Surface mFinalSurface;
-
     private PlaybackManager mPlayer;
 
-    private ArrayList<VideoFile> mVideos = new ArrayList<>();
-
-    private View view;
-
-    private MainActivity activity;
-
-    private FFmpegMediaPlayer.OnErrorListener mOnErrorListener = new FFmpegMediaPlayer.OnErrorListener() {
-        @Override
-        public boolean onError(FFmpegMediaPlayer mp, int what, int extra) {
-            Log.d(TrackPreviewFragment.class.getName(), "Error: " + what);
-            return true;
-        }
-    };
-
-    private FFmpegMediaPlayer.OnSeekCompleteListener mOnSeekCompleteListener = new FFmpegMediaPlayer.OnSeekCompleteListener() {
-        @Override
-        public void onSeekComplete(FFmpegMediaPlayer mp) {
-            Log.d(TAG, "onSeekComplete: to " + mp.getCurrentPosition());
-        }
-    };
-
-    private SeekBar mSeekBar;
-
-    private FFmpegMediaPlayer.OnPreparedListener mOnPreparedListener = new FFmpegMediaPlayer.OnPreparedListener() {
-        @Override
-        public void onPrepared(FFmpegMediaPlayer mp) {
-            Log.d(TAG, "onPrepared: duration = " + mp.getDuration() / 1000f);
-            mSeekBar.setMax(mPlayer.getLength());
-            mSeekBar.setProgress(0);
-            mp.start();
-        }
-    };
+    private OSVActivity activity;
 
     private boolean mOnline;
 
-    private ImageView mPreviousButton;
-
-    private ImageView mFastBackwardButton;
-
     private ImageView mPlayButton;
-
-    private ImageView mFastForwardButton;
-
-    private ImageView mNextButton;
-
-    private ScrollDisabledViewPager mPager;
 
     private Sequence mSequence;
 
@@ -112,23 +62,25 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
 
     private FrameLayout mFrameHolder;
 
+    private boolean mPrepared;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_track_details, null);
-        activity = (MainActivity) getActivity();
+        View view = inflater.inflate(R.layout.fragment_track_details, null);
+        activity = (OSVActivity) getActivity();
         mFrameHolder = (FrameLayout) view.findViewById(R.id.image_holder);
-        mSeekBar = (SeekBar) view.findViewById(R.id.seek_bar_for_preview);
+        SeekBar mSeekBar = (SeekBar) view.findViewById(R.id.seek_bar_for_preview);
         mSeekBar.setProgress(0);
         if (mPlayer != null) {
             mPlayer.addPlaybackListener(this);
             mPlayer.setSeekBar(mSeekBar);
         }
-        mPreviousButton = (ImageView) view.findViewById(R.id.previous_button);
-        mFastBackwardButton = (ImageView) view.findViewById(R.id.fast_backward_button);
+        ImageView mPreviousButton = (ImageView) view.findViewById(R.id.previous_button);
+        ImageView mFastBackwardButton = (ImageView) view.findViewById(R.id.fast_backward_button);
         mPlayButton = (ImageView) view.findViewById(R.id.play_button);
-        mFastForwardButton = (ImageView) view.findViewById(R.id.fast_forward_button);
-        mNextButton = (ImageView) view.findViewById(R.id.next_button);
+        ImageView mFastForwardButton = (ImageView) view.findViewById(R.id.fast_forward_button);
+        ImageView mNextButton = (ImageView) view.findViewById(R.id.next_button);
         mDeleteButton = (ImageView) view.findViewById(R.id.delete_button);
         mMaximizeButton = (ImageView) view.findViewById(R.id.maximize_button);
 
@@ -153,33 +105,13 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
             mDeleteButton.setVisibility(View.VISIBLE);
         }
         if (!mOnline) {
-            mSurfaceView = new SurfaceView(activity);
+            ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
             mSurfaceView.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+            mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
+            mPlayer.setSurface(mSurfaceView);
             mFrameHolder.addView(mSurfaceView);
-            mSurfaceHolder = mSurfaceView.getHolder();
-
-            mSurfaceHolder.addCallback(new SurfaceHolder.Callback() {
-
-                public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                    Log.v(TAG, "surfaceChanged format=" + format + ", width=" + width + ", height="
-                            + height);
-                }
-
-                public void surfaceCreated(SurfaceHolder holder) {
-                    mFinalSurface = holder.getSurface();
-                    Log.d(TAG, "surfaceCreated: setting surface to player");
-                    if (mPlayer != null) {
-                        mPlayer.setSurface(mFinalSurface);
-                    }
-                }
-
-                public void surfaceDestroyed(SurfaceHolder holder) {
-                    Log.v(TAG, "surfaceDestroyed");
-                }
-
-            });
         } else {
-            mPager = new ScrollDisabledViewPager(activity);
+            ScrollDisabledViewPager mPager = new ScrollDisabledViewPager(activity);
 
             if (mPlayer != null) {
                 mPlayer.setSurface(mPager);
@@ -193,7 +125,24 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
             mPager.setLayoutParams(lp);
             mFrameHolder.addView(mPager);
         }
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        if (mPlayer != null && mPrepared){
+//            mPlayer.play();
+//        }
+    }
+
+    @Override
+    public void onPause() {
+//        if (mPlayer != null){
+//            mPlayer.pause();
+//        }
+        super.onPause();
     }
 
     private SpannableString getSpannable(String first, String second) {
@@ -214,6 +163,7 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
         if (mPlayer != null) {
             mPlayer.destroy();
         }
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.onDestroyView();
     }
 
@@ -231,15 +181,11 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                 }
                 break;
             case R.id.play_button:
-                if (mPlayer != null && !mPlayer.isOnline()) {
-                    activity.showSnackBar("Sorry, playback functionality is still under construction.", Snackbar.LENGTH_LONG);
-                } else {
-                    if (mPlayer != null) {
-                        if (mPlayer.isPlaying()) {
-                            mPlayer.pause();
-                        } else {
-                            mPlayer.play();
-                        }
+                if (mPlayer != null) {
+                    if (mPlayer.isPlaying()) {
+                        mPlayer.pause();
+                    } else {
+                        mPlayer.play();
                     }
                 }
                 break;
@@ -283,21 +229,35 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                 }
                 break;
             case R.id.maximize_button:
-                if (mMaximized) {
-                    mMaximized = false;
-                    mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.maximize));
-                    mDeleteButton.setVisibility(View.VISIBLE);
-                    mFrameHolder.setBackground(activity.getResources().getDrawable(R.drawable.preview_background));
-                    activity.resizeHolderStatic(0.6f, true);
-                } else {
-                    mMaximized = true;
-                    mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.minimize));
-                    mDeleteButton.setVisibility(View.GONE);
-                    mFrameHolder.setBackground(null);
-                    activity.resizeHolderStatic(1.0f, true);
-                }
+                toggleMaximize();
                 break;
         }
+    }
+
+    private void toggleMaximize() {
+        int orientation = activity.getResources().getConfiguration().orientation;
+        boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
+        if (mMaximized) {
+            mMaximized = false;
+            mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.maximize));
+            mDeleteButton.setVisibility(View.VISIBLE);
+            mFrameHolder.setBackground(activity.getResources().getDrawable(R.drawable.preview_background));
+            activity.resizeHolderStatic(0.6f, portrait);
+        } else {
+            mMaximized = true;
+            mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.minimize));
+            mDeleteButton.setVisibility(View.GONE);
+            mFrameHolder.setBackground(null);
+            activity.resizeHolderStatic(1.0f, portrait);
+        }
+        mFrameHolder.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mPlayer != null) {
+                    mPlayer.onSizeChanged();
+                }
+            }
+        });
     }
 
     public boolean isOnline() {
@@ -343,13 +303,14 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
             }
 
             activity.enableProgressBar(false);
-            if (isAdded()) {
-                activity.onBackPressed();
-            }
+//            Intent intent = new Intent();
+//            intent.putExtra(LocalPlaybackManager.EXTRA_SEQUENCE_ID, mSequence.sequenceId);
+//            activity.setResult(Activity.RESULT_OK,intent);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
+                    activity.finish();
                 }
             }, 250);
         }
@@ -381,6 +342,7 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
 
     @Override
     public void onPrepared() {
+        mPrepared = true;
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -439,5 +401,43 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                 mDeleteButton.setVisibility(View.VISIBLE);
             }
         }
+    }
+
+    public boolean onBackPressed() {
+        if (mMaximized && mDeleteButton != null && mMaximizeButton != null && activity != null) {
+            toggleMaximize();
+            return true;
+        } else {
+            if (mPlayer != null) {
+                mPlayer.stop();
+                mPlayer.destroy();
+            }
+            if (activity != null) {
+                if (!activity.getApp().isMainProcess()) {
+                    activity.finish();
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                }
+            }
+            return false;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mPlayer != null) {
+            mPlayer.stop();
+            mPlayer.destroy();
+        }
+        if (activity != null) {
+            if (!activity.getApp().isMainProcess()) {
+                activity.finish();
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+        }
+    }
+
+    public boolean fromNearby() {
+        return mSequence != null && mSequence.isPublic;
     }
 }

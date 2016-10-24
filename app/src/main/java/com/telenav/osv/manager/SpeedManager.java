@@ -151,7 +151,7 @@ public class SpeedManager implements ObdManager.ConnectionListener, AccuracyList
 
     private void recalculateSpeedCategory(float speed) {
         mSpeed = speed;
-        Log.d(TAG, "recalculateSpeedCategory: speed: " + (int) mSpeed);
+//        Log.d(TAG, "recalculateSpeedCategory: speed: " + (int) mSpeed);
         SpeedChangedListener.SpeedCategory newCategory = SpeedChangedListener.SpeedCategory.SPEED_STATIONARY;
         if (mSpeed <= 1) {
             newCategory = SpeedChangedListener.SpeedCategory.SPEED_STATIONARY;
@@ -201,9 +201,14 @@ public class SpeedManager implements ObdManager.ConnectionListener, AccuracyList
         }
     }
 
+    @Override
+    public void onConnecting() {
+
+    }
+
     private void checkDistance(ObdManager.SpeedData speedData) {
         float distanceCovered;
-        Log.d(TAG, " reference time: " + referenceTime);
+//        Log.d(TAG, " reference time: " + referenceTime);
         if (averageSpeed == -1) {
             averageSpeed = speedData.getSpeed();
             referenceTime = speedData.getTimestamp();

@@ -13,13 +13,12 @@ import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-
 import javax.security.auth.x500.X500Principal;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -37,7 +36,6 @@ import android.view.Display;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.WindowManager;
-
 import com.faraji.environment3.Environment3;
 import com.faraji.environment3.NoSecondaryStorageException;
 import com.google.common.io.ByteStreams;
@@ -46,11 +44,11 @@ import com.skobbler.ngx.SKMaps;
 import com.skobbler.ngx.SKMapsInitSettings;
 import com.skobbler.ngx.map.SKMapViewStyle;
 import com.skobbler.ngx.navigation.SKAdvisorSettings;
-import com.skobbler.ngx.util.SKLogging;
 import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.item.OSVFile;
+
 
 public class Utils {
 
@@ -93,7 +91,6 @@ public class Utils {
 
     /**
      * Formats a given distance value (given in meters)
-     *
      * @param distInMeters
      * @return
      */
@@ -112,7 +109,6 @@ public class Utils {
 
     /**
      * Formats a given distance value (given in meters)
-     *
      * @param dist
      * @return
      */
@@ -127,7 +123,6 @@ public class Utils {
 
     /**
      * Copies files from assets to destination folder
-     *
      * @param assetManager
      * @param sourceFolder
      * @throws IOException
@@ -145,7 +140,6 @@ public class Utils {
 
     /**
      * Copies files from assets to destination folder
-     *
      * @param assetManager
      * @param sourceFolder
      * @param assetsNames
@@ -172,7 +166,6 @@ public class Utils {
 
     /**
      * Tells if internet is currently available on the device
-     *
      * @param currentContext
      * @return
      */
@@ -333,7 +326,6 @@ public class Utils {
 
     /**
      * Deletes all files and directories from <>file</> except PreinstalledMaps
-     *
      * @param file
      */
     public static void deleteFileOrDirectory(OSVFile file) {
@@ -353,7 +345,6 @@ public class Utils {
      * Returns the orientation of the display
      * In our case, since we're locked in Landscape, it should always
      * be 90
-     *
      * @param context
      * @return Orientation angle of the display
      */
@@ -385,8 +376,7 @@ public class Utils {
     /**
      * Rounds the orientation so that the UI doesn't rotate if the user
      * holds the device towards the floor or the sky
-     *
-     * @param orientation        New orientation
+     * @param orientation New orientation
      * @param orientationHistory Previous orientation
      * @return Rounded orientation
      */
@@ -407,7 +397,6 @@ public class Utils {
 
     /**
      * Converts the specified DP to PIXELS according to current screen density
-     *
      * @param context
      * @param dp
      * @return
@@ -427,7 +416,6 @@ public class Utils {
 
     /**
      * used on the older version upgrade
-     *
      * @param context
      * @param delete
      */
@@ -514,6 +502,24 @@ public class Utils {
             ((OSVApplication) context.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, false);
         }
 //        Log.d(TAG, "getSelectedStorage: internal");
+        File result = storages[0];
+        if (result == null) {
+            result = context.getExternalFilesDir(null);
+        }
+        if (result == null) {
+            return Environment3.getInternalStorage().getFile();
+        }
+        return result;
+    }
+
+    public static File getInternalStorage(Context context) {
+        File[] storages = ContextCompat.getExternalFilesDirs(context, null);
+        if (storages.length > 1) {
+            File file = storages[1];
+            if (file != null) {
+                EXTERNAL_STORAGE_PATH = file.getPath();
+            }
+        }
         File result = storages[0];
         if (result == null) {
             result = context.getExternalFilesDir(null);
@@ -687,5 +693,9 @@ public class Utils {
         } else {
             return false;
         }
+    }
+
+    public static boolean isDebuggableFlag(Context context) {
+        return (0 != (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
     }
 }

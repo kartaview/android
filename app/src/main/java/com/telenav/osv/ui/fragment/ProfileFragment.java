@@ -96,11 +96,23 @@ public class ProfileFragment extends Fragment implements RequestResponseListener
 
     private int mMaxNumberOfResults = 10000;
 
+    private LinearLayoutManager mPortraitLayoutManager;
+
+    private GridLayoutManager mLandscapeLayoutManager;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, null);
 
         activity = (MainActivity) getActivity();
+        mPortraitLayoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
+        mLandscapeLayoutManager = new GridLayoutManager(activity, 2);
+        mLandscapeLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                return position == 0 ? 2 : 1;
+            }
+        });
         mSequencesRecyclerView = (RecyclerView) view.findViewById(R.id.sequences_recycle_view);
 
         mUploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
@@ -183,18 +195,12 @@ public class ProfileFragment extends Fragment implements RequestResponseListener
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mSequencesRecyclerView.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
-
-        } else {
-            GridLayoutManager glm = new GridLayoutManager(activity, 2);
-            glm.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                @Override
-                public int getSpanSize(int position) {
-                    return (position == 0) ? 2 : 1;
-                }
-            });
-            mSequencesRecyclerView.setLayoutManager(glm);
+        if (activity != null && mSequencesRecyclerView != null) {
+            if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
+            } else {
+                mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
+            }
         }
         super.onConfigurationChanged(newConfig);
     }
@@ -206,18 +212,10 @@ public class ProfileFragment extends Fragment implements RequestResponseListener
         mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity);
         mSequencesRecyclerView.setAdapter(mOnlineSequencesAdapter);
 
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
         if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mSequencesRecyclerView.setLayoutManager(layoutManager);
-
+            mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
         } else {
-            GridLayoutManager manager = new GridLayoutManager(activity, 3);
-            manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                @Override
-                public int getSpanSize(int position) {
-                    return (3 - position % 3);
-                }
-            });
+            mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
         }
 
         mSequencesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -226,14 +224,17 @@ public class ProfileFragment extends Fragment implements RequestResponseListener
                                    int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                mTotalItemCount = layoutManager.getItemCount() - 1;
-                mLastVisibleItem = layoutManager.findLastVisibleItemPosition();
+                RecyclerView.LayoutManager lm = mSequencesRecyclerView.getLayoutManager();
+                if (lm instanceof LinearLayoutManager){
+                    mTotalItemCount = lm.getItemCount() - 1;
+                    mLastVisibleItem = ((LinearLayoutManager)lm).findLastCompletelyVisibleItemPosition();
 
-                if (!mLoading && mTotalItemCount == mLastVisibleItem && mTotalItemCount < mMaxNumberOfResults) {
-                    // End has been reached
-                    mSwipeRefreshLayout.setRefreshing(true);
-                    loadMoreResults();
-                    mLoading = true;
+                    if (!mLoading && mTotalItemCount == mLastVisibleItem && mTotalItemCount < mMaxNumberOfResults) {
+                        // End has been reached
+                        mSwipeRefreshLayout.setRefreshing(true);
+                        loadMoreResults();
+                        mLoading = true;
+                    }
                 }
             }
         });

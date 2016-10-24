@@ -176,7 +176,7 @@ public class HurlStack implements HttpStack {
                     connection.getOutputStream().close();
                 } catch (Exception ignored) {}
             } catch (IOException ioe) {
-                VolleyLog.e("Error writing request body to stream.");
+                VolleyLog.e("Error writing request body to stream. " + ioe.getLocalizedMessage());
             }
         } else {
             byte[] body = request.getBody();

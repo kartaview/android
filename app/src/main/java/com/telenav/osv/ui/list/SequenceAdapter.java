@@ -84,7 +84,10 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.my_profile_header, parent, false);
             if (!showHeader) {
                 v.setVisibility(View.GONE);
-                v.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
+                RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(0, 0);
+                int fiveDips = (int) (5 * activity.getResources().getDisplayMetrics().density);
+                lp.setMargins(-fiveDips,0,-fiveDips,fiveDips);
+                v.setLayoutParams(lp);
             }
             return new HeaderViewHolder(v);
         } else if (viewType == TYPE_ITEM) {
@@ -97,7 +100,7 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             int topMargin = (int) (5 * activity.getResources().getDisplayMetrics().density);
             int fiveDips = (int) (5 * activity.getResources().getDisplayMetrics().density);
             compatMargin = compatMargin + 3 * fiveDips;
-            params.setMargins(compatMargin, topMargin, compatMargin, fiveDips);
+            params.setMargins(fiveDips, topMargin, fiveDips, fiveDips);
             layoutView.setLayoutParams(params);
             SequenceHolder sequenceHolder = new SequenceHolder(layoutView);
             return sequenceHolder;
@@ -112,7 +115,7 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             int topMargin = (int) (5 * activity.getResources().getDisplayMetrics().density);
             int fiveDips = (int) (5 * activity.getResources().getDisplayMetrics().density);
             compatMargin = compatMargin + 3 * fiveDips;
-            params.setMargins(compatMargin, topMargin, compatMargin, fiveDips);
+            params.setMargins(fiveDips, topMargin, fiveDips, fiveDips);
             layoutView.setLayoutParams(params);
             MessageCardHolder messageCardHolder = new MessageCardHolder(layoutView);
             return messageCardHolder;
@@ -233,15 +236,15 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public int getItemCount() {
         if (mInternetAvailable) {
-            return mSequenceList.size() + 1;
+            return mSequenceList.size() + (showHeader ? 1 : 0);
         } else {
-            return mSequenceList.size() + 2;
+            return mSequenceList.size() + (showHeader ? 2 : 1);
         }
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (isPositionHeader(position)) {
+        if (isPositionHeader(position) && showHeader) {
             return TYPE_HEADER;
         }
         if (mInternetAvailable) {

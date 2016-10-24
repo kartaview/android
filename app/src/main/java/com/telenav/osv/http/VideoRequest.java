@@ -18,6 +18,7 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.Utils;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -74,6 +75,16 @@ public class VideoRequest<T> extends StringRequest {
         return headers;
     }
 
+    @Override
+    protected Map<String, String> getParams() throws AuthFailureError {
+        Map<String, String> params = super.getParams();
+        if (params == null
+                || params.equals(Collections.emptyMap())) {
+            params = new HashMap<>();
+        }
+        return params;
+    }
+
     private void buildMultipartEntity() {
         MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
         mBuilder.addTextBody(PARAM_TOKEN, mToken);
@@ -86,7 +97,7 @@ public class VideoRequest<T> extends StringRequest {
         mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
         HttpEntity mEntity = mBuilder.build();
-        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener);
+        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener, Utils.fileSize(mVideoFile));
 
     }
 

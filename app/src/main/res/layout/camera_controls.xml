@@ -191,7 +191,6 @@
                 android:layout_height="64dp"
                 android:layout_gravity="center"
                 android:clickable="true"
-                android:contentDescription="@string/shutter_button"
                 android:scaleType="centerInside"
                 android:src="@drawable/button_record_inactive" />
 

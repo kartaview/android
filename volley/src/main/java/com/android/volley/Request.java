@@ -78,7 +78,7 @@ public abstract class Request<T> implements Comparable<Request<T>> {
     /**
      * Whether or not responses to this request should be cached.
      */
-    private boolean mShouldCache = true;
+    private boolean mShouldCache = false;
 
     /**
      * Whether or not this request has been canceled.

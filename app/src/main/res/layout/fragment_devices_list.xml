@@ -3,32 +3,61 @@
     android:layout_width="match_parent"
     android:layout_height="500dp"
     android:layout_gravity="center"
-    android:minHeight="400dp"
-    android:minWidth="320dp"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
-    android:orientation="vertical">
-    <TextView
-        android:id="@+id/sdk_not_initialized"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/sdk_not_initialized"
-        android:visibility="gone"/>
-    <TextView
-        style="@style/textStyle.Light"
-        android:id="@+id/ble_devices_lable"
-        android:text="@string/ble_devices"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="3dp"
-        android:textSize="25sp"
-        android:textStyle="bold"/>
+    android:minHeight="400dp"
+    android:minWidth="320dp"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/devices_fragment_title"
+            style="@style/textStyle.Light"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:layout_marginBottom="3dp"
+            android:layout_marginTop="3dp"
+            android:gravity="center|start"
+            android:text="@string/ble_devices"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+        <ImageView
+            android:id="@+id/refresh_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_refresh_black_48dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true" />
+    </RelativeLayout>
+
     <ListView
         android:id="@+id/devices_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="10dp"/>
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp" />
+
+    <TextView
+        android:id="@+id/new_devices_fragment_title"
+        style="@style/textStyle.Light"
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginTop="3dp"
+        android:gravity="center|start"
+        android:text="@string/bt_new_devices_label"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:visibility="gone"/>
+
+    <ListView
+        android:id="@+id/new_devices_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:visibility="gone"/>
 </LinearLayout>

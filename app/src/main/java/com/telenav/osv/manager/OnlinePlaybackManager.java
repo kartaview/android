@@ -179,6 +179,11 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                                 for (PlaybackListener pl : mPlaybackListeners) {
                                     pl.onPrepared();
                                 }
+                                if (mSequence.skipToValue != 0){
+                                    if (mPager != null) {
+                                        mPager.setCurrentItem(mSequence.skipToValue);
+                                    }
+                                }
 //                                play();
                             }
                         });
@@ -245,6 +250,11 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
             }
         });
+        if (mSequence.skipToValue != 0){
+            if (mPager != null) {
+                mPager.setCurrentItem(mSequence.skipToValue);
+            }
+        }
 
     }
 
@@ -378,6 +388,11 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     public ArrayList<SKCoordinate> getTrack() {
         return mTrack;
+    }
+
+    @Override
+    public void onSizeChanged() {
+
     }
 
     @Override

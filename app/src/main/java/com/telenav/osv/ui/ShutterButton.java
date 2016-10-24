@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ImageView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.manager.ShutterManager;
 
@@ -69,6 +70,13 @@ public class ShutterButton extends ImageView implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        boolean ok = true;
+        if (mContext instanceof OSVActivity){
+            ok = ((MainActivity) mContext).checkPermissionsForRecording();
+        }
+        if (!ok) {
+            return;
+        }
         if (mShutterManager == null) return;
 
         if (!mShutterManager.isRecording()) {

@@ -1,6 +1,6 @@
-#include "include/libavcodec/avcodec.h"
-#include "include/libavformat/avformat.h"
-#include "include/libavutil/imgutils.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libavutil/imgutils.h"
 #include "crashlitics.h"
 
 #include <jni.h>
@@ -22,12 +22,14 @@
 #define LOGE(format, ...)  printf("FFMPEG E " format "\n", ##__VA_ARGS__)
 #define LOGI(format, ...)  printf("FFMPEG I " format "\n", ##__VA_ARGS__)
 #endif
+
+#define FRAME_COUNT_LIMIT 64
+
 AVCodecContext *h264_codec_ctx = NULL;
 AVFrame *yuvframe;
 AVPacket pkt;
 FILE *file;
 
-#define FRAME_COUNT_LIMIT 64
 crashlytics_context_t *crashlytics_ctx;
 
 //for jpeg decode
@@ -67,43 +69,43 @@ int total_framecnt = 0;
 int FPS = 4;
 
 
-struct sigaction psa, oldPsa;
+//struct sigaction psa, oldPsa;
 
 
 char *folder_path;
 
 int video_index = -1;
 
-void handleCrash(int signalNumber, siginfo_t *sigInfo, void *context) {
-    static volatile sig_atomic_t fatal_error_in_progress = 0;
-    if (fatal_error_in_progress) //Stop a signal loop.
-        _exit(1);
-    fatal_error_in_progress = 1;
-
-    char *j;
-    asprintf(&j, "Crash Signal: %d, crashed on: %x, UID: %ld\n", signalNumber, (long) sigInfo->si_addr, (long) sigInfo->si_uid);  //%x prints out the faulty memory address in hex
-    LOGE("%s", j);
-
-//    getStackTrace();
-//    sigaction(signalNumber, &oldPsa, NULL);
-}
-
-void initSignalHandler() {
-    LOGI("Crash handler started");
-
-    psa.sa_sigaction = handleCrash;
-    psa.sa_flags = SA_SIGINFO;
-
-    //sigaction(SIGBUS, &psa, &oldPsa);
-    sigaction(SIGSEGV, &psa, &oldPsa);
-    //sigaction(SIGSYS, &psa, &oldPsa);
-    //sigaction(SIGFPE, &psa, &oldPsa);
-    //sigaction(SIGILL, &psa, &oldPsa);
-    //sigaction(SIGHUP, &psa, &oldPsa);
-}
+//void handleCrash(int signalNumber, siginfo_t *sigInfo, void *context) {
+//    static volatile sig_atomic_t fatal_error_in_progress = 0;
+//    if (fatal_error_in_progress) //Stop a signal loop.
+//        _exit(1);
+//    fatal_error_in_progress = 1;
+//
+//    char *j;
+//    asprintf(&j, "Crash Signal: %d, crashed on: %x, UID: %ld\n", signalNumber, (long) sigInfo->si_addr, (long) sigInfo->si_uid);  //%x prints out the faulty memory address in hex
+//    LOGE("%s", j);
+//
+////    getStackTrace();
+////    sigaction(signalNumber, &oldPsa, NULL);
+//}
+//
+//void initSignalHandler() {
+//    LOGI("Crash handler started");
+//
+//    psa.sa_sigaction = handleCrash;
+//    psa.sa_flags = SA_SIGINFO;
+//
+//    sigaction(SIGBUS, &psa, &oldPsa);
+//    sigaction(SIGSEGV, &psa, &oldPsa);
+//    sigaction(SIGSYS, &psa, &oldPsa);
+//    sigaction(SIGFPE, &psa, &oldPsa);
+//    sigaction(SIGILL, &psa, &oldPsa);
+//    sigaction(SIGHUP, &psa, &oldPsa);
+//}
 
 void custom_log(void *ptr, int level, const char *fmt, va_list vl) {
-    FILE *fp = fopen("/storage/emulated/0/av_log.txt", "a+");
+    FILE *fp = fopen("/storage/emulated/0/Android/data/com.telenav.streetview/files/av_recording_log.txt", "a+");
     if (fp) {
         vfprintf(fp, fmt, vl);
         fflush(fp);
@@ -779,6 +781,9 @@ JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_close(JNIEnv *env, jobject
     }
 
     if (jpg_fmt_ctx) {
+        if (jpg_fmt_ctx->pb && jpg_fmt_ctx->pb->buffer){
+            av_freep(jpg_fmt_ctx->pb->buffer);
+        }
         if (jpg_fmt_ctx->pb)
             avio_close(jpg_fmt_ctx->pb);
         avformat_free_context(jpg_fmt_ctx);

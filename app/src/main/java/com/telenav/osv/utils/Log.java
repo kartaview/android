@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import android.content.Context;
 import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.item.OSVFile;
 
 /**
  * Created by Kalman on 2/8/16.
@@ -111,12 +112,20 @@ public class Log {
             for (File f : files.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String filename) {
-                    return filename.contains("log");
+                    return filename.contains("log") && !filename.contains("av_");
                 }
             })) {
                 if (System.currentTimeMillis() - f.lastModified() > TEN_DAYS) {
                     f.delete();
                 }
+            }
+            OSVFile avRecordLog = new OSVFile(files,"av_recording_log.txt");
+            OSVFile avPlayerLog = new OSVFile(files,"av_player_log.txt");
+            if (avRecordLog.exists() && Utils.fileSize(avRecordLog) > 1024*1024*20){
+                avRecordLog.delete();
+            }
+            if (avPlayerLog.exists() && Utils.fileSize(avPlayerLog) > 1024*1024*20){
+                avPlayerLog.delete();
             }
         } catch (Exception e) {
             if (DEBUG) {

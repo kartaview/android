@@ -7,81 +7,116 @@
     android:clickable="true"
     android:background="#1B1C1F">
 
-    <RelativeLayout
-        android:id="@+id/progress_layout"
+    <LinearLayout
+        android:id="@+id/upload_details_linear_layout"
+        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:layout_centerInParent="true">
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:layout_marginTop="?android:attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/buttons_layout"
+        android:gravity="center">
 
         <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true">
+            android:id="@+id/progress_layout"
+            android:layout_width="400dp"
+            android:layout_height="400dp">
 
-            <TextView
-                android:id="@+id/percent_text"
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
+
+            <com.pnikosis.materialishprogress.ProgressWheel
+                android:id="@+id/upload_total_progress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:gravity="center"
-                android:maxLines="1"
-                android:text="0"
-                android:fontFamily="sans-serif-thin"
-                android:textColor="@color/text_colour_default"
-                android:textSize="90sp" />
-
-            <TextView
-                android:id="@+id/percent_symbol_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="3dp"
-                android:layout_toRightOf="@+id/percent_text"
-                android:layout_marginBottom="15dp"
-                android:layout_above="@+id/size_details_holder"
-                android:text="%"
-                android:fontFamily="sans-serif-thin"
-                android:textColor="@color/gray_text_color"
-                android:textSize="30dp" />
-
+                android:layout_centerInParent="true"
+                android:indeterminate="false"
+                android:max="100"
+                android:minHeight="120dp"
+                android:minWidth="120dp"
+                android:progress="0"
+                android:visibility="visible"
+                app:matProg_barColor="#A233B1"
+                app:matProg_circleRadius="140dp"
+                app:matProg_barWidth="6dp"
+                app:matProg_progressIndeterminate="false"
+                app:matProg_rimColor="#31333B"
+                app:matProg_spinSpeed="0.45"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
 
             <RelativeLayout
-                android:id="@+id/size_details_holder"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/percent_text"
-                android:layout_marginTop="10dp">
+                android:layout_centerInParent="true">
 
                 <TextView
-                    android:id="@+id/done_text"
+                    android:id="@+id/percent_text"
                     style="@style/textStyle"
                     android:layout_width="wrap_content"
-                    android:layout_height="14dp"
-                    android:layout_marginRight="3dp"
-                    android:layout_toLeftOf="@+id/simple_line"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center"
                     android:maxLines="1"
-                    android:text="0 MB"
+                    android:text="0"
+                    android:fontFamily="sans-serif-thin"
                     android:textColor="@color/text_colour_default"
-                    android:textSize="12sp" />
-
-                <View
-                    android:id="@+id/simple_line"
-                    android:layout_width="1dp"
-                    android:layout_height="14dp"
-                    android:layout_centerInParent="true"
-                    android:background="@color/gray_text_color" />
+                    android:textSize="90sp" />
 
                 <TextView
-                    android:id="@+id/total_text"
-                    style="@style/textStyle"
+                    android:id="@+id/percent_symbol_text"
                     android:layout_width="wrap_content"
-                    android:layout_height="14dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginLeft="3dp"
-                    android:layout_toRightOf="@+id/simple_line"
-                    android:maxLines="1"
-                    android:text="0 MB"
+                    android:layout_toRightOf="@+id/percent_text"
+                    android:layout_marginBottom="15dp"
+                    android:layout_above="@+id/size_details_holder"
+                    android:text="%"
+                    android:fontFamily="sans-serif-thin"
                     android:textColor="@color/gray_text_color"
-                    android:textSize="12sp" />
+                    android:textSize="30dp" />
+
+
+                <RelativeLayout
+                    android:id="@+id/size_details_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/percent_text"
+                    android:layout_marginTop="10dp">
+
+                    <TextView
+                        android:id="@+id/done_text"
+                        style="@style/textStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="14dp"
+                        android:layout_marginRight="3dp"
+                        android:layout_toLeftOf="@+id/simple_line"
+                        android:maxLines="1"
+                        android:text="0 MB"
+                        android:textColor="@color/text_colour_default"
+                        android:textSize="12sp" />
+
+                    <View
+                        android:id="@+id/simple_line"
+                        android:layout_width="1dp"
+                        android:layout_height="14dp"
+                        android:layout_centerInParent="true"
+                        android:background="@color/gray_text_color" />
+
+                    <TextView
+                        android:id="@+id/total_text"
+                        style="@style/textStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="14dp"
+                        android:layout_marginLeft="3dp"
+                        android:layout_toRightOf="@+id/simple_line"
+                        android:maxLines="1"
+                        android:text="0 MB"
+                        android:textColor="@color/gray_text_color"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
             </RelativeLayout>
 
         </RelativeLayout>
@@ -126,29 +161,7 @@
                 android:textColor="@color/gray_text_color"
                 android:textSize="22sp" />
         </RelativeLayout>
-
-        <com.pnikosis.materialishprogress.ProgressWheel
-            android:id="@+id/upload_total_progress"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:indeterminate="false"
-            android:max="100"
-            android:minHeight="120dp"
-            android:minWidth="120dp"
-            android:progress="0"
-            android:visibility="visible"
-            app:matProg_barColor="#A233B1"
-            app:matProg_circleRadius="140dp"
-            app:matProg_barWidth="6dp"
-            app:matProg_progressIndeterminate="false"
-            app:matProg_rimColor="#31333B"
-            app:matProg_spinSpeed="0.45"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
-
-    </RelativeLayout>
+    </LinearLayout>
 
     <android.support.percent.PercentRelativeLayout
         android:id="@+id/buttons_layout"

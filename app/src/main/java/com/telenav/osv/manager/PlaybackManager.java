@@ -48,6 +48,8 @@ public abstract class PlaybackManager {
 
     public abstract ArrayList<SKCoordinate> getTrack();
 
+    public abstract void onSizeChanged();
+
     public interface PlaybackListener {
         void onPlaying();
 

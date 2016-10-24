@@ -108,6 +108,8 @@ public class CameraManager {
 
     public static CameraManager instance;
 
+    private boolean mOpening = false;
+
     public CameraManager(Application context) {
         if (instance != null) {
             return;
@@ -125,6 +127,10 @@ public class CameraManager {
         // Try to open the camera
         mOpenThread.start();
         mOpenHandler = new Handler(mOpenThread.getLooper());
+        mCameraThread = new HandlerThread("Camera", Process.THREAD_PRIORITY_FOREGROUND);
+        // Try to open the camera
+        mCameraThread.start();
+        mCameraHandler = new Handler(mCameraThread.getLooper());
         initSensorLib();
     }
 
@@ -133,11 +139,11 @@ public class CameraManager {
      *
      * @return true if the operation succeeded, false otherwise
      */
-    public boolean open() {
-        mCameraThread = new HandlerThread("Camera", Process.THREAD_PRIORITY_FOREGROUND);
-        // Try to open the camera
-        mCameraThread.start();
-        mCameraHandler = new Handler(mCameraThread.getLooper());
+    public void open() {
+        if (mOpening){
+            return;
+        }
+        mOpening = true;
         Log.d(TAG, "open: Camera");
         if (mCamera != null) {
 
@@ -226,7 +232,7 @@ public class CameraManager {
                         if (mCameraReadyListener != null) {
                             mCameraReadyListener.onCameraFailed();
                         }
-
+                        mOpening = false;
                         return;
                     }
 
@@ -240,10 +246,9 @@ public class CameraManager {
                     mOrientation = -1;
                     setOrientation(temp);
                 }
+                mOpening = false;
             }
         });
-
-        return true;
     }
 
     public List<Camera.Size> getSupportedPicturesSizes() {
@@ -468,9 +473,6 @@ public class CameraManager {
                 mCamera.release();
                 mCamera = null;
                 mParameters = null;
-                if (mCameraThread != null) {
-                    mCameraThread.quit();
-                }
             } catch (Exception e) {
                 // Do nothing
             }
@@ -486,9 +488,6 @@ public class CameraManager {
                 mCamera.release();
                 mCamera = null;
                 mParameters = null;
-            }
-            if (mCameraThread != null) {
-                mCameraThread.quit();
             }
         } catch (Exception e) {
             Log.d(TAG, "releaseCamera: " + Log.getStackTraceString(e));
@@ -531,8 +530,15 @@ public class CameraManager {
 
         Log.v(TAG, "takePicture: entered");
         if (mCamera != null) {
+            if (mCameraHandler == null || !mCameraHandler.getLooper().getThread().isAlive() || mCameraHandler.getLooper().getThread().isInterrupted()){
+                mCameraThread = new HandlerThread("Camera", Process.THREAD_PRIORITY_FOREGROUND);
+                // Try to open the camera
+                mCameraThread.start();
+                mCameraHandler = new Handler(mCameraThread.getLooper());
+            }
             mCameraHandler.post(new Runnable() {
                 public void run() {
+                    Log.d(TAG, "takePicture: before synchronize");
                     synchronized (syncObject) {
                         try {
                             Log.d(TAG, "takePicture: trying to take a picture...");
@@ -543,9 +549,11 @@ public class CameraManager {
                             if (e.getLocalizedMessage().contains("error=-38")) {
                                 Log.e(TAG, "takePicture: Unable to take picture during debug", e);
                             } else {
-                                forceCloseCamera();
-                                open();
-                                restartPreviewIfNeeded();
+                                if (!mOpening) {
+                                    forceCloseCamera();
+                                    open();
+                                    restartPreviewIfNeeded();
+                                }
                             }
                         }
                     }
@@ -607,7 +615,7 @@ public class CameraManager {
                 Log.w(TAG, "setOrientation: camera is null");
             }
         } catch (RuntimeException e) {
-            Log.d(TAG, "setOrientation: exception: " + e.getLocalizedMessage());
+            Log.d(TAG, "setOrientation: exception: " + Log.getStackTraceString(e));
         }
         updateDisplayOrientation();
     }
@@ -626,6 +634,7 @@ public class CameraManager {
                     }
                 } catch (Exception e) {
                     Log.w(TAG, "restartPreviewIfNeeded: " + Log.getStackTraceString(e));
+                    return;
                 }
 
                 mIsPreviewStarted = true;
@@ -665,7 +674,7 @@ public class CameraManager {
                 Log.w(TAG, "updateDisplayOrientation: camera is null");
             }
         } catch (Exception e) {
-            Log.e(TAG, "updateDisplayOrientation: " + e.getLocalizedMessage());
+            Log.e(TAG, "updateDisplayOrientation: " + Log.getStackTraceString(e));
         }
     }
 
@@ -876,7 +885,7 @@ public class CameraManager {
                     mCamera.setPreviewCallbackWithBuffer(null);//todo sensorlib
                 }
             } catch (Exception e) {
-                Log.d(TAG, "postCallbackBuffer: " + e.getLocalizedMessage());
+                Log.d(TAG, "postCallbackBuffer: " + Log.getStackTraceString(e));
             }
         }
 

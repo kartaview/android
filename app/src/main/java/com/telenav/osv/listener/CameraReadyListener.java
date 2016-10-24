@@ -15,4 +15,9 @@ public interface CameraReadyListener {
      * Called when the camera failed to initialize
      */
     void onCameraFailed();
+
+    /**
+     * Called when the camera failed to initialize
+     */
+    void onPermissionNeeded();
 }

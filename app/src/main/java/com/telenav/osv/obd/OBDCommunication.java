@@ -1,6 +1,7 @@
 package com.telenav.osv.obd;
 
 import java.util.UUID;
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -10,13 +11,12 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 /**
  * Created by dianat on 3/25/2016.
  */
-@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class OBDCommunication {
 
     private final static String TAG = OBDCommunication.class.getSimpleName();

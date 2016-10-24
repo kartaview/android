@@ -16,6 +16,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
@@ -29,9 +30,9 @@ import com.telenav.osv.ui.ShutterButton;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
-
 /**
- * Created by adrianbostan on 14/07/16.
+ * camera control buttons ui
+ * Created by Kalman on 14/07/16.
  */
 
 public class CameraControlsFragment extends Fragment implements AccuracyListener, View.OnClickListener, RecordingStateChangeListener {
@@ -50,12 +51,6 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
 
     private View mCancelAndHomeText;
 
-    private TextView mNumberOfTakenImagesText;
-
-    private TextView mNumberOfMbTakenText;
-
-    private TextView mDistanceCoveredText;
-
     private TextView mDistanceText;
 
     private TextView mPicturesText;
@@ -70,8 +65,6 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
     private LinearLayout mRecordingDetailsLayout;
 
     private LocationManager mLocationManager;
-
-    private float mAccuracy;
 
     private ShutterManager mShutterManager;
 
@@ -230,11 +223,6 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
     }
 
     @Override
-    public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
     public void onResume() {
         mLocationManager.setAccuracyListener(this);
         refreshDetails();
@@ -255,14 +243,6 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
     @Override
     public void onDetach() {
         super.onDetach();
-    }
-
-    private void initViewsForPortrait() {
-
-    }
-
-    private void initViewsForLandscape() {
-
     }
 
     private void refreshAccuracyDetails(final float accuracy) {
@@ -292,8 +272,7 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
 
     @Override
     public void onAccuracyChanged(float accuracy) {
-        this.mAccuracy = accuracy;
-        Log.d(TAG, "Accuracy is: " + accuracy + " " + mAccuracy);
+        Log.d(TAG, "Accuracy is: " + accuracy + " " + accuracy);
         refreshAccuracyDetails(accuracy);
     }
 
@@ -401,6 +380,33 @@ public class CameraControlsFragment extends Fragment implements AccuracyListener
         refreshDetails();
     }
 
+    public void pressShutterButton() {
+        boolean ok = activity.checkPermissionsForRecording();
+        if (!ok) {
+            return;
+        }
+        if (mShutterManager == null) return;
+
+        if (!mShutterManager.isRecording()) {
+            if (!mLocationManager.isGPSEnabled()) {
+                if (getContext() instanceof MainActivity) {
+                    ((MainActivity) getContext()).resolveLocationProblem(true);
+                }
+                return;
+            }
+            if (!mLocationManager.hasPosition()) {
+                if (getContext() instanceof MainActivity) {
+                    ((MainActivity) getContext()).showSnackBar(R.string.no_gps_message, Snackbar.LENGTH_SHORT);
+                }
+                return;
+            }
+            mShutterButton.started();
+            mShutterManager.startSequence();
+        } else {
+            mShutterManager.stopSequence();
+            mShutterButton.stopped();
+        }
+    }
 }
 
 

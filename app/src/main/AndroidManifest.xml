@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.telenav.osv"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:versionCode="42"
-    android:versionName="1.9.8">
+    package="com.telenav.osv"
+    android:versionCode="50"
+    android:versionName="1.9.10">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -16,9 +16,12 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-sdk tools:overrideLibrary="com.telenav.vehicledatacollector"/>
+
     <uses-feature
         android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
         android:required="true" />
     <uses-feature
         android:name="android.hardware.sensor.gyroscope"
@@ -46,6 +49,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
+        android:process="@string/main_process_name"
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.skobbler.ngx.API_KEY"
@@ -55,20 +59,21 @@
             android:name=".activity.SplashActivity"
             android:configChanges="screenSize"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait">
+            android:screenOrientation="sensor"
+            android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
-            android:screenOrientation="portrait"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="sensor"
             android:windowSoftInputMode="adjustResize" />
 
         <service
@@ -79,6 +84,11 @@
         <receiver android:name=".service.WifiBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".service.BluetoothBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
             </intent-filter>
         </receiver>
         <receiver android:name=".service.StorageBroadcastReceiver">
@@ -94,9 +104,26 @@
             android:name=".service.UploadHandlerService"
             android:icon="@drawable/ic_launcher"
             android:label="OSV uploading service" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="c1f1517ab073bd0f7235948145e059192e8cb582" />
+
+        <activity android:name=".activity.PlayerActivity"
+            android:taskAffinity="com.telenav.streetview.PlayerActivity"
+            android:process="@string/playback_process_name"
+            android:screenOrientation="sensor"
+            android:autoRemoveFromRecents="true"
+            android:clearTaskOnLaunch="true"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleInstance"
+            android:multiprocess="false"
+            android:noHistory="true"
+            android:configChanges="orientation|screenSize"
+            android:finishOnTaskLaunch="true"
+            android:allowTaskReparenting="true"
+            android:excludeFromRecents="true">
+        </activity>
     </application>
 
 </manifest>

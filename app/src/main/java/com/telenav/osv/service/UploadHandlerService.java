@@ -31,7 +31,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
 
     public static final String FLAG_CANCEL = "cancel";
 
-    public static final String FLAG_NETWORK = "network";
+    public static final String FLAG_NETWORK = "eventNetwork";
 
     private static final String TAG = UploadHandlerService.class.getSimpleName();
 
@@ -44,6 +44,8 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     public UploadManager mUploadManager;
 
     private NotificationCompat.Builder mNotification;
+
+    private final Object notificationSyncObject = new Object();
 
     private Handler mHandler;
 
@@ -82,12 +84,14 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         }
         final boolean autoSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO, false);
         final boolean dataSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED, false);
-        final boolean localFilesExist = Sequence.forceRefreshLocalSequences().size() != 0;
+        final boolean localFilesExist = Sequence.getStaticSequences().size() != 0;
         boolean stayAlive = false;
         if (intent != null) {
-            if (NetworkUtils.isWifiInternetAvailable(this)){
-                if (((OSVApplication)getApplication()).getOBDManager() != null && appPrefs.getBooleanPreference(PreferenceTypes.K_OBD_CONNECTED)) {
+            if (((OSVApplication)getApplication()).getOBDManager() != null && ((OSVApplication)getApplication()).getOBDManager().isWifi() && mBound) {
+                if (NetworkUtils.isWifiInternetAvailable(this)){
                     ((OSVApplication)getApplication()).getOBDManager().connect();
+                } else {
+                    ((OSVApplication)getApplication()).getOBDManager().disconnect();
                 }
             }
             if (intent.getBooleanExtra(FLAG_CANCEL, false)) {
@@ -160,31 +164,36 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         PendingIntent pnextIntent = PendingIntent.getActivity(this, 0, intent, 0);
         Bitmap icon = BitmapFactory.decodeResource(getResources(),
                 R.drawable.ic_launcher);
-        if (mNotification != null && mNotification.mActions != null) {
-            mNotification.mActions.clear();
-        }
-        mNotification = new NotificationCompat.Builder(this)
-                .setContentTitle("OSV")
-                .setContentText("Uploading images...")
-                .setSmallIcon(R.drawable.icon_upload_white)
-                .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
-                .setOngoing(false)
-                .setProgress(100, 0, false)
-                .setWhen(0)
-                .setContentIntent(pnextIntent);
 
-        startForeground(NOTIFICATION_ID, mNotification.build());
+        synchronized (notificationSyncObject) {
+            if (mNotification != null && mNotification.mActions != null) {
+                mNotification.mActions.clear();
+            }
+            mNotification = new NotificationCompat.Builder(this)
+                    .setContentTitle("OSV")
+                    .setContentText("Uploading images...")
+                    .setSmallIcon(R.drawable.icon_upload_white)
+                    .setLargeIcon(Bitmap.createScaledBitmap(icon, 128, 128, false))
+                    .setOngoing(false)
+                    .setProgress(100, 0, false)
+                    .setWhen(0)
+                    .setContentIntent(pnextIntent);
+
+            startForeground(NOTIFICATION_ID, mNotification.build());
+        }
     }
 
     public void uploadFinished() {
-        stopForeground(true);
-        if (mNotification.mActions != null) {
-            mNotification.mActions.clear();
+        synchronized (notificationSyncObject) {
+            stopForeground(true);
+            if (mNotification.mActions != null) {
+                mNotification.mActions.clear();
+            }
+            mNotification.setContentText(getString(R.string.upload_finished_message));
+            mNotification.setProgress(0, 0, false);
+            mNotification.setOngoing(false);
+            mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
         }
-        mNotification.setContentText(getString(R.string.upload_finished_message));
-        mNotification.setProgress(0, 0, false);
-        mNotification.setOngoing(false);
-        mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
     }
 
     /**
@@ -227,42 +236,45 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     }
 
     private void initNotificationIfNeeded() {
-        if (mHandler == null) {
-            mHandler = new Handler(Looper.getMainLooper());
-        }
-        if (mNotification == null) {
-            Intent intent = new Intent(this, MainActivity.class);
-            PendingIntent pnextIntent = PendingIntent.getActivity(this, 0, intent, 0);
-            mNotification = new NotificationCompat.Builder(this)
-                    .setContentTitle(getString(R.string.app_short_name))
-                    .setContentText(getString(R.string.uploading_images_message))
-                    .setSmallIcon(R.drawable.icon_upload_white)
-                    .setOngoing(false)
-                    .setProgress(100, 0, false)
-                    .setWhen(0)
-                    .setContentIntent(pnextIntent);
-        }
-
-        if (mNotification.mActions != null) {
-            mNotification.mActions.clear();
-        }
-        if (isUploading()) {
-            Intent serviceIntent = new Intent(getApplicationContext(), UploadHandlerService.class);
-            serviceIntent.putExtra(FLAG_PAUSE, true);
-            pauseIntent = PendingIntent.getService(getApplicationContext(), 0, serviceIntent, 0);
-
-            Intent intent = new Intent(getApplicationContext(), UploadHandlerService.class);
-            intent.putExtra(FLAG_CANCEL, true);
-            cancelIntent = PendingIntent.getService(getApplicationContext(), 0, intent, 0);
-            if (!mUploadManager.isIndexing()) {
-                mNotification.addAction(mUploadManager.isPaused() ? R.drawable.ic_play_arrow_black_36dp : R.drawable.ic_pause_black_36dp, mUploadManager.isPaused() ? getString(R
-                        .string.resume_label) :
-                        getString(R.string.pause_label), pauseIntent);
+        synchronized (notificationSyncObject) {
+            if (mHandler == null) {
+                mHandler = new Handler(Looper.getMainLooper());
             }
+            if (mNotification == null) {
+                Intent intent = new Intent(this, MainActivity.class);
+                PendingIntent pnextIntent = PendingIntent.getActivity(this, 0, intent, 0);
+                mNotification = new NotificationCompat.Builder(this)
+                        .setContentTitle(getString(R.string.app_short_name))
+                        .setContentText(getString(R.string.uploading_images_message))
+                        .setSmallIcon(R.drawable.icon_upload_white)
+                        .setOngoing(false)
+                        .setProgress(100, 0, false)
+                        .setWhen(0)
+                        .setContentIntent(pnextIntent);
+            }
+
+            if (mNotification.mActions != null) {
+                mNotification.mActions.clear();
+            }
+            if (isUploading()) {
+                Intent serviceIntent = new Intent(getApplicationContext(), UploadHandlerService.class);
+                serviceIntent.putExtra(FLAG_PAUSE, true);
+                pauseIntent = PendingIntent.getService(getApplicationContext(), 0, serviceIntent, 0);
+
+                Intent intent = new Intent(getApplicationContext(), UploadHandlerService.class);
+                intent.putExtra(FLAG_CANCEL, true);
+                cancelIntent = PendingIntent.getService(getApplicationContext(), 0, intent, 0);
+                if (!mUploadManager.isIndexing()) {
+                    mNotification.addAction(mUploadManager.isPaused() ? R.drawable.ic_play_arrow_black_36dp : R.drawable.ic_pause_black_36dp, mUploadManager.isPaused() ? getString(R
+
+                            .string.resume_label) :
+                            getString(R.string.pause_label), pauseIntent);
+                }
 //            mNotification.addAction(R.drawable.ic_clear_black_36dp, "Cancel", cancelIntent);
-        }
-        if (mNotificationManager == null) {
-            mNotificationManager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
+            }
+            if (mNotificationManager == null) {
+                mNotificationManager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
+            }
         }
     }
 
@@ -338,16 +350,18 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     }
 
 //    @Override
-//    public void onImageUploaded(int sequenceID, int numberOfImages, int startIndex, boolean fromError) {
+//    public void onImageUploaded(int sequenceID, int numberOfImages, int fileIndex, boolean fromError) {
 //
 //    }
 
     @Override
     public void onUploadPaused() {
         initNotificationIfNeeded();
-        mNotification.setContentText(getString(R.string.track_upload_paused));
-        mNotification.setOngoing(true);
-        mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
+        synchronized (notificationSyncObject) {
+            mNotification.setContentText(getString(R.string.track_upload_paused));
+            mNotification.setOngoing(true);
+            mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
+        }
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -365,9 +379,11 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     @Override
     public void onUploadResumed() {
         initNotificationIfNeeded();
-        mNotification.setContentText(getString(R.string.track_upload_resuming));
-        mNotification.setOngoing(true);
-        mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
+        synchronized (notificationSyncObject) {
+            mNotification.setContentText(getString(R.string.track_upload_resuming));
+            mNotification.setOngoing(true);
+            mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
+        }
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -454,10 +470,12 @@ public class UploadHandlerService extends Service implements UploadProgressListe
     public void onUploadCancelled(final long total, final long remaining) {
         android.util.Log.d(TAG, "onUploadCancelled: upload cancelled");
         initNotificationIfNeeded();
-        stopForeground(true);
-        mNotification.setContentText(getString(R.string.track_upload_cancelled));
-        mNotification.setProgress(0, 0, false);
-        mNotification.setOngoing(false);
+        synchronized (notificationSyncObject) {
+            stopForeground(true);
+            mNotification.setContentText(getString(R.string.track_upload_cancelled));
+            mNotification.setProgress(0, 0, false);
+            mNotification.setOngoing(false);
+        }
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -496,12 +514,21 @@ public class UploadHandlerService extends Service implements UploadProgressListe
             if (needsToSetNotification || remaining == 0) {
                 needsToSetNotification = false;
                 Log.d(TAG, "updateNotification: progress: " + ((total - remaining) * 100) / total);
-                mNotification.setProgress(100, (int) (((total - remaining) * 100L) / total), false);
-                mNotification.setContentText(getString(R.string.uploading_images) + ((total - remaining) * 100) / total + "%");
-                mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
+                synchronized (notificationSyncObject) {
+                    mNotification.setProgress(100, (int) (((total - remaining) * 100L) / total), false);
+                    mNotification.setContentText(getString(R.string.uploading_images) + ((total - remaining) * 100) / total + "%");
+                }
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        try {
+
+                            synchronized (notificationSyncObject) {
+                                mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
+                            }
+                        } catch (Exception ignored){
+                            Log.w(TAG, "updateNotification: " + ignored.getLocalizedMessage());
+                        }
                         needsToSetNotification = true;
                     }
                 }, 1000);

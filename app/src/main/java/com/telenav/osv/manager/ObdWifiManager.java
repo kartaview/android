@@ -3,14 +3,17 @@ package com.telenav.osv.manager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.obd.OBDHelper;
@@ -20,7 +23,7 @@ import com.telenav.osv.obd.OBDHelper;
  */
 public class ObdWifiManager extends ObdManager {
 
-    private static final String TAG = "OBDIIManager";
+    private static final String TAG = "OBDWifiManager";
 
     private final Context mContext;
 
@@ -41,48 +44,43 @@ public class ObdWifiManager extends ObdManager {
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.d(TAG, "run: running speed runnable");
+//            Log.d(TAG, "run: running speed runnable");
             int speed = 0;
             long time = System.currentTimeMillis();
             try {
                 speed = getSpeed().getSpeed();
-                Log.d(TAG, "getSpeed: done in " + (System.currentTimeMillis() - time) + " ms");
+                if (speed < 0){
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {}
+//                    reset();
+                }
+                Log.d(TAG, "getSpeed: done in " + (System.currentTimeMillis() - time) + " ms , speed obtained: " + speed);
             } catch (SocketException se) {
                 se.printStackTrace();
                 try {
                     Thread.sleep(800);
-                } catch (InterruptedException e) {
-                }
-                disconnect();
-                connect();
+                } catch (InterruptedException ignored) {}
+                disconnect(true);
             } catch (InterruptedException ie) {
                 reset();
                 ie.printStackTrace();
                 try {
                     Thread.sleep(800);
-                } catch (InterruptedException e) {
-                }
-                disconnect();
-                connect();
-            } catch (IOException e) {
-                e.printStackTrace();
-                disconnect();
-                connect();
-            } catch (Exception e) {
-                e.printStackTrace();
+                } catch (InterruptedException ignored) {}
+                disconnect(true);
+            } catch (Exception xe) {
+                xe.printStackTrace();
                 try {
                     Thread.sleep(800);
-                } catch (InterruptedException ex) {
-                }
-                disconnect();
-                connect();
+                } catch (InterruptedException ignored) {}
+                disconnect(true);
             }
             final int finalSpeed = speed;
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     for (ConnectionListener listener : mConnectionListeners) {
-                        Log.d(TAG, "onSpeedObtained: " + finalSpeed);
                         listener.onSpeedObtained(new SpeedData(finalSpeed));
                     }
                 }
@@ -90,6 +88,70 @@ public class ObdWifiManager extends ObdManager {
             if (mRunning) {
                 mOBDHandler.postDelayed(mRunnable, 100);
             }
+        }
+    };
+
+    private Runnable mConnectRunnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+//                        mSocket = new Socket("192.168.0.10", 35000);
+                mSocket = new Socket();
+                mSocket.connect(new InetSocketAddress("192.168.0.10", 35000), 5000);
+                describe();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                fastInit();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                reset();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                setAuto();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                describe();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mUIHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (ConnectionListener listener : mConnectionListeners) {
+                            listener.onConnected();
+                        }
+                    }
+                });
+                mConnecting = false;
+                startRunnable();
+                return;
+            } catch (IOException e) {
+                e.printStackTrace();
+                mUIHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (ConnectionListener listener : mConnectionListeners) {
+                            listener.onDisconnected();
+                        }
+                    }
+                });
+            }
+            mConnecting = false;
+            mOBDHandler.postDelayed(mConnectRunnable, 10000);
         }
     };
 
@@ -101,6 +163,9 @@ public class ObdWifiManager extends ObdManager {
     }
 
     public boolean connect() {
+        if (mConnecting || isConnected() || sDisconnected){
+            return false;
+        }
         WifiManager wifi = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         if (wifiLock == null) {
             this.wifiLock = wifi.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "HighPerf wifi lock");
@@ -110,66 +175,20 @@ public class ObdWifiManager extends ObdManager {
         String name = wifiInfo.getSSID();
         if (wifi.isWifiEnabled() && (name.contains("OBD") || name.contains("obd") || name.contains("link") || name.contains("LINK"))) {
             mConnecting = true;
-            mOBDHandler.removeCallbacksAndMessages(null);
-            mOBDHandler.post(new Runnable() {
+            mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        mSocket = new Socket("192.168.0.10", 35000);
-                        describe();
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        fastInit();
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        reset();
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        setAuto();
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        describe();
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        mUIHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                for (ConnectionListener listener : mConnectionListeners) {
-                                    listener.onConnected();
-                                }
-                            }
-                        });
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        mUIHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                for (ConnectionListener listener : mConnectionListeners) {
-                                    listener.onDisconnected();
-                                }
-                            }
-                        });
+                    for (ConnectionListener listener : mConnectionListeners) {
+                        listener.onConnecting();
                     }
-                    mConnecting = false;
                 }
             });
+            mOBDHandler.removeCallbacksAndMessages(null);
+            mRunning = false;
+            mOBDHandler.post(mConnectRunnable);
             return true;
         }
+        mConnecting = false;
         return false;
     }
 
@@ -177,6 +196,7 @@ public class ObdWifiManager extends ObdManager {
         if (mSocket != null && mSocket.isConnected() && !mSocket.isClosed()) {
             return runCommand(OBDHelper.CMD_SPEED);
         }
+        stopRunnable();
         return new SpeedData("");
     }
 
@@ -203,8 +223,7 @@ public class ObdWifiManager extends ObdManager {
             Thread.sleep(1000);
         } else if (rawData.contains("CAN ERROR")) {
             Thread.sleep(1000);
-            disconnect();
-            connect();
+            disconnect(true);
             return new SpeedData("CAN ERROR");
         } else if (rawData.contains("NO DATA")) {
             Thread.sleep(1000);
@@ -217,12 +236,13 @@ public class ObdWifiManager extends ObdManager {
             rawData = rawData.replaceAll("10D1", " ").trim();
             String[] data = rawData.split(" ");
 
-            Log.i(TAG, "rawData: " + rawData);
-            Log.i(TAG, "data: " + data[0]);
-            Log.i(TAG, "datawew: " + Integer.decode("0x" + data[0]));
-            Log.i(TAG, "datawew: " + String.valueOf(Integer.decode("0x" + data[0])));
+//            Log.i(TAG, "rawData: " + rawData);
+//            Log.i(TAG, "data: " + data[0]);
+//            Log.i(TAG, "datawew: " + Integer.decode("0x" + data[0]));
+//            Log.i(TAG, "datawew: " + String.valueOf(Integer.decode("0x" + data[0])));
 
-            return new SpeedData(Integer.decode("0x" + data[0]));
+            int speed = Integer.decode("0x" + data[0]);
+            return new SpeedData(speed);
 
         }
         return new SpeedData(rawData);
@@ -319,6 +339,8 @@ public class ObdWifiManager extends ObdManager {
         if (wifiLock != null && wifiLock.isHeld())
             wifiLock.release();
         mOBDHandler.removeCallbacksAndMessages(null);
+        mConnecting = false;
+        mRunning = false;
         mOBDHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -344,6 +366,40 @@ public class ObdWifiManager extends ObdManager {
         });
     }
 
+    public void disconnect(final boolean reconnect) {
+        if (wifiLock != null && wifiLock.isHeld())
+            wifiLock.release();
+        mOBDHandler.removeCallbacksAndMessages(null);
+        mConnecting = false;
+        mRunning = false;
+        mOBDHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mSocket != null && mSocket.isConnected()) {
+                    try {
+                        reset();
+                        mSocket.close();
+                        mSocket = null;
+                        Log.d(TAG, "disconnect: OBD disconnected.");
+                    } catch (Exception e) {
+                        Log.d(TAG, "disconnect: " + Log.getStackTraceString(e));
+                    }
+                }
+                mUIHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (ConnectionListener listener : mConnectionListeners) {
+                            listener.onDisconnected();
+                        }
+                    }
+                });
+                if (reconnect){
+                    connect();
+                }
+            }
+        });
+    }
+
     public boolean isConnected() {
         return (mSocket != null && mSocket.isConnected());
     }
@@ -356,6 +412,11 @@ public class ObdWifiManager extends ObdManager {
     @Override
     public boolean isBle() {
         return false;
+    }
+
+    @Override
+    public boolean isWifi() {
+        return true;
     }
 
     public void startRunnable() {
@@ -372,5 +433,10 @@ public class ObdWifiManager extends ObdManager {
     public void stopRunnable() {
         mRunning = false;
         mOBDHandler.removeCallbacks(mRunnable);
+    }
+
+    @Override
+    protected boolean isConnecting() {
+        return mConnecting;
     }
 }

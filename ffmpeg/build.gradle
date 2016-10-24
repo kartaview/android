@@ -1,12 +1,12 @@
 apply plugin: 'com.android.model.library'
 model {
     android {
-        compileSdkVersion 23
-        buildToolsVersion "23.0.2"
+        compileSdkVersion 24
+        buildToolsVersion '24.0.2'
 
         defaultConfig {
             minSdkVersion.apiLevel 16
-            targetSdkVersion.apiLevel 22
+            targetSdkVersion.apiLevel 24
             versionCode 1
             versionName "1.0"
         }
@@ -20,7 +20,8 @@ model {
         ndk {
             debuggable true
             moduleName "encode"
-            cppFlags.add('-I' + file("src/main/jni/include"))
+            cppFlags.add('-I' + file("src/main/include").absolutePath)
+            cppFlags.add('-fexceptions')
             ldLibs.add("android")
             ldLibs.add("log")
             ldLibs.add("m")
@@ -35,6 +36,10 @@ model {
             abiFilters.add("armeabi-v7a-neon")
 //            abiFilters.add("mips")
             stl "gnustl_static"
+        }
+
+        task buildFFMPEG(type: Exec) {
+            commandLine 'sh', '-c', 'src/main/ffmpeg/init_build_android.sh'
         }
     }
 //    android.productFlavors {
@@ -65,7 +70,7 @@ model {
     android.sources.main {
         jni {
             exportedHeaders {
-                srcDir "src/main/jni/include"
+                srcDir "src/main/include"
             }
             source {
                 srcDir "src/main/jni"
@@ -76,11 +81,9 @@ model {
                 library "avfilter" linkage "shared"
                 library "avformat" linkage "shared"
                 library "avutil" linkage "shared"
-//                library "ffmpeg_mediaplayer_jni" linkage "shared"
                 library "SDL2" linkage "shared"
                 library "swresample" linkage "shared"
                 library "swscale" linkage "shared"
-//                library "x264" linkage "shared"
             }
         }
     }
@@ -88,59 +91,47 @@ model {
     repositories {
         libs(PrebuiltLibraries) {
             avcodec {
-                headers.srcDir "src/main/jni/include"
+                headers.srcDir "src/main/include"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavcodec.so")
                 }
             }
             avfilter {
-                headers.srcDir "src/main/jni/include"
+                headers.srcDir "src/main/include"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavfilter.so")
                 }
             }
             avformat {
-                headers.srcDir "src/main/jni/include"
+                headers.srcDir "src/main/include"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavformat.so")
                 }
             }
             avutil {
-                headers.srcDir "src/main/jni/include"
+                headers.srcDir "src/main/include"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavutil.so")
                 }
             }
-//            ffmpeg_mediaplayer_jni {
-//                headers.srcDir "src/main/jni/include"
-//                binaries.withType(SharedLibraryBinary) {
-//                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libffmpeg_mediaplayer_jni.so")
-//                }
-//            }
             SDL2 {
-                headers.srcDir "src/main/jni/include/SDL"
+                headers.srcDir "src/main/include/SDL"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libSDL2.so")
                 }
             }
             swresample {
-                headers.srcDir "src/main/jni/include"
+                headers.srcDir "src/main/include"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libswresample.so")
                 }
             }
             swscale {
-                headers.srcDir "src/main/jni/include"
+                headers.srcDir "src/main/include"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libswscale.so")
                 }
             }
-//            x264 {
-//                headers.srcDir "src/main/jni/include"
-//                binaries.withType(SharedLibraryBinary) {
-//                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libx264.so")
-//                }
-//            }
         }
     }
 }

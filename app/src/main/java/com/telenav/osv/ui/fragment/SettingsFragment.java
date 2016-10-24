@@ -40,17 +40,17 @@ import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.manager.CameraManager;
 import com.telenav.osv.manager.ObdManager;
 import com.telenav.osv.manager.UploadManager;
+import com.telenav.osv.obd.BLEConnection;
 import com.telenav.osv.service.UploadHandlerService;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
 import com.telenav.osv.utils.Utils;
 import com.telenav.osv.obd.Constants;
-import com.telenav.osv.obd.OBDConnection;
 
 /**
  * Created by Kalman on 10/2/2015.
  */
-public class SettingsFragment extends Fragment implements View.OnClickListener, ObdManager.ConnectionListener, BLEDialogFragment.OnDeviceSelectedListener {
+public class SettingsFragment extends Fragment implements View.OnClickListener, ObdManager.ConnectionListener, BLEDialogFragment.OnDeviceSelectedListener, BTDialogFragment.OnDeviceSelectedListener {
 
     public static final String TAG = "SettingsFragment";
 
@@ -153,7 +153,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         view.findViewById(R.id.storage_container).setOnClickListener(this);
         view.findViewById(R.id.obd_container).setOnClickListener(this);
         view.findViewById(R.id.obd_selector_container).setOnClickListener(this);
-        if (activity.getApp().isDebug) {
+        if (Utils.isDebuggableFlag(activity)) {
             view.findViewById(R.id.aboutText).setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -172,7 +172,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         autoSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO));
         dataSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED));
         metricSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC));
-        mapSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true));
+        mapSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, Build.VERSION.SDK_INT < 24));
         signDetectionSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_SIGN_DETECTION));
 
         shutterSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_AUTO_SHUTTER));
@@ -515,6 +515,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             case R.id.obd_container:
                 final ObdManager obdManager = activity.getApp().getOBDManager();
                 if (!obdManager.isConnected()) {
+                    ObdManager.sDisconnected = false;
                     boolean ret = false;
                     if (obdManager.isBluetooth()) {
                         if (obdManager.isBle()) {
@@ -530,11 +531,15 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                                 return;
                             }
 
-                            BluetoothAdapter bluetoothAdapter = OBDConnection.getInstance().initConnection(getActivity());
+                            BluetoothAdapter bluetoothAdapter = BLEConnection.getInstance().initConnection(getActivity());
 
                             // Checks if Bluetooth is supported on the device.
                             if (bluetoothAdapter == null) {
                                 activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
+                                return;
+                            }
+
+                            if (!activity.checkPermissionsForGPSWithRationale(R.string.permission_bluetooth_rationale)){
                                 return;
                             }
 
@@ -546,13 +551,51 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                                 return;
                             }
                             SharedPreferences preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
-                            if (preferences.getBoolean(Constants.BLE_SERVICE_STARTED, false) && preferences.getString(Constants.EXTRAS_DEVICE_ADDRESS, null) != null) {
+                            if (preferences.getBoolean(Constants.BLE_SERVICE_STARTED, false) && preferences.getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, null) != null) {
                                 ret = obdManager.connect();
                             } else {
                                 ret = true;
                                 BLEDialogFragment blefr = new BLEDialogFragment();
+                                blefr.setDeviceSelectedListener(this);
                                 blefr.show(activity.getSupportFragmentManager(), BLEDialogFragment.TAG);
                             }
+                        } else {
+                            // Use this check to determine whether BT is supported on the device. Then
+                            // you can selectively disable BT-related features.
+                            if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+                                activity.showSnackBar(R.string.bl_not_supported, Snackbar.LENGTH_SHORT);
+                                return;
+                            }
+
+                            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                            // Checks if Bluetooth is supported on the device.
+                            if (bluetoothAdapter == null) {
+                                activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
+                                return;
+                            }
+
+                            if (!activity.checkPermissionsForGPSWithRationale(R.string.permission_bluetooth_rationale)){
+                                return;
+                            }
+
+                            // Ensures Bluetooth is available on the device and it is enabled. If not,
+                            // displays a dialog requesting user permission to enable Bluetooth.
+                            if (!bluetoothAdapter.isEnabled()) {
+                                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                                return;
+                            }
+                            SharedPreferences preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
+                            if (preferences.getBoolean(Constants.BT_SERVICE_STARTED, false) && preferences.getString(Constants.EXTRAS_BT_DEVICE_ADDRESS, null) != null) {
+                                ret = obdManager.connect();
+                            } else {
+                                ret = true;
+                                BTDialogFragment btFragment = new BTDialogFragment();
+                                btFragment.setListener(this);
+                                btFragment.show(activity.getSupportFragmentManager(), BTDialogFragment.TAG);
+                            }
+
                         }
                     } else {
                         ret = obdManager.connect();
@@ -580,6 +623,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                             }).setPositiveButton(R.string.disconnect, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            ObdManager.sDisconnected = true;
                             obdManager.disconnect();
                             appPrefs.saveBooleanPreference(PreferenceTypes.K_OBD_CONNECTED, false);
                         }
@@ -666,12 +710,36 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     }
 
     @Override
+    public void onConnecting() {
+        if (mOBDProgressBar != null && view != null && mObdButton != null && mObdTitle != null) {
+            mOBDProgressBar.setVisibility(View.VISIBLE);
+            view.findViewById(R.id.obd_container).setEnabled(false);
+            mObdButton.setVisibility(View.GONE);
+            mObdTitle.setText(R.string.connecting_label);
+        }
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
     }
 
     @Override
     public void onDeviceSelected(BluetoothDevice device) {
+        try {
+            if (mOBDProgressBar != null) {
+                mOBDProgressBar.setVisibility(View.VISIBLE);
+                view.findViewById(R.id.obd_container).setEnabled(false);
+                mObdButton.setVisibility(View.GONE);
+                mObdTitle.setText(R.string.connecting_label);
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "onTypeSelected: exception " + Log.getStackTraceString(e));
+        }
+    }
+
+    @Override
+    public void onDeviceSelected(String device) {
         try {
             if (mOBDProgressBar != null) {
                 mOBDProgressBar.setVisibility(View.VISIBLE);

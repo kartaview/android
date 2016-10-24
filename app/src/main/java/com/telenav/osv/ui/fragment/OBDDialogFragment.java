@@ -110,7 +110,7 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
                     typeSelectedListener.onTypeSelected(PreferenceTypes.V_OBD_BLE);
                     break;
                 case R.id.obd_radio_bt:
-                    typeSelectedListener.onTypeSelected(PreferenceTypes.V_OBD_BLE);
+                    typeSelectedListener.onTypeSelected(PreferenceTypes.V_OBD_BT);
                     break;
             }
         }

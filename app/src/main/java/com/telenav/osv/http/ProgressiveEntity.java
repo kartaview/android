@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Process;
 import android.support.annotation.NonNull;
 
 /**
@@ -13,16 +16,18 @@ import android.support.annotation.NonNull;
  */
 
 public class ProgressiveEntity implements HttpEntity {
+    private static final String TAG = "ProgressiveEntity";
+
     private final DataProgressListener mListener;
 
     private final long mTotalSize;
 
     private HttpEntity mEntity;
 
-    public ProgressiveEntity(HttpEntity entity, DataProgressListener listener) {
+    public ProgressiveEntity(HttpEntity entity, DataProgressListener listener, long size) {
         mEntity = entity;
         mListener = listener;
-        mTotalSize = mEntity.getContentLength();
+        mTotalSize = size;
     }
 
     @Override
@@ -106,19 +111,44 @@ public class ProgressiveEntity implements HttpEntity {
     } // CONSIDER import this class (and risk more Jar File Hell)
 
     private class ProgressiveOutputStream extends ProxyOutputStream {
+        private static final long MB = 1024 * 1024;
+
         private final DataProgressListener mListener;
 
         private long totalSent;
 
+        private long afterReport;
+
+        private HandlerThread mHandlerThread = new HandlerThread("ProgressiveReport", Process.THREAD_PRIORITY_BACKGROUND);
+
+        private Handler mHandler;
+
+        private Runnable updateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mListener.onProgressChanged(totalSent, mTotalSize);
+            }
+        };
+
+        private long mLastTime = 0;
+
         private ProgressiveOutputStream(OutputStream proxy, DataProgressListener listener) {
             super(proxy);
+            mHandlerThread.start();
+            mHandler = new Handler(mHandlerThread.getLooper());
             totalSent = 0;
+            afterReport = MB;
             mListener = listener;
         }
 
         public void write(@NonNull byte[] bts, int st, int end) throws IOException {
             totalSent += end;
-            mListener.onProgressChanged(totalSent, mTotalSize);
+            afterReport += end;
+//            Log.d(TAG, "write: totalSent: " + totalSent + ", totalSize: " + mTotalSize);
+            if (afterReport >= MB && System.currentTimeMillis() - mLastTime > 1000) {
+                mLastTime = System.currentTimeMillis();
+                mHandler.post(updateRunnable);
+            }
             out.write(bts, st, end);
         }
     }

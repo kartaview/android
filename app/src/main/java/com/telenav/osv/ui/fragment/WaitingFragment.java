@@ -2,7 +2,9 @@ package com.telenav.osv.ui.fragment;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,11 +27,13 @@ import com.skobbler.ngx.search.SKSearchResult;
 import com.skobbler.ngx.search.SKSearchResultParent;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.activity.PlayerActivity;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.listener.ProgressListener;
 import com.telenav.osv.listener.UploadProgressListener;
+import com.telenav.osv.manager.LocalPlaybackManager;
 import com.telenav.osv.manager.UploadManager;
 import com.telenav.osv.service.UploadHandlerService;
 import com.telenav.osv.ui.custom.ScrollDisabledListView;
@@ -87,6 +91,14 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
     @Override
     public void onResume() {
         super.onResume();
+        int size = Sequence.checkDeletedSequences();
+        if (size <= 0 && activity != null){
+            activity.onBackPressed();
+            return;
+        }
+        if (localSequencesAdapter != null){
+            localSequencesAdapter.notifyDataSetChanged();
+        }
         setupUploadButton();
     }
 
@@ -116,13 +128,25 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
                 uploadButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        SequenceDB.instance.deleteHistory();
-                        Sequence.forceRefreshLocalSequences();
-                        localSequencesAdapter.data.clear();
-                        localSequencesAdapter.data = new ArrayList<>(Sequence.getLocalSequences().values());
-                        localSequencesAdapter.notifyDataSetChanged();
-                        uploadButton.setText(R.string.upload_all_label);
-                        activity.onBackPressed();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                SequenceDB.instance.deleteHistory();
+                                Sequence.getLocalSequences();
+                                if (activity != null){
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            localSequencesAdapter.data.clear();
+                                            localSequencesAdapter.data = new ArrayList<>(Sequence.getStaticSequences().values());
+                                            localSequencesAdapter.notifyDataSetChanged();
+                                            uploadButton.setText(R.string.upload_all_label);
+                                            activity.onBackPressed();
+                                        }
+                                    });
+                                }
+                            }
+                        }).start();
                     }
                 });
             } else {
@@ -406,15 +430,15 @@ public class WaitingFragment extends Fragment implements UploadProgressListener 
                 view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (sequence.getStatus() != Sequence.STATUS_UPLOADING || sequence.getStatus() != Sequence.STATUS_FINISHED) {
+                        if (sequence.getStatus() != Sequence.STATUS_UPLOADING && sequence.getStatus() != Sequence.STATUS_FINISHED) {
                             if (Utils.checkSDCard(activity) || !sequence.mIsExternal) {
 //                                activity.showSnackBar("Under construction - local video preview is not yet fully implemented.", Snackbar.LENGTH_LONG);
-                                activity.openScreen(MainActivity.SCREEN_PREVIEW, sequence);
+                                Intent intent = new Intent(activity,PlayerActivity.class);
+                                intent.putExtra(PlayerActivity.EXTRA_SEQUENCE_ID, sequence.folder.getPath());
+                                activity.startActivity(intent);
                             } else {
                                 activity.showSnackBar(getString(R.string.sdcard_missing_message), Snackbar.LENGTH_LONG);
                             }
-                        } else {
-                            activity.showSnackBar(getString(R.string.sdcard_missing_message), Snackbar.LENGTH_SHORT);
                         }
                     }
 

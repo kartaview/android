@@ -1,6 +1,8 @@
 package com.telenav.osv.item;
 
 import android.location.Location;
+import android.os.Build;
+import android.os.SystemClock;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.manager.SensorManager;
 
@@ -16,6 +18,8 @@ public class SensorData {
     public static final int ROTATION = 1;
 
     public static final int COMPASS = 2;
+
+    public static final int GRAVITY = 3;
 
     public static final float ACCELERATION_TO_MPSS = 9.80665f;
 
@@ -43,7 +47,11 @@ public class SensorData {
 
     public SensorData(Location location) {
         mLocation = location;
-        mTimeStamp = location.getTime();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            mTimeStamp = System.currentTimeMillis() - ((SystemClock.elapsedRealtimeNanos() - location.getElapsedRealtimeNanos()) / 1000000);
+        } else {
+            mTimeStamp = System.currentTimeMillis();
+        }
     }
 
     public SensorData(int type, float[] data, long timeStamp) {
@@ -57,29 +65,39 @@ public class SensorData {
             case COMPASS:
                 mCompass = data;
                 break;
+            case GRAVITY:
+                mGravity = data;
+                break;
         }
-        mTimeStamp = timeStamp;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            mTimeStamp = System.currentTimeMillis() - ((SystemClock.elapsedRealtimeNanos() - timeStamp) / 1000000);
+        } else {
+            mTimeStamp = System.currentTimeMillis();
+        }
     }
 
     public SensorData(float pressure, long timeStamp) {
         mPressure = new float[1];
         mPressure[0] = pressure;
-        mTimeStamp = timeStamp;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            mTimeStamp = System.currentTimeMillis() - ((SystemClock.elapsedRealtimeNanos() - timeStamp) / 1000000);
+        } else {
+            mTimeStamp = System.currentTimeMillis();
+        }
     }
 
-    public SensorData(int index, int videoIndex, Location location, long timeStamp) {
+    public SensorData(int index, int videoIndex, long millis) {
         mIndex = new int[1];
         mVideoIndex = new int[1];
         mIndex[0] = index;
         mVideoIndex[0] = videoIndex;
-        mLocation = location;
-        mTimeStamp = timeStamp;
+        mTimeStamp = millis;
     }
 
-    public SensorData(int speed, long timeStamp) {
+    public SensorData(int speed, long millis) {
         mSpeed = new int[1];
         mSpeed[0] = speed;
-        mTimeStamp = timeStamp;
+        mTimeStamp = millis;
     }
 
     @Override
@@ -173,7 +191,7 @@ public class SensorData {
         builder.append(SensorManager.LINE_SEPARATOR);
         String str = builder.toString();
         if (mIndex!= null && mVideoIndex != null){
-            Log.d(TAG, "toString: created for startIndex = " + mIndex[0] + " and video file = " + mVideoIndex[0]);
+            Log.d(TAG, "toString: created for fileIndex = " + mIndex[0] + " and video file = " + mVideoIndex[0]);
         }
         return str;
     }

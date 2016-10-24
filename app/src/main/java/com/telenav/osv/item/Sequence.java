@@ -56,6 +56,8 @@ public class Sequence {
 
     public int imageCount;
 
+    public long originalSize = 0;
+
     public long size = 0;
 
     public String thumblink = "";
@@ -87,6 +89,10 @@ public class Sequence {
     private ArrayList<ProgressListener> progressListeners = new ArrayList<>();
 
     public int numberOfVideos = -1;
+
+    public boolean isPublic;
+
+    public int skipToValue = 0;
 
     public Sequence(int sequenceId, String date, int originalImageCount, String address, String thumbLink, boolean obd, String platform, String platformVersion, String
             appVersion, int distance) {
@@ -132,7 +138,11 @@ public class Sequence {
         Log.d(TAG, "Sequence: " + this.toString());
     }
 
-    public static ConcurrentHashMap<Integer, Sequence> forceRefreshLocalSequences() {
+    private static ConcurrentHashMap<Integer, Sequence> forceRefreshLocalSequences() {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            Log.e(TAG, "getLocalSequences called on main thread ");
+            throw new IllegalStateException("GetLocalSequences called on main thread.");
+        }
         ConcurrentHashMap<Integer, Sequence> tempSequences = new ConcurrentHashMap<>();
         synchronized (sequences) {
             Cursor cur = SequenceDB.instance.getAllSequences();
@@ -168,9 +178,6 @@ public class Sequence {
             for (Sequence seq : tempSequences.values()) {
                 seq.progressListeners.clear();
                 sequences.put(seq.sequenceId, seq);
-            }
-            if (Looper.myLooper() == Looper.getMainLooper()) {
-                Log.e(TAG, "getLocalSequences called on main thread ");
             }
             orderByValue(sequences, new Comparator<Sequence>() {
                 @Override
@@ -213,7 +220,7 @@ public class Sequence {
      * @return
      */
     public static ConcurrentHashMap<Integer, Sequence> getStaticSequences() {
-        if (!mInitialized) {
+        if (!mInitialized && Looper.myLooper() != Looper.getMainLooper()) {
             return forceRefreshLocalSequences();
         }
         return sequences;
@@ -241,7 +248,7 @@ public class Sequence {
         }
     }
 
-    public static int getLocalSequencesSize() {
+    public static int getLocalSequencesNumber() {
         return sequences.size();
     }
 
@@ -275,6 +282,7 @@ public class Sequence {
 
     public void refreshStats() {
         this.size = Utils.folderSize(folder);
+        this.originalSize = size;
         this.polyline = new MapFragment.Polyline(sequenceId);
         this.platform = "Android";
         this.platformVersion = Build.VERSION.RELEASE;
@@ -367,5 +375,17 @@ public class Sequence {
     @Override
     public String toString() {
         return "Sequence (id " + sequenceId + " images " + imageCount + " from " + originalImageCount + " status " + getStatus() + " number of videos " + numberOfVideos + ")";
+    }
+
+    public static int checkDeletedSequences() {
+        if (sequences != null && sequences.size() > 0){
+            for (Sequence s: sequences.values()){
+                if (!SequenceDB.instance.checkSequenceExists(s.sequenceId)){
+                    removeSequence(s.sequenceId);
+                }
+            }
+            return sequences.size();
+        }
+        return 0;
     }
 }

@@ -6,6 +6,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.PreferenceTypes;
 
 /**
  * Created by Kalman on 07/09/16.
@@ -74,6 +77,16 @@ class LocationDataProvider {
 
         if (lastKnownLocationGPS != null && isBetterLocation(lastKnownLocationGPS, best)) {
             best = lastKnownLocationGPS;
+        }
+        if (best == null) {
+            ApplicationPreferences appPrefs = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs();
+            final double lat = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LAT);
+            final double lon = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LON);
+            if (lat != 0 && lon != 0) {
+                best = new Location("Saved");
+                best.setLatitude(lat);
+                best.setLatitude(lon);
+            }
         }
         return best;
     }

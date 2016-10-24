@@ -10,7 +10,7 @@
     android:padding="20dp">
 
     <TextView
-        android:id="@+id/ble_devices_lable"
+        android:id="@+id/devices_fragment_title"
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -42,8 +42,7 @@
             android:id="@+id/obd_radio_bt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/bluetooth_label"
-            android:visibility="gone" />
+            android:text="@string/bluetooth_label"/>
     </RadioGroup>
 
     <TextView

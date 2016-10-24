@@ -1,7 +1,7 @@
 package com.telenav.osv.ui.fragment;
 
-import java.lang.reflect.Field;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.hardware.Camera;
@@ -9,7 +9,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -102,12 +101,9 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
 
     private View mDeveloperRecording;
 
-//    private RelativeLayout mBaseHolder;
-
     private View mCameraPreview;
 
     private ImageView signDetectionHolder;
-
 
     private ImageView mGPSIcon;
 
@@ -119,11 +115,14 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
 
     private FrameLayout mFocusLockedIndicator;
 
+    private LocationManager mLocationManager;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_camera, null);
         activity = (MainActivity) getActivity();
+        mLocationManager = activity.getApp().getLocationManager();
         // Setup HUDs
 //        mBaseHolder = (RelativeLayout) view.findViewById(R.id.base_holder);
         mCameraPreview = view.findViewById(R.id.camera_preview_layout);
@@ -200,19 +199,23 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
     @Override
     public void onResume() {
         super.onResume();
-        if (mCameraHandlerService != null) {
-            mCameraHandlerService.setCameraReadyListener(this);
-            mCameraHandlerService.mLocationManager.setAccuracyListener(this);
-            mCameraHandlerService.mLocationManager.setSpeedChangedListener(this);
+        if (mLocationManager != null) {
+            mLocationManager.setAccuracyListener(this);
+            mLocationManager.setSpeedChangedListener(this);
+        }
+        if (activity != null){
+            if (activity.needsCameraPermission()){
+                activity.setNeedsCameraPermission(false);
+                activity.checkPermissionsForCamera();
+            }
         }
     }
 
     @Override
     public void onPause() {
-        if (mCameraHandlerService != null) {
-            mCameraHandlerService.setCameraReadyListener(null);
-            mCameraHandlerService.mLocationManager.setAccuracyListener(null);
-            mCameraHandlerService.mLocationManager.setSpeedChangedListener(null);
+        if (mLocationManager != null) {
+            mLocationManager.setAccuracyListener(null);
+            mLocationManager.setSpeedChangedListener(null);
         }
         super.onPause();
     }
@@ -257,30 +260,30 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
 
     @Override
     public void onShutter() {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                final View fadingView = mCameraPreview.findViewById(R.id.save_fading_view);
-                shutterAnimation.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                        fadingView.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        fadingView.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                });
-                fadingView.clearAnimation();
-                fadingView.startAnimation(shutterAnimation);
-            }
-        });
+//        mHandler.post(new Runnable() { todo removed shutter animation
+//            @Override
+//            public void run() {
+//                final View fadingView = mCameraPreview.findViewById(R.id.save_fading_view);
+//                shutterAnimation.setAnimationListener(new Animation.AnimationListener() {
+//                    @Override
+//                    public void onAnimationStart(Animation animation) {
+//                        fadingView.setVisibility(View.VISIBLE);
+//                    }
+//
+//                    @Override
+//                    public void onAnimationEnd(Animation animation) {
+//                        fadingView.setVisibility(View.GONE);
+//                    }
+//
+//                    @Override
+//                    public void onAnimationRepeat(Animation animation) {
+//
+//                    }
+//                });
+//                fadingView.clearAnimation();
+//                fadingView.startAnimation(shutterAnimation);
+//            }
+//        });
     }
 
     public void addCameraSurfaceView() {
@@ -376,11 +379,6 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
     public void onCameraServiceConnected(CameraHandlerService cameraHandlerService) {
         this.mCameraHandlerService = cameraHandlerService;
         addCameraSurfaceView();
-        if (mCameraHandlerService != null) {
-            mCameraHandlerService.setCameraReadyListener(this);
-            mCameraHandlerService.mLocationManager.setAccuracyListener(this);
-            mCameraHandlerService.mLocationManager.setSpeedChangedListener(this);
-        }
     }
 
     @Override
@@ -411,15 +409,10 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
 
     @Override
     public void onCameraFailed() {
-        Log.e(TAG, "Could not open camera HAL");
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                if (view != null && activity != null) {
-                    activity.showSnackBar(R.string.cannot_connect_hal, Snackbar.LENGTH_LONG);
-                }
-            }
-        });
+    }
+
+    @Override
+    public void onPermissionNeeded() {
     }
 
 
@@ -488,6 +481,16 @@ public class CameraPreviewFragment extends Fragment implements CameraReadyListen
     public void onSpeedObtained(ObdManager.SpeedData speedData) {
         if (mOBDIcon != null && speedData.getSpeed() != -1) {
             mOBDIcon.setText(Utils.formatSpeedFromKmph(activity, speedData.getSpeed())[0]);
+        }
+    }
+
+    @Override
+    public void onConnecting() {
+        if (mOBDIcon != null) {
+            mOBDIconHolder.setVisibility(View.VISIBLE);
+            mOBDIcon.setText("-");
+            mOBDUnit.setText(null);
+            mOBDIcon.setOnClickListener(null);
         }
     }
 

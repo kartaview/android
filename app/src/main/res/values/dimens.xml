@@ -15,4 +15,7 @@
     <dimen name="settings_item_height">68dp</dimen>
 
     <dimen name="tap_to_focus_view">60dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
 </resources>

@@ -1,17 +1,24 @@
 package com.telenav.osv.service;
 
-import android.app.Application;
+import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.opengl.GLSurfaceView;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.NotificationCompat;
 import android.view.OrientationEventListener;
 import com.telenav.osv.R;
@@ -24,8 +31,10 @@ import com.telenav.osv.listener.UploadProgressListener;
 import com.telenav.osv.manager.CameraManager;
 import com.telenav.osv.manager.FocusManager;
 import com.telenav.osv.manager.LocationManager;
+import com.telenav.osv.manager.ObdManager;
 import com.telenav.osv.manager.ShutterManager;
-import com.telenav.osv.ui.fragment.CameraPreviewFragment;
+import com.telenav.osv.obd.BLEConnection;
+import com.telenav.osv.obd.Constants;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
@@ -33,6 +42,8 @@ import com.telenav.osv.utils.Utils;
  * Created by Kalman on 10/20/2015.
  */
 public class CameraHandlerService extends Service implements CameraReadyListener, RecordingStateChangeListener {
+
+    public static final String FLAG_BLUETOOTH = "eventBluetooth";
 
     private static final String TAG = "CameraHandlerService";
 
@@ -52,19 +63,21 @@ public class CameraHandlerService extends Service implements CameraReadyListener
 
     public boolean mSphereModeActive = false;
 
+    public int mOrientation = -1;
+
     private GLSurfaceView mGLSurfaceView;
 
     private CameraOrientationEventListener mOrientationListener;
 
     private Handler mHandler;
 
-    public int mOrientation = -1;
-
     private UploadProgressListener mUploadProgressListener;
 
-    private CameraPreviewFragment cameraReadyListener;
+    private CameraReadyListener mCameraReadyListener;
 
     private RecordingStateChangeListener mRecordingListener;
+
+    private boolean mCameraPermissionNeeded = false;
 
     @Override
     public void onCreate() {
@@ -80,7 +93,7 @@ public class CameraHandlerService extends Service implements CameraReadyListener
     @Override
     public IBinder onBind(Intent intent) {
         mShutterManager = ((OSVApplication) getApplication()).getShutterManager();
-        setupCamera(getApplication());
+        setupCamera();
         // Create orientation listener. This should be done first because it
         // takes some time to get first orientation.
         mOrientationListener = new CameraOrientationEventListener(getApplication());
@@ -88,15 +101,22 @@ public class CameraHandlerService extends Service implements CameraReadyListener
         return mBinder;
     }
 
-    protected void setupCamera(Application application) {
+    protected void setupCamera() {
         // Setup the Camera hardware and preview
         CameraManager.instance.forceCloseCamera();
 //        mWifiCamManager = new WifiCamManager(application);
         mShutterManager.setRecordingStateChangeListener(this);
 
         CameraManager.instance.setCameraReadyListener(this);
-
-        CameraManager.instance.open();
+        mCameraFailed = false;
+        mCameraReady = false;
+        mCameraPermissionNeeded = false;
+        int cameraPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        if (cameraPermitted == PackageManager.PERMISSION_DENIED) {
+            mCameraPermissionNeeded = true;
+        } else {
+            CameraManager.instance.open();
+        }
     }
 
     public void setCameraSurfaceView(GLSurfaceView surface) {
@@ -108,7 +128,59 @@ public class CameraHandlerService extends Service implements CameraReadyListener
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        return START_STICKY;
+        OSVApplication app = ((OSVApplication) getApplication());
+        if (intent != null) {
+            if (!intent.getBooleanExtra(FLAG_BLUETOOTH, false)) {
+                return 0;
+            }
+            ObdManager obdManager = app.getOBDManager();
+            if (!obdManager.isBluetooth()) {
+                return 0;
+            }
+            BluetoothAdapter adapter;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                BluetoothManager bm = (BluetoothManager) this.getSystemService(Context.BLUETOOTH_SERVICE);
+                adapter = bm.getAdapter();
+            } else {
+                adapter = BluetoothAdapter.getDefaultAdapter();
+            }
+            if (adapter.isEnabled()) {
+                if (obdManager.isBle()) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                        return 0;
+                    }
+
+                    // Use this check to determine whether BLE is supported on the device. Then
+                    // you can selectively disable BLE-related features.
+                    if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                        return 0;
+                    }
+
+                    BLEConnection.getInstance().initConnection(this);
+
+                    SharedPreferences preferences = getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
+                    if (preferences.getBoolean(Constants.BLE_SERVICE_STARTED, false) && preferences.getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, null) != null) {
+                        obdManager.connect();
+                        return START_STICKY;
+                    } else {
+                        return 0;
+                    }
+                } else {
+                    // Use this check to determine whether BT is supported on the device. Then
+                    // you can selectively disable BT-related features.
+                    if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+                        return 0;
+                    }
+
+                    SharedPreferences preferences = getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
+                    if (preferences.getBoolean(Constants.BT_SERVICE_STARTED, false) && preferences.getString(Constants.EXTRAS_BT_DEVICE_ADDRESS, null) != null) {
+                        obdManager.connect();
+                        return START_STICKY;
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
 
@@ -152,6 +224,7 @@ public class CameraHandlerService extends Service implements CameraReadyListener
     public void setRecordingListener(RecordingStateChangeListener mRecordingListener) {
         this.mRecordingListener = mRecordingListener;
     }
+
     @Override
     public void onDestroy() {
         if (mOrientationListener != null) {
@@ -189,8 +262,8 @@ public class CameraHandlerService extends Service implements CameraReadyListener
             if (mShutterManager != null) {
                 mShutterManager.setFocusManager(mFocusManager);
             }
-            if (cameraReadyListener != null) {
-                cameraReadyListener.onCameraReady();
+            if (mCameraReadyListener != null) {
+                mCameraReadyListener.onCameraReady();
             }
         }
     }
@@ -198,24 +271,39 @@ public class CameraHandlerService extends Service implements CameraReadyListener
     @Override
     public void onCameraFailed() {
         mCameraFailed = true;
-        if (cameraReadyListener != null) {
-            cameraReadyListener.onCameraFailed();
+        if (mCameraReadyListener != null) {
+            mCameraReadyListener.onCameraFailed();
         }
     }
 
-    public void setCameraReadyListener(CameraPreviewFragment cameraReadyListener) {
-        this.cameraReadyListener = cameraReadyListener;
-        if (cameraReadyListener != null) {
+    @Override
+    public void onPermissionNeeded() {
+
+    }
+
+    public void setCameraReadyListener(CameraReadyListener mCameraReadyListener) {
+        this.mCameraReadyListener = mCameraReadyListener;
+        if (mCameraReadyListener != null) {
             if (mCameraReady) {
-                cameraReadyListener.onCameraReady();
+                mCameraReadyListener.onCameraReady();
             } else if (mCameraFailed) {
-                cameraReadyListener.onCameraFailed();
+                mCameraReadyListener.onCameraFailed();
+            } else if (mCameraPermissionNeeded) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
+                    mCameraReadyListener.onPermissionNeeded();
+                } else {
+                    mCameraPermissionNeeded = false;
+                }
             }
         }
     }
 
     public void removeRecordingListener() {
         this.mRecordingListener = null;
+    }
+
+    public void removeCameraReadyListener() {
+        this.mCameraReadyListener = null;
     }
 
     public void startSphereCamera(WifiCamSurfaceView surfaceView, final CameraReadyListener listener) {
@@ -274,11 +362,6 @@ public class CameraHandlerService extends Service implements CameraReadyListener
 //            mCamManager.setSignDetectedListener(signDetectedListener);
 //        }
 //    }
-
-
-    public interface OrientationChangedListener {
-        void onOrientationChanged();
-    }
 
     public class CameraHandlerBinder extends Binder {
         public CameraHandlerService getService() {

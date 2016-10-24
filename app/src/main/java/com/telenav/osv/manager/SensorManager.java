@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.os.Process;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.item.OSVFile;
@@ -26,13 +25,13 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
 
     public static final String LINE_SEPARATOR = "\n";
 
-    public static final String SENSOR_FORMAT_VERSION = "1.1.1";
+    public static final String SENSOR_FORMAT_VERSION = "1.1.3";
 
     private static final String TAG = "SensorManager";
 
     public static ConcurrentLinkedQueue<SensorData> sensorDataQueue = new ConcurrentLinkedQueue<>();
 
-    public static float[] mOrientation = new float[3];
+    public static float[] mHeadingValues = new float[3];
 
     private static OSVFile sSequence;
 
@@ -63,7 +62,7 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
 
     private android.location.LocationManager mLocationService;
 
-    private float[] mRotationMatrix = new float[16];
+    private float[] mHeadingMatrix = new float[16];
 
     private float[] mGravity = new float[3];
 
@@ -110,7 +109,6 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
 
     void onPauseOrStop() {
         if (mApplication.getOBDManager() != null) {
-            mApplication.getOBDManager().stopRunnable();
             mApplication.getOBDManager().removeConnectionListener(this);
         }
         mSensorManager.unregisterListener(this);
@@ -131,7 +129,9 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
             public void run() {
                 if (mGzipOutputStream != null) {
                     try {
-                        mGzipOutputStream.flush();
+                        try {
+                            mGzipOutputStream.flush();
+                        } catch (IllegalStateException ignored){}
                         mGzipOutputStream.finish();
                         mGzipOutputStream.close();
                     } catch (IOException e) {
@@ -156,7 +156,6 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
                 sSequence = sequence;
                 if (mApplication.getOBDManager() != null) {
                     mApplication.getOBDManager().addConnectionListener(SensorManager.this);
-//            mOBDIIManager.connect();
                 }
                 if (mApplication.getOBDManager().isConnected()) {
                     onConnected();
@@ -185,22 +184,17 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
     // This function registers sensor listeners for the accelerometer, magnetometer and gyroscope.
     private void initListeners() {
         int READING_RATE = 100000;
-        boolean accelerometer = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), READING_RATE);
+        boolean accelerometer = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), READING_RATE, mBackgroundHandler);
         boolean gyroscope = false;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            gyroscope = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR), READING_RATE);
+            gyroscope = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR), READING_RATE, mBackgroundHandler);
         }
-        boolean magnetometer = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), READING_RATE);
-        boolean pressure = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE), READING_RATE);
-        boolean gravity = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), READING_RATE);
+        boolean magnetometer = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), READING_RATE, mBackgroundHandler);
+        boolean pressure = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE), READING_RATE, mBackgroundHandler);
+        boolean gravity = mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), READING_RATE, mBackgroundHandler);
         Log.d(TAG, "initSensors: accelerometer=" + accelerometer + ", rotation=" + gyroscope + ", magnetometer=" + magnetometer + ", barometer=" + pressure + ", gravity=" +
                 gravity);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                mLocationService.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, SensorManager.this);
-            }
-        });
+        mLocationService.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, SensorManager.this, mBackgroundHandler.getLooper());
     }
 
     @Override
@@ -208,33 +202,43 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
 //                Log.d(TAG, "onSensorChanged: accelerometer");
-                logSensorData(new SensorData(SensorData.ACCELEROMETER, event.values, System.currentTimeMillis()));
+                logSensorData(new SensorData(SensorData.ACCELEROMETER, event.values, event.timestamp));
                 mGravity = event.values;
                 break;
             case Sensor.TYPE_GAME_ROTATION_VECTOR:
 //                Log.d(TAG, "onSensorChanged: gyroscope");
                 android.hardware.SensorManager.getRotationMatrixFromVector(mRotationMatrixS, event.values);
                 android.hardware.SensorManager.getOrientation(mRotationMatrixS, mOrientationS);
-                logSensorData(new SensorData(SensorData.ROTATION, mOrientationS, System.currentTimeMillis()));
+                logSensorData(new SensorData(SensorData.ROTATION, mOrientationS, event.timestamp));
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
 //                Log.d(TAG, "onSensorChanged: magnetometer");
                 mGeomagnetic = event.values;
                 if (mGravity != null && mGeomagnetic != null) {
-                    boolean success = android.hardware.SensorManager.getRotationMatrix(mRotationMatrix, null, mGravity, mGeomagnetic);
+                    boolean success = android.hardware.SensorManager.getRotationMatrix(mHeadingMatrix, null, mGravity, mGeomagnetic);
                     if (success) {
-                        android.hardware.SensorManager.getOrientation(mRotationMatrix, mOrientation);
-                        logSensorData(new SensorData(SensorData.COMPASS, mOrientation, System.currentTimeMillis()));
+                        android.hardware.SensorManager.remapCoordinateSystem(mHeadingMatrix,
+                                android.hardware.SensorManager.AXIS_X, android.hardware.SensorManager.AXIS_Z,
+                                mHeadingMatrix);
+                        android.hardware.SensorManager.getOrientation(mHeadingMatrix, mHeadingValues);
+                        mHeadingValues[0] = (float) Math.toDegrees(mHeadingValues[0]);
+                        mHeadingValues[1] = (float) Math.toDegrees(mHeadingValues[1]);
+                        mHeadingValues[2] = (float) Math.toDegrees(mHeadingValues[2]);
+                        mHeadingValues[0] = mHeadingValues[0] >= 0 ? mHeadingValues[0]: mHeadingValues[0] + 360;
+//                        Log.d(TAG, "onSensorChanged: heading azimuth                                    " + (int) mHeadingValues[0]);
+//                        Log.d(TAG, "onSensorChanged: heading pitch                      " + (int) mHeadingValues[1]);
+//                        Log.d(TAG, "onSensorChanged: heading roll    " + (int) mHeadingValues[2]);
+                        logSensorData(new SensorData(SensorData.COMPASS, mHeadingValues, event.timestamp));// System.currentTimeMillis()));
                     }
                 }
                 break;
             case Sensor.TYPE_PRESSURE:
 //                Log.d(TAG, "onSensorChanged: pressure");
-                logSensorData(new SensorData(event.values[0], System.currentTimeMillis()));
+                logSensorData(new SensorData(event.values[0], event.timestamp));
                 break;
             case Sensor.TYPE_GRAVITY:
 //                Log.d(TAG, "onSensorChanged: pressure");
-                logSensorData(new SensorData(event.values[0], System.currentTimeMillis()));
+                logSensorData(new SensorData(SensorData.GRAVITY, event.values, event.timestamp));
                 break;
         }
         if (sensorDataQueue.size()>12){
@@ -284,7 +288,12 @@ public class SensorManager implements SensorEventListener, LocationListener, Obd
     @Override
     public void onSpeedObtained(ObdManager.SpeedData speedData) {
         if (speedData.getSpeed() != -1) {
-            logSensorData(new SensorData(speedData.getSpeed(), System.currentTimeMillis()));
+            logSensorData(new SensorData(speedData.getSpeed(), speedData.getTimestamp()));
         }
+    }
+
+    @Override
+    public void onConnecting() {
+
     }
 }

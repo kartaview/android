@@ -1,0 +1,2 @@
+arm-linux-androideabi-addr2line -C -f -e /Users/Kalman/Documents/workspace/OpenStreetView/ffmpeg/src/main/jniLibs/armeabi-v7a/libavformat.so  0007e44c
+arm-linux-androideabi-addr2line -C -f -e /Users/Kalman/Documents/workspace/OpenStreetView/ffmpeg/build/intermediates/binaries/release/obj/armeabi-v7a/libencode.so  00009e89

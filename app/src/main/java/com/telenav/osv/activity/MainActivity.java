@@ -11,6 +11,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.DialogInterface;
@@ -18,7 +19,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -42,7 +43,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Display;
 import android.view.Gravity;
@@ -61,6 +61,7 @@ import com.bumptech.glide.request.target.Target;
 import com.facebook.network.connectionclass.ConnectionQuality;
 import com.google.android.gms.common.api.Status;
 import com.skobbler.ngx.SKMaps;
+import com.skobbler.ngx.util.SKLogging;
 import com.telenav.osv.R;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
@@ -68,11 +69,13 @@ import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.http.RequestListener;
 import com.telenav.osv.http.RequestResponseListener;
 import com.telenav.osv.item.Sequence;
+import com.telenav.osv.listener.CameraReadyListener;
 import com.telenav.osv.listener.ImageSavedListener;
 import com.telenav.osv.listener.RecordingStateChangeListener;
 import com.telenav.osv.listener.UploadProgressListener;
 import com.telenav.osv.manager.CameraManager;
 import com.telenav.osv.manager.LocalPlaybackManager;
+import com.telenav.osv.manager.ObdManager;
 import com.telenav.osv.manager.OnlinePlaybackManager;
 import com.telenav.osv.manager.PlaybackManager;
 import com.telenav.osv.manager.UploadManager;
@@ -97,14 +100,16 @@ import com.telenav.osv.utils.Utils;
  * Activity displaying the map - camera view - profile screen
  */
 
-public class MainActivity extends AppCompatActivity implements RecordingStateChangeListener, UploadProgressListener, FragmentManager
-        .OnBackStackChangedListener, View.OnClickListener, Camera.ShutterCallback, ImageSavedListener {
+public class MainActivity extends OSVActivity implements RecordingStateChangeListener, UploadProgressListener, FragmentManager
+        .OnBackStackChangedListener, View.OnClickListener, Camera.ShutterCallback, ImageSavedListener, CameraReadyListener {
 
     /**
      * Intent extra used when opening app from recording notification
      * to go directly to camera view
      */
     public static final String K_OPEN_CAMERA = "open_camera";
+
+    public static final int REQUEST_CODE_PLAYBACK = 12345;
 
     public static final int SCREEN_MAP = 0;
 
@@ -217,6 +222,26 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
     private AlertDialog alertDialog;
 
+    private TimerTask animateDownTimerTask;
+
+    private UploadManager mUploadManager;
+
+    private Snackbar mSnackbar;
+
+    private AppBarLayout mAppBar;
+
+    private Toolbar toolbar;
+
+//    private Fragment mCurrentFragment;
+
+    private DrawerLayout drawerLayout;
+
+    private boolean mScreenModeParalell = false;
+
+    private ActionBar mActionBar;
+
+    private NavigationView navigationView;
+
     /**
      * Defines callbacks for service binding, passed to bindService()
      */
@@ -261,26 +286,6 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         }
     };
 
-    private TimerTask animateDownTimerTask;
-
-    private UploadManager mUploadManager;
-
-    private Snackbar mSnackbar;
-
-    private AppBarLayout mAppBar;
-
-//    private Fragment mCurrentFragment;
-
-    private Toolbar toolbar;
-
-    private DrawerLayout drawerLayout;
-
-    private boolean mScreenModeParalell = false;
-
-    private ActionBar mActionBar;
-
-    private NavigationView navigationView;
-
     private LinearLayout mFragmentsContainer;
 
     private FrameLayout mUpperFragmentHolder;
@@ -305,6 +310,10 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
     private Status locationResolution;
 
+    private AlertDialog mExitDialog;
+
+    private int mCurrentScreen = SCREEN_MAP;
+
     /**
      * Defines callbacks for service binding, passed to bindService()
      */
@@ -317,16 +326,19 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             mCameraHandlerService = binder.getService();
             mBoundCameraHandler = true;
 
-            mCameraHandlerService.setRecordingListener(MainActivity.this);
-            mCameraHandlerService.mShutterManager.setShutterCallback(MainActivity.this);
-            mCameraHandlerService.mShutterManager.setImageSavedListener(MainActivity.this);
             if (cameraPreviewFragment == null) {
                 cameraPreviewFragment = new CameraPreviewFragment();
             }
-            if (cameraControlsFragment != null) {
-                cameraControlsFragment.onCameraServiceConnected(mCameraHandlerService);
+            if (cameraControlsFragment == null) {
+                cameraControlsFragment = new CameraControlsFragment();
             }
+            cameraControlsFragment.onCameraServiceConnected(mCameraHandlerService);
             cameraPreviewFragment.onCameraServiceConnected(mCameraHandlerService);
+
+            mCameraHandlerService.setRecordingListener(MainActivity.this);
+            mCameraHandlerService.setCameraReadyListener(MainActivity.this);
+            mCameraHandlerService.mShutterManager.setShutterCallback(MainActivity.this);
+            mCameraHandlerService.mShutterManager.setImageSavedListener(MainActivity.this);
             if (mCameraHandlerService.mShutterManager.isRecording()) {
                 openScreen(SCREEN_RECORDING);
             }
@@ -338,14 +350,13 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mCameraHandlerService.removeRecordingListener();
+            mCameraHandlerService.removeCameraReadyListener();
             mCameraHandlerService = null;
             mBoundCameraHandler = false;
         }
     };
 
-    private AlertDialog mExitDialog;
-
-    private int mCurrentScreen = SCREEN_MAP;
+    private boolean mCameraPermissionNeeded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -353,6 +364,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 //        requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SKLogging.enableLogs(false);
         OSVApplication.sUiThreadId = Thread.currentThread().getId();
         mUploadManager = getApp().getUploadManager();
         appPrefs = ((OSVApplication) getApplication()).getAppPrefs();
@@ -386,8 +398,9 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             @Override
             public void onClick(View v) {
                 String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
+                String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
 
-                if (userName.equals("")) {
+                if (userName.equals("") || token.equals("")) {
                     showSnackBar(R.string.login_to_upload_warning, Snackbar.LENGTH_LONG, getString(R.string.login_label), new Runnable() {
                         @Override
                         public void run() {
@@ -499,9 +512,9 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             public void onClick(View v) {
                 if (mapFragment.mCurrentSequence != null) {
                     String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
+                    String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
 
-
-                    if (userName.equals("")) {
+                    if (userName.equals("") || token.equals("")) {
                         showSnackBar(R.string.please_login_label, Snackbar.LENGTH_SHORT);
 
                         return;
@@ -552,9 +565,12 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                 }
             }
         };
-        if (!isPortrait()) {
-            startImmersiveMode();
-        }
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                onBackStackChanged();
+            }
+        }, 1000);
     }
 
     public void initFragments() {
@@ -604,11 +620,12 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 //        fragments.add(nearbyFragment);
     }
 
-
+    @Override
     public void openScreen(int screen) {
         openScreen(screen, null);
     }
 
+    @Override
     public void openScreen(final int screen, final Object extra) {
         if (mUploadHandlerService == null || mCameraHandlerService == null) {
             showSnackBar(getString(R.string.loading_components_message), Snackbar.LENGTH_SHORT);
@@ -711,7 +728,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                         if (((Sequence) extra).online) {
                             player = new OnlinePlaybackManager(MainActivity.this, (Sequence) extra);
                         } else {
-                            player = new LocalPlaybackManager((Sequence) extra);
+                            player = new LocalPlaybackManager(MainActivity.this, (Sequence) extra);
                         }
                         mapFragment.setSource(player);
                         trackPreviewFragment.setSource(player);
@@ -734,7 +751,12 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     case SCREEN_NEARBY:
                         tag = NearbyFragment.TAG;
                         fragment = nearbyFragment;
-                        nearbyFragment.handleNearbyResult((String) extra);
+                        if (extra == null) {
+                            //repeat latest
+                            nearbyFragment.handleNearbyResult(null);
+                        } else {
+                            nearbyFragment.handleNearbyResult((String) extra);
+                        }
                         break;
                 }
                 if (getCurrentFragment().equals(tag)) {
@@ -784,6 +806,11 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 
 
     private void resizeHolders(float ratio, final boolean portrait) {
+        resizeHolderStatic(ratio, portrait);
+        positionSmallFragment(portrait);
+    }
+
+    public void resizeHolderStatic(float ratio, final boolean portrait) {
         Log.d(TAG, "resizeHolders: ratio = " + ratio);
         LinearLayout.LayoutParams lpu, lpl;
         if (ratio >= 0) {
@@ -800,23 +827,16 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             lpl.weight = lw;
         }
         int intendedOrientation = portrait ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL;
-        boolean reorient = mFragmentsContainer.getOrientation() != intendedOrientation;
-        if (reorient) {
-//            mFragmentsContainer.removeAllViews();
+//        boolean reorient = mFragmentsContainer.getOrientation() != intendedOrientation;
+//        if (reorient) {
             mFragmentsContainer.setOrientation(intendedOrientation);
-//            mFragmentsContainer.addView(portrait ? mUpperFragmentHolder : mLowerFragmentHolder);
-//            mFragmentsContainer.addView(portrait ? mLowerFragmentHolder : mUpperFragmentHolder);
-        }
+//        }
         mUpperFragmentHolder.setLayoutParams(lpu);
         mLowerFragmentHolder.setLayoutParams(lpl);
         mFragmentsContainer.invalidate();
-//        if (reorient) {
-        positionSmallFragment(portrait);
-//        }
     }
 
     private void positionSmallFragment(final boolean portrait) {
-
         final FrameLayout.LayoutParams smallLp = new FrameLayout.LayoutParams(portrait ? (int) Utils.dpToPx(this, 110) : (int) Utils.dpToPx(this, 150)
                 , portrait ? (int) Utils.dpToPx(this, 150) : (int) Utils.dpToPx(this, 110));
         mLowerFragmentHolder.post(new Runnable() {
@@ -837,15 +857,51 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         });
     }
 
-    public void resizeHolderStatic(float ratio, final boolean portrait) {
-        Log.d(TAG, "resizeHolders: ratio = " + ratio);
-        LinearLayout.LayoutParams lpu = new LinearLayout.LayoutParams(portrait ? LinearLayout.LayoutParams.MATCH_PARENT : 0, portrait ? 0 : LinearLayout.LayoutParams.MATCH_PARENT);
-        lpu.weight = 1.0f - ratio;
-        LinearLayout.LayoutParams lpl = new LinearLayout.LayoutParams(portrait ? LinearLayout.LayoutParams.MATCH_PARENT : 0, portrait ? 0 : LinearLayout.LayoutParams.MATCH_PARENT);
-        lpl.weight = ratio;
-        mUpperFragmentHolder.setLayoutParams(lpu);
-        mLowerFragmentHolder.setLayoutParams(lpl);
-        mFragmentsContainer.invalidate();
+
+    @Override
+    public boolean needsCameraPermission() {
+        return mCameraPermissionNeeded;
+    }
+
+    @Override
+    public void setNeedsCameraPermission(boolean needs) {
+        mCameraPermissionNeeded = needs;
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        Log.d(TAG, "onLowMemory: ----------------------------");
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        String levelRepr = "";
+        switch (level) {
+            case TRIM_MEMORY_BACKGROUND:
+                levelRepr = "TRIM_MEMORY_BACKGROUND";
+                break;
+            case TRIM_MEMORY_COMPLETE:
+                levelRepr = "TRIM_MEMORY_COMPLETE";
+                break;
+            case TRIM_MEMORY_MODERATE:
+                levelRepr = "TRIM_MEMORY_MODERATE";
+                break;
+            case TRIM_MEMORY_RUNNING_CRITICAL:
+                levelRepr = "TRIM_MEMORY_RUNNING_CRITICAL";
+                break;
+            case TRIM_MEMORY_RUNNING_LOW:
+                levelRepr = "TRIM_MEMORY_RUNNING_LOW";
+                break;
+            case TRIM_MEMORY_RUNNING_MODERATE:
+                levelRepr = "TRIM_MEMORY_RUNNING_MODERATE";
+                break;
+            case TRIM_MEMORY_UI_HIDDEN:
+                levelRepr = "TRIM_MEMORY_UI_HIDDEN";
+                break;
+        }
+        Log.d(TAG, "onTrimMemory: --------------------------- level " + levelRepr);
     }
 
     private void initNavigationDrawer() {
@@ -870,7 +926,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                         drawerLayout.closeDrawers();
                         break;
                     case R.id.menu_upload:
-                        if (Sequence.getLocalSequencesSize() <= 0) {
+                        if (Sequence.getLocalSequencesNumber() <= 0) {
                             drawerLayout.closeDrawers();
                             showSnackBar(getString(R.string.no_local_recordings_message), Snackbar.LENGTH_LONG);
                             return true;
@@ -883,7 +939,9 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                         break;
                     case R.id.menu_profile:
                         String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-                        if (userName.equals("")) {
+                        String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
+
+                        if (userName.equals("") || token.equals("")) {
                             showSnackBar(R.string.login_to_see_online_warning, Snackbar.LENGTH_LONG, getString(R.string.login_label), new Runnable() {
                                 @Override
                                 public void run() {
@@ -898,6 +956,30 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                         }
                         drawerLayout.closeDrawers();
                         break;
+//                    case R.id.menu_first:
+//                        if (Sequence.getLocalSequencesNumber() <= 0) {
+//                            drawerLayout.closeDrawers();
+//                            showSnackBar(getString(R.string.no_local_recordings_message), Snackbar.LENGTH_LONG);
+//                            return true;
+//                        }
+//                        if (addMap) {
+//                            openScreen(SCREEN_MAP);
+//                        }
+//                        openScreen(MainActivity.SCREEN_PREVIEW, Sequence.getLocalSequence(0));
+//                        drawerLayout.closeDrawers();
+//                        break;
+//                    case R.id.menu_second:
+//                        if (Sequence.getLocalSequencesNumber() <= 1) {
+//                            drawerLayout.closeDrawers();
+//                            showSnackBar(getString(R.string.no_local_recordings_message), Snackbar.LENGTH_LONG);
+//                            return true;
+//                        }
+//                        if (addMap) {
+//                            openScreen(SCREEN_MAP);
+//                        }
+//                        openScreen(MainActivity.SCREEN_PREVIEW, Sequence.getLocalSequence(1));
+//                        drawerLayout.closeDrawers();
+//                        break;
                 }
                 return true;
             }
@@ -912,7 +994,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         logOutImage = (ImageView) header.findViewById(R.id.log_out_image_button);
         logOutImage.setOnClickListener(this);
 
-        if ((!appPrefs.getStringPreference(PreferenceTypes.K_USER_ID).equals("")) && (!appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME).equals(""))) {
+        if ((!appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN).equals("")) && (!appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME).equals(""))) {
             logOutImage.setVisibility(View.VISIBLE);
         }
 
@@ -936,6 +1018,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     @Override
     protected void onStart() {
         super.onStart();
+        tryToConnectOBD();
         if (!mBoundCameraHandler) {
             Intent service = new Intent(getApplicationContext(), CameraHandlerService.class);
             bindService(service, mCameraHandlerConnection, BIND_AUTO_CREATE);
@@ -953,6 +1036,19 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             bindService(service, mUploadHandlerConnection, BIND_AUTO_CREATE);
         }
 
+    }
+
+    private void tryToConnectOBD() {
+        ObdManager obdManager = getApp().getOBDManager();
+        if (obdManager.isWifi()) {
+            if (NetworkUtils.isWifiInternetAvailable(this)) {
+                obdManager.connect();
+            }
+        } else if (obdManager.isBle()) {
+
+        } else {
+
+        }
     }
 
     @Override
@@ -1068,8 +1164,95 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         } else {
             //DO NOTHING
         }
+    }
 
-
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Log.d(TAG, "onRequestPermissionsResult: ");
+        int i = 0;
+        switch (requestCode) {
+            case OSVApplication.START_RECORDING_PERMISSION:
+                i = 0;
+                for (String perm : permissions) {
+                    if (grantResults.length > i && grantResults[i] < 0) {
+                        return;
+                    }
+                    i++;
+                }
+                getApp().getLocationManager().startLocationUpdates();
+                mCameraPermissionNeeded = false;
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (cameraControlsFragment != null && getCurrentFragment().equals(CameraControlsFragment.TAG)) {
+                            cameraControlsFragment.pressShutterButton();
+                        }
+                    }
+                }, 500);
+                break;
+            case OSVApplication.CAMERA_PERMISSION:
+                i = 0;
+                for (String perm : permissions) {
+                    if (perm.equals(Manifest.permission.CAMERA)) {
+                        if (grantResults.length > i && grantResults[i] >= 0) {
+                            mCameraPermissionNeeded = false;
+                            CameraManager.instance.open();
+                            return;
+                        } else {
+                            mHandler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mCameraPermissionNeeded = true;
+                                }
+                            }, 1000);
+                            break;
+                        }
+                    }
+                    i++;
+                }
+                onBackPressed();
+                break;
+            case OSVApplication.LOCATION_PERMISSION:
+                i = 0;
+                for (String perm : permissions) {
+                    if (perm.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        if (grantResults.length > i && grantResults[i] >= 0) {
+                            if (mapFragment != null) {
+                                getApp().getLocationManager().startLocationUpdates();
+                                mapFragment.onPositionerClicked();
+                                return;
+                            }
+                        }
+                    }
+                    i++;
+                }
+                break;
+            case OSVApplication.LOCATION_PERMISSION_BT:
+                i = 0;
+                for (String perm : permissions) {
+                    if (perm.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        if (grantResults.length > i && grantResults[i] >= 0) {
+                            if (settingsFragment != null) {
+                                getApp().getLocationManager().startLocationUpdates();
+                                mHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        View view = new View(MainActivity.this);
+                                        view.setId(R.id.obd_container);
+                                        try {
+                                            settingsFragment.onClick(view);
+                                        } catch (Exception ignored) {}
+                                    }
+                                }, 500);
+                                return;
+                            }
+                        }
+                    }
+                    i++;
+                }
+                break;
+        }
     }
 
     public void continueAfterCrash() {
@@ -1116,6 +1299,9 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             mBoundUploadHandler = false;
         }
         appPrefs.saveIntPreference(PreferenceTypes.K_RESTART_COUNTER, 0);
+        if (mCameraHandlerService == null || !mCameraHandlerService.mShutterManager.isRecording()) {
+            getApp().getOBDManager().disconnect();
+        }
         super.onStop();
     }
 
@@ -1146,11 +1332,13 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     public void removeUpperFragments() {
         FragmentManager fm = getSupportFragmentManager();
         if (fm.getBackStackEntryCount() > 0) {
-            while (fm.getBackStackEntryCount() > 1) {
+            int counter = 0;
+            while (fm.getBackStackEntryCount() > 1 && counter < 100) {
                 try {
                     fm.popBackStackImmediate();
                 } catch (IllegalStateException e) {
                     Log.d(TAG, "removeUpperFragments: popBackStackImmediate failed");
+                    counter++;
                 }
             }
         }
@@ -1195,15 +1383,18 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
 //                }
                         return;
                     } else if (getCurrentFragment().equals(TrackPreviewFragment.TAG)) {
-                        boolean online = trackPreviewFragment.isOnline();
-                        removeUpperFragments();
-                        try {
-                            getSupportFragmentManager().popBackStackImmediate();
-                        } catch (Exception e) {
-                            Log.d(TAG, "error: popBackStackImmediate failed");
+                        if (!trackPreviewFragment.onBackPressed()) {//fragment didn't consume the event
+                            boolean online = trackPreviewFragment.isOnline();
+                            boolean nearby = trackPreviewFragment.fromNearby();
+                            removeUpperFragments();
+                            try {
+                                getSupportFragmentManager().popBackStackImmediate();
+                            } catch (Exception e) {
+                                Log.d(TAG, "error: popBackStackImmediate failed");
+                            }
+                            openScreen(SCREEN_MAP);
+                            openScreen(online ? (nearby ? SCREEN_NEARBY : SCREEN_MY_PROFILE) : SCREEN_WAITING);
                         }
-                        openScreen(SCREEN_MAP);
-                        openScreen(online ? SCREEN_MY_PROFILE : SCREEN_WAITING);
                         return;
                     }
                     if (mScreenModeParalell) {
@@ -1239,6 +1430,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            ObdManager.sDisconnected = false;
                             finish();
                         }
                     }).setNegativeButton(R.string.cancel_label, new DialogInterface.OnClickListener() {
@@ -1253,12 +1445,6 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     public void showLogInScreen() {
         if (Utils.isInternetAvailable(this)) {
             enableProgressBar(true);
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    enableLandscape(false);
-                }
-            }, 10000);
             mUploadManager.logIn(this, new RequestResponseListener() {
                 @Override
                 public void requestFinished(int status, String xml) {
@@ -1348,7 +1534,6 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             }, new OAuthDialogFragment.OnDetachListener() {
                 @Override
                 public void onDetach() {
-                    enableLandscape(false);
                     enableProgressBar(false);
                 }
             });
@@ -1383,23 +1568,26 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     @Override
     public void onConfigurationChanged(final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                int orientation = newConfig.orientation;
+                boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
+                resizeHolders(-1, portrait);
+            }
+        });
         if (getCurrentFragment().equals(CameraControlsFragment.TAG)) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     startImmersiveMode();
-
-                    int orientation = newConfig.orientation;
-                    boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
-//                    openScreen(SCREEN_RECORDING);
-                    resizeHolders(-1, portrait);
                 }
             });
         }
     }
 
     public void addSmallFragment(Fragment fragment, String tag) {
-        if (appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true)) {
+        if (appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, Build.VERSION.SDK_INT < 24)) {
             smallFragment = fragment;
             if (smallFragment == mapFragment) {
                 mapFragment.setMapSmall(true);
@@ -1453,7 +1641,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     }
 
     public void switchPreviews() {
-        if (appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true)) {
+        if (appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, Build.VERSION.SDK_INT < 24)) {
             if (mCameraHandlerService != null && mCameraHandlerService.mShutterManager.isRecording()) {
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 if (mapFragment.isAdded()) {
@@ -1526,7 +1714,9 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
             @Override
             public void run() {
                 if (started) {
-                    mapFragment.enterMode(MapFragment.MODE_RECORDING);
+                    if (appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, Build.VERSION.SDK_INT < 24)) {
+                        mapFragment.enterMode(MapFragment.MODE_RECORDING);
+                    }
                     drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, navigationView);
                     addSmallFragment(mapFragment, MapFragment.TAG);
 
@@ -1642,6 +1832,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         showSnackBar(resId, duration, null, null);
     }
 
+    @Override
     public void showSnackBar(final CharSequence text, final int duration) {
         showSnackBar(text, duration, null, null);
     }
@@ -1650,6 +1841,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         showSnackBar(getText(resId), duration, button, onClick);
     }
 
+    @Override
     public void showSnackBar(final int resId, final int duration, final int buttonResId, final Runnable onClick) {
         showSnackBar(getText(resId), duration, getText(buttonResId), onClick);
     }
@@ -1670,23 +1862,23 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                         }
                     });
                 }
-                    shouldGoUp = true;
-                    if (animateDownTimerTask != null) {
-                        shouldGoUp = !animateDownTimerTask.cancel();
-                    }
-                    mSnackbar.getView().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (shouldGoUp) {
-                                int height = mSnackbar.getView().getHeight();
-                                if (height < 20) {
-                                    height = (int) Math.max(height, Utils.dpToPx(MainActivity.this, 58));
-                                }
+                shouldGoUp = true;
+                if (animateDownTimerTask != null) {
+                    shouldGoUp = !animateDownTimerTask.cancel();
+                }
+                mSnackbar.getView().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (shouldGoUp) {
+                            int height = mSnackbar.getView().getHeight();
+                            if (height < 20) {
+                                height = (int) Math.max(height, Utils.dpToPx(MainActivity.this, 58));
+                            }
 //                                Log.d(TAG, "showSnackbar: goUp -" + height);
 //                                animateFabToPosition(-height);
-                            }
                         }
-                    });
+                    }
+                });
                 mSnackbar.show();
             }
         });
@@ -1756,19 +1948,21 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         if (mActionBar == null) {
             return;
         }
-        if (signatureColor != -1 && mUploadManager != null && mUploadManager.isUploading()) {
+        if (signatureColor != -1) {
             signatureActionBarText.setTextColor(ResourcesCompat.getColor(getResources(), signatureColor, null));
             signatureActionBarText.setVisibility(View.VISIBLE);
-            signatureActionBarText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (getCurrentFragment().equals(UploadProgressFragment.TAG)) {
-                        if (mUploadManager != null && mUploadManager.isUploading()) {
-                            onBackPressed();
+            if (mUploadManager != null && mUploadManager.isUploading()) {
+                signatureActionBarText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (getCurrentFragment().equals(UploadProgressFragment.TAG)) {
+                            if (mUploadManager != null && mUploadManager.isUploading()) {
+                                onBackPressed();
+                            }
                         }
                     }
-                    }
-            });
+                });
+            }
         } else {
             signatureActionBarText.setVisibility(View.GONE);
         }
@@ -1823,6 +2017,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     public void onBandwidthStateChange(ConnectionQuality bandwidthState, double bandwidth) {
     }
 
+    @Override
     public OSVApplication getApp() {
         return (OSVApplication) getApplication();
     }
@@ -1914,10 +2109,10 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
     }
 
     private void showDialogUpdateVersion() {
-        if (alertDialog == null){
+        if (alertDialog == null) {
             createDialogUpdateVersion();
         }
-        if (!alertDialog.isShowing()){
+        if (!alertDialog.isShowing()) {
             alertDialog.show();
         }
     }
@@ -1968,7 +2163,6 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                 case MapFragment.TAG + "&":
                 case CameraPreviewFragment.TAG:
                 case CameraControlsFragment.TAG:
-                    enableLandscape(true);
                     startImmersiveMode();
                     hideActionBar();
                     getApp().getLocationManager().startLocationUpdates();
@@ -1987,8 +2181,9 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     showBack = true;
                     backgroundColor = R.color.white;
                     textColor = R.color.dark_grey_action_bar;
-                    title = getString(R.string.waiting_upload_label);
+                    title = getString(R.string.upload_label);
                     colorSignature = R.color.signature_waiting_upload;
+                    refreshSignatureValue(Utils.formatSize(Sequence.getTotalSize()));
                     waitingFragment.setupUploadButton();
                     stopLocationUpdates = true;
                     break;
@@ -1998,6 +2193,7 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                 case TrackPreviewFragment.TAG:
                     hideActionBar();
                     getApp().getLocationManager().startLocationUpdates();
+                    stopImmersiveMode();
                     return;
                 case NearbyFragment.TAG:
                     isLight = false;
@@ -2008,7 +2204,6 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                     startLocationUpdates = true;
                     break;
             }
-            enableLandscape(false);
             stopImmersiveMode();
             showActionBar(title, showBack, backgroundColor, textColor, isLight, colorSignature);
             if (stopLocationUpdates) {
@@ -2073,14 +2268,6 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
         return mBackButtonShown;
     }
 
-    public void enableLandscape(boolean enable) {
-        if (enable) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-    }
-
     @Override
     public void onShutter() {
         Log.d(TAG, "onShutter: called");
@@ -2132,5 +2319,31 @@ public class MainActivity extends AppCompatActivity implements RecordingStateCha
                 // Ignore the error.
             }
         }
+    }
+
+    @Override
+    public void onCameraReady() {
+        mCameraPermissionNeeded = false;
+        if (cameraPreviewFragment != null) {
+            cameraPreviewFragment.onCameraReady();
+        }
+    }
+
+    @Override
+    public void onCameraFailed() {
+        Log.e(TAG, "Could not open camera HAL");
+        mCameraPermissionNeeded = false;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showSnackBar(R.string.cannot_connect_hal, Snackbar.LENGTH_LONG);
+            }
+        });
+    }
+
+    @Override
+    public void onPermissionNeeded() {
+        Log.d(TAG, "onPermissionNeeded: ");
+        mCameraPermissionNeeded = true;
     }
 }

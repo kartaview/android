@@ -27,8 +27,8 @@ repositories {
 }
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion = '23.0.2'
+    compileSdkVersion 24
+    buildToolsVersion = '24.0.2'
     buildTypes {
         release {
             debuggable false
@@ -37,6 +37,12 @@ android {
             debuggable true
         }
     }
-}
+    configurations {
+        compile.exclude group:'org.apache.commons'
+        compile.exclude module:'commons'
+    }
 
-apply from: 'rules.gradle'
+}
+dependencies {
+    compile files('src/main/libs/org.apache.http.legacy.jar')
+}

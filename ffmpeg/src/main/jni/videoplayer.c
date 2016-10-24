@@ -1,36 +1,13 @@
-/*
- * FFmpegMediaPlayer: A unified interface for playing audio files and streams.
- *
- * Copyright 2016 William Seemann
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include "videoplayer.h"
 
-const int TARGET_IMAGE_FORMAT = AV_PIX_FMT_RGBA; //AV_PIX_FMT_RGB24;
-const int TARGET_IMAGE_CODEC = AV_CODEC_ID_PNG;
+const enum AVPixelFormat TARGET_IMAGE_FORMAT = AV_PIX_FMT_RGBA; //AV_PIX_FMT_RGB24;
+const enum AVCodecID TARGET_IMAGE_CODEC = AV_CODEC_ID_PNG;
 
 void createVideoEngine(VideoPlayer **ps) {
     VideoPlayer *is = *ps;
 }
 
-void createScreen(VideoPlayer **ps, void *surface, int width, int height) {
-    VideoPlayer *is = *ps;
-    is->native_window = surface;
-}
-
-void setSurface(VideoPlayer **ps, void *surface) {
+void createScreen(VideoPlayer **ps, size_t *surface) {
     VideoPlayer *is = *ps;
     is->native_window = surface;
 }
@@ -42,7 +19,7 @@ struct SwsContext *createScaler(VideoPlayer **ps, AVCodecContext *codec) {
                              codec->height,
                              codec->pix_fmt,
                              codec->width,
-                             codec->height,
+                             codec->height,//todo scale to surface width height
                              AV_PIX_FMT_RGBA,
                              SWS_BILINEAR,
                              NULL,
@@ -53,19 +30,22 @@ struct SwsContext *createScaler(VideoPlayer **ps, AVCodecContext *codec) {
 }
 
 void *createBmp(VideoPlayer **ps, int width, int height) {
-    LOGI("Video Bitmap created");
+//    LOGI("Video Bitmap created");
     VideoPlayer *is = *ps;
 
-    return malloc(sizeof(Picture));
+    Picture *bmp = malloc(sizeof(Picture));
+    bmp->buffer = NULL;
+    return bmp;
 }
 
-void destroyBmp(VideoPlayer **ps, void *bmp) {
-    LOGI("Video Bitmap destroyed");
+void destroyBmp(void *bmp) {
+//    LOGI("Video Bitmap destroyed");
     Picture *picture = (Picture *) bmp;
 
     if (picture) {
         if (picture->buffer) {
-            free(picture->buffer);
+//            LOGI("Releasing frame buffer %p", picture->buffer);
+            av_free(picture->buffer);
             picture->buffer = NULL;
         }
 
@@ -98,25 +78,32 @@ void updateBmp(VideoPlayer **ps, struct SwsContext *sws_ctx, AVCodecContext *pCo
     }
 
     // Determine required buffer size and allocate buffer
-    int numBytes = avpicture_get_size(TARGET_IMAGE_FORMAT, width, height);
+    int numBytes = av_image_get_buffer_size(TARGET_IMAGE_FORMAT, width, height, 1);
     picture->buffer = (uint8_t *) av_malloc(numBytes * sizeof(uint8_t));
 
+//    LOGI("Allocating frame buffer %p", picture->buffer);
+
+
+    if (!picture->buffer) {
+        LOGI("updateBmp: no buffer allocated");
+        return;
+    }
     // set the frame parameters
     frame->format = TARGET_IMAGE_FORMAT;
     frame->width = width;
     frame->height = height;
 
-    avpicture_fill(((AVPicture *) frame),
+    av_image_fill_arrays(frame->data, frame->linesize,
                    picture->buffer,
                    TARGET_IMAGE_FORMAT,
                    width,
-                   height);
+                   height, 1);
 
     sws_scale(sws_ctx,
               (const uint8_t *const *) pFrame->data,
               pFrame->linesize,
               0,
-              height,
+              height,//todo swscale to surface resolution only
               frame->data,
               frame->linesize);
 
@@ -132,7 +119,10 @@ void displayBmp(VideoPlayer **ps, void *bmp, AVCodecContext *pCodecCtx, int widt
     VideoPlayer *is = *ps;
 
     Picture *picture = (Picture *) bmp;
-
+    if (!picture->buffer) {
+        LOGI("displayBmp: no buffer allocated");
+        return;
+    }
     if (width == -1) {
         width = pCodecCtx->width;
     }
@@ -141,21 +131,20 @@ void displayBmp(VideoPlayer **ps, void *bmp, AVCodecContext *pCodecCtx, int widt
         height = pCodecCtx->height;
     }
 
-    if (is->native_window) {
-        ANativeWindow_setBuffersGeometry(is->native_window, width, height, WINDOW_FORMAT_RGBA_8888);
+    if (is->native_window && *is->native_window) {
+        ANativeWindow_setBuffersGeometry((ANativeWindow *) *is->native_window, width, height, WINDOW_FORMAT_RGBA_8888);
 
         ANativeWindow_Buffer windowBuffer;
 
-        if (ANativeWindow_lock(is->native_window, &windowBuffer, NULL) == 0) {
+        if (ANativeWindow_lock((ANativeWindow *) *is->native_window, &windowBuffer, NULL) == 0) {
             int h = 0;
 
             for (h = 0; h < height; h++) {
                 memcpy(windowBuffer.bits + h * windowBuffer.stride * 4,
-                       picture->buffer + h * picture->linesize,
-                       width * 4);
+                       picture->buffer + h * picture->linesize, (size_t) (width * 4));
             }
 
-            ANativeWindow_unlockAndPost(is->native_window);
+            ANativeWindow_unlockAndPost((ANativeWindow *) *is->native_window);
         }
     } else {
         LOGI("NO NATIVE WINDOW");

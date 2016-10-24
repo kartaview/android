@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -64,6 +67,8 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
+    private LinearLayout mUploadLinearLayout;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -71,11 +76,17 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
         Log.d(TAG, "onCreateView: newly creating views");
         activity = (MainActivity) getActivity();
         init(activity);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
         return view;
     }
 
     @Override
     public void onDestroyView() {
+        if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
         super.onDestroyView();
     }
 
@@ -107,11 +118,18 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
         if ((activity.mUploadHandlerService == null || !activity.mUploadHandlerService.mUploadManager.isUploading()) && isAdded()) {
             activity.onBackPressed();
         }
+
+        if (mUploadLinearLayout != null) {
+            int orientation = activity.getResources().getConfiguration().orientation;
+            boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
+            mUploadLinearLayout.setOrientation(portrait ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
+        }
     }
 
     public void init(MainActivity activity) {
         this.activity = activity;
         uploadSpeedText = (TextView) view.findViewById(R.id.upload_speed_text);
+        mUploadLinearLayout = (LinearLayout) view.findViewById(R.id.upload_details_linear_layout);
         timeText = (TextView) view.findViewById(R.id.time_text);
         percentText = (TextView) view.findViewById(R.id.percent_text);
         remainingText = (TextView) view.findViewById(R.id.done_text);
@@ -126,9 +144,9 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
     public void onUploadServiceConnected(UploadHandlerService service) {
         mUploadHandlerService = service;
         if (pauseButton != null && pauseText != null && cancelAllButton != null) {
-            int size = Sequence.getLocalSequencesSize();
+            int size = Sequence.getLocalSequencesNumber();
             int remainingRecordings = mUploadHandlerService.mUploadManager.getRemainingSequences();
-            activity.refreshSignatureValue((size - remainingRecordings) + "/" + size);
+            activity.refreshSignatureValue(Math.max(0, size - remainingRecordings) + "/" + size);
             if (!mUploadHandlerService.mUploadManager.isPaused()) {
                 pauseButton.setOnClickListener(activity.pauseOnClickListener);
                 pauseText.setText(R.string.pause_caps_label);
@@ -141,6 +159,17 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
 
             }
             cancelAllButton.setOnClickListener(activity.actionCancelListener);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (activity != null && mUploadLinearLayout != null) {
+            int orientation = activity.getResources().getConfiguration().orientation;
+            boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
+            mUploadLinearLayout.setOrientation(portrait ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
         }
     }
 
@@ -189,12 +218,14 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
         if (percentText != null) {
             percentText.setText("0");
         }
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                activity.onBackPressed();
-            }
-        });
+        if (activity != null) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    activity.onBackPressed();
+                }
+            });
+        }
     }
 
     @Override
@@ -247,8 +278,10 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
 
     @Override
     public void onIndexingSequence(Sequence sequence, int remainingRecordings) {
-        int size = Sequence.getLocalSequencesSize();
-        activity.refreshSignatureValue((size - remainingRecordings) + "/" + size);
+        if (activity != null) {
+            int size = Sequence.getLocalSequencesNumber();
+            activity.refreshSignatureValue(Math.max(0, size - remainingRecordings) + "/" + size);
+        }
     }
 
     @Override
@@ -313,15 +346,19 @@ public class UploadProgressFragment extends Fragment implements UploadProgressLi
         if (totalText != null) {
             totalText.setText(Utils.formatSize(mTotalSize));
         }
-        final int progress = (int) (((mTotalSize - remaining) * 100) / mTotalSize);
-        final int oldProgress = (int) (progressbar.getProgress() * 100f);
-        if (progressbar != null && progress >= 0 && progress != oldProgress) {
-            float progressf = ((float) progress / 100f);
+        if (progressbar != null) {
+            final int progress = (int) (((mTotalSize - remaining) * 100) / mTotalSize);
+            final int oldProgress = (int) (progressbar.getProgress() * 100f);
+            if (progress > oldProgress) {
+                if (progress >= 0) {
+                    float progressf = ((float) progress / 100f);
 //            Log.d(TAG, "updateStats: new progress is " + progressf);
-            progressbar.setProgress(progressf);
-        }
-        if (percentText != null && progress >= 0) {
-            percentText.setText(progress + "");
+                    progressbar.setProgress(progressf);
+                }
+                if (percentText != null && progress >= 0) {
+                    percentText.setText(progress + "");
+                }
+            }
         }
     }
 

@@ -134,7 +134,7 @@ public class SequenceDB {
     }
 
     public long insertVideoIfNotAdded(int seqId, int videoIndex, String filePath) {
-        if (getNumberOfVideos(seqId, videoIndex) <= 0) {
+        if (!isVideoAdded(seqId, videoIndex)) {
             ContentValues values = new ContentValues();
             values.put(VIDEO_SEQ_ID, seqId);
             values.put(VIDEO_INDEX, videoIndex);
@@ -240,8 +240,28 @@ public class SequenceDB {
         return DatabaseUtils.queryNumEntries(database, VIDEO_TABLE, VIDEO_SEQ_ID + "=?", new String[]{"" + localSequenceId});
     }
 
-    private long getNumberOfVideos(int localSequenceId, int videoIndex) {
-        return DatabaseUtils.queryNumEntries(database, VIDEO_TABLE, VIDEO_SEQ_ID + "=? AND " + VIDEO_INDEX + "=?", new String[]{"" + localSequenceId, "" + videoIndex});
+    private boolean isVideoAdded(int localSequenceId, int videoIndex) {
+        return DatabaseUtils.queryNumEntries(database, VIDEO_TABLE, VIDEO_SEQ_ID + "=? AND " + VIDEO_INDEX + "=?", new String[]{"" + localSequenceId, "" + videoIndex}) > 0;
+    }
+
+    public long getVideoFrameCount(int localSequenceId, int videoIndex) {
+        String[] cols = new String[]{VIDEO_FRAME_COUNT};
+        Cursor mCursor = database.query(true, VIDEO_TABLE, cols, VIDEO_SEQ_ID + " = ? AND " + VIDEO_INDEX + " = ?"
+                , new String[]{"" + localSequenceId, "" + videoIndex}, null, null, null, null);
+        if (mCursor != null && mCursor.getCount() > 0) {
+            mCursor.moveToFirst();
+            int res = mCursor.getInt(mCursor.getColumnIndex(VIDEO_FRAME_COUNT));
+            mCursor.close();
+            return res;
+        }
+        if (mCursor != null) {
+            mCursor.close();
+        }
+        return 0;
+    }
+
+    public long countVideoFrames(int localSequenceId, int videoIndex) {
+        return DatabaseUtils.queryNumEntries(database, FRAME_TABLE, FRAME_SEQ_ID + " = ? AND " + FRAME_VIDEO_ID + " = ?", new String[]{"" + localSequenceId, "" + videoIndex});
     }
 
     public int getOriginalFrameCount(int sequenceId) {
@@ -287,7 +307,20 @@ public class SequenceDB {
                 cv.put(SEQUENCE_STATUS, Sequence.STATUS_NEW);
             }
         }
-        return database.update(SEQUENCE_TABLE, cv, SEQUENCE_ID + " = ?", new String[]{"" + sequenceId});
+        int val = database.update(SEQUENCE_TABLE, cv, SEQUENCE_ID + " = ?", new String[]{"" + sequenceId});
+        Cursor videos = getVideos(sequenceId);
+        while (videos != null && videos.getCount() > 0 && !videos.isAfterLast()) {
+            int index = videos.getInt(videos.getColumnIndex(VIDEO_INDEX));
+            int count = (int) countVideoFrames(sequenceId, index);
+            cv = new ContentValues();
+            cv.put(VIDEO_FRAME_COUNT, count);
+            val = database.update(VIDEO_TABLE, cv, VIDEO_SEQ_ID + " = ? AND " + VIDEO_INDEX + " = ?", new String[]{"" + sequenceId, "" + index});
+            videos.moveToNext();
+        }
+        if (videos != null) {
+            videos.close();
+        }
+        return val;
     }
 
     private int deleteSequenceRecord(int sequenceId) {
@@ -393,8 +426,8 @@ public class SequenceDB {
 //                float accuracy = cursor.getFloat(cursor.getColumnIndex(VIDEO_ACCURACY));
 //                int orientation = cursor.getInt(cursor.getColumnIndex(VIDEO_ORIENTATION));
 ////                int fileindex = ImageFile.getImageIndex(file);
-//                if (file.exists() && startIndex != fileindex && fileindex != -1) {
-//                    deleteVideo(sequenceId, startIndex);
+//                if (file.exists() && fileIndex != fileindex && fileindex != -1) {
+//                    deleteVideo(sequenceId, fileIndex);
 //                    try {
 //                        insertPhoto(sequenceId, fileindex, file.getPath(), lat, lon, accuracy, orientation);
 //                    } catch (Exception e) {

@@ -1,12 +1,10 @@
 package com.telenav.osv.manager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import android.app.Application;
 import android.database.sqlite.SQLiteConstraintException;
 import android.hardware.Camera;
 import android.location.Location;
-import android.media.ExifInterface;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -268,6 +266,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
     private Camera.PictureCallback mJpegPictureCallback = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(final byte[] jpegData, Camera camera) {
+            final long mTimestampF = mTimestamp;
             CameraManager.instance.restartPreviewIfNeeded();
             if (mFocusManager != null) {
                 mFocusManager.checkFocusManual();
@@ -308,7 +307,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                     path = mSequencePath;
                 }
                 final String mFolderPath = path;
-                saveFrame(jpegData, mSequenceIdF, mIndexF, mFolderPath, mLocationF, mAccuracyF, mOrientationF, System.currentTimeMillis());
+                saveFrame(jpegData, mSequenceIdF, mIndexF, mFolderPath, mLocationF, mAccuracyF, mOrientationF, mTimestampF);
             }
         }
     };
@@ -361,7 +360,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                                 }
                             } catch (Exception e) {
 //                                Crashlytics.logException(e);
-                                Toast.makeText(mContext, "Reached storage limit, stopping recording.", Toast.LENGTH_LONG).show();
+                                Toast.makeText(mContext, R.string.reached_storage_limit, Toast.LENGTH_LONG).show();
                             }
                             stopSequence();
                             if (needToRestart) {
@@ -395,7 +394,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                     return;
                 }
                 int mVideoIndexF = ret[0];
-                SensorManager.logSensorData(new SensorData(mIndexF, mVideoIndexF, mLocationF, mTimestampF));
+                SensorManager.logSensorData(new SensorData(mIndexF, mVideoIndexF, mTimestampF));
                 SensorManager.flushToDisk();
                 try {
                     SequenceDB.instance.insertVideoIfNotAdded(mSequenceIdF, mVideoIndexF, folderPathF + "/" + mVideoIndexF + ".mp4");
@@ -507,7 +506,7 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                 mSequence.location.setLongitude(mLocation.getLongitude());
                 SequenceDB.instance.updateSequenceLocation(mSequence.sequenceId, mLocation.getLatitude(), mLocation.getLongitude());
             }
-            mOrientation = (int) Math.toDegrees(SensorManager.mOrientation[0]);
+            mOrientation = (int) Math.toDegrees(SensorManager.mHeadingValues[0]);
             boolean taken = CameraManager.instance.takeSnapshot(this, null, mJpegPictureCallback);
             if (taken) {
                 if (mShutterCallback != null) {
@@ -576,15 +575,14 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                     Toast.makeText(mContext, R.string.error_creating_video_file_message, Toast.LENGTH_SHORT).show();
                     stopSequence();
                 }
-                if (mContext.getOBDManager() != null && mContext.getAppPrefs().getBooleanPreference(PreferenceTypes.K_OBD_CONNECTED)) {
+                if (mContext.getOBDManager() != null) {
                     mContext.getOBDManager().addConnectionListener(ShutterManager.this);
-                    mContext.getOBDManager().connect();
                 }
                 mIndex = 0;
 
                 mImageCounter = 0;
                 mAproximateDistance = 0;
-                mSensorManager.onResume(mSequence.folder);
+                mSensorManager.onResume(((mSequence == null || mSequence.folder == null) && mSequencePath != null) ? new OSVFile(mSequencePath) : mSequence.folder);
 //                AudioManager mgr = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
 //                mgr.setStreamMute(AudioManager.STREAM_SYSTEM, true);
 //                mgr.setStreamMute(AudioManager.STREAM_NOTIFICATION, true);
@@ -674,7 +672,8 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
                     SequenceDB.instance.updateSequenceFrameCount(finalSequence.sequenceId);
                     finalSequence.refreshStats();
                     ApplicationPreferences appPrefs = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs();
-                    if (appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO) && NetworkUtils.isInternetAvailable(mContext)) {
+                    if (!appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN).equals("") && appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO) && NetworkUtils
+                            .isInternetAvailable(mContext)) {
                         if (NetworkUtils.isWifiInternetAvailable(mContext) || appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED)) {
                             ArrayList<Sequence> list = new ArrayList<>();
                             list.add(finalSequence);
@@ -750,6 +749,11 @@ public class ShutterManager implements Camera.ShutterCallback, ObdManager.Connec
 
     @Override
     public void onSpeedObtained(ObdManager.SpeedData speedData) {
+
+    }
+
+    @Override
+    public void onConnecting() {
 
     }
 
