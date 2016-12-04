@@ -36,7 +36,7 @@
     <string name="feedback_label">Rückmeldung absenden</string>
     <string name="storage_label">Externen Speicher nutzen</string>
     <string name="storage_subtitle">Bilder auf dem externen Gerätespeicher sichern.</string>
-    <string name="disconnect_obd_message">Soll die Verbindung zur ODB Hardware wirklich getrennt werden?</string>
+    <string name="disconnect_obd_message">Soll die Verbindung zur OBD Hardware wirklich getrennt werden?</string>
     <string name="disconnect">Verbindung trennen</string>
     <string name="delete_online_track">Soll diese Spur wirklich vom Server gelöscht werden?</string>
     <string name="delete_local_track">Soll diese Spur wirklich vom Gerätespeicher gelöscht werden?</string>
