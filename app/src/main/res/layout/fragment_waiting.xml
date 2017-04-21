@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_waiting_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
     android:orientation="vertical">
 
-    <com.telenav.osv.ui.custom.ScrollDisabledListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/local_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="?android:attr/actionBarSize"
         android:layout_marginBottom="56dp"
-        android:divider="@drawable/list_divider"
+        android:layout_marginTop="@dimen/action_bar_size"
+        android:background="#f8f8fa"
+        android:divider="@drawable/custom_list_divider"
         android:fadeScrollbars="true"
         android:overScrollFooter="@android:color/transparent"
         android:scrollbars="vertical"

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="131dp"
+    android:height="48dp"
+    android:viewportWidth="120"
+    android:viewportHeight="44">
+
+    <group
+            android:name="Icons">
+        <!--16-->
+        <!--257-->
+        <path
+            android:name="points-recording"
+            android:fillColor="#019ED3"
+            android:fillType="evenOdd"
+            android:pathData="
+            M 22          ,0
+            L 99          ,0
+            L 99          ,0.022323
+            C 110.686134  ,0.545114     120          ,10.184872      120      ,22
+            C 120         ,33.815128    110.686134   ,43.454886      99       ,43.977677
+            L 99          ,44
+            L 22          ,44
+            C 9.8497355   ,44           0            ,34.150264      0        ,22
+            C 0           ,9.849736     9.8497355    ,0              22       ,0
+            Z" />
+        <path
+            android:name="points-recording"
+            android:fillColor="#00000000"
+            android:fillType="evenOdd"
+            android:strokeColor="#FFFFFF"
+            android:strokeAlpha="0.5"
+            android:strokeWidth="3"
+            android:pathData="
+            M 22          ,1.5
+            L 97.5          ,1.5
+            L 99          ,1.522323
+            C 109.186134  ,2.045114     118.5          ,10.184872      118.5      ,22
+            C 118.5         ,33.815128    109.186134   ,41.954886      99       ,42.477677
+            L 97.5          ,42.5
+            L 22          ,42.5
+            C 11.3497355   ,42.5         1.5          ,34.150264      1.5      ,22
+            C 1.5         ,9.849736     11.3497355    ,1.5            22       ,1.5
+            Z" />
+    </group>
+</vector>

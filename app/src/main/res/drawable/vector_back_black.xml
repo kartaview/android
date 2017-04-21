@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <group
+            android:name="Icons"
+            android:translateX="-84.000000"
+            android:translateY="-25.000000">
+        <group
+                android:name="back"
+                android:translateX="84.000000"
+                android:translateY="25.000000">
+            <path
+                android:name="Shape"
+                android:fillColor="#1B1B1F"
+                android:fillType="evenOdd"
+                android:strokeWidth="1"
+                android:pathData="M 20 11 L 7.83 11 L 13.42 5.41 L 12 4 L 4 12 L 12 20 L 13.41 18.59 L 7.83 13 L 20 13 Z" />
+        </group>
+    </group>
+</vector>

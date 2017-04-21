@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="12dp"
+    android:viewportWidth="22"
+    android:viewportHeight="12">
+
+    <group
+            android:name="Icons"
+            android:translateX="-520.000000"
+            android:translateY="-77.000000">
+        <path
+            android:name="triangle"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"
+            android:strokeWidth="1"
+            android:pathData="M541.313708,77 L531,87.3137085 L520.686292,77 L541.313708,77 Z" />
+    </group>
+</vector>

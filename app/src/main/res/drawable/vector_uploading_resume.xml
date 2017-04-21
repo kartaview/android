@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <group
+            android:name="Icons"
+            android:translateX="-456.000000"
+            android:translateY="-193.000000">
+        <group
+                android:name="uploading_resume"
+                android:translateX="456.000000"
+                android:translateY="193.000000">
+            <path
+                android:name="Shape"
+                android:fillColor="#6E707B"
+                android:fillType="evenOdd"
+                android:strokeWidth="1"
+                android:pathData="M 7 19 L 16.9166667 12 L 7 5 Z" />
+        </group>
+    </group>
+</vector>

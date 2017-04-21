@@ -3,25 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/fragment_map_root"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80000000">
+        android:layout_height="match_parent">
 
-        <com.skobbler.ngx.map.SKMapViewHolder
-            android:id="@+id/view_group_map"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:visibility="gone" />
-
-        <View
-            android:id="@+id/chess_board_background"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/map_background" />
     </FrameLayout>
 
     <View
@@ -46,14 +35,14 @@
         app:elevation="6dp"
         app:pressedTranslationZ="12dp"
         android:clickable="true"
-        android:src="@drawable/button_record"
+        android:scaleType="center"
+        app:srcCompat="@drawable/vector_button_record"
         app:backgroundTint="@color/black"
         app:rippleColor="@color/md_grey_600"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
-        android:scaleType="center"
         android:layout_gravity="bottom|center" />
 
     <android.support.design.widget.FloatingActionButton
@@ -63,7 +52,7 @@
         app:elevation="6dp"
         app:pressedTranslationZ="12dp"
         android:clickable="true"
-        android:src="@drawable/recenter"
+        app:srcCompat="@drawable/vector_recenter"
         app:backgroundTint="@color/white"
         app:rippleColor="@color/md_grey_400"
         android:layout_marginRight="20dp"
@@ -74,5 +63,6 @@
         android:layout_alignParentBottom="true"
         android:layout_gravity="bottom|end"
         android:layout_alignParentRight="true"
+        android:visibility="gone"
         android:scaleType="center" />
 </android.support.design.widget.CoordinatorLayout>

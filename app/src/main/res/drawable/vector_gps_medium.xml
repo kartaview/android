@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44">
+    <group
+        android:name="Mobile">
+        <group
+            android:name="fill">
+            <path
+                android:name="points/multiplier"
+                android:fillColor="#E7A100"
+                android:fillType="evenOdd"
+                android:pathData="
+                M 22,44
+                C 34.150264  ,44            44         ,34.150264    44      ,22
+                C 44         ,9.849736      34.150264  ,0            22      ,0
+                C 9.849736   ,0             0          ,9.849736     0       ,22
+                C 0          ,34.150264     9.849736   ,44           22      ,44
+                Z" />
+            <path
+                android:name="points/multiplier"
+                android:fillColor="#00000000"
+                android:fillType="evenOdd"
+                android:strokeColor="#FFFFFF"
+                android:strokeAlpha="0.5"
+                android:strokeWidth="3"
+                android:pathData="
+                M 22,42.5
+                C 32.650264  ,42.5          42.5       ,34.150264    42.5     ,22
+                C 42.5       ,9.849736      32.650264  ,1.5          22       ,1.5
+                C 11.349736  ,1.5           1.5        ,9.849736     1.5      ,22
+                C 1.5        ,34.150264     11.349736  ,42.5         22       ,42.5
+                Z" />
+        </group>
+    </group>
+    <group
+            android:name="Icons"
+            android:translateX="-124.000000"
+            android:translateY="-193.000000">
+        <group
+                android:name="GPS-problem"
+                android:translateX="124.000000"
+                android:translateY="193.000000">
+            <path
+                android:name="Shape"
+                android:fillColor="#FFFFFF"
+                android:fillType="evenOdd"
+                android:strokeWidth="1"
+                android:pathData="M22,17.2727273 C19.3881818,17.2727273 17.2727273,19.3881818 17.2727273,22
+C17.2727273,24.6118182 19.3881818,26.7272727 22,26.7272727
+C24.6118182,26.7272727 26.7272727,24.6118182 26.7272727,22
+C26.7272727,19.3881818 24.6118182,17.2727273 22,17.2727273 L22,17.2727273 Z
+M32.5654545,20.8181818 C32.0218182,15.89 28.11,11.9781818 23.1818182,11.4345455
+L23.1818182,9 L20.8181818,9 L20.8181818,11.4345455 C15.89,11.9781818
+11.9781818,15.89 11.4345455,20.8181818 L9,20.8181818 L9,23.1818182
+L11.4345455,23.1818182 C11.9781818,28.11 15.89,32.0218182 20.8181818,32.5654545
+L20.8181818,35 L23.1818182,35 L23.1818182,32.5654545 C28.11,32.0218182
+32.0218182,28.11 32.5654545,23.1818182 L35,23.1818182 L35,20.8181818
+L32.5654545,20.8181818 L32.5654545,20.8181818 Z M22,30.2727273
+C17.4263636,30.2727273 13.7272727,26.5736364 13.7272727,22
+C13.7272727,17.4263636 17.4263636,13.7272727 22,13.7272727
+C26.5736364,13.7272727 30.2727273,17.4263636 30.2727273,22
+C30.2727273,26.5736364 26.5736364,30.2727273 22,30.2727273 L22,30.2727273 Z" />
+        </group>
+    </group>
+</vector>

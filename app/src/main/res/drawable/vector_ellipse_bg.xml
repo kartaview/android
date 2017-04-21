@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44">
+    <group
+        android:name="Mobile">
+        <group
+            android:name="fill">
+            <path
+                android:name="points/multiplier"
+                android:fillColor="#1DAA63"
+                android:fillType="evenOdd"
+                android:pathData="
+                M 22,44
+                C 34.150264  ,44            44         ,34.150264    44      ,22
+                C 44         ,9.849736      34.150264  ,0            22      ,0
+                C 9.849736   ,0             0          ,9.849736     0       ,22
+                C 0          ,34.150264     9.849736   ,44           22      ,44
+                Z" />
+            <path
+                android:name="points/multiplier"
+                android:fillColor="#00000000"
+                android:fillType="evenOdd"
+                android:strokeColor="#FFFFFF"
+                android:strokeAlpha="0.5"
+                android:strokeWidth="3"
+                android:pathData="
+                M 22,42.5
+                C 32.650264  ,42.5          42.5       ,34.150264    42.5     ,22
+                C 42.5       ,9.849736      32.650264  ,1.5          22       ,1.5
+                C 11.349736  ,1.5           1.5        ,9.849736     1.5      ,22
+                C 1.5        ,34.150264     11.349736  ,42.5         22       ,42.5
+                Z" />
+        </group>
+    </group>
+</vector>

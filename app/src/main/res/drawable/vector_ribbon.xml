@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="141dp"
+    android:height="105dp"
+    android:viewportWidth="141"
+    android:viewportHeight="105">
+
+    <group
+            android:name="Icons"
+            android:translateX="-780.000000"
+            android:translateY="-226.000000">
+        <group
+                android:name="ribbon"
+                android:translateX="777.000000"
+                android:translateY="226.000000">
+            <group
+                    android:translateX="0.500000">
+                <path
+                    android:name="Fill-1-Copy"
+                    android:fillColor="#F56060"
+                    android:fillAlpha="0.812325093"
+                    android:fillType="evenOdd"
+                    android:strokeAlpha="0.812325093"
+                    android:strokeWidth="1"
+                    android:pathData="M70.9796674,8.45773972 C71.7204715,9.11534481 72.4612757,9.44414735
+73.2020798,9.7729499 L73.2020798,95.2616118 C73.2020798,98.2208347
+75.4244921,99.8648474 77.3999698,98.5496372 L98.3894197,84.4111277
+C99.1302238,83.7535227 100.117963,83.7535227 100.858767,84.4111277
+L121.848217,98.5496372 C123.823694,99.8648474 126.046107,97.8920321
+126.046107,95.2616118 L126.046107,13.3897779 C126.046107,11.0881601
+126.786911,9.11534481 128.268519,8.12893717" />
+                <path
+                    android:name="Fill-1"
+                    android:fillColor="#F55F5F"
+                    android:fillType="evenOdd"
+                    android:strokeWidth="1"
+                    android:pathData="M17.9796674,8.45773972 C18.7204715,9.11534481 19.4612757,9.44414735
+20.2020798,9.7729499 L20.2020798,95.2616118 C20.2020798,98.2208347
+22.4244921,99.8648474 24.3999698,98.5496372 L45.3894197,84.4111277
+C46.1302238,83.7535227 47.1179627,83.7535227 47.8587668,84.4111277
+L68.8482167,98.5496372 C70.8236944,99.8648474 73.0461067,97.8920321
+73.0461067,95.2616118 L73.0461067,13.3897779 C73.0461067,11.0881601
+73.7869108,9.11534481 75.2685191,8.12893717" />
+            </group>
+        </group>
+    </group>
+</vector>

@@ -2,9 +2,10 @@
 <com.telenav.osv.ui.custom.CustomDrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer"
+    android:id="@+id/activity_main_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#000000">
     <!--tools:openDrawer="start"-->
     <!--&gt;-->
 
@@ -15,39 +16,45 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/fragments_container"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:weightSum="1">
+            android:layout_height="match_parent">
 
             <FrameLayout
-                android:id="@+id/content_frame_upper"
+                android:id="@+id/content_frame_camera"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_weight="1"
-                tools:visibility="visible" />
+                android:layout_height="500dp"
+                android:tag="bottom|start" />
 
             <FrameLayout
-                android:id="@+id/content_frame_lower"
+                android:id="@+id/content_frame_controls"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="200dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_weight="0"
                 tools:visibility="visible" />
-        </LinearLayout>
 
-        <FrameLayout
-            android:id="@+id/content_frame_small"
-            android:layout_width="110dp"
-            android:layout_height="150dp"
-            android:layout_gravity="bottom" />
+            <FrameLayout
+                android:id="@+id/content_frame_map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipChildren="false">
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/content_frame_large"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:visibility="visible" />
+        </FrameLayout>
+
+        <include
+            android:id="@+id/recording_feedback_layout"
+            layout="@layout/partial_recording_info_layer"
+            android:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/progressbar"
@@ -58,30 +65,63 @@
             android:visibility="gone"
             tools:visibility="visible" />
 
+        <LinearLayout
+            android:id="@+id/record_hint_layout_landscape"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|left"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="invisible">
+
+            <TextView
+                style="@style/textStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:background="@drawable/custom_bg_white_rounded_hint"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:paddingEnd="30dp"
+                android:paddingLeft="30dp"
+                android:paddingRight="30dp"
+                android:paddingStart="30dp"
+                android:text="@string/tap_to_start_recording_hint"
+                android:textColor="@color/darker_grey" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/vector_triangle_ls" />
+
+        </LinearLayout>
+
         <android.support.design.widget.AppBarLayout
             android:id="@+id/app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/transparent"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:visibility="visible">
+            android:visibility="visible"
+            app:elevation="0dp"
+            tools:visibility="visible">
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/app_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/action_bar_size"
                 android:clickable="true">
 
                 <TextView
                     android:id="@+id/signature_action_bar_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="15dp"
-                    android:text="0"
-                    android:gravity="end"
-                    android:textColor="#B7BAC5"
                     android:layout_gravity="end"
+                    android:layout_marginRight="15dp"
+                    android:gravity="end"
+                    android:text="0"
+                    android:textColor="#B7BAC5"
                     android:textSize="22dp"
-                    android:visibility="visible" />
+                    android:visibility="gone" />
             </android.support.v7.widget.Toolbar>
         </android.support.design.widget.AppBarLayout>
     </FrameLayout>
@@ -91,6 +131,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:headerLayout="@layout/navigation_header"
+        app:headerLayout="@layout/partial_drawer_header"
         app:menu="@menu/menu_navigation" />
 </com.telenav.osv.ui.custom.CustomDrawerLayout>

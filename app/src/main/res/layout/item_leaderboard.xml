@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/rank_text"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        android:text="55"
+        android:gravity="center"
+        android:layout_gravity="start"
+        style="@style/textStyle"
+        android:fontFamily="sans-serif"
+        android:textColor="@color/leaderboard_text_grey"/>
+    <TextView
+        android:id="@+id/name_text"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="80dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="80dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="telenavdrivers"
+        style="@style/textStyle"
+        android:fontFamily="sans-serif"
+        android:textColor="@color/leaderboard_text_grey" />
+    <TextView
+        android:id="@+id/points_text"
+        android:layout_width="90dp"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        android:text="36167"
+        android:gravity="center"
+        android:layout_gravity="end"
+        style="@style/textStyle"
+        android:fontFamily="sans-serif"
+        android:textColor="@color/leaderboard_text_grey"/>
+</FrameLayout>

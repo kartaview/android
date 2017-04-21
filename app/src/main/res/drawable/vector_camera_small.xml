@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <group
+            android:name="ic_camera_alt_black_24px"
+            android:translateX="6.000000"
+            android:translateY="7.000000">
+        <path
+            android:name="Oval"
+            android:fillColor="#6E707B"
+            android:fillType="evenOdd"
+            android:strokeWidth="1"
+            android:pathData="M 6 4.08 C 7.06038671968 4.08 7.92 4.93961328032 7.92 6 C 7.92 7.06038671968 7.06038671968 7.92 6 7.92 C 4.93961328032 7.92 4.08 7.06038671968 4.08 6 C 4.08 4.93961328032 4.93961328032 4.08 6 4.08 Z" />
+        <path
+            android:name="Shape"
+            android:fillColor="#6E707B"
+            android:fillType="evenOdd"
+            android:strokeWidth="1"
+            android:pathData="M4.2,0 L3.102,1.2 L1.2,1.2 C0.54,1.2 0,1.74 0,2.4 L0,9.6 C0,10.26 0.54,10.8
+1.2,10.8 L10.8,10.8 C11.46,10.8 12,10.26 12,9.6 L12,2.4 C12,1.74 11.46,1.2
+10.8,1.2 L8.898,1.2 L7.8,0 L4.2,0 L4.2,0 Z M6,9 C4.344,9 3,7.656 3,6 C3,4.344
+4.344,3 6,3 C7.656,3 9,4.344 9,6 C9,7.656 7.656,9 6,9 L6,9 Z" />
+    </group>
+</vector>

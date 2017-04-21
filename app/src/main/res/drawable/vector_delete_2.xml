@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="30dp"
+    android:height="30dp"
+    android:viewportWidth="30"
+    android:viewportHeight="30">
+
+    <path
+        android:name="Rectangle-800"
+        android:fillColor="#1B1C1F"
+        android:fillType="evenOdd"
+        android:strokeWidth="1"
+        android:pathData="M 2 0 L 28 0 Q 30 0 30 2 L 30 28 Q 30 30 28 30 L 2 30 Q 0 30 0 28 L 0 2 Q 0 0 2 0 Z" />
+    <group
+            android:name="ic_delete_black_24px"
+            android:translateX="10.000000"
+            android:translateY="8.000000">
+        <path
+            android:name="Shape"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"
+            android:strokeWidth="1"
+            android:pathData="M0.777777778,12.4444444 C0.777777778,13.3 1.47777778,14 2.33333333,14
+L8.55555556,14 C9.41111111,14 10.1111111,13.3 10.1111111,12.4444444
+L10.1111111,3.11111111 L0.777777778,3.11111111 L0.777777778,12.4444444
+L0.777777778,12.4444444 Z M10.8888889,0.777777778 L8.16666667,0.777777778
+L7.38888889,0 L3.5,0 L2.72222222,0.777777778 L0,0.777777778 L0,2.33333333
+L10.8888889,2.33333333 L10.8888889,0.777777778 L10.8888889,0.777777778 Z" />
+    </group>
+</vector>

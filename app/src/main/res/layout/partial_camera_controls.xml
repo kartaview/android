@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#1B1C1F">
+
+    <LinearLayout
+        android:id="@+id/track_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:weightSum="5"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:id="@+id/recording_taken_images"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1.66"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/camera_taken_images"
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/vector_camera_white" />
+
+            <TextView
+                android:id="@+id/images_recorded_value"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="3dp"
+                android:text="0"
+                android:textColor="@color/text_colour_default"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/images_recorded_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:lines="1"
+                android:text="IMG"
+                android:textColor="#6E707B"
+                android:textSize="18sp" />
+
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:layout_weight="0.01"
+            android:background="#6E707B">
+
+        </View>
+
+        <LinearLayout
+            android:id="@+id/recording_saved_mb"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1.66"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/image_recording_size"
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                app:srcCompat="@drawable/vector_size_white" />
+
+            <TextView
+                android:id="@+id/size_recorder_images_value"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="3dp"
+                android:text="0"
+                android:textColor="@color/text_colour_default"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/size_recorder_images_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:lines="1"
+                android:text="MB"
+                android:textColor="#6E707B"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:layout_weight="0.01"
+            android:background="#6E707B">
+
+        </View>
+
+        <LinearLayout
+            android:id="@+id/recording_distance_covered"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1.66"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/distance_covered_image"
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/vector_distance_white" />
+
+            <TextView
+                android:id="@+id/distance_covered_value"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="3dp"
+                android:text="0"
+                android:textColor="@color/text_colour_default"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/distance_covered_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:lines="1"
+                android:text="KM"
+                android:textColor="#6E707B"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/record_hint_layout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:visibility="visible">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:text="@string/tap_to_start_recording_hint"
+            style="@style/textStyle"
+            android:textColor="@color/darker_grey"
+            android:gravity="center"
+            android:fontFamily="sans-serif"
+            android:background="@color/white"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/vector_triangle"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/action_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_below="@+id/track_details"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <RelativeLayout
+            android:id="@+id/info_button_layout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/info_button_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                app:srcCompat="@drawable/vector_info_white">
+            </ImageView>
+
+
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@+id/shutter_layout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/btn_shutter"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:clickable="true"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/vector_button_record_inactive_2" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/home_layout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true">
+
+            <TextView
+                android:id="@+id/cancel_text_camera_preview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clickable="false"
+                android:text="@string/cancel_label"
+                android:textAlignment="center"
+                android:textColor="@color/text_colour_default"
+                android:textSize="26sp" />
+        </FrameLayout>
+    </LinearLayout>
+</RelativeLayout>
+
+

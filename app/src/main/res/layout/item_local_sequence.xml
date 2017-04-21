@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:id="@+id/local_sequence_holder"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/local_sequence_holder"
     android:layout_width="match_parent"
-    android:background="@color/white"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#f8f8fa"/>
 
     <TextView
         android:id="@+id/address_text"
@@ -12,40 +15,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:layout_marginTop="12dp"
         android:adjustViewBounds="true"
+        android:drawablePadding="5dp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"
-        android:text="Strada Mihail Emil, Cluj-Napoca"
         android:paddingLeft="16dp"
-        android:layout_marginTop="12dp"
-        android:drawablePadding="5dp"
+        android:text="Strada Mihail Emil, Cluj-Napoca"
         android:textColor="@color/md_grey_900"
         android:textSize="16sp" />
-
-    <ImageView
-        android:id="@+id/right_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:paddingTop="8dp"
-        android:paddingRight="8dp"
-        android:paddingEnd="8dp"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center_vertical"
-        android:background="@drawable/osv_button_background"
-        android:src="@drawable/ic_done_black_24dp"
-        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/details_holder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/address_text"
         android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
-        android:layout_below="@id/address_text"
         android:weightSum="3" >
 
         <TextView
@@ -53,9 +40,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:paddingLeft="16dp"
+            android:drawableLeft="@drawable/ic_camera_small_grey"
             android:gravity="center_vertical"
-            android:drawableLeft="@drawable/camera_small"
+            android:paddingLeft="16dp"
             android:text="0 IMG"
             android:textColor="@color/md_grey_700"
             android:textSize="14sp" />
@@ -65,9 +52,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableLeft="@drawable/distance"
-            android:paddingLeft="16dp"
+            android:drawableLeft="@drawable/ic_distance"
             android:gravity="center_vertical"
+            android:paddingLeft="16dp"
             android:text="0 KM"
             android:textColor="@color/md_grey_700"
             android:textSize="14sp" />
@@ -83,29 +70,4 @@
             android:textSize="14sp" />
 
     </LinearLayout>
-
-    <FrameLayout
-        android:id="@+id/progress_layout"
-        android:layout_below="@id/details_holder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <ProgressBar
-            android:id="@+id/sequence_progressbar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginStart="12dp"
-            android:indeterminate="true"
-            android:max="100"
-            android:visibility="visible" />
-
-        <View
-            android:id="@+id/fader"
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
-            android:background="@color/white_transparent"
-            android:visibility="visible" />
-    </FrameLayout>
 </RelativeLayout>
