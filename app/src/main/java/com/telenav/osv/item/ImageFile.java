@@ -42,11 +42,11 @@ public class ImageFile extends RecordingFile {
         }
     }
 
-    public ImageFile(OSVFile video, int index, SKCoordinate skCoordinate, boolean panorama) {
-        this.sequenceId = Sequence.getSequenceId(video.getParentFile());
-        this.file = video;
+    public ImageFile(OSVFile photo, int index, SKCoordinate skCoordinate, boolean panorama) {
+        this.sequenceId = Sequence.getSequenceId(photo.getParentFile());
+        this.file = photo;
         this.index = index;
-        link = "file:///" + video.getPath();
+        link = "file:///" + photo.getPath();
         thumb = link;
         coords = skCoordinate;
         this.isPano = panorama;

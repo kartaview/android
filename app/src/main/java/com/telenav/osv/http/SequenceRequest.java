@@ -11,6 +11,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import android.os.Build;
+import android.os.Handler;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response.ErrorListener;
@@ -41,11 +42,19 @@ public class SequenceRequest<T> extends StringRequest {
 
     private static final String PARAM_TOKEN = "access_token";
 
+    private static final String PARAM_SCORE = "clientTotal";
+
     private static final String TAG = "SequenceRequest";
 
     private static final String PARAM_UPLOAD_SOURCE = "uploadSource";
 
+    private static final String PARAM_SCORE_DETAILS = "clientTotalDetails";
+
     public final int mLocalSequenceId;
+
+    private final int mScore;
+
+    private String mScoreDetails;
 
     private String mAppVersion = "";
 
@@ -63,9 +72,11 @@ public class SequenceRequest<T> extends StringRequest {
 
     private ProgressiveEntity.DataProgressListener mDataProgressListener;
 
+    private Handler mResponseHandler;
+
     public SequenceRequest(String url, ErrorListener errorListener, Listener<String> listener, ProgressiveEntity.DataProgressListener dataProgressListener, int localSequenceId,
                            String token, String startCoord, OSVFile file,
-                           String appVersion, boolean obd) {
+                           String appVersion, boolean obd, int score, String scoreDetails, Handler responseHandler) {
         super(Request.Method.POST, url, listener, errorListener);
         mListener = listener;
         mLocalSequenceId = localSequenceId;
@@ -75,7 +86,9 @@ public class SequenceRequest<T> extends StringRequest {
         mAppVersion = appVersion;
         mOBD = obd;
         mDataProgressListener = dataProgressListener;
-
+        mScore = score;
+        mScoreDetails = scoreDetails;
+        mResponseHandler = responseHandler;
         buildMultipartEntity();
     }
 
@@ -103,12 +116,14 @@ public class SequenceRequest<T> extends StringRequest {
         mBuilder.addTextBody(PARAM_UPLOAD_SOURCE, "Android");
         mBuilder.addTextBody(PARAM_CURRENT_COORD, mStartCoord);
         mBuilder.addTextBody(PARAM_OBD_INFO, String.valueOf(mOBD ? 1 : 0));
+        mBuilder.addTextBody(PARAM_SCORE, "" + mScore);
         mBuilder.addTextBody(PARAM_PLATFORM, "Android");
         mBuilder.addTextBody(PARAM_OS_VERSION, Build.VERSION.RELEASE);
         mBuilder.addTextBody(PARAM_APP_VERSION, mAppVersion);
+        mBuilder.addTextBody(PARAM_SCORE_DETAILS, mScoreDetails);
         if (mMetadata != null) {
             if (!mMetadata.exists()) {
-                Log.d(TAG, "buildMultipartEntity: meta doesn't exist");
+                Log.w(TAG, "buildMultipartEntity: meta doesn't exist");
             } else {
                 if (mMetadata.getName().contains(".gz")) {
                     mBuilder.addBinaryBody(PARAM_METADATA_FILE, mMetadata, ContentType.create("application/x-gzip"), mMetadata.getName());
@@ -117,10 +132,21 @@ public class SequenceRequest<T> extends StringRequest {
                 }
             }
         }
+//        Log.d(TAG, "buildMultipartEntity: sending request: "
+//                + " " + PARAM_TOKEN + " " + mToken
+//                + " " + PARAM_UPLOAD_SOURCE + " " + "Android"
+//                + " " + PARAM_CURRENT_COORD + " " + mStartCoord
+//                + " " + PARAM_OBD_INFO + " " + String.valueOf(mOBD ? 1 : 0)
+//                + " " + PARAM_SCORE + " " + mScore
+//                + " " + PARAM_PLATFORM + " " + "Android"
+//                + " " + PARAM_OS_VERSION + " " + Build.VERSION.RELEASE
+//                + " " + PARAM_APP_VERSION + " " + mAppVersion
+//                + " " + PARAM_SCORE_DETAILS + " " + mScoreDetails
+//        );
         mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
         HttpEntity mEntity = mBuilder.build();
-        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener, Utils.fileSize(mMetadata));
+        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener, Utils.fileSize(mMetadata), mResponseHandler);
     }
 
     @Override

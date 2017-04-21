@@ -6,6 +6,15 @@
     <color name="light_grey">#a0a0a0</color>
     <color name="black">#000000</color>
     <color name="white">#ffffff</color>
+    <color name="leaderboard_grey">#f7f7f9</color>
+    <color name="leaderboard_user_grey">#efefef</color>
+    <color name="leaderboard_text_grey">#1b1c1f</color>
+    <color name="score_background_blue">#019ED3</color>
+    <color name="score_background_light_blue">#74C6E3</color>
+    <color name="score_background_gray">#B7BAC5</color>
+    <color name="score_background_light_gray">#D4D5DB</color>
+    <color name="score_background_yellow">#E7A100</color>sadasd
+    <color name="score_background_light_yellow">#f2d080</color>
 
     <!-- light blue-->
     <color name="md_light_blue_50">#E1F5FE</color>
@@ -54,9 +63,9 @@
     <color name="white_transparent">#B8ffffff</color>
 
     <!-- walkthrough color codes-->
-    <color name="walkthrought_1">#019ED3</color>
-    <color name="walkthrought_2">#BD10E0</color>
-    <color name="walkthrought_3">#1DAA63</color>
+    <color name="walkthrought_1">#009DD5</color>
+    <color name="walkthrought_2">#00AC5D</color>
+    <color name="walkthrought_3">#E8A300</color>
 
     <!-- action bar colors -->
     <color name="action_bar_blue">#019ED3</color>
@@ -72,6 +81,14 @@
     <color name="hint_yellow">#e6a100</color>
     <color name="hint_red">#e9204c</color>
     <color name="gray_text_color">#6E707B</color>
+    <color name="leaderboard_green">#1daa63</color>
+    <color name="gray_summary_background">#1b1c1f</color>
+    <color name="gray_summary_primary_text">#b7bac5</color>
+    <color name="gray_summary_secondary_text">#6e707b</color>
+
+    <color name="facebook_blue">#3b5998</color>
+    <color name="google_red">#dd4b39</color>
+    <color name="osm_grey">#b2b2b2</color>
 
 
 </resources>

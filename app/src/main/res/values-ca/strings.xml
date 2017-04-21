@@ -89,7 +89,7 @@
     <string name="p_upload_finished">Pujada finalitzada:</string>
     <string name="p_successful">correctament</string>
     <string name="p_failed">fallida</string>
-    <string name="update_available_message">Hi ha una nova versió de OpenStreetView disponible.</string>
+    <string name="update_available_message">Hi ha una nova versió de OpenStreetCam disponible.</string>
     <string name="update_label">Actualitzar</string>
     <string name="update_now_label">Actualitzar ara</string>
     <string name="settings_label">Configuració</string>
@@ -149,7 +149,6 @@
     <string name="resolution_label">Resolució</string>
     <string name="resolution_text">Selecciona la resolució per fer les fotografies </string>
     <string name="connection_type">Tipus de connexió</string>
-    <string name="feedback_text">Comentaris</string>
     <string name="about_label">Sobre</string>
     <string name="tips_label">Consells</string>
     <string name="tips_message">Veure com millorar els teus enregistraments</string>

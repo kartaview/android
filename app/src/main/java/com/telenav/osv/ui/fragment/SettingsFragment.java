@@ -1,7 +1,7 @@
 package com.telenav.osv.ui.fragment;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -31,30 +31,44 @@ import android.webkit.CookieSyncManager;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.crashlytics.android.Crashlytics;
 import com.telenav.osv.R;
+import com.telenav.osv.activity.LoginActivity;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.activity.SplashActivity;
+import com.telenav.osv.activity.WalkthroughActivity;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.manager.CameraManager;
-import com.telenav.osv.manager.ObdManager;
-import com.telenav.osv.manager.UploadManager;
+import com.telenav.osv.command.CameraResetCommand;
+import com.telenav.osv.command.LogoutCommand;
+import com.telenav.osv.command.ObdCommand;
+import com.telenav.osv.command.SignDetectInitCommand;
+import com.telenav.osv.event.EventBus;
+import com.telenav.osv.event.SdkEnabledEvent;
+import com.telenav.osv.event.hardware.obd.ObdStatusEvent;
+import com.telenav.osv.event.network.LoginChangedEvent;
+import com.telenav.osv.event.ui.GamificationSettingEvent;
+import com.telenav.osv.event.ui.ObdPressedEvent;
+import com.telenav.osv.manager.Recorder;
+import com.telenav.osv.manager.network.UploadManager;
+import com.telenav.osv.manager.obd.ObdManager;
 import com.telenav.osv.obd.BLEConnection;
-import com.telenav.osv.service.UploadHandlerService;
+import com.telenav.osv.obd.Constants;
+import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
 import com.telenav.osv.utils.Utils;
-import com.telenav.osv.obd.Constants;
+import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by Kalman on 10/2/2015.
  */
-public class SettingsFragment extends Fragment implements View.OnClickListener, ObdManager.ConnectionListener, BLEDialogFragment.OnDeviceSelectedListener, BTDialogFragment.OnDeviceSelectedListener {
+public class SettingsFragment extends Fragment implements View.OnClickListener, BLEDialogFragment.OnDeviceSelectedListener, BTDialogFragment.OnDeviceSelectedListener {
 
     public static final String TAG = "SettingsFragment";
 
-    public static final int MIN_FREE_SPACE = 500;
+    private static final int REQUEST_ENABLE_BT = 1;
 
     public boolean paused;
 
@@ -70,6 +84,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     private SwitchCompat mapSwitch;
 
+    private SwitchCompat sdkSwitch;
+
+    private SwitchCompat gameSwitch;
+
+    private SwitchCompat safeModeSwitch;
+
     private SwitchCompat signDetectionSwitch;
 
     private ApplicationPreferences appPrefs;
@@ -80,13 +100,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     private View.OnClickListener logoutListener;
 
-    private UploadHandlerService mUploadHandlerService;
-
     private SwitchCompat debugSwitch;
 
-    private SwitchCompat authSwitch;
-
 //    private SwitchCompat hdrSwitch;
+
+    private SwitchCompat authSwitch;
 
     private SwitchCompat shutterSwitch;
 
@@ -96,7 +114,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     private LinearLayout mFeedbackButton;
 
-    private LinearLayout mWebsiteButton;
+    private LinearLayout mTipsButton;
 
     private SwitchCompat storageSwitch;
 
@@ -108,6 +126,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     private TextView obdTypeText;
 
+    private Recorder mRecorder;
+
+    private LinearLayout mWalkthroughButton;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -116,12 +138,16 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         appPrefs = ((OSVApplication) activity.getApplication()).getAppPrefs();
         logInButton = (TextView) view.findViewById(R.id.login_button);
         mFeedbackButton = (LinearLayout) view.findViewById(R.id.feedback_setting_container);
-        mWebsiteButton = (LinearLayout) view.findViewById(R.id.about_setting_container);
+        mTipsButton = (LinearLayout) view.findViewById(R.id.tips_setting_container);
+        mWalkthroughButton = (LinearLayout) view.findViewById(R.id.walkthrough_container);
         autoSwitch = (SwitchCompat) view.findViewById(R.id.auto_upload_switch);
         dataSwitch = (SwitchCompat) view.findViewById(R.id.data_switch);
         storageSwitch = (SwitchCompat) view.findViewById(R.id.storage_switch);
         metricSwitch = (SwitchCompat) view.findViewById(R.id.metric_switch);
         mapSwitch = (SwitchCompat) view.findViewById(R.id.map_visibility_switch);
+        sdkSwitch = (SwitchCompat) view.findViewById(R.id.map_sdk_switch);
+        gameSwitch = (SwitchCompat) view.findViewById(R.id.gamification_switch);
+        safeModeSwitch = (SwitchCompat) view.findViewById(R.id.safe_mode_switch);
         signDetectionSwitch = (SwitchCompat) view.findViewById(R.id.sensor_switch);
 
         shutterSwitch = (SwitchCompat) view.findViewById(R.id.debug_shutter_switch);
@@ -147,13 +173,18 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         view.findViewById(R.id.data_setting_container).setOnClickListener(this);
         view.findViewById(R.id.metric_container).setOnClickListener(this);
         view.findViewById(R.id.map_visibility_container).setOnClickListener(this);
+        view.findViewById(R.id.map_sdk_container).setOnClickListener(this);
+        view.findViewById(R.id.gamification_container).setOnClickListener(this);
+        view.findViewById(R.id.safe_mode_container).setOnClickListener(this);
         view.findViewById(R.id.sensor_lib_container).setOnClickListener(this);
         view.findViewById(R.id.debug_shutter_container).setOnClickListener(this);
         view.findViewById(R.id.picture_size_container).setOnClickListener(this);
         view.findViewById(R.id.storage_container).setOnClickListener(this);
         view.findViewById(R.id.obd_container).setOnClickListener(this);
         view.findViewById(R.id.obd_selector_container).setOnClickListener(this);
-        if (Utils.isDebuggableFlag(activity)) {
+        view.findViewById(R.id.terms_holder).setOnClickListener(this);
+        view.findViewById(R.id.policy_holder).setOnClickListener(this);
+//        if (Utils.isDebuggableFlag(activity)) {
             view.findViewById(R.id.aboutText).setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
@@ -163,17 +194,27 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                     return true;
                 }
             });
-        } else {
-            appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED, false);
-        }
+//        } else {
+//            appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED, false);
+//        }
         setupDebugSettings();
+
+        if (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
+            view.findViewById(R.id.map_visibility_container).setVisibility(View.GONE);
+            view.findViewById(R.id.map_visibility_separator).setVisibility(View.GONE);
+        }
 
         storageSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE));
         autoSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO));
         dataSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED));
         metricSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC));
-        mapSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, Build.VERSION.SDK_INT < 24));
-        signDetectionSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_SIGN_DETECTION));
+        sdkSwitch.setChecked(false);
+        sdkSwitch.setEnabled(false);
+        mapSwitch.setChecked(false);
+        mapSwitch.setEnabled(false);
+        gameSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true));
+        safeModeSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED, false));
+        signDetectionSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_SIGN_DETECTION_ENABLED));
 
         shutterSwitch.setChecked(appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_AUTO_SHUTTER));
         switch (appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE)) {
@@ -189,8 +230,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         }
 
         setListeners();
-        onUploadServiceConnected(activity.mUploadHandlerService);
         return view;
+    }
+
+    public void setRecorder(Recorder recorder) {
+        mRecorder = recorder;
     }
 
     private void setupDebugSettings() {
@@ -279,16 +323,26 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.unregister(this);
+        super.onStop();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         paused = false;
         appPrefs = ((OSVApplication) activity.getApplication()).getAppPrefs();
-        activity.getApp().getOBDManager().addConnectionListener(this);
     }
 
     @Override
     public void onPause() {
-        activity.getApp().getOBDManager().removeConnectionListener(this);
         paused = true;
         super.onPause();
     }
@@ -298,7 +352,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         loginListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                activity.showLogInScreen();
+                if (Utils.isInternetAvailable(activity)) {
+                    activity.startActivity(new Intent(activity, LoginActivity.class));
+                } else {
+                    activity.showSnackBar(R.string.check_internet_connection, Snackbar.LENGTH_LONG);
+                }
             }
         };
         logoutListener = new View.OnClickListener() {
@@ -314,13 +372,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                         }).setPositiveButton(R.string.log_out, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        activity.logout();
+                        EventBus.post(new LogoutCommand());
                     }
                 }).create().show();
             }
         };
         if (!appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME).equals("")) {
-            logInButton.setText(activity.getString(R.string.log_out) + " (" + appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME) + ")");
+            logInButton.setText(activity.getString(R.string.log_out) + " (" + appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME) + ")");
             logInButton.setOnClickListener(logoutListener);
         } else {
             logInButton.setOnClickListener(loginListener);
@@ -385,28 +443,61 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         signDetectionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                appPrefs.saveBooleanPreference(PreferenceTypes.K_SIGN_DETECTION, isChecked);
-                if(isChecked){
-                    CameraManager.instance.initSensorLib();
+                appPrefs.saveBooleanPreference(PreferenceTypes.K_SIGN_DETECTION_ENABLED, isChecked);
+                if (isChecked) {
+//                    CameraManager.instance.initSensorLib();
+                    EventBus.post(new SignDetectInitCommand(true));
                 } else {
-                    CameraManager.instance.destroySensorLib();
+//                    CameraManager.instance.destroySensorLib();
+                    EventBus.post(new SignDetectInitCommand(false));
                 }
             }
         });
-        mapSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        sdkSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                appPrefs.saveBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, isChecked);
+//                EventBus.postSticky(new SdkEnabledEvent(isChecked));
+//                appPrefs.saveBooleanPreference(PreferenceTypes.K_MAP_DISABLED, !isChecked);
+//                view.findViewById(R.id.map_visibility_container).setVisibility(!isChecked ? View.GONE : View.VISIBLE);
+//                view.findViewById(R.id.map_visibility_separator).setVisibility(!isChecked ? View.GONE : View.VISIBLE);
+//                activity.showSnackBar(R.string.restart_needed, Snackbar.LENGTH_INDEFINITE, getString(R.string.restart_label), new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Intent mStartActivity = new Intent(activity, SplashActivity.class);
+//                        int mPendingIntentId = 123456;
+//                        PendingIntent mPendingIntent = PendingIntent.getActivity(activity, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+//                        AlarmManager mgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+//                        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+//                        appPrefs.saveBooleanPreference(PreferenceTypes.K_CRASHED, false);
+//                        android.os.Process.killProcess(android.os.Process.myPid());
+//                        System.exit(0);
+//                    }
+//                });
+
             }
         });
-        signDetectionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//        mapSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+////                appPrefs.saveBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, isChecked);
+//            }
+//        });
+        gameSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                appPrefs.saveBooleanPreference(PreferenceTypes.K_SIGN_DETECTION, isChecked);
-                if (isChecked) {
-                    CameraManager.instance.initSensorLib();
-                } else {
-                    CameraManager.instance.destroySensorLib();
+                appPrefs.saveBooleanPreference(PreferenceTypes.K_GAMIFICATION, isChecked);
+                if (Fabric.isInitialized()) {
+                    Crashlytics.setBool(Log.POINTS_ENABLED, appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION));
+                }
+                EventBus.post(new GamificationSettingEvent(isChecked));
+            }
+        });
+        safeModeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                appPrefs.saveBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED, isChecked);
+                if (Fabric.isInitialized()) {
+                    Crashlytics.setBool(Log.SAFE_RECORDING, appPrefs.getBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED));
                 }
             }
         });
@@ -414,9 +505,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 appPrefs.saveBooleanPreference(PreferenceTypes.K_DEBUG_AUTO_SHUTTER, isChecked);
-                CameraManager.instance.forceCloseCamera();
-                CameraManager.instance.open();
-                CameraManager.instance.restartPreviewIfNeeded();
+//                CameraManager.instance.forceCloseCamera();
+//                CameraManager.instance.open();
+//                CameraManager.instance.restartPreviewIfNeeded();
+                EventBus.post(new CameraResetCommand());
             }
         });
 
@@ -429,33 +521,36 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             }
         });
 
-        mWebsiteButton.setOnClickListener(new View.OnClickListener() {
+        mTipsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 //                mWebsiteText.callOnClick();
-                activity.openScreen(MainActivity.SCREEN_RECORDING_HINTS);
+                activity.openScreen(ScreenComposer.SCREEN_RECORDING_HINTS);
+            }
+        });
+
+        mWalkthroughButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                mWebsiteText.callOnClick();
+                Intent intent = new Intent(activity, WalkthroughActivity.class);
+                startActivity(intent);
             }
         });
     }
 
-    public void onUploadServiceConnected(UploadHandlerService uploadHandlerService) {
-        this.mUploadHandlerService = uploadHandlerService;
-    }
-
-    public void onLoginChanged(boolean logged) {
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onLoginChanged(LoginChangedEvent event) {
         if (activity != null && logInButton != null) {
-            if (logged) {
-                logInButton.setText(activity.getString(R.string.log_out) + " (" + appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME) + ")");
+            if (event.logged) {
+                logInButton.setText(activity.getString(R.string.log_out) + " (" + appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME) + ")");
                 logInButton.setOnClickListener(logoutListener);
             } else {
-                activity.showSnackBar(R.string.logged_out_confirmation, Snackbar.LENGTH_SHORT);
                 logInButton.setText(activity.getString(R.string.log_in));
                 logInButton.setOnClickListener(loginListener);
             }
         }
     }
-
-    private static final int REQUEST_ENABLE_BT = 1;
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -479,6 +574,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                     activity.showSnackBar(getString(R.string.resolution_selection_not_available), Snackbar.LENGTH_LONG);
                 } else {
                     PictureSizeDialogFragment fragmentPictureSize = new PictureSizeDialogFragment();
+                    fragmentPictureSize.setPreviewSizes(mRecorder.getSupportedPicturesSizes());
                     fragmentPictureSize.show(activity.getSupportFragmentManager(), PictureSizeDialogFragment.TAG);
                 }
                 break;
@@ -489,13 +585,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                     public void onTypeSelected(int type) {
                         int saved = appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE);
                         if (type != saved) {
-                            ConcurrentLinkedQueue<ObdManager.ConnectionListener> list = activity.getApp().getOBDManager().getConnectionListeners();
-                            if (activity.getApp().getOBDManager().isConnected()) {
-                                activity.getApp().getOBDManager().disconnect();
+                            if (ObdManager.isConnected()) {
+                                EventBus.postSticky(new ObdCommand(false));
                             }
                             appPrefs.saveIntPreference(PreferenceTypes.K_OBD_TYPE, type);
-                            activity.getApp().setObdManager(type);
-                            activity.getApp().getOBDManager().setConnectionListeners(list);
+                            mRecorder.createObdManager(type);
                             switch (appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE)) {
                                 case PreferenceTypes.V_OBD_WIFI:
                                     obdTypeText.setText(R.string.wifi_label);
@@ -513,122 +607,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                 fragment.show(activity.getSupportFragmentManager(), OBDDialogFragment.TAG);
                 break;
             case R.id.obd_container:
-                final ObdManager obdManager = activity.getApp().getOBDManager();
-                if (!obdManager.isConnected()) {
-                    ObdManager.sDisconnected = false;
-                    boolean ret = false;
-                    if (obdManager.isBluetooth()) {
-                        if (obdManager.isBle()) {
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                                activity.showSnackBar(getString(R.string.ble_android_not_supported), Snackbar.LENGTH_LONG);
-                                break;
-                            }
-
-                            // Use this check to determine whether BLE is supported on the device. Then
-                            // you can selectively disable BLE-related features.
-                            if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                                activity.showSnackBar(R.string.ble_not_supported, Snackbar.LENGTH_SHORT);
-                                return;
-                            }
-
-                            BluetoothAdapter bluetoothAdapter = BLEConnection.getInstance().initConnection(getActivity());
-
-                            // Checks if Bluetooth is supported on the device.
-                            if (bluetoothAdapter == null) {
-                                activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
-                                return;
-                            }
-
-                            if (!activity.checkPermissionsForGPSWithRationale(R.string.permission_bluetooth_rationale)){
-                                return;
-                            }
-
-                            // Ensures Bluetooth is available on the device and it is enabled. If not,
-                            // displays a dialog requesting user permission to enable Bluetooth.
-                            if (!bluetoothAdapter.isEnabled()) {
-                                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                                return;
-                            }
-                            SharedPreferences preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
-                            if (preferences.getBoolean(Constants.BLE_SERVICE_STARTED, false) && preferences.getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, null) != null) {
-                                ret = obdManager.connect();
-                            } else {
-                                ret = true;
-                                BLEDialogFragment blefr = new BLEDialogFragment();
-                                blefr.setDeviceSelectedListener(this);
-                                blefr.show(activity.getSupportFragmentManager(), BLEDialogFragment.TAG);
-                            }
-                        } else {
-                            // Use this check to determine whether BT is supported on the device. Then
-                            // you can selectively disable BT-related features.
-                            if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
-                                activity.showSnackBar(R.string.bl_not_supported, Snackbar.LENGTH_SHORT);
-                                return;
-                            }
-
-                            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-                            // Checks if Bluetooth is supported on the device.
-                            if (bluetoothAdapter == null) {
-                                activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
-                                return;
-                            }
-
-                            if (!activity.checkPermissionsForGPSWithRationale(R.string.permission_bluetooth_rationale)){
-                                return;
-                            }
-
-                            // Ensures Bluetooth is available on the device and it is enabled. If not,
-                            // displays a dialog requesting user permission to enable Bluetooth.
-                            if (!bluetoothAdapter.isEnabled()) {
-                                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                                return;
-                            }
-                            SharedPreferences preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
-                            if (preferences.getBoolean(Constants.BT_SERVICE_STARTED, false) && preferences.getString(Constants.EXTRAS_BT_DEVICE_ADDRESS, null) != null) {
-                                ret = obdManager.connect();
-                            } else {
-                                ret = true;
-                                BTDialogFragment btFragment = new BTDialogFragment();
-                                btFragment.setListener(this);
-                                btFragment.show(activity.getSupportFragmentManager(), BTDialogFragment.TAG);
-                            }
-
-                        }
-                    } else {
-                        ret = obdManager.connect();
-                        if (ret) {
-                            mOBDProgressBar.setVisibility(View.VISIBLE);
-                            view.findViewById(R.id.obd_container).setEnabled(false);
-                            mObdButton.setVisibility(View.GONE);
-                            mObdTitle.setText(R.string.connecting_label);
-                        } else {
-                            activity.showSnackBar(R.string.no_obd_detected_message, Snackbar.LENGTH_LONG, R.string.wifi_label, new Runnable() {
-                                @Override
-                                public void run() {
-                                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                                }
-                            });
-                        }
-                    }
-                } else {
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
-                    builder.setMessage(activity.getString(R.string.disconnect_obd_message)).setTitle(activity.getString(R.string.obd_label)).setNegativeButton(R.string.cancel_label,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                }
-                            }).setPositiveButton(R.string.disconnect, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            ObdManager.sDisconnected = true;
-                            obdManager.disconnect();
-                            appPrefs.saveBooleanPreference(PreferenceTypes.K_OBD_CONNECTED, false);
-                        }
-                    }).create().show();
-                }
+                obdContainerPressed(null);
                 break;
             case R.id.storage_container:
                 storageSwitch.setChecked(!storageSwitch.isChecked());
@@ -642,8 +621,25 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             case R.id.metric_container:
                 metricSwitch.setChecked(!metricSwitch.isChecked());
                 break;
+            case R.id.map_sdk_container:
+//                sdkSwitch.setChecked(!sdkSwitch.isChecked());
+                break;
             case R.id.map_visibility_container:
-                mapSwitch.setChecked(!mapSwitch.isChecked());
+//                mapSwitch.setChecked(!mapSwitch.isChecked());
+                break;
+            case R.id.gamification_container:
+                gameSwitch.setChecked(!gameSwitch.isChecked());
+                break;
+            case R.id.safe_mode_container:
+                safeModeSwitch.setChecked(!safeModeSwitch.isChecked());
+                break;
+            case R.id.terms_holder:
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://openstreetcam.org/terms/"));
+                startActivity(browserIntent);
+                break;
+            case R.id.policy_holder:
+                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.skobbler.com/legal#privacy"));
+                startActivity(browserIntent);
                 break;
             case R.id.sensor_lib_container:
                 signDetectionSwitch.setChecked(!signDetectionSwitch.isChecked());
@@ -658,10 +654,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 //                hdrSwitch.setChecked(!hdrSwitch.isChecked());
 //                break;
             case R.id.debug_server_container:
-                if (mUploadHandlerService != null && mUploadHandlerService.mUploadManager != null) {
-                    mUploadHandlerService.mUploadManager.mCurrentServer = (mUploadHandlerService.mUploadManager.mCurrentServer + 1) % 3;
-                    appPrefs.saveIntPreference(PreferenceTypes.K_DEBUG_SERVER_TYPE, mUploadHandlerService.mUploadManager.mCurrentServer);
-                    serverText.setText(UploadManager.URL_ENV[mUploadHandlerService.mUploadManager.mCurrentServer]);
+                if (activity.mUploadManager != null) {
+                    activity.mUploadManager.mCurrentServer = (activity.mUploadManager.mCurrentServer + 1) % UploadManager.URL_ENV.length;
+                    appPrefs.saveIntPreference(PreferenceTypes.K_DEBUG_SERVER_TYPE, activity.mUploadManager.mCurrentServer);
+                    serverText.setText(UploadManager.URL_ENV[activity.mUploadManager.mCurrentServer]);
                     activity.showSnackBar(R.string.restart_needed, Snackbar.LENGTH_SHORT, getString(R.string.restart_label), new Runnable() {
                         @Override
                         public void run() {
@@ -670,6 +666,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                             PendingIntent mPendingIntent = PendingIntent.getActivity(activity, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
                             AlarmManager mgr = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
                             mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+                            appPrefs.saveBooleanPreference(PreferenceTypes.K_CRASHED, false);
                             System.exit(0);
                         }
                     });
@@ -685,37 +682,144 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     }
 
-    @Override
-    public void onConnected() {
-        mObdTitle.setText(R.string.connected);
-        mObdButton.setText(R.string.disconnect);
-        mObdButton.setVisibility(View.VISIBLE);
-        view.findViewById(R.id.obd_container).setEnabled(true);
-        mOBDProgressBar.setVisibility(View.GONE);
-        appPrefs.saveBooleanPreference(PreferenceTypes.K_OBD_CONNECTED, false);
+    private void obdContainerPressed(ObdPressedEvent event) {
+
+        final ObdManager obdManager = mRecorder.getOBDManager();
+        if (!ObdManager.isConnected()) {
+            boolean ret = false;
+            if (obdManager.isBluetooth()) {
+                if (obdManager.isBle()) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                        activity.showSnackBar(getString(R.string.ble_android_not_supported), Snackbar.LENGTH_LONG);
+                        return;
+                    }
+
+                    // Use this check to determine whether BLE is supported on the device. Then
+                    // you can selectively disable BLE-related features.
+                    if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                        activity.showSnackBar(R.string.ble_not_supported, Snackbar.LENGTH_SHORT);
+                        return;
+                    }
+
+                    BluetoothAdapter bluetoothAdapter = BLEConnection.getInstance().initConnection(getActivity());
+
+                    // Checks if Bluetooth is supported on the device.
+                    if (bluetoothAdapter == null) {
+                        activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
+                        return;
+                    }
+
+                    if (!activity.checkPermissionsForGPSWithRationale(R.string.permission_bluetooth_rationale)) {
+                        return;
+                    }
+
+                    // Ensures Bluetooth is available on the device and it is enabled. If not,
+                    // displays a dialog requesting user permission to enable Bluetooth.
+                    if (!bluetoothAdapter.isEnabled()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                        return;
+                    }
+                    SharedPreferences preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
+                    if (preferences.getBoolean(Constants.BLE_SERVICE_STARTED, false) && preferences.getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, null) != null) {
+                        EventBus.postSticky(new ObdCommand(true));
+                    } else {
+                        ret = true;
+                        BLEDialogFragment blefr = new BLEDialogFragment();
+                        blefr.setDeviceSelectedListener(this);
+                        blefr.show(activity.getSupportFragmentManager(), BLEDialogFragment.TAG);
+                    }
+                } else {
+                    // Use this check to determine whether BT is supported on the device. Then
+                    // you can selectively disable BT-related features.
+                    if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+                        activity.showSnackBar(R.string.bl_not_supported, Snackbar.LENGTH_SHORT);
+                        return;
+                    }
+
+                    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+                    // Checks if Bluetooth is supported on the device.
+                    if (bluetoothAdapter == null) {
+                        activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
+                        return;
+                    }
+
+                    if (!activity.checkPermissionsForGPSWithRationale(R.string.permission_bluetooth_rationale)) {
+                        return;
+                    }
+
+                    // Ensures Bluetooth is available on the device and it is enabled. If not,
+                    // displays a dialog requesting user permission to enable Bluetooth.
+                    if (!bluetoothAdapter.isEnabled()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                        return;
+                    }
+                    BTDialogFragment btFragment = new BTDialogFragment();
+                    btFragment.setListener(this);
+                    btFragment.show(activity.getSupportFragmentManager(), BTDialogFragment.TAG);
+                }
+            } else {
+                EventBus.postSticky(new ObdCommand(true));
+                if (ret) {
+                    mOBDProgressBar.setVisibility(View.VISIBLE);
+                    view.findViewById(R.id.obd_container).setEnabled(false);
+                    mObdButton.setVisibility(View.GONE);
+                    mObdTitle.setText(R.string.connecting_label);
+                } else {
+                    activity.showSnackBar(R.string.no_obd_detected_message, Snackbar.LENGTH_LONG, R.string.wifi_label, new Runnable() {
+                        @Override
+                        public void run() {
+                            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                        }
+                    });
+                }
+            }
+        } else {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
+            builder.setMessage(activity.getString(R.string.disconnect_obd_message)).setTitle(activity.getString(R.string.obd_label)).setNegativeButton(R.string
+                            .cancel_label,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    }).setPositiveButton(R.string.disconnect, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    EventBus.postSticky(new ObdCommand(false));
+                    appPrefs.saveBooleanPreference(PreferenceTypes.K_OBD_CONNECTED, false);
+                }
+            }).create().show();
+        }
     }
 
-    @Override
-    public void onDisconnected() {
-        mObdTitle.setText(R.string.not_connected_label);
-        mObdButton.setText(R.string.connect);
-        mObdButton.setVisibility(View.VISIBLE);
-        view.findViewById(R.id.obd_container).setEnabled(true);
-        mOBDProgressBar.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void onSpeedObtained(ObdManager.SpeedData speed) {
-
-    }
-
-    @Override
-    public void onConnecting() {
-        if (mOBDProgressBar != null && view != null && mObdButton != null && mObdTitle != null) {
-            mOBDProgressBar.setVisibility(View.VISIBLE);
-            view.findViewById(R.id.obd_container).setEnabled(false);
-            mObdButton.setVisibility(View.GONE);
-            mObdTitle.setText(R.string.connecting_label);
+    @Subscribe(sticky = true)
+    public void onObdStatusEvent(ObdStatusEvent event) {
+        switch (event.type) {
+            case ObdStatusEvent.TYPE_CONNECTED:
+                mObdTitle.setText(R.string.connected);
+                mObdButton.setText(R.string.disconnect);
+                mObdButton.setVisibility(View.VISIBLE);
+                view.findViewById(R.id.obd_container).setEnabled(true);
+                mOBDProgressBar.setVisibility(View.GONE);
+                appPrefs.saveBooleanPreference(PreferenceTypes.K_OBD_CONNECTED, false);
+                break;
+            case ObdStatusEvent.TYPE_CONNECTING:
+                if (mOBDProgressBar != null && view != null && mObdButton != null && mObdTitle != null) {
+                    mOBDProgressBar.setVisibility(View.VISIBLE);
+                    view.findViewById(R.id.obd_container).setEnabled(false);
+                    mObdButton.setVisibility(View.GONE);
+                    mObdTitle.setText(R.string.connecting_label);
+                }
+                break;
+            case ObdStatusEvent.TYPE_DISCONNECTED:
+                mObdTitle.setText(R.string.not_connected_label);
+                mObdButton.setText(R.string.connect);
+                mObdButton.setVisibility(View.VISIBLE);
+                view.findViewById(R.id.obd_container).setEnabled(true);
+                mOBDProgressBar.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -734,7 +838,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                 mObdTitle.setText(R.string.connecting_label);
             }
         } catch (Exception e) {
-            Log.d(TAG, "onTypeSelected: exception " + Log.getStackTraceString(e));
+            Log.w(TAG, "onTypeSelected: exception " + Log.getStackTraceString(e));
         }
     }
 
@@ -748,7 +852,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                 mObdTitle.setText(R.string.connecting_label);
             }
         } catch (Exception e) {
-            Log.d(TAG, "onTypeSelected: exception " + Log.getStackTraceString(e));
+            Log.w(TAG, "onTypeSelected: exception " + Log.getStackTraceString(e));
         }
     }
 }

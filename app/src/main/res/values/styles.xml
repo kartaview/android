@@ -61,36 +61,12 @@
     </style>
 
     <style name="fab">
-        <item name="android:layout_width">?android:attr/actionBarSize</item>
-        <item name="android:layout_height">?android:attr/actionBarSize</item>
+        <item name="android:layout_width">@dimen/action_bar_size</item>
+        <item name="android:layout_height">@dimen/action_bar_size</item>
         <item name="android:layout_marginBottom">20dp</item>
         <item name="android:layout_marginRight">20dp</item>
         <item name="android:layout_gravity">bottom|right</item>
         <item name="android:onClick">onClick</item>
-    </style>
-
-    <style name="positionMeFAB" parent="@style/fab">
-        <item name="android:layout_alignParentRight">true</item>
-        <item name="android:layout_marginRight">20dp</item>
-        <item name="android:layout_marginBottom">20dp</item>
-        <item name="android:src">@drawable/ic_gps_fixed_white_24dp</item>
-    </style>
-
-
-    <style name="settingsFAB" parent="@style/fab">
-        <item name="android:layout_alignParentRight">true</item>
-        <item name="android:layout_alignParentBottom">true</item>
-        <item name="android:layout_marginRight">20dp</item>
-        <item name="android:layout_marginBottom">20dp</item>
-        <item name="android:src">@drawable/ic_backup_white_24dp</item>
-    </style>
-
-    <style name="sequencesFab" parent="@style/fab">
-        <item name="android:layout_alignParentRight">true</item>
-        <item name="android:layout_alignParentBottom">true</item>
-        <item name="android:layout_marginRight">20dp</item>
-        <item name="android:layout_marginBottom">20dp</item>
-        <item name="android:src">@drawable/ic_backup_white_24dp</item>
     </style>
 
     <style name="AlertDialog" parent="AppCompatAlertDialogStyle">
@@ -108,7 +84,7 @@
     <style name="ToolbarBottomSeparator">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">3dp</item>
-        <item name="android:background">@drawable/dropshadow</item>
+        <item name="android:background">@drawable/custom_dropshadow</item>
     </style>
 
     <style name="Toolbar" parent="ThemeOverlay.AppCompat.ActionBar">
@@ -127,7 +103,7 @@
 
     <style name="buttonStyle" parent="@style/Widget.AppCompat.Button.Borderless">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">?android:attr/actionBarSize</item>
+        <item name="android:layout_height">@dimen/action_bar_size</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:textColor">@color/text_colour_default</item>
@@ -138,7 +114,7 @@
 
     <style name="textStyle" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">?android:attr/actionBarSize</item>
+        <item name="android:layout_height">@dimen/action_bar_size</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:textColor">@color/text_colour_default</item>
         <item name="android:textSize">@dimen/text_size_default</item>
@@ -148,7 +124,7 @@
 
     <style name="textStyleNoSize" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">?android:attr/actionBarSize</item>
+        <item name="android:layout_height">@dimen/action_bar_size</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:textColor">@color/text_colour_default</item>
         <item name="android:textSize">@dimen/text_size_default</item>
@@ -157,7 +133,7 @@
     </style>
 
     <style name="toolbarButtonStyle">
-        <item name="android:background">@null</item><!--todo make ripple on pre lollipop -->
+        <item name="android:background">@null</item><!--todo make custom_ripple on pre lollipop -->
     </style>
 
     <style name="hlv_listViewStyle"></style>

@@ -2,7 +2,6 @@ package com.telenav.osv.ui.list;
 
 import java.util.ArrayList;
 import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import com.telenav.osv.R;
-import com.telenav.osv.utils.Log;
 
 /**
  * Created by dianat on 3/11/2016.
@@ -64,7 +62,7 @@ public class BTDeviceAdapter extends BaseAdapter {
         if (view == null) {
             // inflate the layout
             LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
-            view = inflater.inflate(R.layout.listitem_device, viewGroup, false);
+            view = inflater.inflate(R.layout.item_bt_device_list, viewGroup, false);
             viewHolder = new ViewHolder();
             viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
             viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);

@@ -1,7 +1,6 @@
 package com.telenav.osv.db;
 
 import android.content.Context;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.telenav.osv.application.OSVApplication;
@@ -17,7 +16,7 @@ public class SequenceDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "Sequences";
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 4;
 
     // Database creation sql statement
     private static final String DB_CREATE_PHOTO_TABLE = "create table if not exists " + SequenceDB.FRAME_TABLE + "("
@@ -44,6 +43,16 @@ public class SequenceDBHelper extends SQLiteOpenHelper {
             + "FOREIGN KEY (" + SequenceDB.VIDEO_SEQ_ID + ") REFERENCES " + SequenceDB.SEQUENCE_TABLE + " (" + SequenceDB.SEQUENCE_ID + ")"
             + ");";
 
+    private static final String DB_CREATE_SCORE_TABLE = "create table if not exists " + SequenceDB.SCORE_TABLE + "("
+            + SequenceDB.SCORE_SEQ_ID + " integer, "
+            + SequenceDB.SCORE_COVERAGE + " integer, "
+            + SequenceDB.SCORE_OBD_COUNT + " integer, "
+            + SequenceDB.SCORE_COUNT + " integer, "
+            + "CONSTRAINT " + SequenceDB.SCORE_UNIQUE_CONSTRAINT + " PRIMARY KEY (" + SequenceDB.SCORE_SEQ_ID + "," + SequenceDB.SCORE_COVERAGE + ")"
+            + "FOREIGN KEY (" + SequenceDB.SCORE_SEQ_ID + ") REFERENCES " + SequenceDB.SEQUENCE_TABLE + " (" + SequenceDB.SEQUENCE_ID + "),"
+            + "CHECK (" + SequenceDB.SCORE_COVERAGE + " > -2 AND " + SequenceDB.SCORE_COVERAGE + " < 11)"
+            + ");";
+
     private static final String DB_CREATE_SEQUENCE_TABLE = "create table if not exists " + SequenceDB.SEQUENCE_TABLE + "("
             + SequenceDB.SEQUENCE_ID + " integer primary key,"
             + SequenceDB.SEQUENCE_ONLINE_ID + " integer, "
@@ -57,7 +66,8 @@ public class SequenceDBHelper extends SQLiteOpenHelper {
             + SequenceDB.SEQUENCE_EXTERNAL + " integer, "
             + SequenceDB.SEQUENCE_VERSION + " varchar(30), "
             + SequenceDB.SEQUENCE_OBD + " integer, "
-            + SequenceDB.SEQUENCE_STATUS + " integer"
+            + SequenceDB.SEQUENCE_STATUS + " integer,"
+            + SequenceDB.SEQUENCE_SAFE + " integer "
             + ");";
 
     private static final String TAG = "SequenceDBHelper";
@@ -75,134 +85,115 @@ public class SequenceDBHelper extends SQLiteOpenHelper {
         database.execSQL(DB_CREATE_SEQUENCE_TABLE);
         database.execSQL(DB_CREATE_VIDEO_TABLE);
         database.execSQL(DB_CREATE_PHOTO_TABLE);
+        database.execSQL(DB_CREATE_SCORE_TABLE);
     }
 
     // Method is called during an upgrade of the database,
     @Override
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
         Log.d(TAG, "onUpgrade: from v" + oldVersion + " to v" + newVersion);
-//        if (oldVersion < 21) {
-//            try {
-//                moveFolders();
-//            } catch (Exception e){
-//                Log.d(TAG, "onUpgrade: " + Log.getStackTraceString(e));
-//            }
-//            try {
-//                database.execSQL("DROP TABLE " + SequenceDB.FRAME_TABLE + ";");
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                if (Fabric.isInitialized()) {
-//                    Crashlytics.logException(e);
-//                }
-//            }
-//            try {
-//                database.execSQL("DROP TABLE " + SequenceDB.VIDEO_TABLE + ";");
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                if (Fabric.isInitialized()) {
-//                    Crashlytics.logException(e);
-//                }
-//            }
-//            try {
-//                database.execSQL("DROP TABLE " + SequenceDB.SEQUENCE_TABLE + ";");
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                if (Fabric.isInitialized()) {
-//                    Crashlytics.logException(e);
-//                }
-//            }
-//            database.execSQL(DB_CREATE_SEQUENCE_TABLE);
-//            database.execSQL(DB_CREATE_VIDEO_TABLE);
-//            database.execSQL(DB_CREATE_PHOTO_TABLE);
-//        }
-    }
-
-    private void moveFolders() {
-        try {
-            if (Utils.checkSDCard(mContext)) {
-                boolean external = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE);
-                OSVFile osv = Utils.generateOSVFolder(mContext);
-                if (osv.listFiles().length > 0) {
-//                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard1
-                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile(), "OSV_BACKUP");
-                    boolean success = osv.renameTo(osvCopy);
-                    if (!success) {
-                        OSVFile osvCopy2 = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
-                        osv.renameTo(osvCopy2);
-                    }
-                    if (external) {
-                        OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
-                    } else {
-                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
-                    }
-                }
-                ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, !external);
-                external = !external;
-                osv = Utils.generateOSVFolder(mContext);
-                if (osv.listFiles().length > 0) {
-//                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard2
-                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile(), "OSV_BACKUP");
-                    boolean success = osv.renameTo(osvCopy);
-                    if (!success) {
-                        OSVFile osvCopy2 = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
-                        osv.renameTo(osvCopy2);
-                    }
-                    if (external) {
-                        OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
-                    } else {
-                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
-                    }
-                }
-                //reset preference
-                ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, external);
-            } else {
-                OSVFile osv = Utils.generateOSVFolder(mContext);
-                if (osv.listFiles().length > 0) {
-//                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard
-                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile(), "OSV_BACKUP");
-                    osv.renameTo(osvCopy);
-                    OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
-                }
-            }
-        } catch (Exception e) {
-            try {
-                if (Utils.checkSDCard(mContext)) {
-                    boolean external = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE);
-                    OSVFile osv = Utils.generateOSVFolder(mContext);
-                    if (osv.listFiles().length > 0) {
-//                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard1
-                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
-                        osv.renameTo(osvCopy);
-                        if (external) {
-                            OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
-                        } else {
-                            OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
-                        }
-                    }
-
-                    ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, !external);
-                    osv = Utils.generateOSVFolder(mContext);
-                    if (osv.listFiles().length > 0) {
-                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
-                        osv.renameTo(osvCopy);
-                        if (!external) {
-                            OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
-                        } else {
-                            OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
-                        }
-                    }
-                    ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, external);
-                } else {
-                    OSVFile osv = Utils.generateOSVFolder(mContext);
-                    if (osv.listFiles().length > 0) {
-                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
-                        osv.renameTo(osvCopy);
-                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
-                    }
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "onUpgrade: " + Log.getStackTraceString(e));
-            }
+        if (oldVersion < 2) {
+            database.execSQL(DB_CREATE_SCORE_TABLE);
+        }
+        if (oldVersion < 3) {
+            database.execSQL("ALTER TABLE " + SequenceDB.SEQUENCE_TABLE + " ADD " + SequenceDB.SEQUENCE_SAFE + " INTEGER");
+        }
+        if (oldVersion < 4) {
+            database.execSQL("ALTER TABLE " + SequenceDB.SCORE_TABLE + " RENAME TO " + SequenceDB.SCORE_TABLE + "1");
+            database.execSQL(DB_CREATE_SCORE_TABLE);
+            database.execSQL("INSERT INTO " + SequenceDB.SCORE_TABLE + " (" + SequenceDB.SCORE_SEQ_ID + ", " + SequenceDB.SCORE_COVERAGE + ", " + SequenceDB.SCORE_OBD_COUNT + "," +
+                    " " + SequenceDB.SCORE_COUNT + ") SELECT " + SequenceDB.SCORE_SEQ_ID + ", " + SequenceDB.SCORE_COVERAGE + ", " + SequenceDB.SCORE_OBD_COUNT + ", " +
+                    SequenceDB.SCORE_COUNT + " FROM " + SequenceDB.SCORE_TABLE + "1" + ";");
+            database.execSQL("DROP TABLE " + SequenceDB.SCORE_TABLE + "1");
         }
     }
+//
+//    private void moveFolders() {
+//        try {
+//            if (Utils.checkSDCard(mContext)) {
+//                boolean external = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE);
+//                OSVFile osv = Utils.generateOSVFolder(mContext);
+//                if (osv.listFiles().length > 0) {
+////                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard1
+//                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile(), "OSV_BACKUP");
+//                    boolean success = osv.renameTo(osvCopy);
+//                    if (!success) {
+//                        OSVFile osvCopy2 = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+//                        osv.renameTo(osvCopy2);
+//                    }
+//                    if (external) {
+//                        OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
+//                    } else {
+//                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+//                    }
+//                }
+//                ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, !external);
+//                external = !external;
+//                osv = Utils.generateOSVFolder(mContext);
+//                if (osv.listFiles().length > 0) {
+////                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard2
+//                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile(), "OSV_BACKUP");
+//                    boolean success = osv.renameTo(osvCopy);
+//                    if (!success) {
+//                        OSVFile osvCopy2 = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+//                        osv.renameTo(osvCopy2);
+//                    }
+//                    if (external) {
+//                        OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
+//                    } else {
+//                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+//                    }
+//                }
+//                //reset preference
+//                ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, external);
+//            } else {
+//                OSVFile osv = Utils.generateOSVFolder(mContext);
+//                if (osv.listFiles().length > 0) {
+////                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard
+//                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile(), "OSV_BACKUP");
+//                    osv.renameTo(osvCopy);
+//                    OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+//                }
+//            }
+//        } catch (Exception e) {
+//            try {
+//                if (Utils.checkSDCard(mContext)) {
+//                    boolean external = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE);
+//                    OSVFile osv = Utils.generateOSVFolder(mContext);
+//                    if (osv.listFiles().length > 0) {
+////                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard1
+//                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+//                        osv.renameTo(osvCopy);
+//                        if (external) {
+//                            OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
+//                        } else {
+//                            OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+//                        }
+//                    }
+//
+//                    ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, !external);
+//                    osv = Utils.generateOSVFolder(mContext);
+//                    if (osv.listFiles().length > 0) {
+//                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+//                        osv.renameTo(osvCopy);
+//                        if (!external) {
+//                            OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
+//                        } else {
+//                            OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+//                        }
+//                    }
+//                    ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, external);
+//                } else {
+//                    OSVFile osv = Utils.generateOSVFolder(mContext);
+//                    if (osv.listFiles().length > 0) {
+//                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+//                        osv.renameTo(osvCopy);
+//                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+//                    }
+//                }
+//            } catch (Exception ex) {
+//                Log.e(TAG, "onUpgrade: " + Log.getStackTraceString(e));
+//            }
+//        }
+//    }
 }

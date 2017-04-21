@@ -50,7 +50,7 @@
     <string name="hint_landscape_label">Querformat</string>
     <string name="no_local_recordings_message">Keine lokalen Aufnahmen vorhanden.</string>
     <string name="exit_app_message">Soll die App wirklich beendet werden?</string>
-    <string name="update_available_message">Eine neue Version von OpenStreetView ist verfügbar.</string>
+    <string name="update_available_message">Eine neue Version von OpenStreetCam ist verfügbar.</string>
     <string name="settings_label">Einstellungen</string>
     <string name="osm_login_label">Bei OpenStreetMap anmelden</string>
     <string name="restart_label">Neustart</string>
@@ -61,7 +61,6 @@
     <string name="resolution_label">Auflösung</string>
     <string name="resolution_text">Auflösung der Aufnahmen wählen</string>
     <string name="connection_type">Verbindungsart</string>
-    <string name="feedback_text">Rückmeldungen</string>
     <string name="about_label">Über</string>
     <string name="tips_label">Tips</string>
     <string name="current_server_label">Genutzter Server</string>

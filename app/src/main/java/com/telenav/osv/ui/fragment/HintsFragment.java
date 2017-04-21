@@ -17,7 +17,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.matthewtamlin.sliding_intro_screen_library.DotIndicator;
+import com.matthewtamlin.dotindicator.DotIndicator;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 
@@ -46,7 +46,7 @@ public class HintsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.camera_hint_layout, null);
+        view = inflater.inflate(R.layout.fragment_recording_hints, null);
         activity = (MainActivity) getActivity();
         hintPager = (ViewPager) view.findViewById(R.id.hint_pager);
         hintIndicator = (DotIndicator) view.findViewById(R.id.hint_indicator);
@@ -111,6 +111,7 @@ public class HintsFragment extends Fragment {
             String[] secondHint = new String[2];
             String[] thirdHint = new String[2];
             String[] fourthHint = new String[2];
+            String[] fifthHint = new String[2];
 
             secondHint[0] = getString(R.string.hint_mount_label);
             secondHint[1] = getString(R.string.hint_mount_message);
@@ -118,8 +119,11 @@ public class HintsFragment extends Fragment {
             thirdHint[1] = getString(R.string.hint_windshield_message);
             fourthHint[0] = getString(R.string.hint_focus_label);
             fourthHint[1] = getString(R.string.hint_focus_message);
+            fifthHint[0] = getString(R.string.hint_points);
+            fifthHint[1] = getString(R.string.hint_points_message);
 
 
+            hints.add(fifthHint);
             hints.add(secondHint);
             hints.add(thirdHint);
             hints.add(fourthHint);
@@ -138,26 +142,29 @@ public class HintsFragment extends Fragment {
 
         public void populate(boolean portrait) {
             views.clear();
-            long seed = System.nanoTime();
-            Collections.shuffle(hints, new Random(seed));
+//            long seed = System.nanoTime();
+//            Collections.shuffle(hints, new Random(seed));
             TextView viewTitleHint;
             TextView viewHintDescription;
             FrameLayout frameLayout;
+            FrameLayout landscape = null;
             int numberOfItems;
             if (portrait) {
-                frameLayout = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
-                frameLayout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
-                viewTitleHint = (TextView) frameLayout.findViewById(R.id.title_hint_text_vertical);
+                landscape = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
+                landscape.setBackgroundColor(activity.getResources().getColor(colors.get((views.size()+1) % colors.size())));
+                viewTitleHint = (TextView) landscape.findViewById(R.id.title_hint_text_vertical);
                 viewTitleHint.setText(R.string.hint_landscape_label);
-                viewHintDescription = (TextView) frameLayout.findViewById(R.id.hint_text_vertical);
+                viewHintDescription = (TextView) landscape.findViewById(R.id.hint_text_vertical);
                 viewHintDescription.setText(R.string.hint_landscape_message);
-                views.add(frameLayout);
                 numberOfItems = hints.size() + 1;
             } else {
                 numberOfItems = hints.size();
             }
-
+            int i = 0;
             for (String[] hint : hints) {
+                if (i == 1 && landscape != null){
+                    views.add(landscape);
+                }
                 frameLayout = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
                 frameLayout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
                 viewTitleHint = (TextView) frameLayout.findViewById(R.id.title_hint_text_vertical);
@@ -165,6 +172,7 @@ public class HintsFragment extends Fragment {
                 viewTitleHint.setText(hint[0]);
                 viewHintDescription.setText(hint[1]);
                 views.add(frameLayout);
+                i++;
             }
             hintIndicator.setNumberOfItems(numberOfItems);
             notifyDataSetChanged();

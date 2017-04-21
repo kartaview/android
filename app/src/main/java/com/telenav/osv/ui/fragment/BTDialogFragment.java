@@ -25,7 +25,7 @@ import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.manager.ObdBtManager;
+import com.telenav.osv.manager.obd.ObdBtManager;
 import com.telenav.osv.obd.Constants;
 import com.telenav.osv.ui.list.BTDeviceAdapter;
 import com.telenav.osv.utils.Log;
@@ -72,9 +72,65 @@ public class BTDialogFragment extends DialogFragment {
     private TextView mDevicesTitle;
 
     /**
+     * The BroadcastReceiver that listens for discovered devices and changes the title when
+     * discovery is finished
+     */
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            // When discovery finds a device
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                // Get the BluetoothDevice object from the Intent
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                // If it's already paired, skip it, because it's been listed already
+                if (device.getBondState() != BluetoothDevice.BOND_BONDED && device.getName() != null) {
+                    mNewDevicesAdapter.addDevice(device.getName(), device.getAddress());
+                }
+                // When discovery is finished, change the Activity title
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                setProgressBarIndeterminateVisibility(false);
+                setTitle(R.string.bt_select_device_label);
+                if (mNewDevicesAdapter.getCount() == 0) {
+                    String noDevices = getResources().getText(R.string.bt_none_found).toString();
+                    mNewDevicesAdapter.addDevice(noDevices, "");
+                }
+            }
+        }
+    };
+
+    /**
      * shared preferences
      */
     private SharedPreferences preferences;
+
+    private ObdBtManager mObdBtManager;
+
+    /**
+     * The on-click listener for all devices in the ListViews
+     */
+    private AdapterView.OnItemClickListener mDeviceClickListener
+            = new AdapterView.OnItemClickListener() {
+        public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
+            // Cancel discovery because it's costly and we're about to connect
+            mBtAdapter.cancelDiscovery();
+
+            // Get the device MAC address, which is the last 17 chars in the View
+            TextView addressText = (TextView) v.findViewById(R.id.device_address);
+            String address = addressText.getText().toString();
+            if (address.length() > 0) {
+                preferences.edit()
+                        .putString(Constants.EXTRAS_BT_DEVICE_ADDRESS, address)
+                        .apply();
+                mDeviceSelectedListener.onDeviceSelected(address);
+
+                mObdBtManager.onDeviceSelected(address);
+                mObdBtManager.connect();
+                dismiss();
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -83,10 +139,10 @@ public class BTDialogFragment extends DialogFragment {
         activity = (MainActivity) getActivity();
         preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
         try {
-            mObdBtManager = (ObdBtManager) activity.getApp().getOBDManager();
+            mObdBtManager = (ObdBtManager) activity.getApp().getRecorder().getOBDManager();
         } catch (ClassCastException e){
-            activity.getApp().setObdManager(PreferenceTypes.V_OBD_BLE);
-            mObdBtManager = (ObdBtManager) activity.getApp().getOBDManager();
+            activity.getApp().getRecorder().createObdManager(PreferenceTypes.V_OBD_BLE);
+            mObdBtManager = (ObdBtManager) activity.getApp().getRecorder().getOBDManager();
         }
         // Initialize the button to perform device discovery
         mScanButton = (ImageView) view.findViewById(R.id.refresh_button);
@@ -198,62 +254,6 @@ public class BTDialogFragment extends DialogFragment {
 
         }
     }
-
-    private ObdBtManager mObdBtManager;
-
-    /**
-     * The on-click listener for all devices in the ListViews
-     */
-    private AdapterView.OnItemClickListener mDeviceClickListener
-            = new AdapterView.OnItemClickListener() {
-        public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
-            // Cancel discovery because it's costly and we're about to connect
-            mBtAdapter.cancelDiscovery();
-
-            // Get the device MAC address, which is the last 17 chars in the View
-            TextView addressText = (TextView) v.findViewById(R.id.device_address);
-            String address = addressText.getText().toString();
-            if (address.length() > 0) {
-                preferences.edit()
-                        .putString(Constants.EXTRAS_BT_DEVICE_ADDRESS, address)
-                        .apply();
-                mDeviceSelectedListener.onDeviceSelected(address);
-
-                mObdBtManager.onDeviceSelected(address);
-                mObdBtManager.connect();
-                dismiss();
-            }
-        }
-    };
-
-    /**
-     * The BroadcastReceiver that listens for discovered devices and changes the title when
-     * discovery is finished
-     */
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-
-            // When discovery finds a device
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Get the BluetoothDevice object from the Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                // If it's already paired, skip it, because it's been listed already
-                if (device.getBondState() != BluetoothDevice.BOND_BONDED && device.getName() != null) {
-                    mNewDevicesAdapter.addDevice(device.getName(), device.getAddress());
-                }
-                // When discovery is finished, change the Activity title
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                setProgressBarIndeterminateVisibility(false);
-                setTitle(R.string.bt_select_device_label);
-                if (mNewDevicesAdapter.getCount() == 0) {
-                    String noDevices = getResources().getText(R.string.bt_none_found).toString();
-                    mNewDevicesAdapter.addDevice(noDevices, "");
-                }
-            }
-        }
-    };
 
     public void setListener(OnDeviceSelectedListener listener) {
         this.mDeviceSelectedListener = listener;

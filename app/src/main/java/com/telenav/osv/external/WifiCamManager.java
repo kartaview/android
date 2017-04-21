@@ -13,6 +13,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import com.telenav.osv.R;
+import com.telenav.osv.event.EventBus;
+import com.telenav.osv.event.hardware.camera.CameraInitEvent;
 import com.telenav.osv.external.model.ImageSize;
 import com.telenav.osv.external.network.CameraConnector;
 import com.telenav.osv.external.network.CameraInfo;
@@ -23,8 +25,6 @@ import com.telenav.osv.external.network.StorageInfo;
 import com.telenav.osv.external.view.ImageItem;
 import com.telenav.osv.external.view.JpegInputStream;
 import com.telenav.osv.external.view.WifiCamSurfaceView;
-import com.telenav.osv.listener.CameraReadyListener;
-import com.telenav.osv.listener.ImageDataCallback;
 import com.telenav.osv.utils.Log;
 
 /**
@@ -73,7 +73,7 @@ public class WifiCamManager {
         }).start();
     }
 
-    public void startPreview(final WifiCamSurfaceView preview, final CameraReadyListener cameraReadyListener) {
+    public void startPreview(final WifiCamSurfaceView preview) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -109,10 +109,10 @@ public class WifiCamManager {
                     public void run() {
                         if (jpegInputStream != null) {
                             mPreviewSurfaceView.setSource(jpegInputStream);
-                            cameraReadyListener.onCameraReady();
+                            EventBus.postSticky(new CameraInitEvent(CameraInitEvent.TYPE_READY));
                         } else {
                             Log.d(TAG, "onPostExecute: failed to start live view");
-                            cameraReadyListener.onCameraFailed();
+                            EventBus.postSticky(new CameraInitEvent(CameraInitEvent.TYPE_FAILED));
                         }
                     }
                 });
@@ -464,5 +464,10 @@ public class WifiCamManager {
                 Log.d(TAG, "DisConnectTask: " + log);
             }
         }
+    }
+    public interface ImageDataCallback {
+        void onImageDataReceived(ImageData imgData);
+
+        void onRequestFailed();
     }
 }
