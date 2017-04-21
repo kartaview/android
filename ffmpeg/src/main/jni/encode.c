@@ -2,6 +2,7 @@
 #include "libavformat/avformat.h"
 #include "libavutil/imgutils.h"
 #include "crashlitics.h"
+#include "crash_handler.h"
 
 #include <jni.h>
 #include <libswscale/swscale.h>
@@ -10,12 +11,10 @@
 #include <libavfilter/avfilter.h>
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
-#include <asm/siginfo.h>
-#include <signal.h>
-#include <unistd.h>
 
 #ifdef ANDROID
 #include <android/log.h>
+#include "crash_handler.h"
 #define LOGE(format, ...)  __android_log_print(ANDROID_LOG_ERROR, "FFMPEG E ", format, ##__VA_ARGS__)
 #define LOGI(format, ...)  __android_log_print(ANDROID_LOG_INFO,  "FFMPEG I ", format, ##__VA_ARGS__)
 #else
@@ -75,34 +74,6 @@ int FPS = 4;
 char *folder_path;
 
 int video_index = -1;
-
-//void handleCrash(int signalNumber, siginfo_t *sigInfo, void *context) {
-//    static volatile sig_atomic_t fatal_error_in_progress = 0;
-//    if (fatal_error_in_progress) //Stop a signal loop.
-//        _exit(1);
-//    fatal_error_in_progress = 1;
-//
-//    char *j;
-//    asprintf(&j, "Crash Signal: %d, crashed on: %x, UID: %ld\n", signalNumber, (long) sigInfo->si_addr, (long) sigInfo->si_uid);  //%x prints out the faulty memory address in hex
-//    LOGE("%s", j);
-//
-////    getStackTrace();
-////    sigaction(signalNumber, &oldPsa, NULL);
-//}
-//
-//void initSignalHandler() {
-//    LOGI("Crash handler started");
-//
-//    psa.sa_sigaction = handleCrash;
-//    psa.sa_flags = SA_SIGINFO;
-//
-//    sigaction(SIGBUS, &psa, &oldPsa);
-//    sigaction(SIGSEGV, &psa, &oldPsa);
-//    sigaction(SIGSYS, &psa, &oldPsa);
-//    sigaction(SIGFPE, &psa, &oldPsa);
-//    sigaction(SIGILL, &psa, &oldPsa);
-//    sigaction(SIGHUP, &psa, &oldPsa);
-//}
 
 void custom_log(void *ptr, int level, const char *fmt, va_list vl) {
     FILE *fp = fopen("/storage/emulated/0/Android/data/com.telenav.streetview/files/av_recording_log.txt", "a+");
@@ -593,15 +564,33 @@ int *decodeJpegData(jbyte *jpeg, int length) {
 }
 
 
+JavaVM *jvm;
+jobject *jffmpeg;
+jmethodID method;
+
+void onError(){
+    LOGE("FFMPEG caused a crash...");
+    JNIEnv *env;
+    jint rs = (*jvm)->AttachCurrentThread(jvm, &env, NULL);
+    LOGI("JNIEnv attached %d success %s",rs, rs == JNI_OK ? "true" : "false");
+    (*env)->CallVoidMethod(env,jffmpeg,method);
+    LOGI("called method onerror");
+    (*jvm)->DetachCurrentThread(jvm);
+}
+
+
 JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_initial(JNIEnv *env, jobject obj, jstring folder) {
     //FFmpeg av_log() callback
     int ret = 0;
     av_log_set_callback(custom_log);
-//    crashlytics_ctx = crashlytics_init();
 
-//    initSignalHandler();
-//    const char* message = "Native crash simulation";
-//    crashlytics_ctx->log(crashlytics_ctx, message);
+    (*env)->GetJavaVM(env, &jvm);
+    jffmpeg = (*env)->NewGlobalRef(env, obj);
+    jclass clazz = (*env)->FindClass(env,"com/telenav/ffmpeg/FFMPEG");
+    method = (*env)->GetMethodID(env, clazz, "onerror", "()V");
+
+    initSignalHandler(onError);
+
     /* initialize libavcodec, and register all codecs and formats */
     av_register_all();
     avfilter_register_all();
@@ -800,6 +789,9 @@ JNIEXPORT jint JNICALL Java_com_telenav_ffmpeg_FFMPEG_close(JNIEnv *env, jobject
     LOGI("----------------------------------------------");
     if (crashlytics_ctx) {
         crashlytics_free(&crashlytics_ctx);
+    }
+    if (jffmpeg){
+        (*env)->DeleteGlobalRef(env, jffmpeg);
     }
     return 0;
 }

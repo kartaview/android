@@ -106,7 +106,7 @@ fi
     # --disable-everything \
     # --enable-runtime-cpudetect \
 pushd ffmpeg-${FFMPEG_VERSION}
-#--disable-stripping //todo when debugging only
+#--disable-stripping // when debugging only, now hardcoded as android studio does it anyways
 ./configure --target-os=android \
     --incdir=$BUILD_DIR/$TARGET/include \
     --libdir=$BUILD_DIR/$TARGET \
@@ -126,6 +126,7 @@ pushd ffmpeg-${FFMPEG_VERSION}
     --disable-doc \
     --disable-avdevice \
     --disable-postproc \
+    --disable-stripping \
     --disable-bsfs \
     --disable-protocols \
     --disable-indevs \
