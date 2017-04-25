@@ -11,6 +11,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import android.os.Handler;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
@@ -47,8 +48,10 @@ public class VideoRequest<T> extends StringRequest {
 
     private ProgressiveEntity.DataProgressListener mDataProgressListener;
 
+    private Handler mResponseHandler;
+
     public VideoRequest(String url, ErrorListener errorListener, Listener<String> listener, ProgressiveEntity.DataProgressListener dataProgressListener, String token, OSVFile
-            videoFile, int sequenceID, int sequenceIndex) {
+            videoFile, int sequenceID, int sequenceIndex, Handler responseHandler) {
         super(Method.POST, url, listener, errorListener);
 
         mListener = listener;
@@ -57,7 +60,7 @@ public class VideoRequest<T> extends StringRequest {
         mSequenceIndex = sequenceIndex;
         mToken = token;
         mDataProgressListener = dataProgressListener;
-
+        mResponseHandler = responseHandler;
         buildMultipartEntity();
     }
 
@@ -91,13 +94,18 @@ public class VideoRequest<T> extends StringRequest {
         mBuilder.addTextBody("sequenceId", "" + mSequenceId);
         mBuilder.addTextBody("sequenceIndex", "" + mSequenceIndex);
         if (!mVideoFile.exists()) {
-            Log.d(TAG, "buildMultipartEntity: video doesn't exist");
+            Log.w(TAG, "buildMultipartEntity: video doesn't exist");
         }
         mBuilder.addBinaryBody(FILE_PART_NAME, mVideoFile, ContentType.create("video/mp4"), mVideoFile.getName());
+//        Log.d(TAG, "buildMultipartEntity: sending request: "
+//                + " " + PARAM_TOKEN + " " + mToken
+//                + " sequenceId " + mSequenceId
+//                + " sequenceIndex " + mSequenceIndex
+//        );
         mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
         HttpEntity mEntity = mBuilder.build();
-        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener, Utils.fileSize(mVideoFile));
+        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener, Utils.fileSize(mVideoFile), mResponseHandler);
 
     }
 

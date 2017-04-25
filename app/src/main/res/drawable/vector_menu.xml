@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <group
+            android:name="Icons"
+            android:translateX="-16.000000"
+            android:translateY="-25.000000">
+        <group
+                android:name="menu"
+                android:translateX="16.000000"
+                android:translateY="29.000000">
+            <group
+                    android:name="Group-3"
+                    android:translateX="2.000000"
+                    android:translateY="1.000000">
+                <path
+                    android:name="Rectangle-935"
+                    android:fillColor="#1B1B1F"
+                    android:fillType="evenOdd"
+                    android:strokeWidth="1"
+                    android:pathData="M 1 0 L 19 0 Q 20 0 20 1 L 20 1 Q 20 2 19 2 L 1 2 Q 0 2 0 1 L 0 1 Q 0 0 1 0 Z" />
+                <path
+                    android:name="Rectangle-935"
+                    android:fillColor="#1B1B1F"
+                    android:fillType="evenOdd"
+                    android:strokeWidth="1"
+                    android:pathData="M 1 6 L 19 6 Q 20 6 20 7 L 20 7 Q 20 8 19 8 L 1 8 Q 0 8 0 7 L 0 7 Q 0 6 1 6 Z" />
+                <path
+                    android:name="Rectangle-935"
+                    android:fillColor="#1B1B1F"
+                    android:fillType="evenOdd"
+                    android:strokeWidth="1"
+                    android:pathData="M 1 12 L 19 12 Q 20 12 20 13 L 20 13 Q 20 14 19 14 L 1 14 Q 0 14 0 13 L 0 13 Q 0 12 1 12 Z" />
+            </group>
+        </group>
+    </group>
+</vector>

@@ -284,5 +284,52 @@ public class ComputingDistance {
         return Math.max(0.0, KEarthRadius * side_c);
     }
 
+    private static double sqr(double x) {
+        return x * x;
+    }
 
+    private static double dist2(double vx, double vy, double wx, double wy) {
+        return sqr(vx - wx) + sqr(vy - wy);
+    }
+
+    private static double distToSegmentSquared(SKCoordinate p,SKCoordinate v,SKCoordinate w) {
+        double l2 = dist2(v.getLongitude(), v.getLatitude(), w.getLongitude(), w.getLatitude());
+        if (l2 == 0) return dist2(p.getLongitude(), p.getLatitude(), v.getLongitude(), v.getLatitude());
+        double t = ((p.getLongitude() - v.getLongitude()) * (w.getLongitude() - v.getLongitude()) + (p.getLatitude() - v.getLatitude()) * (w.getLatitude() - v.getLatitude())) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return dist2(p.getLongitude(),p.getLatitude(), v.getLongitude() + t * (w.getLongitude() - v.getLongitude()),
+                v.getLatitude() + t * (w.getLatitude() - v.getLatitude()));
+    }
+    public static double getDistanceFromLine(SKCoordinate position, SKCoordinate start, SKCoordinate end) {
+        return Math.sqrt(distToSegmentSquared(position, start, end));
+    }
+
+    public static double getDistanceFromSegment(SKCoordinate origin, SKCoordinate pointA, SKCoordinate pointB) {
+        SKCoordinate dap = new SKCoordinate(origin.getLatitude() - pointA.getLatitude(),origin.getLongitude() - pointA.getLongitude());
+        SKCoordinate dab = new SKCoordinate(pointB.getLatitude() - pointA.getLatitude(),pointB.getLongitude() - pointA.getLongitude());
+        double dot = dap.getLongitude() * dab.getLongitude() + dap.getLatitude() * dab.getLatitude();
+
+        double squareLength = dab.getLongitude() * dab.getLongitude() + dab.getLatitude() * dab.getLatitude();
+        double param = dot / squareLength;
+
+
+        SKCoordinate nearestPoint = new SKCoordinate();
+        if (param < 0 || (pointA.getLongitude() == pointB.getLongitude() && pointA.getLatitude() == pointB.getLatitude())) {
+            nearestPoint.setLongitude(pointA.getLongitude());
+            nearestPoint.setLatitude(pointA.getLatitude());
+        } else if (param > 1) {
+            nearestPoint.setLongitude(pointB.getLongitude());
+            nearestPoint.setLatitude(pointB.getLatitude());
+        } else {
+            nearestPoint.setLongitude(pointA.getLongitude() + param * dab.getLongitude());
+            nearestPoint.setLatitude(pointA.getLatitude() + param * dab.getLatitude());
+        }
+
+        double dx = origin.getLongitude() - nearestPoint.getLongitude();
+        double dy = origin.getLatitude() - nearestPoint.getLatitude();
+        double distance = Math.sqrt(dx * dx + dy * dy);
+
+//        return nearestPoint;
+        return distance;
+    }
 }

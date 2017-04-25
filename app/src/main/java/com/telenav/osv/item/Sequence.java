@@ -1,24 +1,27 @@
 package com.telenav.osv.item;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
-
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import android.content.Context;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Build;
 import android.os.Looper;
-
 import com.skobbler.ngx.SKCoordinate;
-import com.skobbler.ngx.reversegeocode.SKReverseGeocoderManager;
-import com.skobbler.ngx.search.SKSearchResult;
 import com.telenav.osv.db.SequenceDB;
-import com.telenav.osv.listener.ProgressListener;
-import com.telenav.osv.manager.UploadManager;
-import com.telenav.osv.ui.fragment.MapFragment;
+import com.telenav.osv.event.EventBus;
+import com.telenav.osv.event.ui.SequencesChangedEvent;
+import com.telenav.osv.manager.network.UploadManager;
 import com.telenav.osv.utils.ComputingDistance;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
@@ -38,8 +41,6 @@ public class Sequence {
 
     public static final int STATUS_INTERRUPTED = 3;
 
-    public static final int STATUS_FINISHED = 4;
-
     private static final ConcurrentHashMap<Integer, Sequence> sequences = new ConcurrentHashMap<>();
 
     private static boolean mInitialized = false;
@@ -48,7 +49,7 @@ public class Sequence {
 
     public int mTotalLength;
 
-    public MapFragment.Polyline polyline;
+    public Polyline polyline;
 
     public int originalImageCount;
 
@@ -74,8 +75,6 @@ public class Sequence {
 
     public SKCoordinate location = new SKCoordinate();
 
-    public int failedCount = 0;
-
     public boolean processing = false;
 
     public boolean obd = false;
@@ -86,16 +85,20 @@ public class Sequence {
 
     public String appVersion = "";
 
-    private ArrayList<ProgressListener> progressListeners = new ArrayList<>();
-
     public int numberOfVideos = -1;
 
     public boolean isPublic;
 
     public int skipToValue = 0;
 
+    public int score;
+
+    public HashMap<Integer, ScoreHistory> scoreHistories = new HashMap<>();
+
+    public boolean safe;
+
     public Sequence(int sequenceId, String date, int originalImageCount, String address, String thumbLink, boolean obd, String platform, String platformVersion, String
-            appVersion, int distance) {
+            appVersion, int distance, int score) {
         this.sequenceId = sequenceId;
         this.title = date;
         this.online = true;
@@ -109,14 +112,7 @@ public class Sequence {
         this.platformVersion = platformVersion;
         this.appVersion = appVersion;
         this.mTotalLength = distance;
-    }
-
-    public Sequence(int sequenceId, String date) {
-        this.sequenceId = sequenceId;
-        this.originalImageCount = 0;
-        this.imageCount = originalImageCount;
-        this.title = date;
-        this.online = true;
+        this.score = score;
     }
 
     public Sequence(OSVFile folder) {
@@ -128,13 +124,9 @@ public class Sequence {
         refreshStats();
         synchronized (sequences) {
             sequences.put(sequenceId, this);
-            orderByValue(sequences, new Comparator<Sequence>() {
-                @Override
-                public int compare(Sequence lhs, Sequence rhs) {
-                    return (rhs.getStatus() * 1000 + rhs.sequenceId) - (lhs.getStatus() * 1000 + lhs.sequenceId);
-                }
-            });
         }
+        EventBus.post(new SequencesChangedEvent(false));
+        this.address = "Track " + (sequenceId + 1);
         Log.d(TAG, "Sequence: " + this.toString());
     }
 
@@ -157,12 +149,26 @@ public class Sequence {
                     double lon = cur.getDouble(cur.getColumnIndex(SequenceDB.SEQUENCE_LON));
                     seq.location.setLatitude(lat);
                     seq.location.setLongitude(lon);
-                    if (SKReverseGeocoderManager.getInstance() != null && lat != 0 && lon != 0) {
-                        SKSearchResult address = SKReverseGeocoderManager.getInstance().reverseGeocodePosition(new SKCoordinate(lon, lat));
-                        if (address != null) {
-                            seq.address = address.getName();
-                        }
-                    }
+
+//                    if (Geocoder.isPresent() && lat != 0 && lon != 0) {
+//                        Geocoder geocoder = new Geocoder(/*context*/, Locale.ENGLISH);
+//                        List<Address> addresses = null;
+//                        try {
+//                            addresses = geocoder.getFromLocation(lat, lon, 1);
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                        if (addresses != null) {
+//                            Address fetchedAddress = addresses.get(0);
+//                            StringBuilder strAddress = new StringBuilder();
+//
+//                            for(int i=0; i<fetchedAddress.getMaxAddressLineIndex(); i++) {
+//                                strAddress.append(fetchedAddress.getAddressLine(i)).append("\n");
+//                            }
+//                            seq.address = strAddress.toString();
+//                        }
+//                    }
+                    seq.safe = cur.getInt(cur.getColumnIndex(SequenceDB.SEQUENCE_SAFE)) > 0;
                     Log.d(TAG, "getLocalSequences: reverseGeocode: " + seq.address);
                     tempSequences.put(seq.sequenceId, seq);
 
@@ -176,16 +182,8 @@ public class Sequence {
             }
             sequences.clear();
             for (Sequence seq : tempSequences.values()) {
-                seq.progressListeners.clear();
                 sequences.put(seq.sequenceId, seq);
             }
-            orderByValue(sequences, new Comparator<Sequence>() {
-                @Override
-                public int compare(Sequence lhs, Sequence rhs) {
-                    return (rhs.getStatus() * 1000 + rhs.sequenceId) - (lhs.getStatus() * 1000 + lhs.sequenceId);
-                }
-            });
-//            Log.d(TAG, "getLocalSequences: " + sequences.values().toString());
             mInitialized = true;
             return sequences;
         }
@@ -198,20 +196,14 @@ public class Sequence {
         return forceRefreshLocalSequences();
     }
 
-    private static <K, V> void orderByValue(ConcurrentHashMap<K, V> m, final Comparator<? super V> c) {
-        List<Map.Entry<K, V>> entries = new ArrayList<>(m.entrySet());
+    public static void order(List<Sequence> m) {
 
-        Collections.sort(entries, new Comparator<Map.Entry<K, V>>() {
+        Collections.sort(m, new Comparator<Sequence>() {
             @Override
-            public int compare(Map.Entry<K, V> lhs, Map.Entry<K, V> rhs) {
-                return c.compare(lhs.getValue(), rhs.getValue());
+            public int compare(Sequence rhs, Sequence lhs) {
+                return (int) ((rhs.getStatus() * 1000 + rhs.folder.lastModified()) - (lhs.getStatus() * 1000 + lhs.folder.lastModified()));
             }
         });
-
-        m.clear();
-        for (Map.Entry<K, V> e : entries) {
-            m.put(e.getKey(), e.getValue());
-        }
     }
 
     /**
@@ -231,19 +223,15 @@ public class Sequence {
         try {
             result = Integer.valueOf(f.getName().split("_")[1]);
         } catch (Exception e) {
-            Log.d(TAG, "getSequenceId: " + e.getLocalizedMessage());
+            Log.w(TAG, "getSequenceId: " + e.getLocalizedMessage());
         }
         return result;
     }
 
-    public static void removeSequence(int id) {
-        if (UploadManager.sUploadStatus != UploadManager.STATUS_IDLE) {
-            return;
-        }
-//        Sequence seq = sequences.get(id);
+    public static void deleteSequence(int id) {
         SequenceDB.instance.deleteRecords(id);
         synchronized (sequences) {
-            Log.d(TAG, "removeSequence: removed seq with id " + id);
+            Log.d(TAG, "deleteSequence: removed seq with id " + id);
             sequences.remove(id);
         }
     }
@@ -252,27 +240,25 @@ public class Sequence {
         return sequences.size();
     }
 
-    public void addProgressListener(final ProgressListener pl) {
-        progressListeners.add(pl);
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                int status = getStatus();
-        numberOfVideos = (int) SequenceDB.instance.getNumberOfVideos(sequenceId) - failedCount;
-        imageCount = (int) SequenceDB.instance.getNumberOfFrames(sequenceId) - failedCount;
+    public static double getTotalSize() {
+        double totalSize = 0;
+        for (Sequence s : sequences.values()) {
+            totalSize = totalSize + s.size;
 
-//                new Handler(Looper.getMainLooper()).post(new Runnable() {
-//                    @Override
-//                    public void run() {
-        pl.update(originalImageCount != 0 ? ((originalImageCount - imageCount) * 100) / originalImageCount : 0, getStatus());
-//                    }
-//                });
-//            }
-//        }).start();
+        }
+        return totalSize;
     }
 
-    public ArrayList<ProgressListener> getProgressListeners() {
-        return progressListeners;
+    public static int checkDeletedSequences() {
+        if (sequences != null && sequences.size() > 0) {
+            for (Sequence s : sequences.values()) {
+                if (!SequenceDB.instance.checkSequenceExists(s.sequenceId)) {
+                    deleteSequence(s.sequenceId);
+                }
+            }
+            return sequences.size();
+        }
+        return 0;
     }
 
     public void decreaseVideoCount() {
@@ -283,12 +269,36 @@ public class Sequence {
     public void refreshStats() {
         this.size = Utils.folderSize(folder);
         this.originalSize = size;
-        this.polyline = new MapFragment.Polyline(sequenceId);
+        this.polyline = new Polyline(sequenceId);
+        this.polyline.isLocal = true;
         this.platform = "Android";
         this.platformVersion = Build.VERSION.RELEASE;
         this.appVersion = SequenceDB.instance.getSequenceVersion(sequenceId);
-        this.originalImageCount = (int) SequenceDB.instance.getOriginalFrameCount(sequenceId);
+        this.score = SequenceDB.instance.getSequenceScore(sequenceId);
+        this.originalImageCount = SequenceDB.instance.getOriginalFrameCount(sequenceId);
         this.numberOfVideos = (int) SequenceDB.instance.getNumberOfVideos(sequenceId);
+
+        this.safe = SequenceDB.instance.isSequenceSafe(sequenceId);
+        Cursor scores = null;
+        try {
+            scores = SequenceDB.instance.getScores(sequenceId);
+            scoreHistories.clear();
+            while (scores != null && !scores.isAfterLast()){
+                int coverage = Math.min(scores.getInt(scores.getColumnIndex(SequenceDB.SCORE_COVERAGE)), 10);
+                int obdCount = scores.getInt(scores.getColumnIndex(SequenceDB.SCORE_OBD_COUNT));
+                int count = scores.getInt(scores.getColumnIndex(SequenceDB.SCORE_COUNT));
+                scoreHistories.put(coverage, new ScoreHistory(coverage,count,obdCount));
+                scores.moveToNext();
+            }
+            if (scores != null){
+                scores.close();
+            }
+        } catch (Exception e){
+            Log.w(TAG, "refreshStats: " + Log.getStackTraceString(e));
+            if (scores != null){
+                scores.close();
+            }
+        }
         try {
             Cursor records = SequenceDB.instance.getFrames(sequenceId);
 
@@ -296,9 +306,8 @@ public class Sequence {
                 try {
                     this.thumblink = "file:///" + records.getString(records.getColumnIndex(SequenceDB.FRAME_FILE_PATH));
                     this.imageCount = records.getCount();
-                    this.failedCount = 0;
                 } catch (Exception e) {
-                    Log.d(TAG, "Sequence: " + e.getLocalizedMessage());
+                    Log.w(TAG, "Sequence: " + e.getLocalizedMessage());
                 }
                 Log.d(TAG, "refreshStats: sequence " + sequenceId + ", count: " + imageCount);
 
@@ -323,42 +332,22 @@ public class Sequence {
                         mTotalLength = (int) (mTotalLength + ComputingDistance.distanceBetween(polyline.getNodes().get(i), polyline.getNodes().get(i + 1)));
                     }
                 } catch (Exception e) {
-                    Log.d(TAG, "distanceCalculation: " + Log.getStackTraceString(e));
+                    Log.w(TAG, "distanceCalculation: " + Log.getStackTraceString(e));
                 }
             } else {
-                Log.d(TAG, "Sequence: cursor has 0 elements");
+                Log.w(TAG, "Sequence: cursor has 0 elements");
             }
             if (records != null) {
                 records.close();
             }
         } catch (Exception e) {
-            Log.d(TAG, "Sequence: " + Log.getStackTraceString(e));
+            Log.w(TAG, "Sequence: " + Log.getStackTraceString(e));
         }
         this.obd = SequenceDB.instance.isOBDSequence(sequenceId);
     }
 
-    public static double getTotalSize() {
-        double totalSize = 0;
-        for (Sequence s : sequences.values()) {
-            if (s.getStatus() != STATUS_FINISHED) {
-                totalSize = totalSize + s.size;
-            }
-        }
-        return totalSize;
-    }
-
-    public static int getTotalDistance() {
-        int totalDistance = 0;
-        for (Sequence s : sequences.values()) {
-            if (s.getStatus() != STATUS_FINISHED) {
-                totalDistance = totalDistance + s.mTotalLength;
-            }
-        }
-        return totalDistance;
-    }
-
-    public static Sequence getLocalSequence(int id) {
-        return sequences.get(id);
+    public int getDistance(){
+        return mTotalLength;
     }
 
     public int getStatus() {
@@ -374,18 +363,50 @@ public class Sequence {
 
     @Override
     public String toString() {
-        return "Sequence (id " + sequenceId + " images " + imageCount + " from " + originalImageCount + " status " + getStatus() + " number of videos " + numberOfVideos + ")";
+        return "Sequence (id " + sequenceId + " images " + imageCount + " from " + originalImageCount + " number of videos " + numberOfVideos + " and " + score + " Points" + ")";
+//        return "Sequence (id " + sequenceId + " images " + imageCount + " from " + originalImageCount + " status " + getStatus() + " number of videos " + numberOfVideos + "
+// and " + score + " Points" + ")";
     }
 
-    public static int checkDeletedSequences() {
-        if (sequences != null && sequences.size() > 0){
-            for (Sequence s: sequences.values()){
-                if (!SequenceDB.instance.checkSequenceExists(s.sequenceId)){
-                    removeSequence(s.sequenceId);
+    public String getFlatScoreDetails() {
+        JSONArray array = new JSONArray();
+        for (ScoreHistory history : scoreHistories.values()){
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("coverage","" + history.coverage);
+                obj.put("photo","" + history.photoCount);
+                obj.put("obdPhoto","" + history.obdPhotoCount);
+                obj.put("detectedSigns","" + history.detectedSigns);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            array.put(obj);
+        }
+        return array.toString();
+    }
+
+    public static void reverseGeocodeAddress(Sequence sequence, Context context){
+        try {
+            if (Geocoder.isPresent() && sequence.location.getLatitude() != 0 && sequence.location.getLongitude() != 0) {
+                Geocoder geocoder = new Geocoder(context, Locale.ENGLISH);
+                List<Address> addresses = null;
+                try {
+                    addresses = geocoder.getFromLocation(sequence.location.getLatitude(), sequence.location.getLongitude(), 1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (addresses != null) {
+                    Address fetchedAddress = addresses.get(0);
+                    StringBuilder strAddress = new StringBuilder();
+
+                    for (int i = 0; i < fetchedAddress.getMaxAddressLineIndex(); i++) {
+                        strAddress.append(fetchedAddress.getAddressLine(i)).append("\n");
+                    }
+                    sequence.address = strAddress.toString();
                 }
             }
-            return sequences.size();
+        } catch (Exception e){
+
         }
-        return 0;
     }
 }

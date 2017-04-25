@@ -4,15 +4,17 @@ import android.location.Location;
 import android.os.Build;
 import android.os.SystemClock;
 import com.telenav.osv.utils.Log;
-import com.telenav.osv.manager.SensorManager;
 
 /**
+ * regex for filtering bad lines
+ * ^(?!([0-9]*\.?[0-9]*;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;))
+ *
+ *
  * Created by Kalman on 2/11/16.
  */
 
 
 public class SensorData {
-
     public static final int ACCELEROMETER = 0;
 
     public static final int ROTATION = 1;
@@ -23,9 +25,13 @@ public class SensorData {
 
     public static final float ACCELERATION_TO_MPSS = 9.80665f;
 
+    private static final String LINE_SEPARATOR = "\n";
+
     private static final String TAG = "SensorData";
 
-    private final long mTimeStamp;
+    private static final long Y2015 = 1_450_000_000;
+
+    private final long mTimeStampNano;
 
     private int[] mSpeed = null;
 
@@ -48,9 +54,9 @@ public class SensorData {
     public SensorData(Location location) {
         mLocation = location;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mTimeStamp = System.currentTimeMillis() - ((SystemClock.elapsedRealtimeNanos() - location.getElapsedRealtimeNanos()) / 1000000);
+            mTimeStampNano = System.currentTimeMillis() * 1_000_000 - (SystemClock.elapsedRealtimeNanos() - location.getElapsedRealtimeNanos());
         } else {
-            mTimeStamp = System.currentTimeMillis();
+            mTimeStampNano = System.currentTimeMillis() * 1_000_000;
         }
     }
 
@@ -69,20 +75,26 @@ public class SensorData {
                 mGravity = data;
                 break;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mTimeStamp = System.currentTimeMillis() - ((SystemClock.elapsedRealtimeNanos() - timeStamp) / 1000000);
+        boolean unixTs = (timeStamp / 1_000_000) > Y2015;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && !unixTs) {
+            mTimeStampNano = System.currentTimeMillis() * 1_000_000 - ((SystemClock.elapsedRealtimeNanos() - timeStamp));
+        } else if (unixTs){
+            mTimeStampNano = timeStamp * 1_000_000;
         } else {
-            mTimeStamp = System.currentTimeMillis();
+            mTimeStampNano = System.currentTimeMillis() * 1_000_000;
         }
     }
 
     public SensorData(float pressure, long timeStamp) {
         mPressure = new float[1];
         mPressure[0] = pressure;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mTimeStamp = System.currentTimeMillis() - ((SystemClock.elapsedRealtimeNanos() - timeStamp) / 1000000);
+        boolean unixTs = (timeStamp / 1_000_000) > Y2015;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && !unixTs) {
+            mTimeStampNano = System.currentTimeMillis() * 1_000_000 - ((SystemClock.elapsedRealtimeNanos() - timeStamp));
+        } else if (unixTs){
+            mTimeStampNano = timeStamp * 1_000_000;
         } else {
-            mTimeStamp = System.currentTimeMillis();
+            mTimeStampNano = System.currentTimeMillis() * 1_000_000;
         }
     }
 
@@ -91,21 +103,22 @@ public class SensorData {
         mVideoIndex = new int[1];
         mIndex[0] = index;
         mVideoIndex[0] = videoIndex;
-        mTimeStamp = millis;
+        mTimeStampNano = millis * 1_000_000;
     }
 
     public SensorData(int speed, long millis) {
         mSpeed = new int[1];
         mSpeed[0] = speed;
-        mTimeStamp = millis;
+        mTimeStampNano = millis * 1_000_000;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        long seconds = mTimeStamp / 1000L;
-        long partial = mTimeStamp - (seconds * 1000L);
-
+        long seconds = mTimeStampNano / 1_000_000_000L;
+        long partial = mTimeStampNano - (seconds * 1_000_000_000L);
+//        Log.d(TAG, "toString: full   =" + mTimeStampNano);
+//        Log.d(TAG, "toString: seconds=" + seconds + "." + partial);
         builder.append(seconds);
         builder.append(".");
         builder.append((int) partial);
@@ -133,7 +146,7 @@ public class SensorData {
         if (mRotation != null) {
             builder.append(-mRotation[0]);//yaw // from metadata 1.1.1 yaw needs to be minus yaw
             builder.append(";");
-            builder.append(mRotation[1]);//pitch
+            builder.append(-mRotation[1]);//pitch needs to be minus pitch
             builder.append(";");
             builder.append(mRotation[2]);//roll
             builder.append(";");
@@ -151,30 +164,22 @@ public class SensorData {
             builder.append(";;;");
         }
         if (mPressure != null) {
-            builder.append(mPressure[0]);
-            builder.append(";");
-        } else {
-            builder.append(";");
+            builder.append(mPressure[0] / 10);
         }
+        builder.append(";");
         if (mCompass != null) {
             builder.append(mCompass[0]);
-            builder.append(";");
-        } else {
-            builder.append(";");
         }
+        builder.append(";");
 
         if (mVideoIndex != null) {
             builder.append(mVideoIndex[0]);
-            builder.append(";");
-        } else {
-            builder.append(";");
         }
+        builder.append(";");
         if (mIndex != null) {
             builder.append(mIndex[0]);
-            builder.append(";");
-        } else {
-            builder.append(";");
         }
+        builder.append(";");
         if (mGravity != null) {
             builder.append(mGravity[0] / ACCELERATION_TO_MPSS);
             builder.append(";");
@@ -188,7 +193,9 @@ public class SensorData {
         if (mSpeed != null) {
             builder.append(mSpeed[0]);
         }
-        builder.append(SensorManager.LINE_SEPARATOR);
+        builder.append(";");
+        //todo builder.append(vertical_accuracy);
+        builder.append(LINE_SEPARATOR);
         String str = builder.toString();
         if (mIndex!= null && mVideoIndex != null){
             Log.d(TAG, "toString: created for fileIndex = " + mIndex[0] + " and video file = " + mVideoIndex[0]);

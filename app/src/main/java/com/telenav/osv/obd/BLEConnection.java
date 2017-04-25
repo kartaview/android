@@ -9,6 +9,7 @@ import android.bluetooth.le.ScanCallback;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 /**
@@ -37,7 +38,7 @@ public class BLEConnection {
     /**
      * handler for stopping the scan after SCAN_PERIOD
      */
-    private Handler handler = new Handler();
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     /**
      * for Lollipop.
@@ -54,10 +55,6 @@ public class BLEConnection {
 
     public static BLEConnection getInstance() {
         return SingletonHolder.INSTANCE;
-    }
-
-    private static class SingletonHolder {
-        private static final BLEConnection INSTANCE = new BLEConnection();
     }
 
     /**
@@ -162,5 +159,9 @@ public class BLEConnection {
      */
     public void setScanPeriod(int period) {
         scanPeriod = period;
+    }
+
+    private static class SingletonHolder {
+        private static final BLEConnection INSTANCE = new BLEConnection();
     }
 }

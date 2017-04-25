@@ -1,12 +1,17 @@
 package com.telenav.osv.listener;
 
-import com.telenav.osv.ui.fragment.MapFragment;
+
+import com.telenav.osv.item.Polyline;
 
 /**
  * Created by Kalman on 11/18/15.
  */
 public interface LoadAllSequencesListener {
-    void onRequestFinished(MapFragment.Polyline arrayList, int id);
+    void onRequestFinished(Polyline arrayList, int id);
 
-    void onFinished();
+    void onFinished(Polyline matched);
+
+    void onRequestFailed();
+
+    void onRequestSuccess();
 }

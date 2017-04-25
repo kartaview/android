@@ -7,4 +7,4 @@
     android:contentDescription="@string/descr_image"
     android:padding="2dp"
     android:scaleType="fitCenter"
-    android:src="@drawable/image_loading_background" />
+    android:src="@drawable/custom_image_loading_background" />

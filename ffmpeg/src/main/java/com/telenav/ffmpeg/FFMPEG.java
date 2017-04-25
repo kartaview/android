@@ -14,10 +14,26 @@ public class FFMPEG {
         System.loadLibrary("encode");
     }
 
+    private final ErrorListener mErrorListener;
+
+    public FFMPEG(ErrorListener listener){
+        this.mErrorListener = listener;
+    }
+
     //JNI
     public native int initial(String folder);
 
     public native int[] encode(byte[] yuvimage);
 
     public native int close();
+
+    public void onerror(){
+        if (mErrorListener != null){
+            mErrorListener.onError();
+        }
+    }
+
+    public interface ErrorListener {
+        void onError();
+    }
 }

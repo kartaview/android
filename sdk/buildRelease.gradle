@@ -1,0 +1,36 @@
+apply plugin: 'maven'
+
+def groupId = project.PUBLISH_GROUP_ID
+def artifactId = project.PUBLISH_ARTIFACT_ID
+def version = project.PUBLISH_VERSION
+
+configurations {
+    deployerJars
+}
+
+dependencies {
+    deployerJars "org.apache.maven.wagon:wagon-ftp:2.2"
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        configuration = configurations.deployerJars
+        pom.groupId = groupId
+        pom.artifactId = artifactId
+        pom.version = version
+        // Add other pom properties here if you want (developer details / licenses)
+
+        repository(url: "ftp://ftp.skobbler.com/maven"){
+            authentication(userName: "android_builds",password: "bluejazz")
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from file("src/main/")
+    classifier = 'sources'
+}
+
+artifacts {
+    archives sourcesJar
+}

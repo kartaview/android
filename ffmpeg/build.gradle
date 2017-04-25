@@ -1,8 +1,9 @@
 apply plugin: 'com.android.model.library'
+
 model {
     android {
-        compileSdkVersion 24
-        buildToolsVersion '24.0.2'
+        compileSdkVersion 25
+        buildToolsVersion '25.0.2'
 
         defaultConfig {
             minSdkVersion.apiLevel 16
@@ -19,6 +20,7 @@ model {
         }
         ndk {
             debuggable true
+            platformVersion "android-16"
             moduleName "encode"
             cppFlags.add('-I' + file("src/main/include").absolutePath)
             cppFlags.add('-fexceptions')
@@ -30,16 +32,17 @@ model {
             ldLibs.add("GLESv1_CM")
             ldLibs.add("GLESv2")
             abiFilters.clear()
-            abiFilters.add("x86")
             abiFilters.add("armeabi")
             abiFilters.add("armeabi-v7a")
-            abiFilters.add("armeabi-v7a-neon")
+            abiFilters.add("x86")
 //            abiFilters.add("mips")
             stl "gnustl_static"
+            toolchain "clang"
         }
 
         task buildFFMPEG(type: Exec) {
             commandLine 'sh', '-c', 'src/main/ffmpeg/init_build_android.sh'
+//            crashlyticsUploadSymbolsRelease
         }
     }
 //    android.productFlavors {

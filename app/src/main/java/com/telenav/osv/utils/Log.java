@@ -6,57 +6,91 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import com.crashlytics.android.Crashlytics;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.item.OSVFile;
+import io.fabric.sdk.android.Fabric;
 
 /**
+ * Internal logging chained through crashlytics logging
  * Created by Kalman on 2/8/16.
  */
 public class Log {
+
+    public static final String RECORD_STATUS = "recording";
+
+    public static final String CURRENT_SCREEN = "currentScreen";
+
+    public static final String SDK_ENABLED = "sdkEnabled";
+
+    public static final String POINTS_ENABLED = "pointsEnabled";
+
+    public static final String UPLOAD_STATUS = "uploading";
+
+    public static final String SAFE_RECORDING = "safeMode";
+
+    public static final String LOG_FILE = "logFileName";
+
+    public static final String PLAYBACK = "playback";
+
+    public static final String USER_TYPE = "userType";
+
+    public static final String OLD_VERSION = "oldVersion";
+
+    public static final String NEW_VERSION = "oldVersion";
+
+    @SuppressLint("SimpleDateFormat")
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM_dd_hh_mm");
+
     private static final long TEN_DAYS = 10L * 24L * 60L * 60L * 1000L;
+
+    private static final String[] TYPES = new String[]{"D","D","V","D","I","W","E"};
 
     public static boolean DEBUG = false;
 
-    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM_dd_hh_mm");
-
+    @SuppressLint("SdCardPath")
     public static String externalFilesDir = "/sdcard/Android/data/com.telenav.osv/files/";
 
     private static File logFile;
 
+    public static File getLogFile() {
+        if (logFile == null) {
+            logFile = new File(externalFilesDir, "log_" + dateFormat.format(OSVApplication.runTime) + ".txt");
+        }
+        return logFile;
+    }
+
     public static void d(String tag, String message) {
         if (DEBUG) {
-            appendLog(System.currentTimeMillis() + " D/" + tag + ": " + message);
+            appendLog(android.util.Log.DEBUG, tag, message);
         }
-        android.util.Log.d(tag, message);
     }
 
     public static void w(String tag, String message) {
         if (DEBUG) {
-            appendLog(System.currentTimeMillis() + " W/" + tag + ": " + message);
+            appendLog(android.util.Log.WARN, tag,  message);
         }
-        android.util.Log.w(tag, message);
     }
 
     public static void e(String tag, String message) {
-        android.util.Log.e(tag, message);
         if (DEBUG) {
-            appendLog(System.currentTimeMillis() + " E/" + tag + ": " + message);
+            appendLog(android.util.Log.ERROR, tag,  message);
         }
     }
 
     public static void v(String tag, String message) {
         if (DEBUG) {
-            appendLog(System.currentTimeMillis() + " V/" + tag + ": " + message);
+            appendLog(android.util.Log.VERBOSE, tag,  message);
         }
-        android.util.Log.v(tag, message);
     }
 
     public static void i(String tag, String message) {
         if (DEBUG) {
-            appendLog(System.currentTimeMillis() + " I/" + tag + ": " + message);
+            appendLog(android.util.Log.INFO, tag,  message);
         }
-        android.util.Log.i(tag, message);
+//        android.util.Log.i(tag, message);
     }
 
     public static String getStackTraceString(Throwable throwable) {
@@ -65,26 +99,33 @@ public class Log {
 
     public static void d(String tag, String message, Exception e) {
         if (DEBUG) {
-            appendLog(System.currentTimeMillis() + " D/" + tag + ": " + message + " " + android.util.Log.getStackTraceString(e));
+            appendLog(android.util.Log.DEBUG, tag,  message + " " + android.util.Log.getStackTraceString(e));
         }
         android.util.Log.d(tag, message, e);
     }
 
     public static void e(String tag, String message, Exception e) {
         if (DEBUG) {
-            appendLog(System.currentTimeMillis() + " E/" + tag + ": " + message + " " + android.util.Log.getStackTraceString(e));
+            appendLog(android.util.Log.ERROR, tag,  message + " " + android.util.Log.getStackTraceString(e));
         }
         android.util.Log.e(tag, message, e);
     }
 
     public static void i(String tag, String message, Exception e) {
         if (DEBUG) {
-            appendLog(System.currentTimeMillis() + " I/" + tag + ": " + message + " " + android.util.Log.getStackTraceString(e));
+            appendLog(android.util.Log.INFO, tag,  message + " " + android.util.Log.getStackTraceString(e));
         }
         android.util.Log.i(tag, message, e);
     }
 
-    public static void appendLog(String text) {
+    private static void appendLog(int priority, String tag, String text) {
+        if (Fabric.isInitialized()) {
+            try {
+                Crashlytics.log(priority, tag, text);
+            } catch (Exception ignored) {}
+        } else {
+            android.util.Log.println(priority,tag,text);
+        }
         if (logFile == null) {
             logFile = new File(externalFilesDir, "log_" + dateFormat.format(OSVApplication.runTime) + ".txt");
         }
@@ -98,6 +139,8 @@ public class Log {
         try {
             //BufferedWriter for performance, true to set append to file flag
             BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
+            buf.append(String.valueOf(System.currentTimeMillis())).append(" ");
+            buf.append(TYPES[priority]).append("/").append(tag).append(": ");
             buf.append(text);
             buf.newLine();
             buf.close();
@@ -119,12 +162,12 @@ public class Log {
                     f.delete();
                 }
             }
-            OSVFile avRecordLog = new OSVFile(files,"av_recording_log.txt");
-            OSVFile avPlayerLog = new OSVFile(files,"av_player_log.txt");
-            if (avRecordLog.exists() && Utils.fileSize(avRecordLog) > 1024*1024*20){
+            OSVFile avRecordLog = new OSVFile(files, "av_recording_log.txt");
+            OSVFile avPlayerLog = new OSVFile(files, "av_player_log.txt");
+            if (avRecordLog.exists() && Utils.fileSize(avRecordLog) > 1024 * 1024 * 20) {
                 avRecordLog.delete();
             }
-            if (avPlayerLog.exists() && Utils.fileSize(avPlayerLog) > 1024*1024*20){
+            if (avPlayerLog.exists() && Utils.fileSize(avPlayerLog) > 1024 * 1024 * 20) {
                 avPlayerLog.delete();
             }
         } catch (Exception e) {

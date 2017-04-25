@@ -26,14 +26,6 @@
 #ifndef AVUTIL_MEM_H
 #define AVUTIL_MEM_H
 
-#ifdef ANDROID
-#include <android/log.h>
-#define LOGE(format, ...)  __android_log_print(ANDROID_LOG_ERROR, "FFMPEG_MEM_C E ", format, ##__VA_ARGS__)
-#define LOGI(format, ...)  __android_log_print(ANDROID_LOG_INFO,  "FFMPEG_MEM_C I ", format, ##__VA_ARGS__)
-#else
-#define LOGE(format, ...)  printf("FFMPEG_MEM_C E " format "\n", ##__VA_ARGS__)
-#define LOGI(format, ...)  printf("FFMPEG_MEM_C I " format "\n", ##__VA_ARGS__)
-#endif
 
 #include <limits.h>
 #include <stdint.h>

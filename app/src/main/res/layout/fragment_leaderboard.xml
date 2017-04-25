@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_leaderboard_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/action_bar_size">
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        app:tabBackground="@color/leaderboard_green"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/white"
+        app:tabMaxWidth="10000dp"
+        app:tabMode="fixed">
+
+        <android.support.design.widget.TabItem
+            android:id="@+id/world_tab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="All World" />
+
+        <android.support.design.widget.TabItem
+            android:id="@+id/region_tab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Region" />
+
+    </android.support.design.widget.TabLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rank_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="100dp"
+        android:background="@color/white"
+        android:minHeight="1000dp">
+
+    </android.support.v7.widget.RecyclerView>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="40dp"
+        android:background="@color/leaderboard_grey">
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/time_view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="60dp"
+            android:layout_marginLeft="60dp"
+            android:layout_marginRight="60dp"
+            android:layout_marginStart="60dp" />
+
+        <ImageView
+            android:id="@+id/button_time_pager_left"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start|center_vertical"
+            android:padding="15dp"
+            android:rotation="180"
+            app:srcCompat="@drawable/vector_chevron_black" />
+
+        <ImageView
+            android:id="@+id/button_time_pager_right"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end|center_vertical"
+            android:padding="15dp"
+            app:srcCompat="@drawable/vector_chevron_black" />
+    </FrameLayout>
+</android.support.design.widget.CoordinatorLayout>

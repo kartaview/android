@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:clickable="true">
+
+    <LinearLayout
+        android:id="@+id/top_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/sequence_image"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop" />
+
+            <TextView
+                android:id="@+id/total_images_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:drawableLeft="@drawable/ic_action_cam"
+                android:gravity="center"
+                android:text="0 IMG"
+                android:layout_margin="16dp"
+                android:layout_gravity="end|bottom"/>
+
+            <TextView
+                android:id="@+id/total_length_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:layout_margin="16dp"
+                android:visibility="gone"
+                android:layout_gravity="start|bottom" />
+            <ImageView
+                android:id="@+id/points_background"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end"
+                android:layout_margin="10dp"
+                android:gravity="center"
+                app:srcCompat="@drawable/vector_multiplier" />
+
+            <TextView
+                android:id="@+id/points_text"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="115\npts"
+                android:textSize="18sp"
+                android:layout_gravity="end"
+                android:layout_margin="10dp"
+                style="@style/textStyle"
+                android:gravity="center" />
+
+
+        </FrameLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"
+            android:background="@color/grey" />
+
+        <RelativeLayout
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:padding="10dp"
+            android:orientation="horizontal">
+
+
+            <TextView
+                android:id="@+id/sequence_address_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="Cuza Voda 1,Cluj, Romania"
+                android:paddingStart="10dp"
+                android:paddingLeft="10dp"
+                android:textSize="14sp"/>
+
+
+            <TextView
+                android:id="@+id/sequence_datetime_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="10dp"
+                android:paddingRight="10dp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/sequence_address_label"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:gravity="end"
+                android:textSize="14sp"
+                android:text="05.02.16 | 02:00 AM" />
+
+
+        </RelativeLayout>
+
+    </LinearLayout>
+</android.support.v7.widget.CardView>

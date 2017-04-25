@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_track_details_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#1B1C1F"
@@ -15,10 +18,10 @@
             android:id="@+id/current_image_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
             android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:drawableLeft="@drawable/ic_camera_small_white"
             android:gravity="center_vertical"
-            android:drawableLeft="@drawable/camera_small_dark_b_g"
             android:text="0/0 IMG"
             android:textColor="@color/text_colour_default"
             android:textSize="12sp" />
@@ -27,11 +30,11 @@
             android:id="@+id/image_date_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_gravity="center"
             android:layout_marginRight="10dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
             android:text="January 1st | 02:00 AM"
             android:textColor="@color/text_colour_default"
             android:textSize="12sp" />
@@ -50,7 +53,7 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:background="@drawable/preview_background">
+            android:background="@drawable/custom_pattern_preview_background">
 
         </FrameLayout>
 
@@ -58,27 +61,93 @@
             android:id="@+id/maximize_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_gravity="end"
-            android:layout_marginRight="19dp"
+            android:layout_gravity="start"
+            android:layout_marginLeft="19dp"
             android:layout_marginTop="7dp"
-            android:src="@drawable/maximize" />
+            app:srcCompat="@drawable/vector_maximize" />
 
         <ImageView
             android:id="@+id/delete_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_gravity="bottom|end"
+            android:layout_gravity="bottom|start"
             android:layout_marginBottom="7.7dp"
-            android:layout_marginRight="19dp"
-            android:src="@drawable/delete" />
+            android:layout_marginLeft="19dp"
+            app:srcCompat="@drawable/vector_delete" />
 
+        <ImageView
+            android:id="@+id/points_background"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:layout_marginRight="19dp"
+            android:layout_marginTop="7dp"
+            android:gravity="center"
+            app:srcCompat="@drawable/vector_multiplier" />
+
+        <TextView
+            android:id="@+id/points_text"
+            style="@style/textStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:layout_marginRight="19dp"
+            android:layout_marginTop="7dp"
+            android:clickable="true"
+            android:gravity="center"
+            android:text="115\npts"
+            android:textSize="18sp" />
+
+        <com.telenav.osv.ui.custom.RevealRelativeLayout
+            android:id="@+id/score_reveal_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:visibility="invisible"
+            app:backgroundColor="@color/action_bar_blue"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/total_points_text"
+                style="@style/textStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                android:text="Total Points: 0" />
+            <ImageView
+                android:id="@+id/score_close"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="end"
+                android:layout_marginRight="9dp"
+                android:layout_marginTop="7dp"
+                android:gravity="center"
+                app:srcCompat="@drawable/vector_close_white_blue"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/points_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/total_points_text"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical">
+            </android.support.v7.widget.RecyclerView>
+
+        </com.telenav.osv.ui.custom.RevealRelativeLayout>
 
     </FrameLayout>
 
     <LinearLayout
         android:id="@+id/control_preview_layout"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
+        android:layout_height="@dimen/action_bar_size"
         android:layout_above="@+id/second_long_line"
         android:gravity="center"
         android:orientation="horizontal"
@@ -90,7 +159,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="20"
-            android:src="@drawable/previous" />
+            app:srcCompat="@drawable/vector_previous" />
 
         <ImageButton
             android:id="@+id/fast_backward_button"
@@ -98,7 +167,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="20"
-            android:src="@drawable/rewind" />
+            app:srcCompat="@drawable/vector_rewind" />
 
         <ImageButton
             android:id="@+id/play_button"
@@ -106,7 +175,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="20"
-            android:src="@drawable/play" />
+            app:srcCompat="@drawable/vector_play_white" />
 
         <ImageButton
             android:id="@+id/fast_forward_button"
@@ -114,7 +183,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="20"
-            android:src="@drawable/fast_forward" />
+            app:srcCompat="@drawable/vector_fast_forward" />
 
         <ImageButton
             android:id="@+id/next_button"
@@ -122,7 +191,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="20"
-            android:src="@drawable/next" />
+            app:srcCompat="@drawable/vector_next" />
 
     </LinearLayout>
 
@@ -141,22 +210,22 @@
 
     <SeekBar
         android:id="@+id/seek_bar_for_preview"
+        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_gravity="center"
-        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_marginBottom="12dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginTop="12dp"
         android:max="100"
         android:maxHeight="2dp"
         android:minHeight="2dp"
-        android:layout_marginLeft="25dp"
-        android:layout_marginRight="25dp"
-        android:layout_marginBottom="12dp"
-        android:layout_marginTop="12dp"
         android:progress="0"
-        android:progressDrawable="@drawable/seeckbar_drawable"
+        android:progressDrawable="@drawable/custom_seeckbar_drawable"
         android:secondaryProgress="0"
-        android:thumb="@drawable/seek_bar_thumb" />
+        android:thumb="@drawable/custom_seek_bar_thumb" />
 
 </RelativeLayout>
 

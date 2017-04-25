@@ -42,6 +42,8 @@ public class SequenceDB {
 
     public static final String VIDEO_UNIQUE_CONSTRAINT = "uniqueConstraint";
 
+    public static final String SCORE_UNIQUE_CONSTRAINT = "scoreUniqueConstraint";
+
 //  -------------------------------------------------------------
 
     public static final String SEQUENCE_TABLE = "Sequence";
@@ -70,6 +72,8 @@ public class SequenceDB {
 
     public static final String SEQUENCE_OBD = "obd";
 
+    public static final String SEQUENCE_SAFE = "safe";
+
     public static final String SEQUENCE_STATUS = "status";
 
 //  ---------------------------------------------------------------
@@ -83,6 +87,20 @@ public class SequenceDB {
     public final static String VIDEO_FILE_PATH = "filePath";
 
     public final static String VIDEO_FRAME_COUNT = "count";
+
+    //  ---------------------------------------------------------------
+
+    public final static String SCORE_TABLE = "Score";
+
+    public final static String SCORE_SEQ_ID = "sequenceId";
+
+    public final static String SCORE_COVERAGE = "coverage";
+
+    public final static String SCORE_OBD_COUNT = "obdCount";
+
+    public final static String SCORE_COUNT = "count";
+
+    //  ---------------------------------------------------------------
 
     private static final String TAG = "SequenceDB";
 
@@ -105,7 +123,13 @@ public class SequenceDB {
         SequenceDB.instance = this;
     }
 
-    public long insertSequence(int seqId, double lat, double lon, String path, boolean pano, boolean external, String version, boolean obd) {
+    public static void instantiate(Context context) {
+        if (instance == null) {
+            SequenceDB.instance = new SequenceDB(context);
+        }
+    }
+
+    public long insertSequence(int seqId, double lat, double lon, String path, boolean pano, boolean external, String version, boolean obd, boolean safe) {
         ContentValues values = new ContentValues();
         values.put(SEQUENCE_ID, seqId);
         values.put(SEQUENCE_ONLINE_ID, -1);
@@ -119,6 +143,7 @@ public class SequenceDB {
         values.put(SEQUENCE_EXTERNAL, external);
         values.put(SEQUENCE_VERSION, version);
         values.put(SEQUENCE_OBD, obd);
+        values.put(SEQUENCE_SAFE, safe);
         values.put(SEQUENCE_STATUS, Sequence.STATUS_NEW);
 
         return database.insertOrThrow(SEQUENCE_TABLE, null, values);
@@ -158,10 +183,24 @@ public class SequenceDB {
         return database.insertOrThrow(FRAME_TABLE, null, values);
     }
 
+    public void insertScore(int seqId, boolean obd, int coverage) {
+        String countColumn = (obd ? SCORE_OBD_COUNT : SCORE_COUNT);
+        ContentValues values = new ContentValues();
+        if (!isScoreRowAdded(seqId,coverage)) {
+            values.put(SCORE_SEQ_ID, seqId);
+            values.put(SCORE_COVERAGE, coverage);
+            values.put(countColumn, 1);
+            database.insertOrThrow(SCORE_TABLE, null, values);
+        } else {
+            database.execSQL("UPDATE "+ SCORE_TABLE +" SET " + countColumn + " = " + countColumn + " + 1 "
+                    + "WHERE " + SCORE_SEQ_ID + " = " + seqId + " AND " + SCORE_COVERAGE + " = " + coverage);
+        }
+    }
+
     public Cursor getAllSequences() {
         try {
             String[] cols = new String[]{SEQUENCE_ID, SEQUENCE_ONLINE_ID, SEQUENCE_LAT, SEQUENCE_LON, SEQUENCE_PATH, SEQUENCE_COUNT, SEQUENCE_ORIG_COUNT, SEQUENCE_VIDEO_COUNT, SEQUENCE_PANO,
-                    SEQUENCE_EXTERNAL, SEQUENCE_VERSION, SEQUENCE_OBD, SEQUENCE_STATUS};
+                    SEQUENCE_EXTERNAL, SEQUENCE_VERSION, SEQUENCE_OBD, SEQUENCE_SAFE, SEQUENCE_STATUS};
             Cursor mCursor = database.query(true, SEQUENCE_TABLE, cols, null
                     , null, SEQUENCE_ID, null, null, null);
             if (mCursor != null && mCursor.getCount() > 0) {
@@ -175,7 +214,7 @@ public class SequenceDB {
         }
         //retry
         String[] cols = new String[]{SEQUENCE_ID, SEQUENCE_ONLINE_ID, SEQUENCE_LAT, SEQUENCE_LON, SEQUENCE_PATH, SEQUENCE_COUNT, SEQUENCE_ORIG_COUNT, SEQUENCE_VIDEO_COUNT, SEQUENCE_PANO,
-                SEQUENCE_EXTERNAL, SEQUENCE_VERSION, SEQUENCE_OBD, SEQUENCE_STATUS};
+                SEQUENCE_EXTERNAL, SEQUENCE_VERSION, SEQUENCE_OBD, SEQUENCE_SAFE, SEQUENCE_STATUS};
         Cursor mCursor = database.query(true, SEQUENCE_TABLE, cols, null
                 , null, SEQUENCE_ID, null, null, null);
         if (mCursor != null && mCursor.getCount() > 0) {
@@ -242,6 +281,9 @@ public class SequenceDB {
 
     private boolean isVideoAdded(int localSequenceId, int videoIndex) {
         return DatabaseUtils.queryNumEntries(database, VIDEO_TABLE, VIDEO_SEQ_ID + "=? AND " + VIDEO_INDEX + "=?", new String[]{"" + localSequenceId, "" + videoIndex}) > 0;
+    }
+    private boolean isScoreRowAdded(int localSequenceId, int coverage) {
+        return DatabaseUtils.queryNumEntries(database, SCORE_TABLE, SCORE_SEQ_ID + "=? AND " + SCORE_COVERAGE + "=?", new String[]{"" + localSequenceId, "" + coverage}) > 0;
     }
 
     public long getVideoFrameCount(int localSequenceId, int videoIndex) {
@@ -342,6 +384,16 @@ public class SequenceDB {
                 , new String[]{"" + sequenceIdLocal, "" + videoIndex});
         return res;
     }
+    /**
+     * @param sequenceIdLocal
+     * @param photoIndex startIndex of the video
+     * @return
+     */
+    public int deletePhoto(int sequenceIdLocal, int photoIndex) {
+        int res = database.delete(FRAME_TABLE, FRAME_SEQ_ID + " = ? AND " + FRAME_SEQ_INDEX + " = ?"
+                , new String[]{"" + sequenceIdLocal, "" + photoIndex});
+        return res;
+    }
 
     public int resetOnlineSequenceId(int onlineSequenceId) {
         ContentValues cv = new ContentValues();
@@ -353,21 +405,25 @@ public class SequenceDB {
         int res;
         res = database.delete(FRAME_TABLE, FRAME_SEQ_ID + " = ?", new String[]{"" + sequenceIdLocal});
         res = res + database.delete(VIDEO_TABLE, VIDEO_SEQ_ID + " = ?", new String[]{"" + sequenceIdLocal});
+        res = res + database.delete(SCORE_TABLE, SCORE_SEQ_ID + " = ?", new String[]{"" + sequenceIdLocal});
         res = res + database.delete(SEQUENCE_TABLE, SEQUENCE_ID + " = ?", new String[]{"" + sequenceIdLocal});
         return res;
     }
 
-    public Sequence createNewSequence(Context context, double lat, double lon, boolean pano, boolean external, String version, boolean obd) {
+    public Sequence createNewSequence(Context context, double lat, double lon, boolean pano, boolean external, String version, boolean obd, boolean safe) {
         OSVFile osv = Utils.generateOSVFolder(context);
         int i = 0;
         while (true) {
             OSVFile file = new OSVFile(osv.getPath(), "/SEQ_" + i);
             if (!file.exists()) {
                 if (!checkSequenceExists(i)) {
-                    insertSequence(i, lat, lon, file.getPath(), pano, external, version, obd);
                     file.mkdir();
-                    return new Sequence(file);
-
+                    if (file.exists()) {
+                        insertSequence(i, lat, lon, file.getPath(), pano, external, version, obd, safe);
+                        return new Sequence(file);
+                    } else {
+                        Log.d(TAG, "createNewSequence: could not create directory " + file.getAbsolutePath());
+                    }
                 }
             }
             i++;
@@ -384,10 +440,27 @@ public class SequenceDB {
     public void deleteVideo(OSVFile video, int sequenceIdLocal, int sequenceIndex) {
         int result = deleteVideo(sequenceIdLocal, sequenceIndex);
         if (result == 0) {
-            Log.d(TAG, "deleteVideo: No records deleted, no records found with sequenceId: " + sequenceIdLocal + " and sequenceIndex: " + sequenceIndex);
+            Log.w(TAG, "deleteVideo: No records deleted, no records found with sequenceId: " + sequenceIdLocal + " and sequenceIndex: " + sequenceIndex);
         }
         if (!video.delete()) {
-            Log.d(TAG, "deleteVideo: delete unsuccessful: " + video.getName());
+            Log.w(TAG, "deleteVideo: delete unsuccessful: " + video.getName());
+        }
+    }
+
+    /**
+     * deletes the image, deletes the parent folder if it remains empty
+     * @param photo
+     * @param sequenceIdLocal
+     * @param sequenceIndex
+     * @return true if parent folder is also deleted
+     */
+    public void deletePhoto(OSVFile photo, int sequenceIdLocal, int sequenceIndex) {
+        int result = deletePhoto(sequenceIdLocal, sequenceIndex);
+        if (result == 0) {
+            Log.w(TAG, "deletePhoto: No records deleted, no records found with sequenceId: " + sequenceIdLocal + " and sequenceIndex: " + sequenceIndex);
+        }
+        if (!photo.delete()) {
+            Log.w(TAG, "deletePhoto: delete unsuccessful: " + photo.getName());
         }
     }
 
@@ -551,13 +624,8 @@ public class SequenceDB {
                     Log.d(TAG, "fixStatuses: setting NEW");
                 }
             } else {
-                if (imageCount == 0) {
-                    cv.put(SEQUENCE_STATUS, Sequence.STATUS_FINISHED);
-                    Log.d(TAG, "fixStatuses: setting FINISHED");
-                } else {
-                    cv.put(SEQUENCE_STATUS, Sequence.STATUS_INTERRUPTED);
-                    Log.d(TAG, "fixStatuses: setting INTERRUPTED");
-                }
+                cv.put(SEQUENCE_STATUS, Sequence.STATUS_INTERRUPTED);
+                Log.d(TAG, "fixStatuses: setting INTERRUPTED");
             }
             if (cv.size() > 0) {
                 database.update(SEQUENCE_TABLE, cv, SEQUENCE_ID + " = ?", new String[]{"" + sequenceId});
@@ -586,6 +654,55 @@ public class SequenceDB {
         } catch (Exception e) {
             Log.d(TAG, "getSequenceVersion: " + Log.getStackTraceString(e));
         }
+        if (mCursor != null) {
+            mCursor.close();
+        }
         return "";
+    }
+
+    public Cursor getScores(int sequenceId){
+        String[] cols = new String[]{SCORE_COVERAGE, SCORE_OBD_COUNT,SCORE_COUNT};
+        Cursor mCursor = database.query(false, SCORE_TABLE, cols, SCORE_SEQ_ID + " = ?"
+                , new String[]{"" + sequenceId}, null, null, null, null);
+        if (mCursor != null && mCursor.getCount() > 0) {
+            mCursor.moveToFirst();
+        }
+        return mCursor;
+    }
+
+    public int getSequenceScore(int sequenceId) {
+        String[] cols = new String[]{SCORE_COVERAGE, SCORE_OBD_COUNT,SCORE_COUNT};
+        Cursor mCursor = database.query(false, SCORE_TABLE, cols, SCORE_SEQ_ID + " = ?"
+                , new String[]{"" + sequenceId}, null, null, null, null);
+        float totalPoints = 0;
+        try {
+            if (mCursor != null && mCursor.getCount() > 0) {
+                mCursor.moveToFirst();
+                while (!mCursor.isAfterLast()){
+
+                    int coverage = Math.min(mCursor.getInt(mCursor.getColumnIndex(SCORE_COVERAGE)), 10);
+                    int obdCount = mCursor.getInt(mCursor.getColumnIndex(SCORE_OBD_COUNT));
+                    int count = mCursor.getInt(mCursor.getColumnIndex(SCORE_COUNT));
+                    float segmentValue = Utils.getValueOnSegment(coverage);
+                    totalPoints += count * segmentValue;
+                    totalPoints += obdCount * segmentValue * 2;
+                    mCursor.moveToNext();
+                }
+
+                mCursor.close();
+                return (int) totalPoints;
+            }
+            if (mCursor != null){
+                mCursor.close();
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "getSequenceVersion: " + Log.getStackTraceString(e));
+                mCursor.close();
+        }
+        return 0;
+    }
+
+    public boolean isSequenceSafe(int sequenceId) {
+        return DatabaseUtils.queryNumEntries(database, SEQUENCE_TABLE, SEQUENCE_ID + " = ? AND " + SEQUENCE_SAFE + " > 0", new String[]{"" + sequenceId}) > 0;
     }
 }

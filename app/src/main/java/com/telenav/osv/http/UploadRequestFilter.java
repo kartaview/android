@@ -10,6 +10,6 @@ public class UploadRequestFilter implements RequestQueue.RequestFilter {
 
     @Override
     public boolean apply(Request<?> request) {
-        return request instanceof VideoRequest;
+        return request instanceof VideoRequest || request instanceof PhotoRequest;
     }
 }

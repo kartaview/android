@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="app_name" translatable="false">OSC</string>
+    <string name="facebook_application_id" translatable="false">000000000000000</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb0000000000000000</string>
+    <string name="google_client_id" translatable="false">00000000000000000000000.apps.googleusercontent.com</string>
     <string name="cannot_connect_hal">Unable to connect to camera, phone might need to be restarted.</string>
     <string name="main_process_name" translatable="false">:MainProcess</string>
     <string name="playback_process_name" translatable="false">:PlaybackProcess</string>
@@ -19,7 +23,7 @@
     <string name="stop_value_string">Stop</string>
     <string name="keep_value_string">Keep recording</string>
     <string name="select_all">Select all</string>
-    <string name="log_in">Login with OSM</string>
+    <string name="log_in">Login</string>
     <string name="log_out">Logout </string>
     <string name="upload_on_data_label">Upload on data</string>
     <string name="upload_automatically_label">Automatic upload</string>
@@ -76,7 +80,7 @@
     <string name="gps_medium_label">GPS Medium</string>
     <string name="gps_bad_label">GPS Bad</string>
     <string name="notification_sequence_recording_label">Sequence recording…</string>
-    <string name="app_short_name" translatable="false">OSV</string>
+    <string name="app_short_name" translatable="false">OSC</string>
     <string name="no_gps_message">No gps position.</string>
     <string name="hint_mount_label">Phone mount</string>
     <string name="hint_mount_message">Check that the front hood of the car and the phone’s mount are not visible in the pictures.</string>
@@ -90,12 +94,13 @@
     <string name="loading_components_message">Loading components, just a minute…</string>
     <string name="no_local_recordings_message">You have no local recordings.</string>
     <string name="exit_app_message">Are you sure you want to exit the app?</string>
-    <string name="app_name_formatted" translatable="false">Open Street View</string>
+    <string name="app_name_formatted" translatable="false">Open Street Cam</string>
     <string name="exit_label">Exit</string>
     <string name="p_upload_finished">"Upload finished: "</string>
+    <string name="upload_finished">"Upload finished."</string>
     <string name="p_successful">" successful, "</string>
     <string name="p_failed">" failed."</string>
-    <string name="update_available_message">There is a new version available for OpenStreetView.</string>
+    <string name="update_available_message">There is a new version available for OpenStreetCam.</string>
     <string name="update_label">Update</string>
     <string name="update_now_label">Update now</string>
     <string name="settings_label">Settings</string>
@@ -122,7 +127,7 @@
     <string name="not_connected_label">Not connected</string>
     <string name="reached_current_storage_limit_message">Reached current storage limit, switching storage.</string>
     <string name="reached_storage_limit">Reached storage limit, stopping recording.</string>
-    <string name="encoding_error_message">Could not initialize/create mp4 file. Try again please.</string>
+    <string name="encoding_error_message">Could not initialize/create mp4 file. Trying again.</string>
     <string name="error_creating_folder_message">Could not create new Recording folder. Please try again.</string>
     <string name="ffmpeg_init_error_message">Could not initialize encoder</string>
     <string name="error_creating_video_file_message">Could not create video file.</string>
@@ -161,7 +166,7 @@
     <string name="resolution_label">Resolution</string>
     <string name="resolution_text">Select the resolution for taking pictures</string>
     <string name="connection_type">Connection type</string>
-    <string name="feedback_text">Feedback</string>
+    <string name="improve_text">Improve</string>
     <string name="about_label">About</string>
     <string name="tips_label">Tips</string>
     <string name="tips_message">See how to improve your recordings</string>
@@ -188,10 +193,51 @@
     <string name="bt_paired_devices_label">Paired devices</string>
     <string name="bt_none_paired">No paired devices.</string>
     <string name="bt_none_found">Found no devices.</string>
-    <string name="bt_scanning_label">Scanning...</string>
+    <string name="bt_scanning_label">Scanning…</string>
     <string name="bt_new_devices_label">Found new devices</string>
     <string name="bt_select_device_label">Select device</string>
     <string name="bl_not_supported">Bluetooth not supported.</string>
     <string name="permission_bluetooth_rationale">The app needs the location permission to be enabled to search for bluetooth devices in the proximity, please enable it in the next popup.</string>
     <string name="map_no_internet_connection">No internet connection. Map tiles cannot be loaded.</string>
+    <string name="delete_track_and_dont_remind_me">Never ask again</string>
+    <string name="delete_label">Delete</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="gamification_sub_title">Compete and see how great you are compared to others</string>
+    <string name="gamification_title">Points</string>
+    <string name="safe_mode_title">JPEG recording mode</string>
+    <string name="safe_mode_sub_title">By enabling this, the app reverts to jpeg format instead of the mp4 format. This requires less processing power but uses more storage space.</string>
+    <string name="tap_to_start_recording_hint">Tap to start recording!</string>
+    <string name="upload_now_label">UPLOAD NOW</string>
+    <string name="summary_label">Summary</string>
+    <string name="map_sdk_label">Enable map</string>
+    <string name="map_sdk_subtitle">Maps use more resources and it may decrease performance.</string>
+    <string name="hint_points">Points</string>
+    <string name="hint_points_message">You will get more points when the streets you\'re driving have less coverage. Get 10X for a new street in OpenStreetCam!</string>
+    <string name="walkthrough_label">Walkthrough</string>
+    <string name="walkthrough_message">See how the application is used.</string>
+    <string name="warning_swipe_recents_text">Please when you finish recording, re-enter the app to stop the recording before you dismiss the app from the recent applications screen.\nThis ensures that no recording will remain corrupt and that your tracks are written to the filesystem completely.</string>
+    <string name="warning_label">Warning</string>
+    <string name="warning_problems_recording">The app detected that you might have had problems with recording.\nIf you encountered crashes, we suggest enabling the jpeg recording mode:\nThis type of recording uses more storage space but requires less processing power than encoding to UHD x264 format.</string>
+    <string name="jpeg_recording_label">JPEG Recording Mode</string>
+    <string name="disable_label">Disable</string>
+    <string name="enable_label">Enable</string>
+    <string name="warning_moved_recordings">The application database was updated,you can upload any old recordings with the desktop OSV upload script.\nYou can find your old recordings at:</string>
+    <string name="recordings_backup_label">Recordings backup</string>
+    <string name="warning_optimization_label">Optimize?</string>
+    <string name="not_now_label">Not now</string>
+    <string name="warning_optimization_message">We detected that you are a driver with a signed contract. We optimised the app for longer recordings. The app might have to restart for these changes to take effect.</string>
+    <string name="terms_text"><![CDATA[Terms & Conditions]]></string>
+    <string name="policy_text">Privacy Policy</string>
+    <string name="copyright_text">Copyright 2017 Telenav Gmbh</string>
+    <string name="walkthrough_discover_title">Welcome to OpenStreetCam!</string>
+    <string name="walkthrough_discover_text">You’re now joining a great community of people that contribute to a free and open platform for street imagery. By detecting street features from your photos we can build the best map in the world, together!</string>
+    <string name="walkthrough_record_title">How do I contribute?</string>
+    <string name="walkthrough_record_text">Use your phone to record the streets you drive, bike or walk, the app will take photos automatically and upload when Wi-Fi is available.</string>
+    <string name="walkthrough_share_title">Make it count</string>
+    <string name="walkthrough_share_text">Contribute your recordings, gain points and increase your ranking in the OpenStreetCam leaderboard.\n\nTip: Find streets that are not yet covered for many bonus points!</string>
+    <string name="progress_dialog_signing_up">Creating your shiny new account…</string>
+    <string name="login_facebook_button_label">Login with Facebook</string>
+    <string name="login_google_button_label">Login with Google</string>
+    <string name="login_osm_button_label">Login with OpenStreetMap</string>
+    <string name="check_internet_connection">No internet detected. Check your internet connection </string>
 </resources>

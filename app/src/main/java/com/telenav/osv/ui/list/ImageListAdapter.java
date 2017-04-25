@@ -93,8 +93,8 @@ public class ImageListAdapter extends BaseAdapter {
                 .skipMemoryCache(false)
                 .signature(new StringSignature(images.get(position).coords.getLatitude() + "," + images.get(position).coords.getLongitude()))
                 .priority(Priority.IMMEDIATE)
-                .placeholder(R.drawable.image_loading_background)
-                .error(R.drawable.image_broken_background)
+                .placeholder(R.drawable.custom_image_loading_background)
+                .error(R.drawable.custom_image_broken_background)
                 .listener(MainActivity.mGlideRequestListener)
                 .into((ImageView) view);
 

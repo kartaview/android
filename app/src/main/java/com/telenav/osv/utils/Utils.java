@@ -2,19 +2,17 @@ package com.telenav.osv.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.channels.FileChannel;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import javax.security.auth.x500.X500Principal;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Application;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
@@ -22,8 +20,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
-import android.content.res.AssetManager;
-import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -36,38 +32,40 @@ import android.view.Display;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.WindowManager;
+import com.crashlytics.android.Crashlytics;
 import com.faraji.environment3.Environment3;
 import com.faraji.environment3.NoSecondaryStorageException;
-import com.google.common.io.ByteStreams;
-import com.skobbler.ngx.SKDeveloperKeyException;
-import com.skobbler.ngx.SKMaps;
-import com.skobbler.ngx.SKMapsInitSettings;
-import com.skobbler.ngx.map.SKMapViewStyle;
-import com.skobbler.ngx.navigation.SKAdvisorSettings;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.item.OSVFile;
+import io.fabric.sdk.android.Fabric;
 
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
+@SuppressLint("SimpleDateFormat")
 public class Utils {
-
-    // Orientation hysteresis amount used in rounding, in degrees
-    public static final int ORIENTATION_HYSTERESIS = 5;
-
-    public static final long UNAVAILABLE = -1L;
-
-    public static final long PREPARING = -2L;
-
-    public static final long UNKNOWN_SIZE = -3L;
-
-    public static final float METER_TO_FEET = 3.28084f;
 
     public static final SimpleDateFormat onlineDateFormat = new SimpleDateFormat("yyyy-MM-dd  (hh:mm)");
 
     public static final SimpleDateFormat numericDateFormat = new SimpleDateFormat("MM-dd hh:mm");
 
     public static final SimpleDateFormat niceDateFormat = new SimpleDateFormat("MMMM dd | h:mm a");
+
+    // Orientation hysteresis amount used in rounding, in degrees
+    private static final int ORIENTATION_HYSTERESIS = 10;
+
+    private static final long UNAVAILABLE = -1L;
+
+    private static final long PREPARING = -2L;
+
+    private static final long UNKNOWN_SIZE = -3L;
+
+    private static final float METER_TO_FEET = 3.28084f;
+
+    private static final int[] SCORES = new int[]{10, 5, 5, 3, 3, 2, 2, 2, 2, 2, 1};
 
     private static final float KILOMETER_TO_MILE = 0.621371f;
 
@@ -84,15 +82,10 @@ public class Utils {
 
     public static boolean DEBUG = false;
 
-    // Screen size holder
-    private static Point mScreenSize = new Point();
-
-    private static int mRotation = 0;
-
     /**
      * Formats a given distance value (given in meters)
-     * @param distInMeters
-     * @return
+     * @param distInMeters dist
+     * @return strings, value/unit
      */
     public static String[] formatDistanceFromMeters(Context context, int distInMeters) {
         boolean isUS = !((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC);
@@ -109,65 +102,24 @@ public class Utils {
 
     /**
      * Formats a given distance value (given in meters)
-     * @param dist
-     * @return
+     * @param dist dist
+     * @return value/unit
      */
     public static String[] formatDistanceFromKiloMeters(Context context, double dist) {
         boolean isUS = !((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC);
         if (isUS) {
             dist = (int) (dist * KILOMETER_TO_MILE);
         }
-        DecimalFormat df2 = new DecimalFormat("#.#");
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator(' ');
+        DecimalFormat df2 = new DecimalFormat("#,###,###,###.#", symbols);
         return new String[]{df2.format(dist) + "", (isUS ? " mi" : " km")};
     }
 
     /**
-     * Copies files from assets to destination folder
-     * @param assetManager
-     * @param sourceFolder
-     * @throws IOException
-     */
-    public static void copyAssetsToFolder(AssetManager assetManager, String sourceFolder, String destinationFolder)
-            throws IOException {
-        final String[] assets = assetManager.list(sourceFolder);
-
-        final OSVFile destFolderFile = new OSVFile(destinationFolder);
-        if (!destFolderFile.exists()) {
-            destFolderFile.mkdirs();
-        }
-        copyAsset(assetManager, sourceFolder, destinationFolder, assets);
-    }
-
-    /**
-     * Copies files from assets to destination folder
-     * @param assetManager
-     * @param sourceFolder
-     * @param assetsNames
-     * @throws IOException
-     */
-    public static void copyAsset(AssetManager assetManager, String sourceFolder, String destinationFolder,
-                                 String... assetsNames) throws IOException {
-
-        for (String assetName : assetsNames) {
-            OutputStream destinationStream = new FileOutputStream(new OSVFile(destinationFolder + "/" + assetName));
-            String[] files = assetManager.list(sourceFolder + "/" + assetName);
-            if (files == null || files.length == 0) {
-
-                InputStream asset = assetManager.open(sourceFolder + "/" + assetName);
-                try {
-                    ByteStreams.copy(asset, destinationStream);
-                } finally {
-                    asset.close();
-                    destinationStream.close();
-                }
-            }
-        }
-    }
-
-    /**
      * Tells if internet is currently available on the device
-     * @param currentContext
-     * @return
+     * @param currentContext a
+     * @return a
      */
     public static boolean isInternetAvailable(Context currentContext) {
         ConnectivityManager conectivityManager =
@@ -187,47 +139,17 @@ public class Utils {
         return false;
     }
 
-    /**
-     * Initializes the SKMaps framework
-     */
-    public static boolean initializeLibrary(final Activity context) {
-
-        // get object holding map initialization settings
-        SKMapsInitSettings initMapSettings = new SKMapsInitSettings();
-
-        final String mapResourcesPath = ((OSVApplication) context.getApplicationContext()).getAppPrefs().getStringPreference("mapResourcesPath");
-        // set path to map resources and initial map style
-        initMapSettings.setMapResourcesPaths(mapResourcesPath,
-                new SKMapViewStyle(mapResourcesPath + "grayscalestyle/", "grayscalestyle.json"));
-
-        final SKAdvisorSettings advisorSettings = initMapSettings.getAdvisorSettings();
-        advisorSettings.setAdvisorConfigPath(mapResourcesPath + "/Advisor");
-        advisorSettings.setResourcePath(mapResourcesPath + "/Advisor/Languages");
-        advisorSettings.setLanguage(SKAdvisorSettings.SKAdvisorLanguage.LANGUAGE_EN);
-        advisorSettings.setAdvisorVoice("en");
-        initMapSettings.setAdvisorSettings(advisorSettings);
-
-
-        try {
-            SKMaps.getInstance().initializeSKMaps(context, initMapSettings);
-            return true;
-        } catch (SKDeveloperKeyException exception) {
-            exception.printStackTrace();
-            showApiKeyErrorDialog(context);
-            return false;
-        }
-    }
-
     public static boolean isDebugBuild(Context ctx) {
         boolean debug = false;
         try {
+            @SuppressLint("PackageManagerGetSignatures")
             PackageInfo pinfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
             Signature signatures[] = pinfo.signatures;
 
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
-            for (int i = 0; i < signatures.length; i++) {
-                ByteArrayInputStream stream = new ByteArrayInputStream(signatures[i].toByteArray());
+            for (Signature signature : signatures) {
+                ByteArrayInputStream stream = new ByteArrayInputStream(signature.toByteArray());
                 X509Certificate cert = (X509Certificate) cf.generateCertificate(stream);
                 debug = cert.getSubjectX500Principal().equals(DEBUG_DN);
                 if (debug)
@@ -250,7 +172,7 @@ public class Utils {
     /**
      * Shows the api key not set dialog.
      */
-    public static void showApiKeyErrorDialog(Activity currentActivity) {
+    private static void showApiKeyErrorDialog(Activity currentActivity) {
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(
                 currentActivity);
 
@@ -324,53 +246,27 @@ public class Utils {
         return orientation;
     }
 
+
+    public static int getScreenOrientation(Context context) {
+        Display defaultDisplay = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        return defaultDisplay.getRotation();
+    }
+
     /**
      * Deletes all files and directories from <>file</> except PreinstalledMaps
-     * @param file
+     * @param file a
      */
     public static void deleteFileOrDirectory(OSVFile file) {
         if (file.isDirectory()) {
             String[] children = file.list();
-            for (int i = 0; i < children.length; i++) {
-                if (new OSVFile(file, children[i]).isDirectory() && !children[i].equals("PreinstalledMaps") && !children[i].equals("Maps")) {
-                    deleteFileOrDirectory(new OSVFile(file, children[i]));
+            for (String aChildren : children) {
+                if (new OSVFile(file, aChildren).isDirectory() && !aChildren.equals("PreinstalledMaps") && !aChildren.equals("Maps")) {
+                    deleteFileOrDirectory(new OSVFile(file, aChildren));
                 } else {
-                    new OSVFile(file, children[i]).delete();
+                    new OSVFile(file, aChildren).delete();
                 }
             }
         }
-    }
-
-    /**
-     * Returns the orientation of the display
-     * In our case, since we're locked in Landscape, it should always
-     * be 90
-     * @param context
-     * @return Orientation angle of the display
-     */
-    public static int getDisplayRotation(Context context) {
-        if (context != null) {
-            int rotation = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-                    .getRotation();
-            switch (rotation) {
-                case Surface.ROTATION_0:
-                    mRotation = 0;
-                    break;
-                case Surface.ROTATION_90:
-                    mRotation = 90;
-                    break;
-                case Surface.ROTATION_180:
-                    mRotation = 180;
-                    break;
-                case Surface.ROTATION_270:
-                    mRotation = 270;
-                    break;
-                default:
-                    mRotation = 0;
-            }
-        }
-
-        return mRotation;
     }
 
     /**
@@ -381,7 +277,7 @@ public class Utils {
      * @return Rounded orientation
      */
     public static int roundOrientation(int orientation, int orientationHistory) {
-        boolean changeOrientation = false;
+        boolean changeOrientation;
         if (orientationHistory == OrientationEventListener.ORIENTATION_UNKNOWN) {
             changeOrientation = true;
         } else {
@@ -397,9 +293,9 @@ public class Utils {
 
     /**
      * Converts the specified DP to PIXELS according to current screen density
-     * @param context
-     * @param dp
-     * @return
+     * @param context a
+     * @param dp a
+     * @return a
      */
     public static float dpToPx(Context context, float dp) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
@@ -414,75 +310,75 @@ public class Utils {
         return osv;
     }
 
-    /**
-     * used on the older version upgrade
-     * @param context
-     * @param delete
-     */
-    public static void moveToPublic(final Context context, final boolean delete) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                OSVFile osvOld = new OSVFile(context.getFilesDir().getPath(), "OSV");
-                if (!osvOld.exists()) {
-                    osvOld.mkdir();
-                }
-
-                OSVFile osv = new OSVFile(getSelectedStorage(context).getPath() + "/OSV");
-                if (!osv.exists()) {
-                    osv.mkdir();
-                }
-                for (OSVFile folder : osvOld.listFiles()) {
-                    OSVFile fileTo = new OSVFile(getSelectedStorage(context).getPath() + "/OSV", folder.getName());
-                    if (!fileTo.exists()) {
-                        fileTo.mkdir();
-                    }
-                    FileChannel source = null;
-                    FileChannel destination = null;
-                    for (OSVFile img : folder.listFiles()) {
-                        try {
-                            try {
-                                source = new FileInputStream(img).getChannel();
-                                destination = new FileOutputStream(new OSVFile(fileTo, img.getName())).getChannel();
-                                destination.transferFrom(source, 0, source.size());
-                                if (delete) {
-                                    Log.d(TAG, "moveToPublic: deleted " + folder.getName() + "/" + img.getName() + " : " + img.delete());
-                                }
-                            } catch (Exception e) {
-                                Log.d(TAG, "moveToPublic: " + e.getLocalizedMessage());
-                            } finally {
-                                if (source != null) {
-                                    source.close();
-                                }
-                                if (destination != null) {
-                                    destination.close();
-                                }
-                            }
-                        } catch (Exception e) {
-                            Log.d(TAG, "moveToPublic: " + e.getLocalizedMessage());
-                        }
-
-                        Log.d(TAG, "moveToPublic: copied " + folder.getName() + "/" + img.getName());
-                    }
-                    if (folder.listFiles().length == 0 && delete) {
-                        folder.delete();
-                    }
-                }
-                if (delete) {
-                    osvOld.delete();
-                }
-                Log.d(TAG, "moveToPublic: copy done");
-            }
-        }).start();
-
-    }
+//    /**
+//     * used on the older version upgrade
+//     * @param context a
+//     * @param delete a
+//     */
+//    public static void moveToPublic(final Context context, final boolean delete) {
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                OSVFile osvOld = new OSVFile(context.getFilesDir().getPath(), "OSV");
+//                if (!osvOld.exists()) {
+//                    osvOld.mkdir();
+//                }
+//
+//                OSVFile osv = new OSVFile(getSelectedStorage(context).getPath() + "/OSV");
+//                if (!osv.exists()) {
+//                    osv.mkdir();
+//                }
+//                for (OSVFile folder : osvOld.listFiles()) {
+//                    OSVFile fileTo = new OSVFile(getSelectedStorage(context).getPath() + "/OSV", folder.getName());
+//                    if (!fileTo.exists()) {
+//                        fileTo.mkdir();
+//                    }
+//                    FileChannel source = null;
+//                    FileChannel destination = null;
+//                    for (OSVFile img : folder.listFiles()) {
+//                        try {
+//                            try {
+//                                source = new FileInputStream(img).getChannel();
+//                                destination = new FileOutputStream(new OSVFile(fileTo, img.getName())).getChannel();
+//                                destination.transferFrom(source, 0, source.size());
+//                                if (delete) {
+//                                    Log.d(TAG, "moveToPublic: deleted " + folder.getName() + "/" + img.getName() + " : " + img.delete());
+//                                }
+//                            } catch (Exception e) {
+//                                Log.w(TAG, "moveToPublic: " + e.getLocalizedMessage());
+//                            } finally {
+//                                if (source != null) {
+//                                    source.close();
+//                                }
+//                                if (destination != null) {
+//                                    destination.close();
+//                                }
+//                            }
+//                        } catch (Exception e) {
+//                            Log.w(TAG, "moveToPublic: " + e.getLocalizedMessage());
+//                        }
+//
+//                        Log.d(TAG, "moveToPublic: copied " + folder.getName() + "/" + img.getName());
+//                    }
+//                    if (folder.listFiles().length == 0 && delete) {
+//                        folder.delete();
+//                    }
+//                }
+//                if (delete) {
+//                    osvOld.delete();
+//                }
+//                Log.d(TAG, "moveToPublic: copy done");
+//            }
+//        }).start();
+//
+//    }
 
     public static File getSelectedStorage(Context context) {
         if (Build.VERSION.SDK_INT < 19 && Environment3.isSecondaryExternalStorageAvailable()) {
             try {
                 return Environment3.getSecondaryExternalFilesDir(context, null);
             } catch (NoSecondaryStorageException e) {
-                Log.d(TAG, "getSelectedStorage: " + Log.getStackTraceString(e));
+                Log.w(TAG, "getSelectedStorage: " + Log.getStackTraceString(e));
             }
         }
         File[] storages = ContextCompat.getExternalFilesDirs(context, null);
@@ -512,24 +408,6 @@ public class Utils {
         return result;
     }
 
-    public static File getInternalStorage(Context context) {
-        File[] storages = ContextCompat.getExternalFilesDirs(context, null);
-        if (storages.length > 1) {
-            File file = storages[1];
-            if (file != null) {
-                EXTERNAL_STORAGE_PATH = file.getPath();
-            }
-        }
-        File result = storages[0];
-        if (result == null) {
-            result = context.getExternalFilesDir(null);
-        }
-        if (result == null) {
-            return Environment3.getInternalStorage().getFile();
-        }
-        return result;
-    }
-
     public static long folderSize(OSVFile directory) {
         if (directory == null) {
             return 0;
@@ -543,7 +421,7 @@ public class Utils {
                     length += folderSize(file);
             }
         } catch (Exception e) {
-            Log.d(TAG, "folderSize: " + e.getLocalizedMessage());
+            Log.w(TAG, "folderSize: " + e.getLocalizedMessage());
         }
         return length;
     }
@@ -559,7 +437,7 @@ public class Utils {
             else
                 length = folderSize(file);
         } catch (Exception e) {
-            Log.d(TAG, "fileSize: " + e.getLocalizedMessage());
+            Log.w(TAG, "fileSize: " + e.getLocalizedMessage());
         }
         return length;
     }
@@ -592,9 +470,9 @@ public class Utils {
         } catch (Exception e) {
             Log.i(TAG, "Fail to access external storage", e);
 
-//            if (Fabric.isInitialized()) {
-//                Crashlytics.logException(e);
-//            }
+            if (Fabric.isInitialized()) {
+                Crashlytics.logException(e);
+            }
         }
         return UNKNOWN_SIZE;
     }
@@ -618,39 +496,20 @@ public class Utils {
 //        return mImageSize;
 //    }
 
-    public static long getStorageSpace(Context context) {
-        String state = Environment.getExternalStorageState();
-//        Log.d(TAG, "External storage state=" + state);
-        if (Environment.MEDIA_CHECKING.equals(state)) {
-            return PREPARING;
-        }
-        if (!Environment.MEDIA_MOUNTED.equals(state)) {
-            return UNAVAILABLE;
-        }
-
-        OSVFile dir = new OSVFile(getSelectedStorage(context).getPath());
-        dir.mkdirs();
-        if (!dir.isDirectory() || !dir.canWrite()) {
-            return UNAVAILABLE;
-        }
-
-        try {
-            StatFs stat = new StatFs(getSelectedStorage(context).getPath());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                Log.d(TAG, "getStorageSpace: " + ((stat.getBlockCountLong() * stat.getBlockSizeLong()) / 1024 / 1024));
-                return (stat.getBlockCountLong() * stat.getBlockSizeLong()) / 1024 / 1024;
-            } else {
-                Log.d(TAG, "getStorageSpace: " + ((long) (stat.getBlockCount() * stat.getBlockSize()) / 1024 / 1024));
-                return (long) (stat.getBlockCount() * stat.getBlockSize()) / 1024 / 1024;
-            }
-        } catch (Exception e) {
-            Log.i(TAG, "Fail to access external storage", e);
-        }
-        return UNKNOWN_SIZE;
+    public static String formatNumber(double value) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator(' ');
+        DecimalFormat formatter = new DecimalFormat("#,###,###,###", symbols);
+        return formatter.format(value);
     }
 
     public static String formatSize(double value) {
-        String sizeText = "0 MB";
+        String[] sizeText = formatSizeDetailed(value);
+        return sizeText[0] + sizeText[1];
+    }
+
+    public static String[] formatSizeDetailed(double value) {
+        String[] sizeText = new String[]{"0", " MB"};
         if (value > 0) {
             double size = value / (double) 1024 / (double) 1024;
             String type = " MB";
@@ -658,9 +517,9 @@ public class Utils {
             if (size > 1024) {
                 size = (size / (double) 1024);
                 type = " GB";
-                sizeText = "" + df2.format(size) + type;
+                sizeText = new String[]{"" + df2.format(size), type};
             } else {
-                sizeText = "" + df2.format(size) + type;
+                sizeText = new String[]{"" + df2.format(size), type};
             }
         }
         return sizeText;
@@ -688,14 +547,53 @@ public class Utils {
     }
 
     public static boolean isInsideBoundingBox(double latPoint, double lonPoint, double latTopLeft, double longTopLeft, double latBottomRight, double longBottomRight) {
-        if ((latPoint <= latTopLeft) && (latPoint >= latBottomRight) && (lonPoint >= longTopLeft) && (lonPoint <= longBottomRight)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (latPoint <= latTopLeft) && (latPoint >= latBottomRight) && (lonPoint >= longTopLeft) && (lonPoint <= longBottomRight);
     }
 
     public static boolean isDebuggableFlag(Context context) {
         return (0 != (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE));
+    }
+
+    public static boolean isGPSEnabled(Context context) {
+        android.location.LocationManager locationManager = (android.location.LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
+    }
+
+
+    @SuppressWarnings("UnusedReturnValue")
+    public static boolean checkGooglePlaySevices(final Activity activity) {
+        final int googlePlayServicesCheck = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity);
+        switch (googlePlayServicesCheck) {
+            case ConnectionResult.SUCCESS:
+                return true;
+            case ConnectionResult.SERVICE_DISABLED:
+            case ConnectionResult.SERVICE_INVALID:
+            case ConnectionResult.SERVICE_MISSING:
+                return false;
+            case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
+                Dialog dialog = GooglePlayServicesUtil.getErrorDialog(googlePlayServicesCheck, activity, 0);
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        activity.finish();
+                    }
+                });
+                dialog.show();
+        }
+        return false;
+    }
+
+    /**
+     * get score for coverage
+     * @param coverage - value from 0 to 10 (10 included)
+     * @return score
+     */
+    public static int getValueOnSegment(int coverage) {
+        if (coverage < 0) {
+            return 0;
+        }
+        coverage = Math.min(SCORES.length - 1, coverage);
+        coverage = Math.max(0, coverage);
+        return SCORES[coverage];
     }
 }

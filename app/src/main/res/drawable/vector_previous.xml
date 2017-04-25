@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="34dp"
+    android:height="34dp"
+    android:viewportWidth="34"
+    android:viewportHeight="34">
+
+    <group
+            android:name="Icons"
+            android:translateX="-338.000000"
+            android:translateY="-129.000000">
+        <path
+            android:name="previous"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"
+            android:strokeWidth="1"
+            android:pathData="M345,136 L348.333333,136 L348.333333,156 L345,156 L345,136 Z M350.833333,146
+L365,156 L365,136 L350.833333,146 Z" />
+    </group>
+</vector>

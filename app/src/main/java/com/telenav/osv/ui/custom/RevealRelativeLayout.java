@@ -17,8 +17,10 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.RelativeLayout;
 import com.telenav.osv.R;
+import com.telenav.osv.utils.Log;
 
 /**
+ *
  * Created by Dmitri on 22/05/2015.
  */
 public class RevealRelativeLayout extends RelativeLayout {
@@ -27,6 +29,8 @@ public class RevealRelativeLayout extends RelativeLayout {
     private static final int DEFAULT_COLOR = Color.WHITE;
 
     private static final int DEFAULT_DURATION = 300;
+
+    private static final String TAG = "RevealRelativeLayout";
 
     private Path mPath;
 
@@ -88,6 +92,7 @@ public class RevealRelativeLayout extends RelativeLayout {
     public void reveal(final Point point, int duration) {
         this.point.x = point.x;
         this.point.y = point.y;
+        Log.d(TAG, "reveal: x = " + point.x + ", y = " + point.y);
         mState = mState == STATE_HIDDEN ? STATE_REVEALED : STATE_HIDDEN;
         ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -220,6 +225,10 @@ public class RevealRelativeLayout extends RelativeLayout {
         }
 
         super.onRestoreInstanceState(ss.getSuperState());
+    }
+
+    public boolean isVisible() {
+        return mState == STATE_REVEALED;
     }
 
     /**

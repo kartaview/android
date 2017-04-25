@@ -1082,21 +1082,25 @@ int prepareAsync_l(VideoState **ps) {
 //    }
         // Open video file
         int retur = avformat_open_input(&is->pFormatCtx, is->filename, NULL, &options);
-        if (retur != 0) {//todo custom seek function
-            LOGE("avformat_open_input failed with %i", retur);
+        if (retur != 0) {
             if (retur == AVERROR_INVALIDDATA) {
                 return retur;
             }
-            notify_from_thread(is, MEDIA_ERROR, 0, 0);
-            return -1; // Couldn't open file
+            char arr[200];
+            av_strerror(retur, (char *) &arr, 200);
+            LOGE("avformat_open_input failed with %i - %s", retur, (char *) &arr);
+//            notify_from_thread(is, MEDIA_ERROR, 0, 0);
+            return retur; // Couldn't open file
         }
 
         // Retrieve stream information
         retur = avformat_find_stream_info(is->pFormatCtx, NULL);
         if (retur < 0) {
-            LOGE("couldn't find stream info %i", retur);
-            notify_from_thread(is, MEDIA_ERROR, 0, 0);
-            return -1; // Couldn't find stream information
+            char arr[200];
+            av_strerror(retur, (char *) &arr, 200);
+            LOGE("couldn't find stream info %i - %s at %s", retur, (char *) &arr, is->filename);
+//            notify_from_thread(is, MEDIA_ERROR, 0, 0);
+            return retur; // Couldn't find stream information
         }
 
         // Dump information about file onto standard error
@@ -1117,8 +1121,8 @@ int prepareAsync_l(VideoState **ps) {
 
         if (is->videoStream < 0) {
             LOGE("%s: could not open codecs", is->filename);
-            notify_from_thread(is, MEDIA_ERROR, 0, 0);
-            return 0;
+//            notify_from_thread(is, MEDIA_ERROR, 0, 0);
+            return retur;
         }
 
         set_rotation(is->pFormatCtx, is->video_st);

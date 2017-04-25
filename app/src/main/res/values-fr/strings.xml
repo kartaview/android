@@ -89,7 +89,7 @@
     <string name="p_upload_finished">"Téléversement complété : "</string>
     <string name="p_successful">" avec succès, "</string>
     <string name="p_failed">" échoué."</string>
-    <string name="update_available_message">Une nouvelle version d\'OpenStreetView est disponible.</string>
+    <string name="update_available_message">Une nouvelle version d\'OpenStreetCam est disponible.</string>
     <string name="update_label">Mise-à-jour</string>
     <string name="update_now_label">Mettre à jour maintenant</string>
     <string name="settings_label">Paramètres</string>
@@ -132,7 +132,6 @@
     <string name="stop_caps_label">ARRÊTER</string>
     <string name="resolution_label">Résolution</string>
     <string name="connection_type">Type de connexion</string>
-    <string name="feedback_text">Commentaires</string>
     <string name="about_label">À propos</string>
     <string name="tips_label">Conseils</string>
     <string name="debug_label">Debug</string>

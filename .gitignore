@@ -1,4 +1,3 @@
-
 .gradle
 .idea
 .DS_Store
@@ -6,6 +5,7 @@
 /app/build/
 /bluetoothobd/build/
 /connectivity/build/
+/eventbus/build/
 /fab/build/
 /ffmpeg/build/
 /volley/build/
@@ -27,3 +27,5 @@ ffmpeg/src/main/jniLibs/armeabi-v7a/include/
 ffmpeg/src/main/jniLibs/armeabi-v7a/bin/
 ffmpeg/src/main/jniLibs/x86/include/
 ffmpeg/src/main/jniLibs/x86/bin/
+app/src/main/protogen/
+*.apk

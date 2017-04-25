@@ -20,13 +20,12 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.StringSignature;
+import com.pnikosis.materialishprogress.ProgressWheel;
 import com.skobbler.ngx.SKCoordinate;
-import com.skobbler.ngx.reversegeocode.SKReverseGeocoderManager;
-import com.skobbler.ngx.search.SKSearchResult;
-import com.skobbler.ngx.search.SKSearchResultParent;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.item.Sequence;
+import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.utils.Utils;
 
 /**
@@ -49,7 +48,13 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private boolean mInternetAvailable;
 
-    private TextView txtWeekPositionValue;
+    private ProgressWheel experienceProgress;
+
+    private TextView experienceText;
+
+    private TextView levelText;
+
+    private TextView rankText;
 
     private TextView txtImagesNumber;
 
@@ -59,12 +64,7 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private TextView txtObd;
 
-    private TextView txtTitleHeader;
-
-    public SequenceAdapter(List<Sequence> results, MainActivity activity) {
-        this(results, activity, true);
-
-    }
+    private TextView scoreText;
 
     public SequenceAdapter(List<Sequence> results, MainActivity activity, boolean showHeader) {
         mSequenceList = results;
@@ -81,17 +81,17 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         if (viewType == TYPE_HEADER) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.my_profile_header, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.partial_profile_header, parent, false);
             if (!showHeader) {
                 v.setVisibility(View.GONE);
                 RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(0, 0);
                 int fiveDips = (int) (5 * activity.getResources().getDisplayMetrics().density);
-                lp.setMargins(-fiveDips,0,-fiveDips,fiveDips);
+                lp.setMargins(-fiveDips, 0, -fiveDips, fiveDips);
                 v.setLayoutParams(lp);
             }
             return new HeaderViewHolder(v);
         } else if (viewType == TYPE_ITEM) {
-            CardView layoutView = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.sequence_card, null);
+            CardView layoutView = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sequence_card, null);
 
             layoutView.setUseCompatPadding(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -106,7 +106,7 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return sequenceHolder;
 
         } else if (viewType == TYPE_ITEM_NO_INTERNET) {
-            CardView layoutView = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.sequence_card_no_internet, null);
+            CardView layoutView = (CardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.item_no_internet_card, null);
 
             layoutView.setUseCompatPadding(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -133,35 +133,53 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             } else if (holder instanceof SequenceHolder) {
                 SequenceHolder sequenceHolder = (SequenceHolder) holder;
-                final Sequence sequence = mSequenceList.get(Math.min(position, mSequenceList.size() - 1));
+                final Sequence sequence = mSequenceList.get(Math.min(position - (showHeader ? 1 : 0), mSequenceList.size() - 1));
 
                 Glide.with(activity)
                         .load(sequence.thumblink)
                         .centerCrop()
                         .diskCacheStrategy(DiskCacheStrategy.RESULT)
                         .skipMemoryCache(false)
-                        .placeholder(R.drawable.image_loading_background)
+                        .placeholder(R.drawable.custom_image_loading_background)
                         .signature(new StringSignature(sequence.thumblink + " " + sequence.location.getLatitude() + ", " + sequence.location.getLongitude()))
-                        .error(R.drawable.image_broken_background)
+                        .error(R.drawable.custom_image_broken_background)
                         .listener(MainActivity.mGlideRequestListener)
                         .into(sequenceHolder.imageItem);
 
                 if (sequence.address.equals("")) {
                     reverseGeocodeAddress(sequence, true);
                 } else {
-                    ((SequenceHolder) holder).addressTextItem.setText(sequence.address.equals("") ? "<location>" : sequence.address);
+                    sequenceHolder.addressTextItem.setText(sequence.address.equals("") ? sequence.location.getLatitude() + ", " + sequence.location.getLongitude() : sequence.address);
                 }
-                ((SequenceHolder) holder).totalImagesTextItem.setText(sequence.originalImageCount + " IMG");
-                ((SequenceHolder) holder).dateTimeTextItem.setText(sequence.title);
+                sequenceHolder.totalImagesTextItem.setText(sequence.originalImageCount + " IMG");
+                sequenceHolder.dateTimeTextItem.setText(sequence.title);
+                if (showHeader) {
+                    String first;
+                    if (sequence.score > 10000){
+                        first = sequence.score / 1000 + "K\n";
+                    } else {
+                        first = sequence.score + "\n";
+                    }
+                    String second = "pts";
+                    SpannableString styledString = new SpannableString(first + second);
+                    styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, first.length(), 0);
+                    styledString.setSpan(new StyleSpan(Typeface.NORMAL), first.length(), second.length() + first.length(), 0);
+                    styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
+                    styledString.setSpan(new AbsoluteSizeSpan(12, true), first.length(), second.length() + first.length(), 0);
+                    sequenceHolder.pointsTextItem.setText(styledString);
+                } else {
+                    sequenceHolder.pointsBackground.setVisibility(View.GONE);
+                    sequenceHolder.pointsTextItem.setVisibility(View.GONE);
+                }
                 if (sequence.mTotalLength > 0) {
-                    ((SequenceHolder) holder).totalLengthTextItem.setVisibility(View.VISIBLE);
+                    sequenceHolder.totalLengthTextItem.setVisibility(View.VISIBLE);
                     String[] distance = Utils.formatDistanceFromMeters(activity, sequence.mTotalLength);
-                    ((SequenceHolder) holder).totalLengthTextItem.setText(distance[0] + distance[1]);
+                    sequenceHolder.totalLengthTextItem.setText(distance[0] + distance[1]);
                 }
-                ((SequenceHolder) holder).container.setOnClickListener(new View.OnClickListener() {
+                sequenceHolder.container.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        activity.openScreen(MainActivity.SCREEN_PREVIEW, sequence);
+                        activity.openScreen(ScreenComposer.SCREEN_PREVIEW, sequence);
                     }
                 });
 
@@ -180,52 +198,7 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (sequence.location.getLatitude() == 0 || sequence.location.getLongitude() == 0) {
             return;
         }
-        if (SKReverseGeocoderManager.getInstance() != null) {
-            SKSearchResult addr = SKReverseGeocoderManager.getInstance().reverseGeocodePosition(new SKCoordinate(sequence.location.getLongitude(), sequence.location
-                    .getLatitude()));
-            if (addr != null) {
-                sequence.address = addr.getName();
-                String city = "", state = "";
-                for (SKSearchResultParent p : addr.getParentsList()) {
-                    switch (p.getParentType()) {
-                        case CITY:
-                            city = p.getParentName();
-                            break;
-                        case CITY_SECTOR:
-                            if (city.equals("")) {
-                                city = p.getParentName();
-                            }
-                            break;
-                        case STATE:
-                            state = p.getParentName();
-                            break;
-                    }
-                }
-                if (!city.equals("")) {
-                    sequence.address += ", " + city;
-                }
-                if (!state.equals("")) {
-                    sequence.address += ", " + state;
-                }
-            }
-            if (sequence.address.equals("") && retry) {
-                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        reverseGeocodeAddress(sequence, false);
-                    }
-                }, 1500);
-            }
-        } else {
-            if (retry) {
-                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        reverseGeocodeAddress(sequence, false);
-                    }
-                }, 1500);
-            }
-        }
+        Sequence.reverseGeocodeAddress(sequence,activity);
 
     }
 
@@ -254,13 +227,60 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    public void refreshDetails(String[] totalDistanceFormatted, String[] obdDistanceFormatted, String totalPhotos, String overallRank, String totalTracks, String weeklyRank) {
-        if (txtTitleHeader != null) {
-            txtTitleHeader.setText(overallRank);
+
+    public void refreshDetails(String[] totalDistance, String[] obdDistance, String totalPhotos, String totalTracks, int rank, int score, int level, int xpProgress,
+                               int xpTarget) {
+        if (scoreText != null) {
+            String first = "Score\n";
+            String second = Utils.formatNumber(score);
+            SpannableString styledString = new SpannableString(first + second);
+            styledString.setSpan(new StyleSpan(Typeface.NORMAL), 0, first.length(), 0);
+            styledString.setSpan(new StyleSpan(Typeface.BOLD), first.length(), second.length() + first.length(), 0);
+            styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
+            styledString.setSpan(new AbsoluteSizeSpan(20, true), first.length(), second.length() + first.length(), 0);
+            styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.white)), 0, first.length(), 0);
+            styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.white)), first.length(), second.length() + first.length(), 0);
+            scoreText.setText(styledString);
         }
-        if (txtWeekPositionValue != null) {
-            txtWeekPositionValue.setText(weeklyRank);
+        if (rankText != null) {
+            String first = "Rank\n";
+            String second = "" + (rank == 0 ? "-" : rank);
+            SpannableString styledString = new SpannableString(first + second);
+            styledString.setSpan(new StyleSpan(Typeface.NORMAL), 0, first.length(), 0);
+            styledString.setSpan(new StyleSpan(Typeface.BOLD), first.length(), second.length() + first.length(), 0);
+            styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
+            styledString.setSpan(new AbsoluteSizeSpan(20, true), first.length(), second.length() + first.length(), 0);
+            styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.action_bar_blue)), 0, first.length(), 0);
+            styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.action_bar_blue)), first.length(), second.length() + first.length(), 0);
+            rankText.setText(styledString);
+            rankText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    activity.goToLeaderboard();
+                }
+            });
         }
+        if (levelText != null) {
+            levelText.setText("" + level);
+        }
+        if (experienceText != null) {
+            String first = Utils.formatNumber(xpTarget - score) + "";
+            String second = " points to next level";
+            SpannableString styledString = new SpannableString(first + second);
+            styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, first.length(), 0);
+            styledString.setSpan(new StyleSpan(Typeface.NORMAL), first.length(), second.length() + first.length(), 0);
+            experienceText.setText(styledString);
+        }
+        if (experienceProgress != null) {
+            float levelLenght = xpTarget - (score - xpProgress);
+            float progressPercentage = ((int) ((float) xpProgress / levelLenght * 100f)) / 100f;
+            if (progressPercentage > 0.9f){
+                progressPercentage = 0.9f;
+            }
+            experienceProgress.setProgress(progressPercentage);
+        }
+
+        //the lower all-time stats
         if (activity != null) {
             String imagesText = activity.getString(R.string.account_images_label);
             String tracksText = activity.getString(R.string.account_tracks_label);
@@ -268,21 +288,21 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             String obdText = activity.getString(R.string.account_obd_label);
 
             if (txtImagesNumber != null) {
-                txtImagesNumber.setText(getSpannable(imagesText, totalPhotos));
+                txtImagesNumber.setText(getSpannableForStats(imagesText, totalPhotos));
             }
             if (txtTracksNumber != null) {
-                txtTracksNumber.setText(getSpannable(tracksText, totalTracks));
+                txtTracksNumber.setText(getSpannableForStats(tracksText, totalTracks));
             }
             if (txtDistance != null) {
-                txtDistance.setText(getSpannable(distanceText, totalDistanceFormatted[0] + " " + totalDistanceFormatted[1]));
+                txtDistance.setText(getSpannableForStats(distanceText, totalDistance[0] + " " + totalDistance[1]));
             }
             if (txtObd != null) {
-                txtObd.setText(getSpannable(obdText, obdDistanceFormatted[0] + " " + obdDistanceFormatted[1]));
+                txtObd.setText(getSpannableForStats(obdText, obdDistance[0] + " " + obdDistance[1]));
             }
         }
     }
 
-    public SpannableString getSpannable(String first, String second) {
+    private SpannableString getSpannableForStats(String first, String second) {
         SpannableString styledString = new SpannableString(first + second);
         styledString.setSpan(new StyleSpan(Typeface.NORMAL), 0, first.length(), 0);
         styledString.setSpan(new StyleSpan(Typeface.BOLD), first.length(), second.length() + first.length(), 0);
@@ -293,7 +313,12 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return styledString;
     }
 
-    public static class SequenceHolder extends RecyclerView.ViewHolder {
+
+    private static class SequenceHolder extends RecyclerView.ViewHolder {
+
+        ImageView pointsBackground;
+
+        TextView pointsTextItem;
 
         View container;
 
@@ -308,7 +333,7 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         TextView totalLengthTextItem;
 
 
-        public SequenceHolder(View v) {
+        SequenceHolder(View v) {
             super(v);
             container = v;
             addressTextItem = (TextView) v.findViewById(R.id.sequence_address_label);
@@ -316,26 +341,30 @@ public class SequenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             totalImagesTextItem = (TextView) v.findViewById(R.id.total_images_textView);
             dateTimeTextItem = (TextView) v.findViewById(R.id.sequence_datetime_label);
             totalLengthTextItem = (TextView) v.findViewById(R.id.total_length_label);
-
+            pointsTextItem = (TextView) v.findViewById(R.id.points_text);
+            pointsBackground = (ImageView) v.findViewById(R.id.points_background);
         }
     }
 
-    public static class MessageCardHolder extends RecyclerView.ViewHolder {
+    private static class MessageCardHolder extends RecyclerView.ViewHolder {
         View container;
 
-        public MessageCardHolder(View v) {
+        MessageCardHolder(View v) {
             super(v);
             container = v;
         }
     }
 
-    class HeaderViewHolder extends RecyclerView.ViewHolder {
+    private class HeaderViewHolder extends RecyclerView.ViewHolder {
 
 
-        public HeaderViewHolder(View itemView) {
+        HeaderViewHolder(View itemView) {
             super(itemView);
-            txtTitleHeader = (TextView) itemView.findViewById(R.id.global_rank_value);
-            txtWeekPositionValue = (TextView) itemView.findViewById(R.id.this_week_position_value);
+            scoreText = (TextView) itemView.findViewById(R.id.score_text);
+            rankText = (TextView) itemView.findViewById(R.id.rank_text);
+            levelText = (TextView) itemView.findViewById(R.id.level_text);
+            experienceText = (TextView) itemView.findViewById(R.id.experience_text);
+            experienceProgress = (ProgressWheel) itemView.findViewById(R.id.experience_progress);
             txtImagesNumber = (TextView) itemView.findViewById(R.id.images_text_view);
             txtTracksNumber = (TextView) itemView.findViewById(R.id.tracks_text_view);
             txtDistance = (TextView) itemView.findViewById(R.id.distance_text_view);

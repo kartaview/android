@@ -66,7 +66,7 @@ public class BleDeviceAdapter extends BaseAdapter {
         if (view == null) {
             // inflate the layout
             LayoutInflater inflater = ((Activity) mContext).getLayoutInflater();
-            view = inflater.inflate(R.layout.listitem_device, viewGroup, false);
+            view = inflater.inflate(R.layout.item_bt_device_list, viewGroup, false);
             viewHolder = new ViewHolder();
             viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
             viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);

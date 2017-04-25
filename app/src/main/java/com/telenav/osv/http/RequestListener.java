@@ -26,5 +26,7 @@ public interface RequestListener {
 
     int STATUS_SUCCESS_PROFILE_DETAILS = 9;
 
+    int STATUS_SUCCESS_LEADERBOARD = 10;
+
     void requestFinished(int status);
 }

@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -28,7 +27,7 @@ import android.widget.Toast;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.manager.ObdBleManager;
+import com.telenav.osv.manager.obd.ObdBleManager;
 import com.telenav.osv.obd.BLEConnection;
 import com.telenav.osv.obd.Constants;
 import com.telenav.osv.ui.list.BleDeviceAdapter;
@@ -70,6 +69,10 @@ public class BLEDialogFragment extends DialogFragment {
      * shared preferences
      */
     private SharedPreferences preferences;
+
+    private ObdBleManager mObdBleManager;
+
+    private MainActivity activity;
 
     private ScanCallback scanCallback = new ScanCallback() {
         @Override
@@ -114,8 +117,11 @@ public class BLEDialogFragment extends DialogFragment {
         }
     };
 
+    private ImageView refreshButton;
 
-    private ObdBleManager mObdBleManager;
+    private View.OnClickListener mScanOnClickListener;
+
+    private OnDeviceSelectedListener deviceSelectedListener;
 
     /**
      * device item list click listener
@@ -144,27 +150,19 @@ public class BLEDialogFragment extends DialogFragment {
         }
     };
 
-    private MainActivity activity;
-
-    private ImageView refreshButton;
-
-    private View.OnClickListener mScanOnClickListener;
-
     public void setDeviceSelectedListener(OnDeviceSelectedListener deviceSelectedListener) {
         this.deviceSelectedListener = deviceSelectedListener;
     }
-
-    private OnDeviceSelectedListener deviceSelectedListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_devices_list, container, false);
         activity = (MainActivity) getActivity();
         try {
-            mObdBleManager = (ObdBleManager) activity.getApp().getOBDManager();
+            mObdBleManager = (ObdBleManager) activity.getApp().getRecorder().getOBDManager();
         } catch (ClassCastException e){
-            activity.getApp().setObdManager(PreferenceTypes.V_OBD_BLE);
-            mObdBleManager = (ObdBleManager) activity.getApp().getOBDManager();
+            activity.getApp().getRecorder().createObdManager(PreferenceTypes.V_OBD_BLE);
+            mObdBleManager = (ObdBleManager) activity.getApp().getRecorder().getOBDManager();
         }
         preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
 

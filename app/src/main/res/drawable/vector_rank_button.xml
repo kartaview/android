@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="54dp"
+    android:height="40dp"
+    android:viewportWidth="54"
+    android:viewportHeight="40">
+
+    <group
+            android:name="Icons"
+            android:translateX="-249.000000"
+            android:translateY="-259.000000">
+        <path
+            android:name="rank-button"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"
+            android:strokeWidth="1"
+            android:pathData="M 255 259 L 297 259 Q 303 259 303 265 L 303 293 Q 303 299 297 299 L 255 299 Q 249 299 249 293 L 249 265 Q 249 259 255 259 Z" />
+    </group>
+</vector>

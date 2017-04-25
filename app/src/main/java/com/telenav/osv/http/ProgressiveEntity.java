@@ -7,27 +7,27 @@ import java.io.OutputStream;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Process;
 import android.support.annotation.NonNull;
 
 /**
+ * entity for streamed upload
  * Created by Kalman on 06/09/16.
  */
-
 public class ProgressiveEntity implements HttpEntity {
-    private static final String TAG = "ProgressiveEntity";
 
     private final DataProgressListener mListener;
 
     private final long mTotalSize;
 
+    private final Handler mResponseHandler;
+
     private HttpEntity mEntity;
 
-    public ProgressiveEntity(HttpEntity entity, DataProgressListener listener, long size) {
+    ProgressiveEntity(HttpEntity entity, DataProgressListener listener, long size, Handler responseHandler) {
         mEntity = entity;
         mListener = listener;
         mTotalSize = size;
+        mResponseHandler = responseHandler;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class ProgressiveEntity implements HttpEntity {
 
     @Override
     public void writeTo(OutputStream outstream) throws IOException {
-        mEntity.writeTo(new ProgressiveOutputStream(outstream, mListener));
+        mEntity.writeTo(new ProgressiveOutputStream(outstream, mListener, mResponseHandler));
     }
 
     public interface DataProgressListener {
@@ -119,8 +119,6 @@ public class ProgressiveEntity implements HttpEntity {
 
         private long afterReport;
 
-        private HandlerThread mHandlerThread = new HandlerThread("ProgressiveReport", Process.THREAD_PRIORITY_BACKGROUND);
-
         private Handler mHandler;
 
         private Runnable updateRunnable = new Runnable() {
@@ -132,10 +130,9 @@ public class ProgressiveEntity implements HttpEntity {
 
         private long mLastTime = 0;
 
-        private ProgressiveOutputStream(OutputStream proxy, DataProgressListener listener) {
+        private ProgressiveOutputStream(OutputStream proxy, DataProgressListener listener, Handler responseHandler) {
             super(proxy);
-            mHandlerThread.start();
-            mHandler = new Handler(mHandlerThread.getLooper());
+            mHandler = responseHandler;
             totalSent = 0;
             afterReport = MB;
             mListener = listener;
@@ -144,7 +141,6 @@ public class ProgressiveEntity implements HttpEntity {
         public void write(@NonNull byte[] bts, int st, int end) throws IOException {
             totalSent += end;
             afterReport += end;
-//            Log.d(TAG, "write: totalSent: " + totalSent + ", totalSize: " + mTotalSize);
             if (afterReport >= MB && System.currentTimeMillis() - mLastTime > 1000) {
                 mLastTime = System.currentTimeMillis();
                 mHandler.post(updateRunnable);

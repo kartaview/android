@@ -30,6 +30,7 @@
 #include "mediaplayer.h"
 
 
+
 #ifdef ANDROID
 #include <android/log.h>
 #define LOGE(format, ...)  __android_log_print(ANDROID_LOG_ERROR, "FFMPEG_MP_JNI E ", format, ##__VA_ARGS__)

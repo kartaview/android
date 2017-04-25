@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="72"
+    android:viewportHeight="72">
+
+    <group
+        android:name="Mobile">
+        <group
+            android:name="Icons"
+            android:translateX="-662.000000"
+            android:translateY="-125.000000">
+            <group
+                android:name="Button-Record-Inactive"
+                android:translateX="666.000000"
+                android:translateY="129.000000">
+                <group>
+                    <group
+                        android:name="Oval-1-Copy">
+                        <path
+                            android:name="path-1"
+                            android:fillColor="#000000"
+                            android:fillType="evenOdd"
+                            android:strokeWidth="1"
+                            android:pathData="M 32 0 C 49.6731119946 0 64 14.3268880054 64 32 C 64 49.6731119946 49.6731119946 64 32 64 C 14.3268880054 64 0 49.6731119946 0 32 C 0 14.3268880054 14.3268880054 0 32 0 Z" />
+                        <path
+                            android:name="path-1"
+                            android:fillColor="#000000"
+                            android:fillType="evenOdd"
+                            android:strokeWidth="1"
+                            android:pathData="M 32 0 C 49.6731119946 0 64 14.3268880054 64 32 C 64 49.6731119946 49.6731119946 64 32 64 C 14.3268880054 64 0 49.6731119946 0 32 C 0 14.3268880054 14.3268880054 0 32 0 Z" />
+                        <path
+                            android:name="path-1"
+                            android:fillType="evenOdd"
+                            android:strokeColor="#FFFFFF"
+                            android:strokeWidth="6"
+                            android:pathData="M 32 0 C 49.6731119946 0 64 14.3268880054 64 32 C 64 49.6731119946 49.6731119946 64 32 64 C 14.3268880054 64 0 49.6731119946 0 32 C 0 14.3268880054 14.3268880054 0 32 0 Z" />
+                        <path
+                            android:name="path-1"
+                            android:fillType="evenOdd"
+                            android:strokeColor="#FFFFFF"
+                            android:strokeWidth="2"
+                            android:pathData="M 32 0 C 49.6731119946 0 64 14.3268880054 64 32 C 64 49.6731119946 49.6731119946 64 32 64 C 14.3268880054 64 0 49.6731119946 0 32 C 0 14.3268880054 14.3268880054 0 32 0 Z" />
+                        <path
+                            android:name="path-1"
+                            android:fillColor="#000000"
+                            android:fillType="evenOdd"
+                            android:strokeColor="#FFFFFF"
+                            android:strokeWidth="2"
+                            android:pathData="M 32 0 C 49.6731119946 0 64 14.3268880054 64 32 C 64 49.6731119946 49.6731119946 64 32 64 C 14.3268880054 64 0 49.6731119946 0 32 C 0 14.3268880054 14.3268880054 0 32 0 Z" />
+                        <path
+                            android:name="path-1"
+                            android:fillColor="#000000"
+                            android:fillType="evenOdd"
+                            android:strokeColor="#FFFFFF"
+                            android:strokeWidth="6"
+                            android:pathData="M 32 0 C 49.6731119946 0 64 14.3268880054 64 32 C 64 49.6731119946 49.6731119946 64 32 64 C 14.3268880054 64 0 49.6731119946 0 32 C 0 14.3268880054 14.3268880054 0 32 0 Z" />
+                    </group>
+                    <group
+                        android:name="Rectangle-279">
+                        <path
+                            android:name="path-4"
+                            android:fillColor="#000000"
+                            android:fillType="evenOdd"
+                            android:strokeWidth="1"
+                            android:pathData="M 32 8 L 32 8 Q 56 8 56 32 L 56 32 Q 56 56 32 56 L 32 56 Q 8 56 8 32 L 8 32 Q 8 8 32 8 Z" />
+                        <path
+                            android:name="path-4"
+                            android:fillColor="#E9214C"
+                            android:fillType="evenOdd"
+                            android:strokeWidth="1"
+                            android:pathData="M 32 8 L 32 8 Q 56 8 56 32 L 56 32 Q 56 56 32 56 L 32 56 Q 8 56 8 32 L 8 32 Q 8 8 32 8 Z" />
+                        <path
+                            android:name="path-4"
+                            android:fillColor="#E9214C"
+                            android:fillType="evenOdd"
+                            android:strokeWidth="1"
+                            android:pathData="M 32 8 L 32 8 Q 56 8 56 32 L 56 32 Q 56 56 32 56 L 32 56 Q 8 56 8 32 L 8 32 Q 8 8 32 8 Z" />
+                    </group>
+                </group>
+            </group>
+        </group>
+    </group>
+</vector>

@@ -47,7 +47,19 @@ static size_t captureBacktrace(void **buffer, size_t max) {
     return state.current - buffer;
 }
 
-static void dumpBacktrace(std::ostream &os, void **buffer, size_t count) {
+static bool dumpBacktrace(std::ostream &os, void **buffer, size_t count) {
+    bool libEncodeSo = false;
+    bool libAvcodecSo = false;
+    bool libAvfilterSo = false;
+    bool libAvformatSo = false;
+    bool libAvutilSo = false;
+    bool libSwresampleSo = false;
+    bool libSwscaleSo = false;
+    bool libNgnativeSo = false;
+    bool javaComTelenavFfmpeg = false;
+    bool ffmpeg = false;
+    bool javaComSkobblerNgx = false;
+    bool mapRenderer = false;
     for (size_t idx = 0; idx < count; ++idx) {
         const void *addr = buffer[idx];
         const char *symbol = "";
@@ -66,9 +78,27 @@ static void dumpBacktrace(std::ostream &os, void **buffer, size_t count) {
             addr2 = info.dli_saddr;
         }
 
-        LOGE("# %x : %x %s \n                                            %s", idx,addr,symbol,path);
-        os << "  #" << std::setw(2) << idx << ": " << addr << "  " << addr2 << "  " << symbol << "\n                                         " << path << "\n\n";
+//        LOGE("# %x : %x %s \n                                            %s", idx,addr,symbol,path);
+        os << "  #" << std::setw(2) << idx << ": " << addr << "  " << addr2 << "  " << path << "     " << symbol << "\n";
+
+        libEncodeSo = libEncodeSo || strstr(path,"libencode.so") != NULL;
+        libAvcodecSo = libAvcodecSo || strstr(path,"libavcodec.so") != NULL;
+        libAvfilterSo = libAvfilterSo || strstr(path,"libavfilter.so") != NULL;
+        libAvformatSo = libAvformatSo || strstr(path,"libavformat.so") != NULL;
+        libAvutilSo = libAvutilSo || strstr(path,"libavutil.so") != NULL;
+        libSwresampleSo = libSwresampleSo || strstr(path,"libswresample.so") != NULL;
+        libSwscaleSo = libSwscaleSo || strstr(path,"libswscale.so") != NULL;
+        libNgnativeSo = libNgnativeSo || strstr(path,"libngnative.so") != NULL;
+
+
+        javaComTelenavFfmpeg = javaComTelenavFfmpeg || strstr(symbol,"Java_com_telenav_ffmpeg") != NULL;
+        ffmpeg = ffmpeg || strstr(symbol,"FFMPEG") != NULL;
+        javaComSkobblerNgx = javaComSkobblerNgx || strstr(symbol,"Java_com_skobbler_ngx") != NULL;
+        mapRenderer = mapRenderer || strstr(symbol,"MapRenderer") != NULL || strstr(symbol,"NG_Transform");
     }
+
+    //isEncoding?
+    return !(mapRenderer || javaComSkobblerNgx || libNgnativeSo) && (ffmpeg || javaComTelenavFfmpeg || libEncodeSo || libAvcodecSo || libAvformatSo || libSwscaleSo);
 }
 
 //static void backtraceToLogcat();

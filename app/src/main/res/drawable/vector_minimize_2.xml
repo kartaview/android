@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="30dp"
+    android:height="30dp"
+    android:viewportWidth="30"
+    android:viewportHeight="30">
+
+    <group
+            android:name="Icons"
+            android:translateX="-150.000000"
+            android:translateY="-129.000000">
+        <group
+                android:name="minimize"
+                android:translateX="150.000000"
+                android:translateY="129.000000">
+            <path
+                android:name="Rectangle-800"
+                android:fillColor="#3B3D46"
+                android:fillType="evenOdd"
+                android:strokeWidth="1"
+                android:pathData="M 2 0 L 28 0 Q 30 0 30 2 L 30 28 Q 30 30 28 30 L 2 30 Q 0 30 0 28 L 0 2 Q 0 0 2 0 Z" />
+            <group
+                    android:name="ic_fullscreen_exit_white_24px"
+                    android:translateX="8.000000"
+                    android:translateY="8.000000">
+                <path
+                    android:name="Shape"
+                    android:fillColor="#FFFFFF"
+                    android:fillType="evenOdd"
+                    android:strokeWidth="1"
+                    android:pathData="M0,11 L3,11 L3,14 L5,14 L5,9 L0,9 L0,11 L0,11 Z M3,3 L0,3 L0,5 L5,5 L5,0 L3,0
+L3,3 L3,3 Z M9,14 L11,14 L11,11 L14,11 L14,9 L9,9 L9,14 L9,14 Z M11,3 L11,0 L9,0
+L9,5 L14,5 L14,3 L11,3 L11,3 Z" />
+            </group>
+        </group>
+    </group>
+</vector>

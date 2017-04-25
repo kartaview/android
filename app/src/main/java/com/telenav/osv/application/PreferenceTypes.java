@@ -43,11 +43,11 @@ public final class PreferenceTypes {
 
     public static final String K_DISTANCE_UNIT_METRIC = "distanceUnit";
 
-    public static final String K_SIGN_DETECTION = "signDetection";
+    public static final String K_SIGN_DETECTION_ENABLED = "signDetection";
 
-    public static final String K_SIGN_DETECTION_US = "signDetectionRegionUS";
+    public static final String K_REGION_US = "signDetectionRegionUS";
 
-    public static final String K_INTRO_SHOWN = "introShown";
+    public static final String K_INTRO_SHOWN = "walkthroughShown";
 
     public static final String K_RUN_COUNTER = "runCounter";
 
@@ -59,7 +59,7 @@ public final class PreferenceTypes {
 
     public static final String K_VERSION_CODE = "versionCode";
 
-    public static final String K_HINT_LONGPRESS_TO_SELECT = "hintLongpressToSelect";
+    public static final String K_MAP_DISABLED = "mapDisabled";
 
     public static final String K_OBD_TYPE = "obdType";
 
@@ -76,6 +76,34 @@ public final class PreferenceTypes {
     public static final String K_RESOLUTION_HEIGHT = "resolutionHeight";
 
     public static final String K_RECORDING_MAP_ENABLED = "recordingMapEnabled";
+
+    public static final String K_SKIP_DELETE_DIALOG = "showDeleteDialog";
+
+    public static final String K_GAMIFICATION = "gamification";
+
+    public static final String K_CRASHED = "crashed";
+
+    public static final String K_SHOW_SAFE_MODE_MESSAGE = "showSafeModeMessage";
+
+    public static final String K_SAFE_MODE_ENABLED = "safeModeEnabled";
+
+    public static final String K_SHOW_CLEAR_RECENTS_WARNING = "clearRecentsWarning";
+
+    public static final String K_USER_TYPE = "userType";
+
+    public static final String V_USER_TYPE_DRIVER = "driver";
+
+    public static final String V_USER_TYPE_USER = "user";
+
+    public static final String V_USER_TYPE_QA = "qa";
+
+    public static final String K_USER_PHOTO_URL = "userPhotoUrl";
+
+    public static final String K_DISPLAY_NAME = "displayName";
+
+    public static final String K_LOGIN_TYPE = "loginType";
+
+    public static final String K_FFMPEG_CRASH_COUNTER = "ffmpegCrashCounter";
 
     private PreferenceTypes() {}
 }

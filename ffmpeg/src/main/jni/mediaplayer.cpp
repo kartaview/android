@@ -42,10 +42,14 @@ void MediaPlayer::disconnect() {
         }
     }
 }
+//void MediaPlayer::onError() {
+//    LOGE("FFMPEG caused a crash...");
+//    notify(NULL, MEDIA_ERROR, 0, 0, 1);
+//}
 
 void MediaPlayer::initSigHandler() {
     LOGI("Initializing signal handler");
-    initSignalHandler();
+    initSignalHandler(NULL);
 }
 
 // always call with lock held
@@ -231,9 +235,12 @@ status_t MediaPlayer::setDataSource(const char *urls[], int size) {
                     } else {
                         continue;
                     }
+                } else if (ret == AVERROR_EOF){
+                    LOGI("File has no frames we should skip it");
                 }
-                //mLockThreadId = 0;
-                return ret;
+                ::disconnect(&state);
+                states.pop_back();
+                continue;
             }
             previous = state;
         }
@@ -244,6 +251,7 @@ status_t MediaPlayer::setDataSource(const char *urls[], int size) {
         first->previous = last;
         last->next = first;
     }
+    LOGI("SETTING FIRST PLAYER");
     setCurrentPlayer(0);
     mPlayerState = MEDIA_PLAYER_PREPARED;
     return err;

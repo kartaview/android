@@ -26,13 +26,7 @@ public class ApplicationPreferences {
      */
     private SharedPreferences prefs;
 
-    /**
-     * the context
-     */
-    private Context context;
-
     public ApplicationPreferences(Context context) {
-        this.context = context;
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefsEditor = prefs.edit();
     }

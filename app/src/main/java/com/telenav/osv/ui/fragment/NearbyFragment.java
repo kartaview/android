@@ -11,7 +11,6 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -25,7 +24,8 @@ import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.manager.UploadManager;
+import com.telenav.osv.manager.network.UploadManager;
+import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.ui.list.SequenceAdapter;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
@@ -128,7 +128,7 @@ public class NearbyFragment extends Fragment {
                                         @Override
                                         public void run() {
                                             if (mSwipeRefreshLayout != null) {
-                                                if (activity.getCurrentFragment().equals(TAG)) {
+                                                if (activity.getCurrentScreen() == ScreenComposer.SCREEN_NEARBY) {
                                                     activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
                                                 }
                                             }
@@ -164,7 +164,7 @@ public class NearbyFragment extends Fragment {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         if (activity != null && mSequencesRecyclerView != null) {
-            if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
                 mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
             } else {
                 mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
@@ -269,7 +269,7 @@ public class NearbyFragment extends Fragment {
                         try {
                             date = Utils.numericDateFormat.format(onlineDateFormat.parse(date + " " + hour));
                         } catch (Exception e) {
-                            Log.d(TAG, "handleSequenceListResult: " + e.getLocalizedMessage());
+                            Log.w(TAG, "handleSequenceListResult: " + e.getLocalizedMessage());
                         }
                         String imgNum = item.getString("photo_no");
                         String sequenceIndex = item.getString("sequence_index");
@@ -298,7 +298,7 @@ public class NearbyFragment extends Fragment {
                             Log.d(TAG, "handleSequenceListResult: couldn't parse distance");
                         }
                         Sequence seq = new Sequence(id, date, Integer.valueOf(imgNum), partialAddress, thumbLink, obd, platform, platformVersion, appVersion, (int) (distanceNum
-                                * 1000d));
+                                * 1000d), 0);
 //                        seq.processing = !processing.equals("PROCESSING_FINISHED");
                         seq.isPublic = true;
                         seq.location.setLatitude(lat);
