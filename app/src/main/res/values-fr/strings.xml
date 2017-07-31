@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation" tools:locale="fr">
-    <string name="cannot_connect_hal">Impossible de se connecter à l\'appareil photo, le téléphone peut être redémarré.</string>
+    <string name="cannot_connect_hal">Impossible de se connecter à l\'appareil photo, redémarrez le téléphone.</string>
     <string name="cancel_label">Annuler</string>
     <string name="ok_label">OK</string>
     <string name="yes">Oui</string>
@@ -16,23 +16,23 @@
     <string name="login_to_upload_warning"> Veuillez vous connecter pour téléverser vos enregistrements.</string>
     <string name="stop_value_string">Arrêter</string>
     <string name="keep_value_string">Garder l\'enregistrement</string>
-    <string name="select_all">Selectionner tout</string>
+    <string name="select_all">Tout sélectionner</string>
     <string name="log_in">Connexion avec OSM</string>
     <string name="log_out">Déconnexion</string>
-    <string name="upload_on_data_label">Téléverser sur le data</string>
+    <string name="upload_on_data_label">Téléverser avec le réseau mobile</string>
     <string name="upload_automatically_label">Téléverser automatiquement</string>
     <string name="tip_map_screen">Astuce: Selectionnez une piste à partir de la carte pour visualiser les photos.</string>
     <string name="tap_to_shoot_hint">Astuce: Tapez deux fois sur l\'aperçu pour prendre une photo manuellement.</string>
-    <string name="upload_all_label">Téléverser tout.</string>
+    <string name="upload_all_label">Tout téléverser</string>
     <string name="upload_all_warning">Téléverser tous les enregistrements et ôter les fichiers locaux.</string>
     <string name="upload_all_warning_title">Téléverser tous les enregistrements.</string>
     <string name="please_login_label">Veuillez rester connecté</string>
     <string name="no_internet_connection_label">Aucune connexion internet.</string>
     <string name="logout_confirmation_message">Êtes-vous sûr de vouloir vous déconnecter ?</string>
     <string name="logged_out_confirmation">Déconnecté</string>
-    <string name="data_setting_subtitle">Lorsqu\'elle est activée, l\'application va utiliser les données cellulaires si aucune connexion Wi-Fi n\'est disponible.</string>
-    <string name="auto_setting_subtitle"> Lorsqu\'elle est activée, l\'application va télécharger automatiquement des enregistrements locaux lorsque cela est possible.</string>
-    <string name="no_wifi_label">Se connecter à un hotspot ou activer le téléversement en utilisant des données dans les paramètres.</string>
+    <string name="data_setting_subtitle">Utiliser les données cellulaires si aucune connexion Wi-Fi n\'est disponible.</string>
+    <string name="auto_setting_subtitle">Téléverser automatiquement des enregistrements locaux lorsque cela est possible.</string>
+    <string name="no_wifi_label">Se connecter à un hotspot ou activer le téléversement en utilisant des données cellulaires dans les paramètres.</string>
     <string name="sequence_will_be_uploaded">Les enregistrements seront téléversés.</string>
     <string name="something_wrong_try_again">Quelque chose est survenu, veillez essayer de nouveau ultérieurement.</string>
     <string name="recording_deleted">Enregistrement supprimé</string>
@@ -46,7 +46,7 @@
     <string name="upload_sequence_label">Téléverser</string>
     <string name="loading_too_long">Le chargement est anormalement long.</string>
     <string name="metric_label">Unité de distance</string>
-    <string name="metric_subtitle">Utilisez les unités métriques de distance au lieu des unités impériales.</string>
+    <string name="metric_subtitle">Utiliser les unités métriques de distance au lieu des unités impériales.</string>
     <string name="sensorlib_label">Activer la détection des panneaux.</string>
     <string name="sensorlib_subtitle">Expérimental (uniquement les panneaux É-U à l\'heure actuelle), veuillez utiliser l\'orientation paysage pour le moment (le bas du téléphone vers la droite).</string>
     <string name="connect">Connexion</string>
@@ -93,7 +93,7 @@
     <string name="update_label">Mise-à-jour</string>
     <string name="update_now_label">Mettre à jour maintenant</string>
     <string name="settings_label">Paramètres</string>
-    <string name="hey_label">Hey</string>
+    <string name="hey_label">"Hey "</string>
     <string name="uploading_track_label">La piste se téléverse</string>
     <string name="waiting_upload_label">En attente pour téléverser</string>
     <string name="nearby_label">Proche</string>
@@ -109,8 +109,8 @@
     <string name="no_obd_detected_message">Aucun OBD détecté ! Vérifiez votre connexion.</string>
     <string name="restart_label">Redémarrer</string>
     <string name="not_connected_label">Non connecté</string>
-    <string name="ffmpeg_init_error_message">L\'encodeur n\'a pas pu initialiser </string>
-    <string name="error_creating_video_file_message">N\'a pas pu créer le fichier vidéo</string>
+    <string name="ffmpeg_init_error_message">L\'encodeur n\'a pas pu s\'initialiser</string>
+    <string name="error_creating_video_file_message">Impossible de créer le fichier vidéo</string>
     <string name="upload_failed_message">Le téléversement a échoué. Réessayez de nouveau ultérieurement.</string>
     <string name="upload_finished_message">La piste a été complètement téléversée.</string>
     <string name="uploading_images_message">Téléverser les images...</string>
@@ -131,11 +131,24 @@
     <string name="focus_locked">Barré</string>
     <string name="stop_caps_label">ARRÊTER</string>
     <string name="resolution_label">Résolution</string>
+    <string name="resolution_text">Sélectionner la résolution des photos</string>
     <string name="connection_type">Type de connexion</string>
     <string name="about_label">À propos</string>
     <string name="tips_label">Conseils</string>
     <string name="debug_label">Debug</string>
     <string name="ble_not_supported">BLE non supporté</string>
     <string name="error_bluetooth_not_supported">Bluetooth non supporté</string>
+    <string name="leaderboard">Classement</string>
+    <string name="map_sdk_label">Activer la carte</string>
+    <string name="map_sdk_subtitle">La carte utilise plus de ressources et peut impacter les performances.</string>
+    <string name="map_visibility_label">Afficher la carte pendant l\'enregistrement</string>
+    <string name="map_visibility_subtitle">L\'affichage de la carte augmente la consommation de données et de batterie.</string>
+    <string name="gamification_sub_title">Activer le système de points pour se comparer aux autres utilisateurs.</string>
+    <string name="improve_text">Améliorer</string>
+    <string name="application_version_label">Version de l\'application</string>
+    <string name="policy_text">Politique de confidentialité</string>
+    <string name="terms_text">Conditions d\'utilisation</string>
+    <string name="tap_to_start_recording_hint">Touchez pour démarrer!</string>
+    <string name="hint_points_message">Vous obtiendrez plus de points lorsque les rues que vous photographiez ne sont pas encore couvertes. Obtenez 10X plus de points pour une nouvelle rue dans OpenStreetCam!</string>
 </resources>
 
