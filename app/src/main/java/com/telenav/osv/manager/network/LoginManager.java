@@ -111,12 +111,12 @@ public class LoginManager implements GoogleApiClient.OnConnectionFailedListener 
     /**
      * consumer key used for oauth 1.0a
      */
-    private static final String CONSUMER_KEY = "rBWV8Eaottv44tXfdLofdNvVemHOL62Lsutpb9tw";
+    private static final String CONSUMER_KEY = "";
 
     /**
      * consumer secret key used for oauth 1.0a
      */
-    private static final String CONSUMER_SECRET_KEY = "rpmeZIp49sEjjcz91X9dsY0vD1PpEduixuPy8T6S";
+    private static final String CONSUMER_SECRET_KEY = "";
 
     private final OSVApplication mContext;
 
