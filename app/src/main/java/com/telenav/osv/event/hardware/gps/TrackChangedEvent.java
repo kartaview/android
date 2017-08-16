@@ -10,15 +10,10 @@ import com.telenav.osv.event.OSVStickyEvent;
 
 public class TrackChangedEvent extends OSVStickyEvent {
 
-    public ArrayList<SKCoordinate> track;
+    public final ArrayList<SKCoordinate> track;
 
-    public TrackChangedEvent(ArrayList<SKCoordinate> track){
+    public TrackChangedEvent(ArrayList<SKCoordinate> track) {
         this.track = track;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof TrackChangedEvent;
     }
 
     @Override

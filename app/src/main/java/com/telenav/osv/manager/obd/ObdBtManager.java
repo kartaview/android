@@ -5,29 +5,35 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.util.UUID;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Process;
-import com.telenav.osv.event.EventBus;
-import com.telenav.osv.event.hardware.obd.ObdStatusEvent;
+import android.support.design.widget.Snackbar;
+import com.telenav.osv.R;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.item.SpeedData;
 import com.telenav.osv.obd.Constants;
 import com.telenav.osv.obd.OBDHelper;
+import com.telenav.osv.ui.fragment.BTDialogFragment;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.Utils;
 
 /**
- * Created by Kalman on 11/10/16.
+ * Class responsible for connecting to BT OBD devices
+ * Created by Kalman on 3/17/16.
  */
-public class ObdBtManager extends ObdManager {
+class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelectedListener {
 
     private static final String TAG = "ObdBtManager";
 
@@ -36,28 +42,35 @@ public class ObdBtManager extends ObdManager {
 
     private final SharedPreferences preferences;
 
-    private final Context mContext;
-
-    private final HandlerThread mOBDThread;
-
-    private final Handler mOBDHandler;
-
     private BluetoothSocket mSocket;
 
     private boolean mConnecting = false;
 
     private boolean mRunning = false;
 
+    private ScheduledFuture<?> mConnectTask;
+
+    private ScheduledFuture<?> mCollectTask;
+
     private Runnable mConnectRunnable = new Runnable() {
         @Override
         public void run() {
             try {
                 BluetoothAdapter bluetoothAdapter;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                     final android.bluetooth.BluetoothManager bluetoothManager = (android.bluetooth.BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
                     bluetoothAdapter = bluetoothManager.getAdapter();
                 } else {
                     bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                }
+                // Ensures Bluetooth is available on the device and it is enabled. If not,
+                // displays a dialog requesting user permission to enable Bluetooth.
+                if (!bluetoothAdapter.isEnabled()) {
+                    if (mConnectTask != null) {
+                        mConnectTask.cancel(true);
+                    }
+                    mThreadPoolExecutor.remove(mConnectRunnable);
+                    return;
                 }
                 final String deviceAddress = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).getString(Constants.EXTRAS_BT_DEVICE_ADDRESS, null);
 
@@ -127,89 +140,78 @@ public class ObdBtManager extends ObdManager {
                     e.printStackTrace();
                 }
                 mConnecting = false;
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        sConnected = true;
-                        EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_CONNECTED));
-                    }
-                });
+                sConnected = true;
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdConnected();
+                }
+                if (mConnectTask != null) {
+                    mConnectTask.cancel(true);
+                }
+                mThreadPoolExecutor.remove(mConnectRunnable);
                 startRunnable();
                 return;
             } catch (IOException e) {
                 e.printStackTrace();
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        sConnected = false;
-                        EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_DISCONNECTED));
-                    }
-                });
+                sConnected = false;
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdDisconnected();
+                }
             }
             mConnecting = false;
-            mOBDHandler.postDelayed(mConnectRunnable, 10000);
         }
     };
 
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
-//            Log.d(TAG, "run: running speed runnable");
-            int speed = 0;
-            long time = System.currentTimeMillis();
+            SpeedData speed = new SpeedData("NULL");
             try {
-                speed = getSpeed().getSpeed();
-//                if (speed < 0){
-//                    try {
-//                        Thread.sleep(1000);
-//                    } catch (InterruptedException ignored) {}
-////                    reset();
-//                }
-//                Log.d(TAG, "getSpeed: done in " + (System.currentTimeMillis() - time) + " ms , speed obtained: " + speed);
+                speed = getSpeed();
             } catch (SocketException se) {
                 se.printStackTrace();
                 try {
                     Thread.sleep(800);
                 } catch (InterruptedException ignored) {}
-                disconnect(true);
+                reconnect();
             } catch (InterruptedException ie) {
                 reset();
                 ie.printStackTrace();
                 try {
                     Thread.sleep(800);
                 } catch (InterruptedException ignored) {}
-                disconnect(true);
+                reconnect();
             } catch (Exception xe) {
                 xe.printStackTrace();
                 try {
                     Thread.sleep(800);
                 } catch (InterruptedException ignored) {}
-                disconnect(true);
+                reconnect();
             }
-            final int finalSpeed = speed;
-            mUIHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mConnectionListener.onSpeedObtained(new SpeedData(finalSpeed));
+            onSpeedObtained(speed);
+        }
+    };
+
+    private final BroadcastReceiver mBluetoothBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null && intent.getAction().equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
+                    disconnect();
+                } else if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_ON) {
+                    connect();
                 }
-            });
-            if (mRunning) {
-                mOBDHandler.postDelayed(mRunnable, 100);
             }
         }
     };
 
-    public ObdBtManager(Context context) {
-        this.mContext = context;
+    ObdBtManager(Context context, ConnectionListener listener) {
+        super(context, listener);
         preferences = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
-        mOBDThread = new HandlerThread("OBDII", Process.THREAD_PRIORITY_FOREGROUND);
-        mOBDThread.start();
-        mOBDHandler = new Handler(mOBDThread.getLooper());
     }
 
-    public boolean connect() {
+    public void connect() {
         if (mConnecting || (mSocket != null && mSocket.isConnected())) {
-            return false;
+            return;
         }
 
         final String deviceAddress = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).getString(Constants.EXTRAS_BT_DEVICE_ADDRESS, null);
@@ -217,17 +219,17 @@ public class ObdBtManager extends ObdManager {
         if (deviceAddress == null) {
             Log.w(TAG, "stopping service as no saved device");
             mConnecting = false;
-            return false;
+            return;
         }
 
         if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
             Log.w(TAG, " stopping service as Bluetooth not supported");
             mConnecting = false;
-            return false;
+            return;
         }
 
         BluetoothAdapter bluetoothAdapter;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             final android.bluetooth.BluetoothManager bluetoothManager = (android.bluetooth.BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
             bluetoothAdapter = bluetoothManager.getAdapter();
         } else {
@@ -238,7 +240,7 @@ public class ObdBtManager extends ObdManager {
         if (bluetoothAdapter == null) {
             Log.w(TAG, " stopping service as Bluetooth not supported");
             mConnecting = false;
-            return false;
+            return;
         }
 
         // Ensures Bluetooth is available on the device and it is enabled. If not,
@@ -246,24 +248,18 @@ public class ObdBtManager extends ObdManager {
         if (!bluetoothAdapter.isEnabled()) {
             Log.w(TAG, " stopping as bluetooth is off ");
             mConnecting = false;
-            return false;
+            return;
         }
 
         mConnecting = true;
-
-        mUIHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_CONNECTING));
-            }
-        });
-        mOBDHandler.removeCallbacksAndMessages(null);
+        if (mConnectionListener != null) {
+            mConnectionListener.onObdConnecting();
+        }
         mRunning = false;
-        mOBDHandler.post(mConnectRunnable);
-        return true;
+        mConnectTask = mThreadPoolExecutor.scheduleAtFixedRate(mConnectRunnable, 0, 10000, TimeUnit.MILLISECONDS);
     }
 
-    public SpeedData getSpeed() throws IOException, InterruptedException /*NonNumericResponseException, SocketException*/ {
+    private SpeedData getSpeed() throws IOException, InterruptedException /*NonNumericResponseException, SocketException*/ {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             throw new IllegalStateException(TAG + " getSpeed: runnning on ui thread");
         }
@@ -283,25 +279,16 @@ public class ObdBtManager extends ObdManager {
         out.flush();
         StringBuilder res = new StringBuilder();
 
-        // read until '>' arrives
         long start = System.currentTimeMillis();
-        while (in.available() > 0 && (char) (b = (byte) in.read()) != '>' && res.length() < 60 && System.currentTimeMillis() - start < 500) { // && System.currentTimeMillis()
-            // -start<500
+        while (in.available() > 0 && (char) (b = (byte) in.read()) != '>' && res.length() < 60 && System.currentTimeMillis() - start < 500) {
+
             res.append((char) b);
         }
 
         rawData = res.toString().trim();
-//        Log.d(TAG, "runCommand: rawData = " + rawData);
-        if (rawData.contains("STOPPED")) {
-//            Thread.sleep(1000);
-        } else if (rawData.contains("SEARCHING")) {
-//            Thread.sleep(1000);
-        } else if (rawData.contains("CAN ERROR")) {
-//            Thread.sleep(1000);
-            disconnect(true);
+        if (rawData.contains("CAN ERROR")) {
+            reconnect();
             return new SpeedData("CAN ERROR");
-        } else if (rawData.contains("NO DATA")) {
-//            Thread.sleep(1000);
         } else if (rawData.contains(OBDHelper.CMD_SPEED) || rawData.contains("410D") || rawData.contains("41 0D") || rawData.contains("10D1")) {
 
             rawData = rawData.replaceAll("\r", " ");
@@ -310,16 +297,20 @@ public class ObdBtManager extends ObdManager {
             rawData = rawData.replaceAll("410D", " ").trim();
             rawData = rawData.replaceAll("10D1", " ").trim();
             String[] data = rawData.split(" ");
-
-            int speed = Integer.decode("0x" + data[0]);
+            int speed;
+            try {
+                speed = Integer.decode("0x" + data[0]);
+            } catch (NumberFormatException exc) {
+                return new SpeedData(data[0]);
+            }
             return new SpeedData(speed);
 
         }
         return new SpeedData(rawData);
     }
 
-    public void fastInit() {
-        mOBDHandler.post(new Runnable() {
+    private void fastInit() {
+        mThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -334,24 +325,8 @@ public class ObdBtManager extends ObdManager {
         });
     }
 
-    public void warmStart() {
-        mOBDHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (mSocket != null && mSocket.isConnected()) {
-                        Log.d(TAG, "warmStart: ");
-                        runCommand(OBDHelper.CMD_WARM_START);
-                    }
-                } catch (Exception e) {
-                    Log.w(TAG, Log.getStackTraceString(e));
-                }
-            }
-        });
-    }
-
-    public void reset() {
-        mOBDHandler.post(new Runnable() {
+    void reset() {
+        mThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -374,8 +349,53 @@ public class ObdBtManager extends ObdManager {
         });
     }
 
-    public void setAuto() {
-        mOBDHandler.post(new Runnable() {
+    @Override
+    public boolean isFunctional(OSVActivity activity) {
+
+        // Use this check to determine whether BT is supported on the device. Then
+        // you can selectively disable BT-related features.
+        if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+            activity.showSnackBar(R.string.bl_not_supported, Snackbar.LENGTH_SHORT);
+            return false;
+        }
+
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        // Checks if Bluetooth is supported on the device.
+        if (bluetoothAdapter == null) {
+            activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
+            return false;
+        }
+
+        if (!activity.checkPermissionsForGPSWithRationale(R.string.permission_bluetooth_rationale)) {
+            return false;
+        }
+
+        // Ensures Bluetooth is available on the device and it is enabled. If not,
+        // displays a dialog requesting user permission to enable Bluetooth.
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            activity.startActivityForResult(enableBtIntent, Utils.REQUEST_ENABLE_BT);
+            return false;
+        }
+        BTDialogFragment btFragment = new BTDialogFragment();
+        btFragment.setDeviceSelectedListener(this);
+        btFragment.show(activity.getSupportFragmentManager(), BTDialogFragment.TAG);
+        return true;
+    }
+
+    @Override
+    public void registerReceiver() {
+        mContext.registerReceiver(mBluetoothBroadcastReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+    }
+
+    @Override
+    public void unregisterReceiver() {
+        mContext.unregisterReceiver(mBluetoothBroadcastReceiver);
+    }
+
+    void setAuto() {
+        mThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -391,8 +411,8 @@ public class ObdBtManager extends ObdManager {
         });
     }
 
-    public void describe() {
-        mOBDHandler.post(new Runnable() {
+    private void describe() {
+        mThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -409,10 +429,24 @@ public class ObdBtManager extends ObdManager {
     }
 
     public void disconnect() {
-        mOBDHandler.removeCallbacksAndMessages(null);
+        if (mCollectTask != null) {
+            mCollectTask.cancel(true);
+        }
+        if ((mSocket == null || !mSocket.isConnected())) {
+            Log.d(TAG, "disconnect: socket already disconnected");
+            if (mConnectionListener != null) {
+                mConnectionListener.onObdDisconnected();
+            }
+            return;
+        }
+        mThreadPoolExecutor.remove(mRunnable);
+        if (mConnectTask != null) {
+            mConnectTask.cancel(true);
+        }
+        mThreadPoolExecutor.remove(mConnectRunnable);
         mConnecting = false;
         mRunning = false;
-        mOBDHandler.post(new Runnable() {
+        mThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 if (mSocket != null && mSocket.isConnected()) {
@@ -425,22 +459,33 @@ public class ObdBtManager extends ObdManager {
                         Log.w(TAG, "disconnect: " + Log.getStackTraceString(e));
                     }
                 }
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        sConnected = false;
-                        EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_DISCONNECTED));
-                    }
-                });
+                sConnected = false;
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdDisconnected();
+                }
             }
         });
     }
 
-    public void disconnect(final boolean reconnect) {
-        mOBDHandler.removeCallbacksAndMessages(null);
+    private void reconnect() {
+        if (mCollectTask != null) {
+            mCollectTask.cancel(true);
+        }
+        if ((mSocket == null || !mSocket.isConnected())) {
+            Log.d(TAG, "reconnect: socket already disconnected");
+            if (mConnectionListener != null) {
+                mConnectionListener.onObdDisconnected();
+            }
+            return;
+        }
+        mThreadPoolExecutor.remove(mRunnable);
+        if (mConnectTask != null) {
+            mConnectTask.cancel(true);
+        }
+        mThreadPoolExecutor.remove(mConnectRunnable);
         mConnecting = false;
         mRunning = false;
-        mOBDHandler.post(new Runnable() {
+        mThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 if (mSocket != null && mSocket.isConnected()) {
@@ -448,30 +493,25 @@ public class ObdBtManager extends ObdManager {
                         reset();
                         mSocket.close();
                         mSocket = null;
-                        Log.d(TAG, "disconnect: OBD disconnected.");
+                        Log.d(TAG, "reconnect: OBD disconnected.");
                     } catch (Exception e) {
-                        Log.w(TAG, "disconnect: " + Log.getStackTraceString(e));
+                        Log.w(TAG, "reconnect: " + Log.getStackTraceString(e));
                     }
                 }
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        sConnected = false;
-                        EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_DISCONNECTED));
-                    }
-                });
-                if (reconnect) {
-                    connect();
+                sConnected = false;
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdDisconnected();
                 }
+                connect();
             }
         });
     }
 
     public void startRunnable() {
         try {
-            if (mOBDHandler != null && !mRunning) {
+            if (!mRunning && !mThreadPoolExecutor.getQueue().contains(mRunnable)) {
                 mRunning = true;
-                mOBDHandler.post(mRunnable);
+                mCollectTask = mThreadPoolExecutor.scheduleAtFixedRate(mRunnable, 0, 100, TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
             Log.w(TAG, "startRunnable: " + Log.getStackTraceString(e));
@@ -480,27 +520,23 @@ public class ObdBtManager extends ObdManager {
 
     public void stopRunnable() {
         mRunning = false;
-        mOBDHandler.removeCallbacks(mRunnable);
+        if (mCollectTask != null) {
+            mCollectTask.cancel(true);
+        }
+        if (mThreadPoolExecutor != null) {
+            mThreadPoolExecutor.remove(mRunnable);
+        }
     }
 
     @Override
-    public boolean isBluetooth() {
-        return true;
+    public int getType() {
+        return TYPE_BT;
     }
 
-    @Override
-    public boolean isBle() {
-        return false;
-    }
-
-    @Override
-    public boolean isWifi() {
-        return false;
-    }
-
-    public void onDeviceSelected(String address) {
-        if (address.equals(preferences.getString(Constants.EXTRAS_BT_DEVICE_ADDRESS, null))) {
+    public void onDeviceSelected(BluetoothDevice device) {
+        if (device != null && device.getAddress().equals(preferences.getString(Constants.EXTRAS_BT_DEVICE_ADDRESS, null))) {
             preferences.edit().putInt(Constants.LAST_BT_CONNECTION_STATUS, Constants.STATUS_CONNECTING).apply();
         }
+        connect();
     }
 }

@@ -9,47 +9,43 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.os.BatteryManager;
 import android.os.Build;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
-import com.telenav.osv.event.EventBus;
-import com.telenav.osv.event.hardware.obd.ObdStatusEvent;
+import com.telenav.osv.R;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.item.SpeedData;
 import com.telenav.osv.obd.BLEConnection;
 import com.telenav.osv.obd.Constants;
 import com.telenav.osv.obd.OBDCommunication;
 import com.telenav.osv.obd.OBDHelper;
 import com.telenav.osv.obd.VehicleDataListener;
+import com.telenav.osv.ui.fragment.BTDialogFragment;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.Utils;
 
 /**
- * Created by dianat on 3/11/2016.
+ * Class responsible for connecting to BLE OBD devices
+ * Created by Kalman on 3/17/16.
  */
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class ObdBleManager extends ObdManager {
-    public static final String VEHICLE_DATA_ACTION = "com.telenav.osv.obd.VEHICLE_DATA";
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelectedListener {
+    private static final String VEHICLE_DATA_ACTION = "com.telenav.osv.obd.VEHICLE_DATA";
 
-    public static final String VEHICLE_DATA_TYPE_SPEED = "SPEED";
+    private static final String VEHICLE_DATA_TYPE_SPEED = "SPEED";
 
     private final static String TAG = ObdBleManager.class.getSimpleName();
-
-    private static int DEFAULT_POLLING_INTERVAL = 1000 * 2;
-
 
     /**
      * bluetooth connection thread instance
      */
     private static BluetoothCommunicationThread bluetoothCommunicationThread;
-
-    private final Context mContext;
-
-    private final SharedPreferences preferences;
 
     /**
      * result from the written characteristic
@@ -74,31 +70,20 @@ public class ObdBleManager extends ObdManager {
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-//            Log.d(TAG, "onCharacteristicRead: " + characteristic.getStringValue(0));
+//            Log.d(TAG, "onCharacteristicRead: ");
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-//                Log.d(TAG, "Characteristic " + characteristic.getUuid().toString() + " write : " + characteristic.getStringValue(0));
-            }
+//            Log.d(TAG, "onCharacteristicWrite: ");
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            String str = characteristic.getStringValue(0);
             characteristicResult += characteristic.getStringValue(0);
-//            Log.d(TAG, "onCharacteristicChanged " + str);
             if (characteristicResult.trim().endsWith(">")) {
-                int speed = OBDHelper.convertResult(characteristicResult, internalVehicleDataDelegate);
-                Log.d(TAG, "onCharacteristicChanged: result " + speed);
-                final Integer finalSpeed = speed;
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mConnectionListener.onSpeedObtained(new SpeedData(finalSpeed));
-                    }
-                });
+                final Integer finalSpeed = OBDHelper.convertResult(characteristicResult, internalVehicleDataDelegate);
+                onSpeedObtained(new SpeedData(finalSpeed));
                 characteristicResult = "";
             }
 
@@ -109,12 +94,9 @@ public class ObdBleManager extends ObdManager {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 OBDCommunication.getInstance().discoverServices();
                 Log.d(TAG, "onConnectionStateChange STATE_CONNECTED");
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_CONNECTED));
-                    }
-                });
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdConnected();
+                }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "onConnectionStateChange STATE_DISCONNECTED");
                 broadcastUpdate(Constants.ACTION_GATT_DISCONNECTED, "Disconnected");
@@ -125,12 +107,9 @@ public class ObdBleManager extends ObdManager {
                         .edit()
                         .putBoolean(Constants.BLE_SERVICE_STARTED, false)
                         .apply();
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_DISCONNECTED));
-                    }
-                });
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdDisconnected();
+                }
             }
         }
 
@@ -154,16 +133,27 @@ public class ObdBleManager extends ObdManager {
         }
     };
 
-    public ObdBleManager(Context context) {
-        mContext = context;
+    private final BroadcastReceiver mBluetoothBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null && intent.getAction().equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
+                    disconnect();
+                } else if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_ON) {
+                    connect();
+                }
+            }
+        }
+    };
 
-        preferences = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
+    ObdBleManager(Context context, ConnectionListener listener) {
+        super(context, listener);
     }
 
     /**
      * sends the FUEl level command
      */
-    public static void sendSpeedCommand() {
+    private static void sendSpeedCommand() {
         if (sConnected) {
             OBDCommunication.getInstance().writeOBDCommand(OBDHelper.CMD_SPEED);
         }
@@ -173,8 +163,6 @@ public class ObdBleManager extends ObdManager {
      * initialize and start the communication thread
      */
     public void startRunnable() {
-//        long interval = getApplicationContext().getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE)
-//                .getLong(Constants.TASK_INTERVAL_PERIOD, DEFAULT_POLLING_INTERVAL);
         final BluetoothCommunicationThread currentThread = bluetoothCommunicationThread;
         if (currentThread != null) {
             currentThread.cancel();
@@ -193,21 +181,6 @@ public class ObdBleManager extends ObdManager {
     }
 
     @Override
-    public boolean isBluetooth() {
-        return true;
-    }
-
-    @Override
-    public boolean isBle() {
-        return true;
-    }
-
-    @Override
-    public boolean isWifi() {
-        return false;
-    }
-
-    @Override
     public void setAuto() {
 
     }
@@ -217,17 +190,76 @@ public class ObdBleManager extends ObdManager {
 
     }
 
-    public boolean connect() {
+    @Override
+    public void onDeviceSelected(BluetoothDevice device) {
+        final SharedPreferences preferences = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
+        if (device.getAddress().equals(preferences.getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, ""))) {
+            preferences.edit().putInt(Constants.LAST_BLE_CONNECTION_STATUS, Constants.STATUS_CONNECTING).apply();
+        }
+        connect();
+    }
+
+    @Override
+    public boolean isFunctional(OSVActivity activity) {
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            activity.showSnackBar(activity.getString(R.string.ble_android_not_supported), Snackbar.LENGTH_LONG);
+            return false;
+        }
+
+        // Use this check to determine whether BLE is supported on the device. Then
+        // you can selectively disable BLE-related features.
+        if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            activity.showSnackBar(R.string.ble_not_supported, Snackbar.LENGTH_SHORT);
+            return false;
+        }
+
+        BluetoothAdapter bluetoothAdapter = BLEConnection.getInstance().initConnection(activity);
+
+        // Checks if Bluetooth is supported on the device.
+        if (bluetoothAdapter == null) {
+            activity.showSnackBar(R.string.error_bluetooth_not_supported, Snackbar.LENGTH_SHORT);
+            return false;
+        }
+
+        if (!activity.checkPermissionsForGPSWithRationale(R.string.permission_bluetooth_rationale)) {
+            return false;
+        }
+
+        // Ensures Bluetooth is available on the device and it is enabled. If not,
+        // displays a dialog requesting user permission to enable Bluetooth.
+        if (!bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            activity.startActivityForResult(enableBtIntent, Utils.REQUEST_ENABLE_BT);
+            return false;
+        }
+        BTDialogFragment blefr = new BTDialogFragment();
+        blefr.setDeviceSelectedListener(this);
+        blefr.show(activity.getSupportFragmentManager(), BTDialogFragment.TAG);
+        return true;
+    }
+
+    @Override
+    public void registerReceiver() {
+        mContext.registerReceiver(mBluetoothBroadcastReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+    }
+
+    @Override
+    public void unregisterReceiver() {
+        mContext.unregisterReceiver(mBluetoothBroadcastReceiver);
+    }
+
+    public void connect() {
         final String deviceAddress = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, null);
 
         if (deviceAddress == null) {
             Log.w(TAG, " stopping service as no saved device");
-            return false;
+            return;
         }
 
         if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Log.w(TAG, " stopping service as Bluetooth not supported");
-            return false;
+            return;
         }
 
         BluetoothAdapter bluetoothAdapter = BLEConnection.getInstance().initConnection(mContext);
@@ -235,29 +267,29 @@ public class ObdBleManager extends ObdManager {
         // Checks if Bluetooth is supported on the device.
         if (bluetoothAdapter == null) {
             Log.w(TAG, " stopping service as Bluetooth not supported");
-            return false;
+            return;
         }
 
         // Ensures Bluetooth is available on the device and it is enabled. If not,
         // displays a dialog requesting user permission to enable Bluetooth.
-        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+        if (!bluetoothAdapter.isEnabled()) {
             Log.w(TAG, " stopping as bluetooth is off ");
-            return false;
+            return;
         }
 
-//        if (batteryLevelOk()) {
         if (!OBDCommunication.getInstance().initialize(mContext)) {
             Log.e(TAG, "Unable to initialize Bluetooth");
         }
         // Automatically connects to the device upon successful start-up initialization.
+        if (mConnectionListener != null) {
+            mConnectionListener.onObdConnecting();
+        }
         OBDCommunication.getInstance().connect(mContext, deviceAddress, gattCallback);
 
         mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE)
                 .edit()
                 .putBoolean(Constants.BLE_SERVICE_STARTED, true)
                 .apply();
-//        }
-        return true;
     }
 
     public void disconnect() {
@@ -275,37 +307,6 @@ public class ObdBleManager extends ObdManager {
     }
 
     /**
-     * return if the battery level is ok (higher than 15%)
-     * @return - true, if battery level ok (higher than 15%), false otherwise
-     */
-    private boolean batteryLevelOk() {
-        SharedPreferences preferences = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
-        // check the battery level so that if the battery is  low the service will not start
-        IntentFilter batteryStatusIntentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryStatusIntent = mContext.registerReceiver(null, batteryStatusIntentFilter);
-
-        if (batteryStatusIntent != null) {
-            int level = batteryStatusIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-            int scale = batteryStatusIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-            float batteryPercentage = level / (float) scale;
-            float lowBatteryPercentageLevel = 0.14f;
-
-            try {
-                int lowBatteryLevel = Resources.getSystem().getInteger(Resources.getSystem().getIdentifier("config_lowBatteryWarningLevel", "integer", "android"));
-                lowBatteryPercentageLevel = lowBatteryLevel / (float) scale;
-            } catch (Resources.NotFoundException e) {
-                Log.e(TAG, "Missing low battery threshold resource");
-            }
-
-            preferences.edit().putBoolean(Constants.BACKGROUND_SERVICE_BATTERY_CONTROL, batteryPercentage >= lowBatteryPercentageLevel).apply();
-            return batteryPercentage >= lowBatteryPercentageLevel;
-        } else {
-            preferences.edit().putBoolean(Constants.BACKGROUND_SERVICE_BATTERY_CONTROL, true).apply();
-            return true;
-        }
-    }
-
-    /**
      * broadcasts the results for different actions (connect, disconnect, receive response )
      * @param action - the action that occurred
      * @param result - the result of the action
@@ -313,19 +314,14 @@ public class ObdBleManager extends ObdManager {
     private void broadcastUpdate(final String action, String result) {
         final Intent intent = new Intent(action);
         intent.putExtra(Constants.EXTRA_DATA, result);
-//        Log.d(TAG, "broadcastUpdate: " + action);
         mContext.sendBroadcast(intent);
     }
 
-    /**
-     * List of commands supported
-     */
-//    static LinkedList<String> list = new LinkedList<>();
-    public void onDeviceSelected(BluetoothDevice device) {
-        if (device.getAddress().equals(preferences.getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, ""))) {
-            preferences.edit().putInt(Constants.LAST_BLE_CONNECTION_STATUS, Constants.STATUS_CONNECTING).apply();
-        }
+    @Override
+    public int getType() {
+        return TYPE_BLE;
     }
+
 
     /**
      * defines the thread that sends requests to OBD2 dongle
@@ -336,22 +332,15 @@ public class ObdBleManager extends ObdManager {
 
         private volatile boolean requestData;
 
-        public BluetoothCommunicationThread() {
+        BluetoothCommunicationThread() {
             requestData = true;
         }
 
         public void run() {
-//            list.clear();
-            //Add Supported Commands
-//            list.add(OBDHelper.CMD_SPEED);
-
             Log.d(TAG, " Thread Started " + this.getId());
 
             while (requestData && sConnected) {
-//                String command = list.removeFirst();
                 if (sConnected) {
-//                    OBDCommunication.getInstance().writeOBDCommand(command);
-//                    list.addLast(command);
                     sendSpeedCommand();
                 }
                 synchronized (this) {

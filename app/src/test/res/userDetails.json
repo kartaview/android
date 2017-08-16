@@ -1,0 +1,37 @@
+{
+  "status": {
+    "apiCode": "600",
+    "apiMessage": " The request has been processed without incidents ",
+    "httpCode": 200,
+    "httpMessage": "Success"
+  },
+  "osv": {
+    "username": "skobbler-dev",
+    "full_name": "Skobbler Dev",
+    "id": "8138",
+    "driver_type": "DEDICATED",
+    "type": "user",
+    "totalDistance": "2275.51",
+    "obdDistance": "147.27",
+    "totalPhotos": "62749",
+    "overallRank": 149,
+    "totalTracks": "219",
+    "weeklyRank": 149,
+    "gamification": {
+      "total_user_points": "179324",
+      "user_id": "8138",
+      "rank": 118,
+      "rank_weekly": 118,
+      "level": 7,
+      "level_target": 250000,
+      "level_progress": 79324,
+      "level_progress_percent": 52.882666666667,
+      "level_name": "Mapper",
+      "region": {
+        "points": "156912",
+        "country_code": "eu",
+        "rank": 45
+      }
+    }
+  }
+}

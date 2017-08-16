@@ -11,7 +11,7 @@ public class ObdSpeedEvent extends OSVEvent {
 
     public final SpeedData data;
 
-    public ObdSpeedEvent(SpeedData data){
+    public ObdSpeedEvent(SpeedData data) {
         this.data = data;
     }
 }

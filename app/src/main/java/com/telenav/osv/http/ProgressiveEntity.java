@@ -124,7 +124,9 @@ public class ProgressiveEntity implements HttpEntity {
         private Runnable updateRunnable = new Runnable() {
             @Override
             public void run() {
-                mListener.onProgressChanged(totalSent, mTotalSize);
+                if (mListener != null) {
+                    mListener.onProgressChanged(totalSent, mTotalSize);
+                }
             }
         };
 
@@ -141,7 +143,7 @@ public class ProgressiveEntity implements HttpEntity {
         public void write(@NonNull byte[] bts, int st, int end) throws IOException {
             totalSent += end;
             afterReport += end;
-            if (afterReport >= MB && System.currentTimeMillis() - mLastTime > 1000) {
+            if (mHandler != null && mListener != null && afterReport >= MB && System.currentTimeMillis() - mLastTime > 1000) {
                 mLastTime = System.currentTimeMillis();
                 mHandler.post(updateRunnable);
             }

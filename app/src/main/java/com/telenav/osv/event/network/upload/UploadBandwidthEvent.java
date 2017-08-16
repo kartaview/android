@@ -9,9 +9,10 @@ import com.telenav.osv.event.OSVEvent;
 public class UploadBandwidthEvent extends OSVEvent {
 
     public final ConnectionQuality bandwidthState;
+
     public final double bandwidth;
 
-    public UploadBandwidthEvent(ConnectionQuality bandwidthState, final double bandwidth){
+    public UploadBandwidthEvent(ConnectionQuality bandwidthState, final double bandwidth) {
         this.bandwidthState = bandwidthState;
         this.bandwidth = bandwidth;
     }

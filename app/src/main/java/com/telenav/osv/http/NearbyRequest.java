@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import com.android.volley.AuthFailureError;
-import com.android.volley.Response.ErrorListener;
-import com.android.volley.Response.Listener;
 import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -21,8 +20,7 @@ public class NearbyRequest extends StringRequest {
 
     private static final String PARAM_RADIUS = "distance";
 
-
-    private final Listener<String> mListener;
+    private final GenericResponseListener mListener;
 
     private final String mLat;
 
@@ -30,8 +28,8 @@ public class NearbyRequest extends StringRequest {
 
     private final String mRadius;
 
-    public NearbyRequest(String url, ErrorListener errorListener, Listener<String> listener, String lat, String lon, int radius) {
-        super(Method.POST, url, listener, errorListener);
+    public NearbyRequest(String url, GenericResponseListener listener, String lat, String lon, int radius) {
+        super(Method.POST, url, listener, listener);
         mListener = listener;
         mLat = lat;
         mLon = lon;

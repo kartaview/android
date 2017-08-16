@@ -1,34 +1,20 @@
 package com.telenav.osv.manager.location;
 
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.command.GpsCommand;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.utils.Log;
 
 /**
+ * internal android location manager
  * Created by Kalman on 07/09/16.
  */
 class AndroidLocationManager extends LocationManager implements LocationListener, LocationDataProvider.LocationDataListener {
 
     private static final String TAG = "AndroidLocationManager";
-
-    private final Context mContext;
-
-    private final ApplicationPreferences appPrefs;
-
-    private Location mActualLocation;
-
-    private float mCurrentAccuracy = 0;
-
-    private LocationEventListener mListener;
 
     private boolean shouldStartUpdates = false;
 
@@ -38,18 +24,7 @@ class AndroidLocationManager extends LocationManager implements LocationListener
 
 
     AndroidLocationManager(Context context, LocationEventListener listener) {
-        mContext = context;
-        appPrefs = ((OSVApplication) context.getApplicationContext()).getAppPrefs();
-//        float latitude = appPrefs.getFloatPreference(PreferenceTypes.K_POS_LAT, (float) 0);
-//        float longitude = appPrefs.getFloatPreference(PreferenceTypes.K_POS_LON, (float) 0);
-//        mActualLocation = new Location("");
-//        mActualLocation.setLongitude(longitude);
-//        mActualLocation.setLatitude(latitude);
-//        mPreviousLocation = new Location("");
-//        mPreviousLocation.setLongitude(longitude);
-//        mPreviousLocation.setLatitude(latitude);
-
-        mListener = listener;
+        super(context, listener);
     }
 
     /**
@@ -57,37 +32,30 @@ class AndroidLocationManager extends LocationManager implements LocationListener
      */
     public void connect() {
         EventBus.register(this);
-        mLocationProvider = new LocationDataProvider(mContext, true, true, 1000, 3);
+        mLocationProvider = new LocationDataProvider(mContext, true, true, 0, 0);
         onConnected();
     }
 
-    public void onConnected() {
+    private void onConnected() {
         mConnected = true;
         try {
             Location loc = mLocationProvider.getLastKnownLocation();
             if (loc != null) {
                 mActualLocation = loc;
-                mListener.onLocationChanged(mActualLocation);
+                onLocationChanged(mActualLocation);
             }
             if (shouldStartUpdates) {
                 shouldStartUpdates = false;
                 startLocationUpdates();
             }
+        } catch (SecurityException e) {
+            mConnected = false;
+            Log.w(TAG, "onConnected: error " + e);
+//            connect();
         } catch (Exception e) {
             mConnected = false;
             Log.w(TAG, "onConnected: error " + e);
             connect();
-        }
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.d(TAG, "onLocationChanged: " + location);
-        if (location != null) {
-            if (mListener != null) {
-                mListener.onLocationChanged(location);
-            }
-            mActualLocation = location;
         }
     }
 
@@ -118,23 +86,21 @@ class AndroidLocationManager extends LocationManager implements LocationListener
         EventBus.unregister(this);
     }
 
-    protected boolean startLocationUpdates() {
+    void startLocationUpdates() {
         Log.d(TAG, "startLocationUpdates: successfull: " + (mLocationProvider != null && mConnected));
         if (mLocationProvider != null && mConnected) {
             try {
                 mLocationProvider.startLocationUpdates(this);
             } catch (Exception e) {
-                return false;
+                Log.d(TAG, "startLocationUpdates: " + Log.getStackTraceString(e));
             }
-            return true;
         } else {
             shouldStartUpdates = true;
             connect();
         }
-        return false;
     }
 
-    protected void stopLocationUpdates() {
+    void stopLocationUpdates() {
         Log.d(TAG, "stopLocationUpdates: successfull: " + (mLocationProvider != null && mConnected));
         if (mActualLocation != null) {
             appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) mActualLocation.getLatitude());
@@ -145,43 +111,26 @@ class AndroidLocationManager extends LocationManager implements LocationListener
         }
     }
 
-    public boolean isLocationEnabled() {
-        boolean locationServiceBoolean = false;
-        android.location.LocationManager locationManager = (android.location.LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        boolean gpsIsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
-        boolean networkIsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
+//    public boolean isLocationEnabled() {
+//        boolean locationServiceBoolean = false;
+//        android.location.LocationManager locationManager = (android.location.LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+//        boolean gpsIsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
+//        boolean networkIsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
+//
+//        if (networkIsEnabled && gpsIsEnabled) {
+//            locationServiceBoolean = true;
+//
+//        } else if (!networkIsEnabled && gpsIsEnabled) {
+//            locationServiceBoolean = true;
+//
+//        } else if (networkIsEnabled) {
+//            locationServiceBoolean = true;
+//        }
+//        return locationServiceBoolean;
+//    }
 
-        if (networkIsEnabled && gpsIsEnabled) {
-            locationServiceBoolean = true;
-
-        } else if (!networkIsEnabled && gpsIsEnabled) {
-            locationServiceBoolean = true;
-
-        } else if (networkIsEnabled) {
-            locationServiceBoolean = true;
-        }
-        return locationServiceBoolean;
-    }
-
-    public boolean isGPSEnabled() {
-        android.location.LocationManager locationManager = (android.location.LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
-    }
-
-    public float getAccuracy() {
-        return mCurrentAccuracy;
-    }
-
-    public boolean hasPosition() {
-        return mActualLocation != null;
-    }
-
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onGpsCommand(GpsCommand event) {
-        if (event.start) {
-            startLocationUpdates();
-        } else {
-            stopLocationUpdates();
-        }
-    }
+//    public boolean isGPSEnabled() {
+//        android.location.LocationManager locationManager = (android.location.LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+//        return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
+//    }
 }

@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
     android:background="@drawable/splashscreen_background">
-<ImageView
-    android:id="@+id/chess_board_background"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:src="@drawable/ic_osc_logo"
-    android:alpha="0.5"
-    android:padding="50dp" />
+
+    <ImageView
+        android:id="@+id/chess_board_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.5"
+        android:padding="50dp"
+        android:src="@drawable/ic_osc_logo"
+        tools:ignore="ContentDescription" />
 </FrameLayout>

@@ -5,6 +5,5 @@
     android:layout_centerInParent="true"
     android:adjustViewBounds="true"
     android:contentDescription="@string/descr_image"
-    android:padding="2dp"
     android:scaleType="fitCenter"
     android:src="@drawable/custom_image_loading_background" />

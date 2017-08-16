@@ -1,4 +1,6 @@
-package com.telenav.osv.event;/**
+package com.telenav.osv.event;
+
+/**
  * Created by Kalman on 20/01/2017.
  */
 

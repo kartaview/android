@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:viewportHeight="24"
+    android:viewportWidth="24">
 
     <path
         android:name="Fill-1"
         android:fillColor="#B7BAC5"
         android:fillType="evenOdd"
+        android:pathData="M2,20.9557 L7.92593,20.9557 L7.92593,13.5182 L2,13.5182 Z"
         android:strokeWidth="1"
-        android:pathData="M2,20.9557 L7.92593,20.9557 L7.92593,13.5182 L2,13.5182 Z" />
+        tools:targetApi="n" />
     <path
         android:name="Fill-2"
         android:fillColor="#B7BAC5"
         android:fillType="evenOdd"
+        android:pathData="M9.00333,20.9557 L14.9293,20.9557 L14.9293,4 L9.00333,4 Z"
         android:strokeWidth="1"
-        android:pathData="M9.00333,20.9557 L14.9293,20.9557 L14.9293,4 L9.00333,4 Z" />
+        tools:targetApi="n" />
     <path
         android:name="Fill-3"
         android:fillColor="#B7BAC5"
         android:fillType="evenOdd"
+        android:pathData="M16.0067,20.9557 L21.9326,20.9557 L21.9326,9.22112 L16.0067,9.22112 Z"
         android:strokeWidth="1"
-        android:pathData="M16.0067,20.9557 L21.9326,20.9557 L21.9326,9.22112 L16.0067,9.22112 Z" />
+        tools:targetApi="n" />
 </vector>

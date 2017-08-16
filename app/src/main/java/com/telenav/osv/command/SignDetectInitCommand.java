@@ -8,6 +8,7 @@ import com.telenav.osv.event.OSVEvent;
  */
 public class SignDetectInitCommand extends OSVEvent {
     public boolean initialization;
+
     public SignDetectInitCommand(boolean initialization) {
         this.initialization = initialization;
     }

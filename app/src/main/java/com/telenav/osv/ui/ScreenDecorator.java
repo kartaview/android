@@ -6,7 +6,6 @@ import android.animation.Animator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -39,6 +38,7 @@ import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.command.GpsCommand;
 import com.telenav.osv.command.LogoutCommand;
+import com.telenav.osv.command.SendReportCommand;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.network.LoginChangedEvent;
@@ -52,7 +52,8 @@ import com.telenav.osv.event.network.upload.UploadingSequenceEvent;
 import com.telenav.osv.event.ui.GamificationSettingEvent;
 import com.telenav.osv.event.ui.RecordingVisibleEvent;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.event.ui.UserTypeChangedEvent;
+import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.manager.network.UploadManager;
 import com.telenav.osv.ui.custom.FixedFrameLayout;
@@ -65,8 +66,8 @@ import com.telenav.osv.utils.Utils;
  * Created by Kalman on 13/02/2017.
  */
 class ScreenDecorator {
-    
-    public final static String TAG = "ScreenDecorator";
+
+    private final static String TAG = "ScreenDecorator";
 
     private final OSVActivity activity;
 
@@ -77,6 +78,8 @@ class ScreenDecorator {
     private final ScoreView scoreText;
 
     private final Recorder mRecorder;
+
+    private final ImageView mSendButton;
 
     private Snackbar mSnackBar;
 
@@ -113,8 +116,6 @@ class ScreenDecorator {
 
     private FixedFrameLayout mRecordingFeedbackLayout;
 
-    private View mHeader;
-
     private ImageView mUserPhotoImageView;
 
     private View.OnClickListener logoutOnClickListener = new View.OnClickListener() {
@@ -140,6 +141,7 @@ class ScreenDecorator {
         @Override
         public void onClick(View v) {
             if (Utils.isInternetAvailable(activity)) {
+                closeDrawerIfOpen();
                 activity.startActivity(new Intent(activity, LoginActivity.class));
             } else {
                 showSnackBar(R.string.check_internet_connection, Snackbar.LENGTH_LONG);
@@ -152,17 +154,26 @@ class ScreenDecorator {
         appPrefs = activity.getApp().getAppPrefs();
         mUploadManager = activity.getApp().getUploadManager();
         mRecorder = activity.getApp().getRecorder();
-        mDrawer = (DrawerLayout) activity.findViewById(R.id.activity_main_root);
-        mAppBar = (AppBarLayout) activity.findViewById(R.id.app_bar);
-        mToolbar = (Toolbar) activity.findViewById(R.id.app_toolbar);
-        signatureActionBarText = (TextView) mToolbar.findViewById(R.id.signature_action_bar_text);
+        mDrawer = activity.findViewById(R.id.activity_main_root);
+        mAppBar = activity.findViewById(R.id.app_bar);
+        mToolbar = activity.findViewById(R.id.app_toolbar);
+        mSendButton = activity.findViewById(R.id.issue_report_send_button);
+        mSendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getCurrentScreen() == ScreenComposer.SCREEN_REPORT) {
+                    EventBus.post(new SendReportCommand());
+                }
+            }
+        });
+        signatureActionBarText = mToolbar.findViewById(R.id.signature_action_bar_text);
 
         mRecordingHintLayoutLandscape = activity.findViewById(R.id.record_hint_layout_landscape);
 
-        mRecordingFeedbackLayout = (FixedFrameLayout) activity.findViewById(R.id.recording_feedback_layout);
+        mRecordingFeedbackLayout = activity.findViewById(R.id.recording_feedback_layout);
 
-        scoreText = (ScoreView) activity.findViewById(R.id.score_text);
-        navigationView = (NavigationView) activity.findViewById(R.id.navigation_view);
+        scoreText = activity.findViewById(R.id.score_text);
+        navigationView = activity.findViewById(R.id.navigation_view);
         mToolbar.setNavigationOnClickListener(mMenuListener);
         activity.setSupportActionBar(mToolbar);
         initNavigationDrawer();
@@ -175,10 +186,6 @@ class ScreenDecorator {
 
     private void initNavigationDrawer() {
         mToolbar.setNavigationOnClickListener(mMenuListener);
-        if (!appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
-            MenuItem item = navigationView.getMenu().findItem(R.id.menu_leaderboard);
-            item.setVisible(false);
-        }
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -190,7 +197,7 @@ class ScreenDecorator {
                         break;
                     case R.id.menu_upload:
                         if (!mUploadManager.isUploading()) {
-                            if (Sequence.getLocalSequencesNumber() <= 0) {
+                            if (LocalSequence.getLocalSequencesNumber() <= 0) {
                                 mDrawer.closeDrawers();
                                 showSnackBar(getString(R.string.no_local_recordings_message), Snackbar.LENGTH_LONG);
                                 return true;
@@ -234,13 +241,18 @@ class ScreenDecorator {
         String displayName = appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME);
         String userPhoto = appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL);
 
-        mHeader = navigationView.getHeaderView(0);
-        mUsernameTextView = (TextView) mHeader.findViewById(R.id.username_label);
-        mUserPhotoImageView = (ImageView) mHeader.findViewById(R.id.profile_picture);
-        mLogOutImage = (ImageView) mHeader.findViewById(R.id.log_out_image_button);
+        View mHeader = navigationView.getHeaderView(0);
+        mUsernameTextView = mHeader.findViewById(R.id.username_label);
+        mUserPhotoImageView = mHeader.findViewById(R.id.profile_picture);
+        mLogOutImage = mHeader.findViewById(R.id.log_out_image_button);
 
         String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
-
+        if (appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1) == PreferenceTypes.USER_TYPE_BYOD
+                || appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1) == PreferenceTypes.USER_TYPE_BAU
+                || appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1) == PreferenceTypes.USER_TYPE_DEDICATED) {
+            MenuItem item = navigationView.getMenu().findItem(R.id.menu_leaderboard);
+            item.setVisible(false);
+        }
         if (userName.equals("") || token.equals("")) {
             mUserPhotoImageView.setImageDrawable(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_gray, null));
             mUsernameTextView.setText(R.string.login_label);
@@ -300,17 +312,11 @@ class ScreenDecorator {
     private String getString(int id) {
         return activity.getString(id);
     }
-    
+
     void hideSnackBar() {
         if (mSnackBar != null && mSnackBar.isShown()) {
             mSnackBar.dismiss();
         }
-    }
-
-    void getDrawerSize(Point point) {
-
-        point.x = mDrawer.getMeasuredWidth();
-        point.y = mDrawer.getMeasuredHeight();
     }
 
     boolean closeDrawerIfOpen() {
@@ -340,8 +346,8 @@ class ScreenDecorator {
         return mNavigationListener.getCurrentScreen();
     }
 
-    private void showActionBar(String title, boolean showBackButton, int backgroundColor, int textColor, boolean light, int signatureColor) {
-        showActionBar(title, showBackButton, backgroundColor, textColor, light);
+    private void showActionBar(String title, boolean showBackButton, boolean showSend, int backgroundColor, int textColor, boolean light, int signatureColor) {
+        showActionBar(title, showBackButton, showSend, backgroundColor, textColor, light);
         if (mActionBar == null) {
             return;
         }
@@ -365,18 +371,18 @@ class ScreenDecorator {
         }
     }
 
-    private void animateAppBar(final AppBarLayout appBar, final boolean show) {
+    private void animateAppBar(final AppBarLayout appBar, final boolean show, final int duration) {
         final Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 appBar.animate()
                         .translationY(0)
-                        .setDuration(300).start();
+                        .setDuration(0).start();
             }
         };
         appBar.animate()
                 .translationY(-appBar.getHeight())
-                .setDuration(show ? 0 : 300).setListener(new Animator.AnimatorListener() {
+                .setDuration(0).setListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
 
@@ -402,13 +408,18 @@ class ScreenDecorator {
     }
 
     @SuppressWarnings("deprecation")
-    private void showActionBar(String title, boolean showBackButton, int backgroundColor, int textColor, boolean light) {
+    private void showActionBar(String title, boolean showBackButton, boolean showSend, int backgroundColor, int textColor, boolean light) {
 //        mAppBar.setVisibility(View.VISIBLE);
         // if background color for the action bar is white set darker_grey color for the back icon
-        animateAppBar(mAppBar, true);
+        animateAppBar(mAppBar, true, backgroundColor == R.color.transparent ? 0 : 300);
 
         if (mActionBar == null) {
             return;
+        }
+        if (showSend) {
+            mSendButton.setVisibility(View.VISIBLE);
+        } else {
+            mSendButton.setVisibility(View.GONE);
         }
         if (showBackButton) {
             lockDrawer(true);
@@ -441,39 +452,42 @@ class ScreenDecorator {
             mToolbar.setTitleTextColor(ResourcesCompat.getColor(activity.getResources(), textColor, null));
         }
         mActionBar.setBackgroundDrawable(ResourcesCompat.getDrawable(activity.getResources(), backgroundColor, null));
+        mToolbar.setClickable(backgroundColor != R.color.transparent);
 
+        stopImmersiveMode();
+    }
+
+    private void setStatusBarColor(int statusBarColor) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (!light) {
+            if (statusBarColor != -1) {
                 Window window = activity.getWindow();
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                 window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                int clr = activity.getResources().getColor(backgroundColor);
+                int clr = activity.getResources().getColor(statusBarColor);
                 window.setStatusBarColor(clr);
             } else {
                 Window window = activity.getWindow();
                 window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             }
         }
-        stopImmersiveMode();
     }
 
     private void hideActionBar() {
-        animateAppBar(mAppBar, false);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = activity.getWindow();
-            window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        }
+        animateAppBar(mAppBar, false, 300);
     }
 
     void onScreenChanged() {
         String title = "";
         boolean showBack = false;
+        boolean showSend = false;
         int backgroundColor = R.color.darker_grey, textColor = R.color.white;
+        int statusBarColor = -1;
         boolean isLight = false;
         int colorSignature = -1;
         boolean stopLocationUpdates = false;
         boolean startLocationUpdates = false;
         lockDrawer(true);
+        boolean showActionBar = true;
         switch (getCurrentScreen()) {
             case ScreenComposer.SCREEN_MAP:
                 title = "";
@@ -484,27 +498,25 @@ class ScreenDecorator {
                 break;
             case ScreenComposer.SCREEN_SETTINGS:
                 showBack = true;
-                title = getString(R.string.settings_label);
+                title = getString(R.string.settings);
                 isLight = true;
                 backgroundColor = R.color.white;
                 textColor = R.color.dark_grey_action_bar;
-//                stopLocationUpdates = true;
+                stopLocationUpdates = true;
                 break;
             case ScreenComposer.SCREEN_MY_PROFILE:
-                isLight = false;
-                showBack = true;
-                title = getString(R.string.hey_label) + appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME) + "!";
-                backgroundColor = R.color.action_bar_blue;
-                textColor = R.color.white;
-//                stopLocationUpdates = true;
+                statusBarColor = R.color.status_bar_blue_darker;
+                stopLocationUpdates = true;
+                showActionBar = false;
                 break;
             case ScreenComposer.SCREEN_LEADERBOARD:
                 isLight = false;
                 showBack = true;
                 title = getString(R.string.leaderboard);
                 backgroundColor = R.color.leaderboard_green;
+                statusBarColor = R.color.leaderboard_green_darker;
                 textColor = R.color.white;
-//                stopLocationUpdates = true;
+                stopLocationUpdates = true;
                 break;
             case ScreenComposer.SCREEN_RECORDING:
                 startImmersiveMode();
@@ -541,8 +553,8 @@ class ScreenDecorator {
                 textColor = R.color.dark_grey_action_bar;
                 title = getString(R.string.upload_label);
                 colorSignature = R.color.signature_waiting_upload;
-                refreshSignatureValue(Utils.formatSize(Sequence.getTotalSize()));
-//                stopLocationUpdates = true;
+                refreshSignatureValue(Utils.formatSize(LocalSequence.getTotalSize()));
+                stopLocationUpdates = true;
                 break;
             case ScreenComposer.SCREEN_RECORDING_HINTS:
                 hideActionBar();
@@ -559,20 +571,25 @@ class ScreenDecorator {
                 title = "";
                 backgroundColor = R.color.transparent;
                 textColor = R.color.white;
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        EventBus.postSticky(new GpsCommand(true));
-                    }
-                }, 1000);
                 break;
-            case ScreenComposer.SCREEN_NEARBY:
+            case ScreenComposer.SCREEN_PREVIEW_FULLSCREEN:
                 isLight = false;
                 showBack = true;
-                title = getString(R.string.nearby_label);
-                backgroundColor = R.color.dark_grey_action_bar;
+                title = "";
+                backgroundColor = R.color.transparent;
                 textColor = R.color.white;
-                startLocationUpdates = true;
+                break;
+            case ScreenComposer.SCREEN_NEARBY:
+                backgroundColor = R.color.status_bar_blue_darker;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    Window window = activity.getWindow();
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                    int clr = activity.getResources().getColor(backgroundColor);
+                    window.setStatusBarColor(clr);
+                }
+                stopLocationUpdates = true;
+                showActionBar = false;
                 break;
             case ScreenComposer.SCREEN_SUMMARY:
                 isLight = false;
@@ -580,6 +597,14 @@ class ScreenDecorator {
                 title = getString(R.string.summary_label);
                 backgroundColor = R.color.gray_summary_background;
                 textColor = R.color.gray_summary_secondary_text;
+                break;
+            case ScreenComposer.SCREEN_REPORT:
+                isLight = false;
+                showBack = true;
+                showSend = true;
+                title = getString(R.string.issue_report_label);
+                backgroundColor = R.color.issue_report_blue;
+                textColor = R.color.white;
                 break;
         }
 
@@ -590,7 +615,12 @@ class ScreenDecorator {
         boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
         setRecordingHintVisibility(portrait);
         stopImmersiveMode();
-        showActionBar(title, showBack, backgroundColor, textColor, isLight, colorSignature);
+        if (showActionBar) {
+            showActionBar(title, showBack, showSend, backgroundColor, textColor, isLight, colorSignature);
+        } else {
+            hideActionBar();
+        }
+        setStatusBarColor(statusBarColor);
         if (stopLocationUpdates) {
             if (!mRecorder.isRecording()) {
                 mHandler.postDelayed(new Runnable() {
@@ -615,11 +645,11 @@ class ScreenDecorator {
         showSnackBar(resId, duration, null, null);
     }
 
-    public void showSnackBar(final CharSequence text, final int duration) {
+    private void showSnackBar(final CharSequence text, final int duration) {
         showSnackBar(text, duration, null, null);
     }
 
-    public void showSnackBar(final int resId, final int duration, final String button, final Runnable onClick) {
+    private void showSnackBar(final int resId, final int duration, final String button, final Runnable onClick) {
         showSnackBar(activity.getText(resId), duration, button, onClick);
     }
 
@@ -634,6 +664,10 @@ class ScreenDecorator {
 
             @Override
             public void run() {
+                if (mSnackBar != null && mSnackBar.isShown() && mSnackBar.getDuration() == Snackbar.LENGTH_INDEFINITE) {
+                    mSnackBar.setText(text);
+                    return;
+                }
                 mSnackBar = Snackbar.make(mDrawer, text, duration);
                 if (button != null && onClick != null) {
                     mSnackBar.setAction(button, new View.OnClickListener() {
@@ -791,11 +825,20 @@ class ScreenDecorator {
 
     @Subscribe
     public void onGamificationEnabled(GamificationSettingEvent event) {
-        if (navigationView != null) {
+        if (scoreText != null) {
+            scoreText.setVisibility(event.enabled ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onUserTypeChanged(UserTypeChangedEvent event) {
+        Log.d(TAG, "onUserTypeChanged: " + event.type);
+        if (event.isDriver()) {
             MenuItem item = navigationView.getMenu().findItem(R.id.menu_leaderboard);
-            if (item != null) {
-                item.setVisible(event.enabled);
-            }
+            item.setVisible(false);
+        } else {
+            MenuItem item = navigationView.getMenu().findItem(R.id.menu_leaderboard);
+            item.setVisible(true);
         }
     }
 
@@ -806,15 +849,15 @@ class ScreenDecorator {
                 mLogOutImage.setOnClickListener(logoutOnClickListener);
             }
             if (mUserPhotoImageView != null) {
-                if (event.userPhoto != null && event.userPhoto.length() > 0) {
+                if (event.accountData.getProfilePictureUrl() != null && event.accountData.getProfilePictureUrl().length() > 0) {
                     Log.d(TAG, "onLoginChanged: loading profile picture");
                     Glide.with(activity)
-                            .load(event.userPhoto)
+                            .load(event.accountData.getProfilePictureUrl())
                             .centerCrop()
                             .dontAnimate()
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .skipMemoryCache(false)
-                            .signature(new StringSignature("profile " + event.username))
+                            .signature(new StringSignature("profile " + event.accountData.getUserName() + "-" + event.accountData.getProfilePictureUrl()))
                             .priority(Priority.IMMEDIATE)
                             .placeholder(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_gray, null))
                             .error(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_gray, null))
@@ -829,7 +872,7 @@ class ScreenDecorator {
                 });
             }
             if (mUsernameTextView != null) {
-                mUsernameTextView.setText(event.displayName);
+                mUsernameTextView.setText(event.accountData.getDisplayName());
                 mUsernameTextView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -852,12 +895,13 @@ class ScreenDecorator {
             }
             closeDrawerIfOpen();
         }
+        EventBus.clear(LoginChangedEvent.class);
     }
 
     @Subscribe(priority = 1)
     public void onRefreshNeeded(SequencesChangedEvent event) {
         if (!event.online && (mUploadManager == null || !mUploadManager.isUploading())) {
-            refreshSignatureValue(Utils.formatSize(Sequence.getTotalSize()));
+            refreshSignatureValue(Utils.formatSize(LocalSequence.getTotalSize()));
         }
     }
 

@@ -1,14 +1,11 @@
 package com.telenav.osv.obd;
 
 import android.util.Log;
-import com.telenav.osv.obd.VehicleDataListener;
 
 /**
  * Created by dianat on 3/25/2016.
  */
 public class OBDHelper {
-
-    private static final String TAG = "OBDHelper";
 
     /**
      * command for speed
@@ -30,6 +27,8 @@ public class OBDHelper {
     public static final String CMD_DEVICE_DESCRIPTION = "AT @1";
 
     public static final String CMD_DESCRIBE_PROTOCOL = "AT DP";
+
+    private static final String TAG = "OBDHelper";
 
     /**
      * converts the characteristic result to integer value according to the command type formula

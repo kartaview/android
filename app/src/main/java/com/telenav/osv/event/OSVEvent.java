@@ -5,8 +5,4 @@ package com.telenav.osv.event;
  */
 
 public abstract class OSVEvent {
-    @Override
-    public boolean equals(Object obj) {
-        return this.getClass() == obj.getClass();
-    }
 }

@@ -6,7 +6,6 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/developer_recording_indicator"
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -42,7 +41,8 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:srcCompat="@drawable/vector_ellipse_bg" />
+                app:srcCompat="@drawable/vector_ellipse_green"
+                tools:ignore="ContentDescription" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -55,7 +55,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="0"
+                    android:text="@string/default_value_0"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -63,7 +63,7 @@
                     android:id="@+id/obd_icon_unit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="km/h"
+                    android:text="@string/partial_kmh_label"
                     android:textSize="12sp" />
             </LinearLayout>
         </FrameLayout>
@@ -75,7 +75,8 @@
             android:layout_gravity="top|end"
             android:layout_margin="5dp"
             android:layout_toRightOf="@+id/obd_icon_holder"
-            app:srcCompat="@drawable/vector_gps_low" />
+            app:srcCompat="@drawable/vector_gps_low"
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 
     <FrameLayout
@@ -83,9 +84,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="5dp"
+        android:gravity="center"
         android:minHeight="48dp"
         android:minWidth="48dp"
-        android:gravity="center"
         android:tag="bottom|end">
 
         <com.telenav.osv.ui.custom.ScoreView
@@ -93,8 +94,8 @@
             style="@style/textStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:layout_gravity="center"
+            android:gravity="center"
             android:lines="1"
             android:minHeight="48dp"
             android:minWidth="48dp"
@@ -102,6 +103,7 @@
             android:visibility="visible" />
 
     </FrameLayout>
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -131,11 +133,11 @@
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/sign_detection_container"
         android:layout_width="90dp"
         android:layout_height="90dp"
         android:layout_gravity="top|start"
         android:tag="top|start"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:ignore="ContentDescription" />
 
 </com.telenav.osv.ui.custom.FixedFrameLayout>

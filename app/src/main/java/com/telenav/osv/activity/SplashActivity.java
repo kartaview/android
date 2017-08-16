@@ -10,10 +10,15 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Process;
+import android.os.Looper;
 import android.os.StatFs;
 import android.support.annotation.WorkerThread;
+import com.skobbler.ngx.SKMaps;
+import com.skobbler.ngx.SKMapsInitializationListener;
+import com.skobbler.ngx.map.SKMapSurfaceView;
+import com.skobbler.ngx.util.SKLogging;
+import com.skobbler.ngx.versioning.SKMapVersioningListener;
+import com.skobbler.ngx.versioning.SKVersioningManager;
 import com.telenav.osv.R;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
@@ -22,6 +27,7 @@ import com.telenav.osv.event.AppReadyEvent;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.service.RecentClearedService;
+import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
@@ -29,13 +35,13 @@ import com.telenav.osv.utils.Utils;
  * Activity that installs required resources (from assets/MapResources.zip) to
  * the device
  */
-public class SplashActivity extends Activity /*implements SKMapsInitializationListener, SKMapVersioningListener*/ {
-
-    public static final long KILO = 1024;
-
-    public static final long MEGA = KILO * KILO;
+public class SplashActivity extends Activity implements SKMapsInitializationListener, SKMapVersioningListener {
 
     public static final String RESTART_FLAG = "restartExtra";
+
+    private static final long KILO = 1024;
+
+    private static final long MEGA = KILO * KILO;
 
     private static final int REQUEST_ENABLE_INTRO = 1;
 
@@ -46,7 +52,7 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
      */
     public static String mapResourcesDirPath = "";
 
-    public static int newMapVersionDetected = 0;
+    private static int newMapVersionDetected = 0;
 
     private boolean update = false;
 
@@ -56,10 +62,6 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
 
     private OSVApplication mApp;
 
-    private Handler mBackgroundHandler;
-
-    private HandlerThread mInitThread;
-
     private Runnable goToMapRunnable = new Runnable() {
         @Override
         public void run() {
@@ -67,7 +69,7 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
         }
     };
 
-    public static String chooseStoragePath(Context context) {
+    private static String chooseStoragePath(Context context) {
         if (getAvailableMemorySize(Environment.getDataDirectory().getPath()) >= 50 * MEGA) {
             if (context != null && context.getFilesDir() != null) {
                 return context.getFilesDir().getPath();
@@ -80,8 +82,8 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
             }
         }
 
-//        SKLogging.writeLog(TAG, "There is not enough memory on any storage, but return internal memory",
-//                SKLogging.LOG_DEBUG);
+        SKLogging.writeLog(TAG, "There is not enough memory on any storage, but return internal memory",
+                SKLogging.LOG_DEBUG);
 
         if (context != null && context.getFilesDir() != null) {
             return context.getFilesDir().getPath();
@@ -98,26 +100,26 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
      * get the available internal memory size
      * @return available memory size in bytes
      */
-    public static long getAvailableMemorySize(String path) {
+    private static long getAvailableMemorySize(String path) {
         StatFs statFs = null;
         try {
             statFs = new StatFs(path);
         } catch (IllegalArgumentException ex) {
-//            SKLogging.writeLog("SplashActivity", "Exception when creating StatF ; message = " + ex,
-//                    SKLogging.LOG_DEBUG);
+            SKLogging.writeLog("SplashActivity", "Exception when creating StatF ; message = " + ex,
+                    SKLogging.LOG_DEBUG);
         }
         if (statFs != null) {
             Method getAvailableBytesMethod = null;
             try {
                 getAvailableBytesMethod = statFs.getClass().getMethod("getAvailableBytes");
             } catch (NoSuchMethodException e) {
-//                SKLogging.writeLog(TAG, "Exception at getAvailableMemorySize method = " + e.getMessage(),
-//                        SKLogging.LOG_DEBUG);
+                SKLogging.writeLog(TAG, "Exception at getAvailableMemorySize method = " + e.getMessage(),
+                        SKLogging.LOG_DEBUG);
             }
 
             if (getAvailableBytesMethod != null) {
                 try {
-//                    SKLogging.writeLog(TAG, "Using new API for getAvailableMemorySize method !!!", SKLogging.LOG_DEBUG);
+                    SKLogging.writeLog(TAG, "Using new API for getAvailableMemorySize method !!!", SKLogging.LOG_DEBUG);
                     return (Long) getAvailableBytesMethod.invoke(statFs);
                 } catch (IllegalAccessException e) {
                     return (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
@@ -138,14 +140,10 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
         setContentView(R.layout.activity_splash);
         mApp = ((OSVApplication) getApplication());
         appPrefs = mApp.getAppPrefs();
-        appPrefs.saveBooleanPreference(PreferenceTypes.K_MAP_DISABLED, true);
-        if (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false)/* || SKMaps.getInstance().isSKMapsInitialized()*/) {
+        if (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) || SKMaps.getInstance().isSKMapsInitialized()) {
             mLibraryInitialized = true;
         }
-        mInitThread = new HandlerThread("Init_Thread", Process.THREAD_PRIORITY_FOREGROUND);
-        mInitThread.start();
-        mBackgroundHandler = new Handler(mInitThread.getLooper());
-        mBackgroundHandler.post(new Runnable() {
+        BackgroundThreadPool.post(new Runnable() {
             @Override
             public void run() {
                 startService(new Intent(getBaseContext(), RecentClearedService.class));
@@ -153,40 +151,40 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
                     Intent intent = new Intent(SplashActivity.this, WalkthroughActivity.class);
                     startActivityForResult(intent, REQUEST_ENABLE_INTRO);
                 }
-//                SKMapSurfaceView.preserveGLContext = true;
-//                Utils.isMultipleMapSupportEnabled = false;
-//                String applicationPath = chooseStoragePath(SplashActivity.this);
-//
-//                // determine path where map resources should be copied on the device
-//                if (applicationPath != null) {
-//                    mapResourcesDirPath = applicationPath + "/" + "SKMaps/";
-//                } else {
-//                    // show a dialog and then finish
-//                }
-//                ((OSVApplication) getApplication()).getAppPrefs().saveStringPreference("mapResourcesPath", mapResourcesDirPath);
-//                checkForUpdate();
-//                if (!new OSVFile(mapResourcesDirPath).exists()) {
+                SKMapSurfaceView.preserveGLContext = true;
+                Utils.isMultipleMapSupportEnabled = false;
+                String applicationPath = chooseStoragePath(SplashActivity.this);
+
+                // determine path where map resources should be copied on the device
+                if (applicationPath != null) {
+                    mapResourcesDirPath = applicationPath + "/" + "SKMaps/";
+                } else {
+                    // show a dialog and then finish
+                }
+                ((OSVApplication) getApplication()).getAppPrefs().saveStringPreference("mapResourcesPath", mapResourcesDirPath);
+                checkForUpdate();
+                if (!new OSVFile(mapResourcesDirPath).exists()) {
 //                    copyOtherResources();
-//                    SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
-//                    Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
-//                } else if (!update) {
-//                    if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) && !mLibraryInitialized) {
-//                        long time = System.currentTimeMillis();
-//                        SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
-//                        Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
-//                        Log.d(TAG, "run: initialized in " + (System.currentTimeMillis() - time) + " ms");
-//                    } else {
+                    SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
+                    Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
+                } else if (!update) {
+                    if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) && !mLibraryInitialized) {
+                        long time = System.currentTimeMillis();
+                        SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
+                        Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
+                        Log.d(TAG, "run: initialized in " + (System.currentTimeMillis() - time) + " ms");
+                    } else {
                         if (appPrefs.getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN) && mLibraryInitialized) {
-                            mBackgroundHandler.post(goToMapRunnable);
-//                        }
-//                    }
+                            BackgroundThreadPool.post(goToMapRunnable);
+                        }
+                    }
                 }
             }
         });
     }
 
     private boolean shouldOpenMainScreen() {
-        return (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) /*|| SKMaps.getInstance().isSKMapsInitialized()*/) && mApp.isReady() && appPrefs
+        return (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) || SKMaps.getInstance().isSKMapsInitialized()) && mApp.isReady() && appPrefs
                 .getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN);
     }
 
@@ -205,26 +203,27 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mBackgroundHandler.post(goToMapRunnable);
+        BackgroundThreadPool.post(goToMapRunnable);
     }
 
     @WorkerThread
     private void goToMap() {
         if (shouldOpenMainScreen()) {
-            mBackgroundHandler.removeCallbacks(goToMapRunnable);
+            BackgroundThreadPool.cancelTask(goToMapRunnable);
             Intent i = new Intent(this, MainActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            overridePendingTransition(0,0);
             startActivity(i);
             finish();
-            Log.d(TAG, "goToMap: interrupting thread");
-            mBackgroundHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mInitThread.quit();
-                }
-            });
         } else {
             if (appPrefs.getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN)) {
-                mBackgroundHandler.postDelayed(goToMapRunnable, 300);
+                Handler h = new Handler(Looper.getMainLooper());
+                h.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        BackgroundThreadPool.post(goToMapRunnable);
+                    }
+                }, 300);
             }
         }
     }
@@ -234,14 +233,14 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
         Log.d(TAG, "onAppReady: ");
         EventBus.clear(AppReadyEvent.class);
         if (shouldOpenMainScreen()) {
-            mBackgroundHandler.post(goToMapRunnable);
+            BackgroundThreadPool.post(goToMapRunnable);
         }
     }
 
     /**
      * Checks if the current version code is grater than the previous and overwrites the map resources.
      */
-    public void checkForUpdate() {
+    private void checkForUpdate() {
         OSVApplication appContext = (OSVApplication) getApplication();
         int currentVersionCode = appContext.getAppPrefs().getIntPreference(ApplicationPreferences.CURRENT_VERSION_CODE);
         int versionCode = getVersionCode();
@@ -255,21 +254,21 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
             Utils.deleteFileOrDirectory(new OSVFile(mapResourcesDirPath));
 //            copyOtherResources();
             if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) && !mLibraryInitialized) {
-//                SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
-//                Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
+                SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
+                Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
             }
         }
 
     }
 
-//    @Override
+    @Override
     public void onLibraryInitialized(boolean isSuccessful) {
         mLibraryInitialized = true;
         if (isSuccessful) {
 //            copyOtherResources();
-//            SKVersioningManager.getInstance().setMapUpdateListener(this);
+            SKVersioningManager.getInstance().setMapUpdateListener(this);
             if (appPrefs.getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN)) {
-                mBackgroundHandler.post(goToMapRunnable);
+                BackgroundThreadPool.post(goToMapRunnable);
             }
         } else {
             //map was not initialized successfully
@@ -318,7 +317,7 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
      * Returns the current version code
      * @return version code
      */
-    public int getVersionCode() {
+    private int getVersionCode() {
         int v = 0;
         try {
             v = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionCode;
@@ -326,23 +325,23 @@ public class SplashActivity extends Activity /*implements SKMapsInitializationLi
         return v;
     }
 
-//    @Override
+    @Override
     public void onNewVersionDetected(int i) {
         Log.e("", " New version = " + i);
         newMapVersionDetected = i;
     }
 
-//    @Override
+    @Override
     public void onMapVersionSet(int i) {
 
     }
 
-//    @Override
+    @Override
     public void onVersionFileDownloadTimeout() {
 
     }
 
-//    @Override
+    @Override
     public void onNoNewVersionDetected() {
 
     }

@@ -10,29 +10,33 @@ import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
 /**
+ * fragment showing the summary of the recording finished
  * Created by Kalman on 17/01/2017.
  */
-public class RecordingSummaryFragment extends Fragment {
-    
+public class RecordingSummaryFragment extends DisplayFragment {
+
     public final static String TAG = "RecordingSummaryFragment";
-    
-    private Sequence mSequence;
+
+    private LocalSequence mSequence;
 
     private MainActivity activity;
 
     private FrameLayout view;
 
     private LayoutInflater mInflater;
-    
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -54,24 +58,31 @@ public class RecordingSummaryFragment extends Fragment {
         this.view.requestLayout();
         try {
             View okButton = view.findViewById(R.id.ok_button);
-            TextView sizeText = (TextView) view.findViewById(R.id.summary_size_text);
-            TextView distanceText = (TextView) view.findViewById(R.id.summary_distance_text);
-            TextView imagesText = (TextView) view.findViewById(R.id.summary_images_text);
-            TextView summaryText = (TextView) view.findViewById(R.id.summary_points_text);
-
+            TextView sizeText = view.findViewById(R.id.summary_size_text);
+            TextView distanceText = view.findViewById(R.id.summary_distance_text);
+            TextView imagesText = view.findViewById(R.id.summary_images_text);
+            CheckBox checkbox = view.findViewById(R.id.dont_show_checkbox);
+            TextView summaryText = view.findViewById(R.id.summary_points_text);
+            checkbox.setChecked(activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_HIDE_RECORDING_SUMMARY));
             okButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     activity.onBackPressed();
                 }
             });
+            checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    activity.getApp().getAppPrefs().saveBooleanPreference(PreferenceTypes.K_HIDE_RECORDING_SUMMARY, isChecked);
+                }
+            });
             if (mSequence != null) {
                 String first = "Disk size ";
-                String[] items = Utils.formatSizeDetailed(mSequence.size);
+                String[] items = Utils.formatSizeDetailed(mSequence.getSize());
                 String second = items[0];
                 String third = items[1];
-                third.replace("MB","mb");
-                third.replace("GB","gb");
+                third.replace("MB", "mb");
+                third.replace("GB", "gb");
                 SpannableString styledString = new SpannableString(first + second + third);
                 styledString.setSpan(new AbsoluteSizeSpan(20, true), 0, first.length(), 0);
                 styledString.setSpan(new AbsoluteSizeSpan(24, true), first.length(), second.length() + first.length(), 0);
@@ -79,7 +90,8 @@ public class RecordingSummaryFragment extends Fragment {
 //                styledString.setSpan(new CenteredSpan(), first.length() + second.length(), second.length() + first.length() + third.length(), 0);
                 styledString.setSpan(new AbsoluteSizeSpan(18, true), first.length() + second.length(), first.length() + second.length() + third.length(), 0);
                 styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), 0, first.length(), 0);
-                styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(), first.length() + second.length(), 0);
+                styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(), first.length() + second.length
+                        (), 0);
 
                 styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), first.length() + second.length(), first
                         .length()
@@ -97,25 +109,28 @@ public class RecordingSummaryFragment extends Fragment {
 //                styledString2.setSpan(new CenteredSpan(), first.length() + second.length(), second.length() + first.length() + third.length(), 0);
                 styledString2.setSpan(new AbsoluteSizeSpan(18, true), first.length() + second.length(), first.length() + second.length() + third.length(), 0);
                 styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), 0, first.length(), 0);
-                styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(), first.length() + second.length(), 0);
-                styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), first.length() + second.length(), first.length()
+                styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(), first.length() + second
+                        .length(), 0);
+                styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), first.length() + second.length(), first
+                        .length()
                         + second.length() + third.length(), 0);
                 distanceText.setText(styledString2);
 
                 first = "Photos ";
-                second = "" + mSequence.originalImageCount;
+                second = "" + mSequence.getOriginalFrameCount();
                 SpannableString styledString3 = new SpannableString(first + second);
                 styledString3.setSpan(new AbsoluteSizeSpan(20, true), 0, first.length(), 0);
                 styledString3.setSpan(new AbsoluteSizeSpan(24, true), first.length(), second.length() + first.length(), 0);
 //                styledString3.setSpan(new CenteredSpan(), 0, first.length(), 0);
 //                styledString3.setSpan(new CenteredSpan(), first.length() + second.length(), second.length() + first.length(), 0);
                 styledString3.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), 0, first.length(), 0);
-                styledString3.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(), first.length() + second.length(), 0);
+                styledString3.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(), first.length() + second
+                        .length(), 0);
                 imagesText.setText(styledString3);
 
-                summaryText.setText("" + mSequence.score);
+                summaryText.setText("" + mSequence.getScore());
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             Log.d(TAG, "onViewCreated: " + Log.getStackTraceString(e));
         }
     }
@@ -138,7 +153,8 @@ public class RecordingSummaryFragment extends Fragment {
         super.onPause();
     }
 
-    public void setSource(Sequence sequence) {
-        this.mSequence = sequence;
+    @Override
+    public void setSource(Object extra) {
+        this.mSequence = (LocalSequence) extra;
     }
 }

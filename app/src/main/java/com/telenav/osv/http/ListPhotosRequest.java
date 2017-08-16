@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import com.android.volley.AuthFailureError;
-import com.android.volley.Response.ErrorListener;
-import com.android.volley.Response.Listener;
 import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -19,14 +18,14 @@ public class ListPhotosRequest extends StringRequest {
 
     private static final String PARAM_TOKEN = "access_token";
 
-    private final Listener<String> mListener;
+    private final GenericResponseListener mListener;
 
     private final int mSequenceId;
 
     private final String mToken;
 
-    public ListPhotosRequest(String url, ErrorListener errorListener, Listener<String> listener, int sequenceId, String token) {
-        super(Method.POST, url, listener, errorListener);
+    public ListPhotosRequest(String url, GenericResponseListener listener, int sequenceId, String token) {
+        super(Method.POST, url, listener, listener);
         mToken = token;
         mSequenceId = sequenceId;
         mListener = listener;

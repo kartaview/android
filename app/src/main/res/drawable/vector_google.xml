@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:width="35dp"
     android:height="29dp"
     android:viewportHeight="29"
@@ -38,5 +39,6 @@ C13.8406,11.9914,14.2406,11.5085,14.6166,11.309
 C14.6166,11.309,16.8766,9.52906,16.8966,7.05477
 C16.8966,7.05477,17.3286,2.96818,14.4286,1.44769 L16.7046,1.44769
 L19.1726,0.0948055 Z"
-        android:strokeWidth="1" />
+        android:strokeWidth="1"
+        tools:targetApi="n" />
 </vector>

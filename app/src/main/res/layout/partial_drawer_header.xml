@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="190dp"
     android:background="@color/background_material_dark_1"
@@ -41,7 +42,8 @@
             android:layout_marginLeft="30dp"
             android:layout_toRightOf="@+id/username_label"
             android:visibility="visible"
-            app:srcCompat="@drawable/vector_out" />
+            app:srcCompat="@drawable/vector_out"
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 
 </LinearLayout>

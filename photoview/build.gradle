@@ -16,3 +16,11 @@ dependencies {
     compile "com.android.support:support-v4:25.3.1"
 }
 
+ext {
+    PUBLISH_GROUP_ID = 'uk.co.senab.photoview'
+    PUBLISH_ARTIFACT_ID = 'photoview-osc'
+    PUBLISH_VERSION = '1.0.0'
+}
+
+apply from: 'buildRelease.gradle'
+

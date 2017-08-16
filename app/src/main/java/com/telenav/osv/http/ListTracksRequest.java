@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import com.android.volley.AuthFailureError;
-import com.android.volley.Response.ErrorListener;
-import com.android.volley.Response.Listener;
 import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -25,11 +24,11 @@ public class ListTracksRequest extends StringRequest {
 
     private static final String PARAM_ZOOM = "zoom";
 
-    public final String mBbTopLeft;
+    private final String mBbTopLeft;
 
-    public final String mBbBottomRight;
+    private final String mBbBottomRight;
 
-    private final Listener<String> mListener;
+    private final GenericResponseListener mListener;
 
     private final float mZoom;
 
@@ -37,8 +36,8 @@ public class ListTracksRequest extends StringRequest {
 
     private final int mPage;
 
-    public ListTracksRequest(String url, ErrorListener errorListener, Listener<String> listener, String bbTopLeft, String bbBottomRight, int page, int ipp, float zoom) {
-        super(Method.POST, url, listener, errorListener);
+    public ListTracksRequest(String url, GenericResponseListener listener, String bbTopLeft, String bbBottomRight, int page, int ipp, float zoom) {
+        super(Method.POST, url, listener, listener);
         mListener = listener;
         mBbTopLeft = bbTopLeft;
         mBbBottomRight = bbBottomRight;

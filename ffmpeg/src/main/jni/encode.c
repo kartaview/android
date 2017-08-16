@@ -525,12 +525,13 @@ int *decodeJpegData(jbyte *jpeg, int length) {
         return ret;
     }
     ret[0] = video_index;
+    LOGI("frame format is %s", av_get_pix_fmt_name((enum AVPixelFormat) yuvframe->format));
     if (yuvframe->format != AV_PIX_FMT_YUVJ420P && yuvframe->format != AV_PIX_FMT_YUV420P) {
         LOGI("converting to proper color format...");
 //        swsscale the shit out of this motherfucker
         if (!sws_ctx) {
             sws_ctx = sws_getContext(yuvframe->width, yuvframe->height, (enum AVPixelFormat) yuvframe->format,
-                                     yuvframe->width, yuvframe->height, AV_PIX_FMT_YUV420P,
+                                     yuvframe->width, yuvframe->height, AV_PIX_FMT_YUVJ420P,
                                      SWS_BICUBIC, NULL, NULL, NULL);
         }
         AVFrame *temp = av_frame_alloc();
@@ -549,9 +550,9 @@ int *decodeJpegData(jbyte *jpeg, int length) {
             temp->height = yuvframe->height;
         }
         if (yuvframe) {
-            LOGI("Freeing yuv422 frame");
+            LOGI("Freeing initial frame");
             av_frame_free(&yuvframe);
-            LOGI("Freed yuv422 frame");
+            LOGI("Freed initial frame");
         }
         yuvframe = temp;
     }

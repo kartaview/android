@@ -7,10 +7,6 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 
 public abstract class UploadEvent extends OSVStickyEvent {
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof UploadEvent;
-    }
 
     @Override
     public Class getStickyClass() {

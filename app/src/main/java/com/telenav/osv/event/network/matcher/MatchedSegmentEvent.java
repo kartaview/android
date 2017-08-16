@@ -1,8 +1,7 @@
 package com.telenav.osv.event.network.matcher;
 
-import java.util.Collection;
 import com.telenav.osv.event.OSVStickyEvent;
-import com.telenav.osv.item.Polyline;
+import com.telenav.osv.item.Segment;
 
 /**
  * Created by Kalman on 14/11/2016.
@@ -10,13 +9,10 @@ import com.telenav.osv.item.Polyline;
 
 public class MatchedSegmentEvent extends OSVStickyEvent {
 
-    public final Collection<Polyline> all;
+    public final Segment segment;
 
-    public final Polyline polyline;
-
-    public MatchedSegmentEvent(Polyline matched, Collection<Polyline> all) {
-        this.polyline = matched;
-        this.all = all;
+    public MatchedSegmentEvent(Segment matched) {
+        this.segment = matched;
     }
 
     @Override

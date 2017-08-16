@@ -1,16 +1,22 @@
 package com.telenav.osv.manager.playback;
 
 import java.util.ArrayList;
+import android.view.View;
 import android.widget.SeekBar;
 import com.skobbler.ngx.SKCoordinate;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.item.Sequence;
 
 /**
+ * abstract playback manager
  * Created by Kalman on 27/07/16.
  */
-
 public abstract class PlaybackManager {
-    public abstract void setSurface(Object surface);
+    public abstract void setSurface(View surface);
+
+    public abstract View getSurface();
+
+    public abstract void prepare();
 
     public abstract void next();
 
@@ -45,6 +51,14 @@ public abstract class PlaybackManager {
     public abstract ArrayList<SKCoordinate> getTrack();
 
     public abstract void onSizeChanged();
+
+    public static PlaybackManager get(OSVActivity activity, Sequence sequence) {
+        if (!sequence.isOnline()){
+            return sequence.isSafe() ? new SafePlaybackManager(activity, sequence): new LocalPlaybackManager(activity, sequence);
+        } else {
+            return new OnlinePlaybackManager(activity, sequence);
+        }
+    }
 
     public interface PlaybackListener {
         void onPlaying();

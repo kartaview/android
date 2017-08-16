@@ -6,5 +6,5 @@ import com.telenav.osv.event.OSVEvent;
  * Created by Kalman on 07/11/2016.
  */
 
-public abstract class SensorEvent extends OSVEvent {
+abstract class SensorEvent extends OSVEvent {
 }

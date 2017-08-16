@@ -7,10 +7,10 @@ import com.telenav.osv.item.Polyline;
  * Created by Kalman on 07/11/2016.
  */
 
-public abstract class MatcherEvent extends OSVEvent {
-    public final Polyline polyline;
+abstract class MatcherEvent extends OSVEvent {
+    private final Polyline polyline;
 
-    public MatcherEvent(Polyline polyline){
+    MatcherEvent(Polyline polyline) {
         this.polyline = polyline;
     }
 }

@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragment_upload_progress_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clickable="true"
@@ -63,13 +62,12 @@
                     android:fontFamily="sans-serif-thin"
                     android:gravity="center"
                     android:maxLines="1"
-                    android:text="0"
+                    android:text="@string/default_value_0"
                     android:textColor="@color/text_colour_default"
                     android:textSize="90sp"
                     tools:ignore="HardcodedText" />
 
                 <TextView
-                    android:id="@+id/percent_symbol_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_above="@+id/size_details_holder"
@@ -129,7 +127,6 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/time_and_speed_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -218,7 +215,6 @@
             app:layout_widthPercent="48%">
 
             <TextView
-                android:id="@+id/cancel_all_text"
                 style="@style/toolbarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

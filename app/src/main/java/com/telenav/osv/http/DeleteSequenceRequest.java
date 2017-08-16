@@ -6,9 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import com.android.volley.AuthFailureError;
-import com.android.volley.Response.ErrorListener;
-import com.android.volley.Response.Listener;
 import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -20,7 +19,7 @@ public class DeleteSequenceRequest extends StringRequest {
 
     private static final String PARAM_TOKEN = "access_token";
 
-    private final Listener<String> mListener;
+    private final GenericResponseListener mListener;
 
     private final int mSequenceId;
 
@@ -30,8 +29,8 @@ public class DeleteSequenceRequest extends StringRequest {
 
     private MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
 
-    public DeleteSequenceRequest(String url, ErrorListener errorListener, Listener<String> listener, int sequenceId, String token) {
-        super(Method.POST, url, listener, errorListener);
+    public DeleteSequenceRequest(String url, GenericResponseListener listener, int sequenceId, String token) {
+        super(Method.POST, url, listener, listener);
         mToken = token;
         mSequenceId = sequenceId;
         mListener = listener;
@@ -53,7 +52,7 @@ public class DeleteSequenceRequest extends StringRequest {
 
     @Override
     protected Map<String, String> getParams() {
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         params.put(PARAM_SEQUENCE_ID, mSequenceId + "");
         params.put(PARAM_TOKEN, mToken);
         return params;

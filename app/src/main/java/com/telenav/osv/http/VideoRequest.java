@@ -13,11 +13,10 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import android.os.Handler;
 import com.android.volley.AuthFailureError;
-import com.android.volley.Response.ErrorListener;
-import com.android.volley.Response.Listener;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.telenav.osv.item.OSVFile;
+import com.telenav.osv.listener.network.GenericResponseListener;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
@@ -38,7 +37,7 @@ public class VideoRequest<T> extends StringRequest {
 
     private final int mSequenceIndex;
 
-    private final Listener<String> mListener;
+    private final GenericResponseListener mListener;
 
     private final OSVFile mVideoFile;
 
@@ -50,9 +49,9 @@ public class VideoRequest<T> extends StringRequest {
 
     private Handler mResponseHandler;
 
-    public VideoRequest(String url, ErrorListener errorListener, Listener<String> listener, ProgressiveEntity.DataProgressListener dataProgressListener, String token, OSVFile
+    public VideoRequest(String url, GenericResponseListener listener, ProgressiveEntity.DataProgressListener dataProgressListener, String token, OSVFile
             videoFile, int sequenceID, int sequenceIndex, Handler responseHandler) {
-        super(Method.POST, url, listener, errorListener);
+        super(Method.POST, url, listener, listener);
 
         mListener = listener;
         mVideoFile = videoFile;
@@ -70,7 +69,7 @@ public class VideoRequest<T> extends StringRequest {
 
         if (headers == null
                 || headers.equals(Collections.emptyMap())) {
-            headers = new HashMap<String, String>();
+            headers = new HashMap<>();
         }
 
         headers.put("Accept", "application/json");

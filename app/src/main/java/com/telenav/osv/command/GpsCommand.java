@@ -10,13 +10,15 @@ public class GpsCommand extends OSVStickyEvent {
 
     public final boolean start;
 
-    public GpsCommand(boolean start){
+    public boolean singlePosition;
+
+    public GpsCommand(boolean start) {
         this.start = start;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof GpsCommand;
+    public GpsCommand(boolean start, boolean singlePosition) {
+        this.start = start;
+        this.singlePosition = singlePosition;
     }
 
     @Override

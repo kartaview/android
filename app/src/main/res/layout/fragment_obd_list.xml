@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fragment_obd_list_root"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
+    android:background="@color/white"
     android:focusable="true"
-    android:minWidth="300dp"
     android:focusableInTouchMode="true"
+    android:minWidth="300dp"
     android:orientation="vertical"
     android:padding="20dp">
 
@@ -17,8 +17,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="3dp"
         android:layout_marginTop="10dp"
-        android:textColor="@color/text_colour_default_light"
         android:text="@string/obd_type_label"
+        android:textColor="@color/text_colour_default_light"
         android:textSize="25sp"
         android:textStyle="bold" />
 
@@ -43,7 +43,7 @@
             android:id="@+id/obd_radio_bt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/bluetooth_label"/>
+            android:text="@string/bluetooth_label" />
     </RadioGroup>
 
     <TextView

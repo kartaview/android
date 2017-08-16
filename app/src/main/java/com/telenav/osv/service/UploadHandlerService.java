@@ -3,10 +3,13 @@ package com.telenav.osv.service;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -19,7 +22,6 @@ import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.command.ObdCommand;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.network.upload.UploadBandwidthEvent;
 import com.telenav.osv.event.network.upload.UploadCancelledEvent;
@@ -28,6 +30,7 @@ import com.telenav.osv.event.network.upload.UploadPausedEvent;
 import com.telenav.osv.event.network.upload.UploadProgressEvent;
 import com.telenav.osv.event.network.upload.UploadStartedEvent;
 import com.telenav.osv.event.network.upload.UploadingSequenceEvent;
+import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.listener.UploadProgressListener;
 import com.telenav.osv.manager.network.UploadManager;
@@ -37,13 +40,13 @@ import io.fabric.sdk.android.Fabric;
 
 public class UploadHandlerService extends Service implements UploadProgressListener {
 
-    public static final String FLAG_PAUSE = "pause";
-
-    public static final String FLAG_CANCEL = "cancel";
-
     public static final String FLAG_NETWORK = "eventNetwork";
 
     private static final String TAG = UploadHandlerService.class.getSimpleName();
+
+    private static final String FLAG_PAUSE = "pause";
+
+    private static final String FLAG_CANCEL = "cancel";
 
     private static final int NOTIFICATION_ID = 113;
 
@@ -51,7 +54,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
 
     private final Object notificationSyncObject = new Object();
 
-    public UploadManager mUploadManager;
+    private UploadManager mUploadManager;
 
     private NotificationCompat.Builder mNotification;
 
@@ -63,9 +66,9 @@ public class UploadHandlerService extends Service implements UploadProgressListe
 
     private ApplicationPreferences appPrefs;
 
-    private boolean mBound = false;
-
     private int mLastProgress = -1;
+
+    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     public void onCreate() {
@@ -89,6 +92,14 @@ public class UploadHandlerService extends Service implements UploadProgressListe
             mNotificationManager.cancel(NOTIFICATION_ID);
         }
         mLastProgress = -1;
+        mBroadcastReceiver = new NetworkBroadcastReceiver(UploadHandlerService.this, appPrefs, mUploadManager);
+        registerReceiver(mBroadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(mBroadcastReceiver);
+        super.onDestroy();
     }
 
     @Override
@@ -108,18 +119,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         if (mUploadManager == null) {
             return flag;
         }
-        final boolean autoSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO, false);
-        final boolean dataSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED, false);
-        final boolean localFilesExist = Sequence.getStaticSequences().size() != 0;
-        boolean stayAlive = false;
         if (intent != null) {
-            if (((OSVApplication)getApplication()).getRecorder().getOBDManager() != null && ((OSVApplication)getApplication()).getRecorder().getOBDManager().isWifi() && mBound) {
-                if (NetworkUtils.isWifiInternetAvailable(this)){
-                    EventBus.postSticky(new ObdCommand(true));
-                } else {
-                    EventBus.postSticky(new ObdCommand(false));
-                }
-            }
             if (intent.getBooleanExtra(FLAG_CANCEL, false)) {
                 Log.d(TAG, "Upload cancelled.");
                 mUploadManager.cancelUploadTasks();
@@ -130,44 +130,17 @@ public class UploadHandlerService extends Service implements UploadProgressListe
                 } else {
                     mUploadManager.pauseUpload();
                 }
-            } else if (intent.getBooleanExtra(FLAG_NETWORK, false)) {
-                Log.d(TAG, "Network status has changed.");
-                if (localFilesExist) {
-                    if (NetworkUtils.isInternetAvailable(this)) {
-                        //start if needed
-                        if (mUploadManager.isUploading()) {
-                            if (mUploadManager.isPaused()) {
-                                if (NetworkUtils.isWifiInternetAvailable(this) || dataSet) {
-                                    mUploadManager.resumeUpload();
-
-                                }
-                            } else {
-                                if (!NetworkUtils.isWifiInternetAvailable(this) && !dataSet) {
-                                    mUploadManager.pauseUpload();
-                                }
-                            }
-                            stayAlive = true;
-                        } else {
-                            if (autoSet && (dataSet || NetworkUtils.isWifiInternetAvailable(this))) {
-                                if (!((OSVApplication) getApplication()).getRecorder().isRecording()) {
-                                    mUploadManager.uploadCache(null, Sequence.getStaticSequences().values());
-                                    stayAlive = true;
-                                }
-                            }
-                        }
-                    } else {
-                        if (mUploadManager.isUploading() && !mUploadManager.isPaused()) {
-                            mUploadManager.pauseUpload();
-                            stayAlive = true;
-                        }
+            }
+            if (intent.getBooleanExtra(FLAG_NETWORK, false)) {
+                final boolean autoSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO, false);
+                final boolean dataSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED, false);
+                final boolean localFilesExist = LocalSequence.getStaticSequences().size() != 0;
+                boolean isWifi = NetworkUtils.isWifiInternetAvailable(UploadHandlerService.this);
+                boolean isNet = NetworkUtils.isInternetAvailable(UploadHandlerService.this);
+                if (isNet && autoSet && (dataSet || isWifi)) {
+                    if (localFilesExist && !((OSVApplication) getApplication()).getRecorder().isRecording()) {
+                        mUploadManager.uploadCache(LocalSequence.getStaticSequences().values());
                     }
-                }
-                if (mBound) {
-                    stayAlive = true;
-                    flag = START_STICKY;
-                }
-                if (!stayAlive) {
-                    stopSelf();
                 }
             }
         }
@@ -177,17 +150,15 @@ public class UploadHandlerService extends Service implements UploadProgressListe
 
     @Override
     public IBinder onBind(Intent intent) {
-        mBound = true;
         return mBinder;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-        mBound = false;
         return super.onUnbind(intent);
     }
 
-    public void uploadStarted() {
+    private void uploadStarted() {
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pnextIntent = PendingIntent.getActivity(this, 0, intent, 0);
         Bitmap icon = BitmapFactory.decodeResource(getResources(),
@@ -213,7 +184,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         }
     }
 
-    public void uploadFinished() {
+    private void uploadFinished() {
         synchronized (notificationSyncObject) {
             stopForeground(true);
             if (mNotification.mActions != null) {
@@ -255,9 +226,10 @@ public class UploadHandlerService extends Service implements UploadProgressListe
                 PendingIntent pauseIntent = PendingIntent.getService(getApplicationContext(), 0, serviceIntent, 0);
 
                 if (!mUploadManager.isIndexing()) {
-                    mNotification.addAction(mUploadManager.isPaused() ? R.drawable.ic_play_arrow_black_36dp : R.drawable.ic_pause_black_36dp, mUploadManager.isPaused() ? getString(R
+                    mNotification.addAction(mUploadManager.isPaused() ? R.drawable.ic_play_arrow_black_36dp : R.drawable.ic_pause_black_36dp, mUploadManager.isPaused() ?
+                            getString(R
 
-                            .string.resume_label) :
+                                    .string.resume_label) :
                             getString(R.string.pause_label), pauseIntent);
                 }
 //                Intent intent = new Intent(getApplicationContext(), UploadHandlerService.class);
@@ -303,7 +275,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                EventBus.post(new UploadingSequenceEvent(sequence,remainingUploads));
+                EventBus.post(new UploadingSequenceEvent(sequence, remainingUploads));
             }
         });
     }
@@ -435,7 +407,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
                             synchronized (notificationSyncObject) {
                                 mNotificationManager.notify(NOTIFICATION_ID, mNotification.build());
                             }
-                        } catch (Exception ignored){
+                        } catch (Exception ignored) {
                             Log.w(TAG, "updateNotification: " + ignored.getLocalizedMessage());
                         }
                         needsToSetNotification = true;
@@ -445,7 +417,7 @@ public class UploadHandlerService extends Service implements UploadProgressListe
         }
     }
 
-    public boolean isUploading() {
+    private boolean isUploading() {
         return mUploadManager != null && mUploadManager.isUploading();
     }
 

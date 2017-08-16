@@ -1,6 +1,7 @@
 package com.telenav.osv.ui.fragment;
 
 import android.app.Dialog;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.ApplicationPreferences;
@@ -44,11 +44,11 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
 
     private int obdSelected = -1;
 
+    private OnTypeSelectedListener typeSelectedListener;
+
     public void setTypeSelectedListener(OnTypeSelectedListener typeSelectedListener) {
         this.typeSelectedListener = typeSelectedListener;
     }
-
-    private OnTypeSelectedListener typeSelectedListener;
 
     @NonNull
     @Override
@@ -68,7 +68,7 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        okTextView = (TextView) view.findViewById(R.id.ok_button_selection_obd);
+        okTextView = view.findViewById(R.id.ok_button_selection_obd);
         okTextView.setOnClickListener(this);
         okTextView.setVisibility(View.VISIBLE);
         initViews();
@@ -78,7 +78,7 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
      * Initialize the view from the fragment
      */
     private void initViews() {
-        mRadioGroup = (RadioGroup) root.findViewById(R.id.obd_radio_group);
+        mRadioGroup = root.findViewById(R.id.obd_radio_group);
         int type = preferences.getIntPreference(PreferenceTypes.K_OBD_TYPE);
         switch (type) {
             case PreferenceTypes.V_OBD_WIFI:
@@ -90,6 +90,9 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
             case PreferenceTypes.V_OBD_BT:
                 mRadioGroup.check(R.id.obd_radio_bt);
                 break;
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            mRadioGroup.findViewById(R.id.obd_radio_ble).setVisibility(View.GONE);
         }
         mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override

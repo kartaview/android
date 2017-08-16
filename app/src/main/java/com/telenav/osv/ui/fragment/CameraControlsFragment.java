@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import com.pnikosis.materialishprogress.ProgressWheel;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.ApplicationPreferences;
@@ -28,7 +29,6 @@ import com.telenav.osv.event.hardware.camera.ImageSavedEvent;
 import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.ui.RecordingVisibleEvent;
 import com.telenav.osv.event.ui.ShutterPressEvent;
-import com.telenav.osv.item.Sequence;
 import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.utils.Log;
@@ -39,7 +39,7 @@ import com.telenav.osv.utils.Utils;
  * Created by Kalman on 14/07/16.
  */
 
-public class CameraControlsFragment extends Fragment implements View.OnClickListener {
+public class CameraControlsFragment extends FunctionalFragment implements View.OnClickListener {
 
     public static final String TAG = "CameraControlsFragment";
 
@@ -75,6 +75,10 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
 
     private Recorder mRecorder;
 
+    private LinearLayout mHintLayout;
+
+    private ProgressWheel mShutterProgress;
+
     private View.OnClickListener shutterListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -82,9 +86,7 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
         }
     };
 
-    private LinearLayout mHintLayout;
-
-    public static String[] formatSize(double value) {
+    private static String[] formatSize(double value) {
         String[] sizeText = new String[]{"0", " MB"};
         if (value > 0) {
             double size = value / (double) 1024 / (double) 1024;
@@ -130,9 +132,16 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
         Log.d(TAG, "onConfigurationChanged: ");
     }
 
-    public void initLayouts(final boolean portrait) {
+    private void initLayouts(final boolean portrait) {
         Log.d(TAG, "InitLayouts");
-
+        boolean finishing = false;
+        ProgressWheel oldProgress = mShutterProgress;
+        if (oldProgress != null) {
+            if (oldProgress.getVisibility() == View.VISIBLE) {
+                Log.d(TAG, "progress: finishing ");
+                finishing = true;
+            }
+        }
         final View current;
         if (portrait) {
             current = mControlsView;
@@ -140,25 +149,26 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
             current = mControlsViewH;
         }
         ((ViewGroup) view).removeAllViews();
+        final boolean finalFinishing = finishing;
         view.post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    ((ViewGroup)current.getParent()).removeAllViews();
-                } catch (Exception ignored){}
+                    ((ViewGroup) current.getParent()).removeAllViews();
+                } catch (Exception ignored) {}
                 ((ViewGroup) view).addView(current);
                 // Setup shutter button
 
-                mRecordingDetailsLayout = (LinearLayout) current.findViewById(R.id.track_details);
+                mRecordingDetailsLayout = current.findViewById(R.id.track_details);
                 if (portrait) {
-                    mHintLayout = (LinearLayout) current.findViewById(R.id.record_hint_layout);
+                    mHintLayout = current.findViewById(R.id.record_hint_layout);
                 }
-                mPicturesText = (TextView) current.findViewById(R.id.images_recorded_value);
-                mDistanceText = (TextView) current.findViewById(R.id.distance_covered_value);
-                mDistanceUnitText = (TextView) current.findViewById(R.id.distance_covered_text);
-                mSizeText = (TextView) current.findViewById(R.id.size_recorder_images_value);
-                mSizeUnitText = (TextView) current.findViewById(R.id.size_recorder_images_text);
-                mInfoButton = (RelativeLayout) current.findViewById(R.id.info_button_layout);
+                mPicturesText = current.findViewById(R.id.images_recorded_value);
+                mDistanceText = current.findViewById(R.id.distance_covered_value);
+                mDistanceUnitText = current.findViewById(R.id.distance_covered_text);
+                mSizeText = current.findViewById(R.id.size_recorder_images_value);
+                mSizeUnitText = current.findViewById(R.id.size_recorder_images_text);
+                mInfoButton = current.findViewById(R.id.info_button_layout);
                 mInfoButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -166,15 +176,18 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
                     }
                 });
                 mInfoButton.clearAnimation();
-                mShutterButton = (ImageView) current.findViewById(R.id.btn_shutter);
+                mShutterButton = current.findViewById(R.id.btn_shutter);
+                mShutterProgress = current.findViewById(R.id.shutter_progress);
                 mShutterButton.setOnClickListener(shutterListener);
                 mCancelAndHomeText = current.findViewById(R.id.cancel_text_camera_preview);
 
                 mCancelAndHomeText.setOnClickListener(CameraControlsFragment.this);
                 mShutterButton.setOnClickListener(shutterListener);
 
+                displayProgress(finalFinishing);
+
                 if (mRecordingDetailsLayout != null && mCancelAndHomeText != null) {
-                    if (mRecorder != null && mRecorder.isRecording()) {
+                    if (mRecorder != null && (mRecorder.isRecording() || finalFinishing)) {
                         showDetails(portrait);
                         if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, false)) {
                             final Snackbar snack = Snackbar.make(view, R.string.turn_off_screen_hint, Snackbar
@@ -202,8 +215,8 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
                         if (mCancelAndHomeText instanceof TextView) {
                             ((TextView) mCancelAndHomeText).setText(R.string.cancel_label);
                         }
+                        refreshDetails(0, 0, 0);
                     }
-                    refreshDetails();
                 }
             }
         });
@@ -223,12 +236,6 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
 
     @Override
     public void onResume() {
-        view.post(new Runnable() {
-            @Override
-            public void run() {
-                refreshDetails();
-            }
-        });
         super.onResume();
     }
 
@@ -252,25 +259,30 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
 
         switch (v.getId()) {
             case (R.id.cancel_text_camera_preview):
+                activity.openScreen(ScreenComposer.SCREEN_MAP);
                 if (mRecorder != null && mRecorder.isRecording()) {
-                    activity.openScreen(ScreenComposer.SCREEN_MAP);
                     mRecorder.stopRecording();
-                } else {
-                    activity.openScreen(ScreenComposer.SCREEN_MAP);
                 }
                 break;
         }
 
 
     }
+
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void onImageSaved(ImageSavedEvent event) {
         Log.d(TAG, "onImageSaved: called");
-        refreshDetails();
+        float space = 0;
+        if (event.sequence != null) {
+            if (event.sequence.getFolder() != null) {
+                space = (float) Utils.folderSize(event.sequence.getFolder());
+            }
+            refreshDetails(space, event.sequence.getDistance(), event.sequence.getFrameCount());
+        }
     }
 
     @Subscribe
-    public void onScreenVisible(RecordingVisibleEvent event){
+    public void onScreenVisible(RecordingVisibleEvent event) {
         if (mInfoButton != null) {
             mInfoButton.animate().scaleXBy(0.3f).scaleYBy(0.3f).setDuration(300).setListener(new Animator.AnimatorListener() {
                 @Override
@@ -308,31 +320,23 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
         }
     }
 
-    public void refreshDetails() {
+    public void refreshDetails(final float spaceOccupied, final int distance, final int imageCount) {
         if (view != null && mRecorder != null) {
-            Sequence sequence = mRecorder.getRecordingSequence();
-            float space = 0;
-            if (sequence != null && sequence.folder != null) {
-                space = (float) Utils.folderSize(sequence.folder);
-            }
-//            float reserved = appPrefs.getFloatPreference(PreferenceTypes.K_RESERVED_FREE_SPACE, 300);
-//            float pictureSize = Utils.getPictureSize(activity);
-//            final int possibleImages = (int) ((space - reserved) / pictureSize);
-            final float finalSpace = space;
+
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (mDistanceText != null && mDistanceUnitText != null && mSizeText != null && mPicturesText != null && mSizeUnitText != null) {
-                        String[] distance = Utils.formatDistanceFromMeters(activity, (int) mRecorder.getRecordingDistance());
-                        String[] size = formatSize(finalSpace);
-                        mDistanceText.setText(distance[0]);
-                        mDistanceUnitText.setText(distance[1]);
+                        String[] dist = Utils.formatDistanceFromMeters(activity, distance);
+                        String[] size = formatSize(spaceOccupied);
+                        mDistanceText.setText(dist[0]);
+                        mDistanceUnitText.setText(dist[1]);
                         mSizeText.setText(size[0]);
                         mSizeUnitText.setText(size[1]);
-                        mPicturesText.setText(mRecorder.getRecordingNumberOfPictures() + "");
+                        mPicturesText.setText(imageCount + "");
                     }
 
-                    if (mRecorder.getRecordingNumberOfPictures() == 5 && !appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_TAP_TO_SHOOT, false)) {
+                    if (imageCount == 5 && !appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_TAP_TO_SHOOT, false)) {
                         Snackbar snack = Snackbar.make(view, R.string.tap_to_shoot_hint, Snackbar.LENGTH_LONG);
                         snack.setAction(R.string.got_it_label, new View.OnClickListener() {
                             @Override
@@ -347,7 +351,7 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
         }
     }
 
-    public void showDetails(final boolean portrait) {
+    private void showDetails(final boolean portrait) {
         if (mHintLayout != null) {
             mHintLayout.setVisibility(View.INVISIBLE);
         }
@@ -360,7 +364,7 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
         }
     }
 
-    public void hideDetails(final boolean portrait) {
+    private void hideDetails(final boolean portrait) {
         mRecordingDetailsLayout.setVisibility(View.INVISIBLE);
         if (mHintLayout != null) {
             mHintLayout.setVisibility(View.VISIBLE);
@@ -397,10 +401,18 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
                     }
                 }, 5000);
             }
+            float space = 0;
+            if (event.sequence != null) {
+                if (event.sequence.getFolder() != null) {
+                    space = (float) Utils.folderSize(event.sequence.getFolder());
+                }
+                refreshDetails(space, event.sequence.getDistance(), event.sequence.getFrameCount());
+            }
         } else {
+            displayProgress(false);
             hideDetails(portrait);
+            refreshDetails(0, 0, 0);
         }
-        refreshDetails();
     }
 
     @Subscribe
@@ -420,8 +432,17 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
             started();
             mRecorder.startRecording();
         } else {
-            mRecorder.stopRecording();
             stopped();
+            displayProgress(true);
+            mRecorder.stopRecording();
+        }
+    }
+
+    private void displayProgress(boolean show) {
+        if (mShutterButton != null && mShutterProgress != null) {
+            Log.d(TAG, "displayProgress: " + show + " on " + mShutterProgress);
+            mShutterProgress.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+            mShutterButton.setEnabled(!show);
         }
     }
 
@@ -440,6 +461,8 @@ public class CameraControlsFragment extends Fragment implements View.OnClickList
             mShutterButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_button_record_inactive_2));
         }
     }
+
+    @Override
     public void setRecorder(Recorder recorder) {
         this.mRecorder = recorder;
     }

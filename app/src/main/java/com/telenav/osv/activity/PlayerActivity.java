@@ -3,23 +3,26 @@ package com.telenav.osv.activity;
 import org.greenrobot.eventbus.Subscribe;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import com.crashlytics.android.Crashlytics;
+import com.skobbler.ngx.SKMaps;
+import com.skobbler.ngx.util.SKLogging;
 import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.FullscreenEvent;
+import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.manager.playback.LocalPlaybackManager;
@@ -60,10 +63,10 @@ public class PlayerActivity extends OSVActivity {
         }
         SequenceDB.instantiate(this);
 
-        mLinearLayout = (LinearLayout) findViewById(R.id.player_main_holder);
-        mapHolder = (FrameLayout) findViewById(R.id.content_frame_map);
-        largeHolder = (FrameLayout) findViewById(R.id.content_frame_large);
-        progressBar = (ProgressBar) findViewById(R.id.progressbar);
+        mLinearLayout = findViewById(R.id.player_main_holder);
+        mapHolder = findViewById(R.id.content_frame_map);
+        largeHolder = findViewById(R.id.content_frame_large);
+        progressBar = findViewById(R.id.progressbar);
         View backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,9 +77,9 @@ public class PlayerActivity extends OSVActivity {
         progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
         mMapDisabled = appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false);
         if (!mMapDisabled) {
-//            SKMaps.getInstance().setLogOption(SKMaps.NGXLoggingOption.LOGGING_OPTION_FILE_AND_CONSOLE, false);
-//            SKMaps.getInstance().setLogOption(SKMaps.NGXLoggingOption.LOGGING_OPTION_DISABLED, true);
-//            SKLogging.enableLogs(false);
+            SKMaps.getInstance().setLogOption(SKMaps.NGXLoggingOption.LOGGING_OPTION_FILE_AND_CONSOLE, false);
+            SKMaps.getInstance().setLogOption(SKMaps.NGXLoggingOption.LOGGING_OPTION_DISABLED, true);
+            SKLogging.enableLogs(false);
         } else {
             resizeHolders(1f, isPortrait());
         }
@@ -86,6 +89,7 @@ public class PlayerActivity extends OSVActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.splash_background_no_drawable));
         EventBus.register(this);
         mHandler.post(new Runnable() {
             @Override
@@ -103,10 +107,9 @@ public class PlayerActivity extends OSVActivity {
         super.onPause();
     }
 
-    public void openScreen(final Object extra) {
+    private void openScreen(final Object extra) {
         PlaybackManager player;
         player = new LocalPlaybackManager(PlayerActivity.this, (Sequence) extra);
-
         trackPreviewFragment = new TrackPreviewFragment();
         trackPreviewFragment.setSource(player);
         trackPreviewFragment.hideDelete(false);
@@ -120,7 +123,7 @@ public class PlayerActivity extends OSVActivity {
         ft.commitAllowingStateLoss();
     }
 
-    public void resizeHolders(float ratio, final boolean portrait) {
+    private void resizeHolders(float ratio, final boolean portrait) {
         Log.d(TAG, "resizeHolders: ratio = " + ratio);
         LinearLayout.LayoutParams lpu, lpl;
         if (ratio >= 0) {
@@ -140,15 +143,29 @@ public class PlayerActivity extends OSVActivity {
         mLinearLayout.setOrientation(intendedOrientation);
         mapHolder.setLayoutParams(lpu);
         largeHolder.setLayoutParams(lpl);
+        Resources res = getResources();
+        if (ratio == 1) {
+            largeHolder.setPadding(
+                    (int) res.getDimension(R.dimen.track_preview_card_padding_sides),
+                    (int) (res.getDimension(R.dimen.track_preview_card_padding_top) + res.getDimension(R.dimen.track_preview_card_additional_padding_top)),
+                    (int) res.getDimension(R.dimen.track_preview_card_padding_sides),
+                    (int) res.getDimension(R.dimen.track_preview_card_padding_bottom));
+        } else {
+            largeHolder.setPadding(
+                    (int) res.getDimension(R.dimen.track_preview_card_padding_sides),
+                    (int) res.getDimension(R.dimen.track_preview_card_padding_top),
+                    (int) res.getDimension(R.dimen.track_preview_card_padding_sides),
+                    (int) res.getDimension(R.dimen.track_preview_card_padding_bottom));
+        }
         mLinearLayout.invalidate();
     }
 
     @Subscribe
-    public void onFullScreenRequested(FullscreenEvent event){
+    public void onFullScreenRequested(FullscreenEvent event) {
         if (event.fullscreen) {
-            resizeHolders(1f,isPortrait());
+            resizeHolders(1f, isPortrait());
         } else {
-            resizeHolders(0.6f,isPortrait());
+            resizeHolders(0.6f, isPortrait());
         }
     }
 
@@ -163,11 +180,6 @@ public class PlayerActivity extends OSVActivity {
                 resizeHolders(-1, portrait);
             }
         });
-    }
-
-    @Override
-    public void cancelNearby() {
-
     }
 
     public boolean isPortrait() {
@@ -187,7 +199,7 @@ public class PlayerActivity extends OSVActivity {
         if (path == null) {
             finish();
         }
-        Sequence sequence = new Sequence(new OSVFile(path));
+        Sequence sequence = new LocalSequence(new OSVFile(path));
         Log.d(TAG, "displayPreview: " + sequence);
         openScreen(sequence);
     }
@@ -225,6 +237,11 @@ public class PlayerActivity extends OSVActivity {
     }
 
     @Override
+    public void hideSnackBar() {
+
+    }
+
+    @Override
     public void showSnackBar(int tip_map_screen, int lengthLong, int got_it_label, Runnable runnable) {
 
     }
@@ -249,6 +266,11 @@ public class PlayerActivity extends OSVActivity {
     @Override
     public void openScreen(int screenNearby, Object extra) {
 
+    }
+
+    @Override
+    public boolean hasPosition() {
+        return false;
     }
 
     @Override

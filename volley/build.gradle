@@ -46,3 +46,11 @@ android {
 dependencies {
     compile files('src/main/libs/org.apache.http.legacy.jar')
 }
+
+ext {
+    PUBLISH_GROUP_ID = 'com.android.volley'
+    PUBLISH_ARTIFACT_ID = 'volley-osc'
+    PUBLISH_VERSION = '1.0.1'
+}
+
+apply from: 'buildRelease.gradle'

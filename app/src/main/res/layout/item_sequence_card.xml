@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/card_view"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/CardView.Light"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginLeft="8dp"
-    android:layout_marginRight="8dp"
-    android:clickable="true">
+    android:layout_marginLeft="@dimen/sequence_list_item_margin_side"
+    android:layout_marginRight="@dimen/sequence_list_item_margin_side"
+    android:layout_marginTop="@dimen/sequence_list_item_margin_top"
+    android:layout_marginBottom="@dimen/sequence_list_item_margin_bottom"
+    android:stateListAnimator="@animator/lift_on_touch"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
-        android:id="@+id/top_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -23,93 +26,117 @@
             <ImageView
                 android:id="@+id/sequence_image"
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
+                android:layout_height="235dp"
                 android:contentDescription="@null"
-                android:scaleType="centerCrop" />
+                android:background="@drawable/custom_pattern_preview_background"
+                android:scaleType="center" />
 
-            <TextView
-                android:id="@+id/total_images_textView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
-                android:drawableLeft="@drawable/ic_action_cam"
-                android:gravity="center"
-                android:text="0 IMG"
-                android:layout_margin="16dp"
-                android:layout_gravity="end|bottom"/>
-
-            <TextView
-                android:id="@+id/total_length_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
-                android:gravity="center"
-                android:layout_margin="16dp"
-                android:visibility="gone"
-                android:layout_gravity="start|bottom" />
             <ImageView
                 android:id="@+id/points_background"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
                 android:layout_gravity="end"
                 android:layout_margin="10dp"
                 android:gravity="center"
-                app:srcCompat="@drawable/vector_multiplier" />
+                app:srcCompat="@drawable/vector_multiplier"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/points_text"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:text="115\npts"
-                android:textSize="18sp"
+                style="@style/textStyle"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
                 android:layout_gravity="end"
                 android:layout_margin="10dp"
-                style="@style/textStyle"
-                android:gravity="center" />
+                android:gravity="center"
+                android:text="0\npts"
+                android:textSize="18sp" />
 
 
         </FrameLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_centerInParent="true"
-            android:background="@color/grey" />
-
         <RelativeLayout
-            android:id="@+id/divider"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:padding="10dp"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="18dp">
 
+            <TextView
+                android:id="@+id/sequence_status_text"
+                style="@style/textStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="ACCEPTED"
+                android:textColor="@color/sequence_card_status_text_color_green"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="normal"
+                android:visibility="visible" />
 
             <TextView
                 android:id="@+id/sequence_address_label"
+                style="@style/textStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
+                android:layout_below="@id/sequence_status_text"
+                android:layout_marginBottom="10dp"
+                android:maxLines="2"
                 android:text="Cuza Voda 1,Cluj, Romania"
-                android:paddingStart="10dp"
-                android:paddingLeft="10dp"
-                android:textSize="14sp"/>
+                android:textSize="17sp"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="normal"
+                android:textColor="@color/sequence_card_text_color_dark_grey"/>
 
 
             <TextView
                 android:id="@+id/sequence_datetime_label"
+                style="@style/textStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingEnd="10dp"
-                android:paddingRight="10dp"
-                android:layout_centerVertical="true"
-                android:layout_toRightOf="@+id/sequence_address_label"
+                android:layout_height="20dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/sequence_address_label"
+                android:gravity="center_vertical|start"
+                android:text="05.02.16 | 02:00 AM"
+                android:textColor="@color/sequence_card_text_color_secondary_grey"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="normal"/>
+
+            <TextView
+                android:id="@+id/total_images_textView"
+                style="@style/textStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_below="@+id/sequence_address_label"
+                android:layout_marginEnd="13dp"
+                android:layout_marginRight="13dp"
+                android:layout_toLeftOf="@+id/total_length_label"
+                android:layout_toStartOf="@+id/total_length_label"
+                tools:drawableLeft="@drawable/vector_camera_gray"
+                android:gravity="center_vertical"
+                android:text="0 "
+                android:textColor="@color/sequence_card_text_color_secondary_grey"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="normal" />
+
+            <TextView
+                android:id="@+id/total_length_label"
+                style="@style/textStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:gravity="end"
-                android:textSize="14sp"
-                android:text="05.02.16 | 02:00 AM" />
-
-
+                android:layout_below="@+id/sequence_address_label"
+                tools:drawableLeft="@drawable/vector_distance_gray"
+                android:gravity="center_vertical"
+                android:text="0 km"
+                android:textColor="@color/sequence_card_text_color_secondary_grey"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif"
+                android:textStyle="normal" />
         </RelativeLayout>
 
     </LinearLayout>

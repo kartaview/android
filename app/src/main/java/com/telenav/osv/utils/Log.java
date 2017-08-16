@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import com.crashlytics.android.Crashlytics;
@@ -31,6 +33,10 @@ public class Log {
 
     public static final String SAFE_RECORDING = "safeMode";
 
+    public static final String STATIC_FOCUS = "staticFocus";
+
+    public static final String CAMERA_API_NEW = "cameraApiNew";
+
     public static final String LOG_FILE = "logFileName";
 
     public static final String PLAYBACK = "playback";
@@ -46,12 +52,12 @@ public class Log {
 
     private static final long TEN_DAYS = 10L * 24L * 60L * 60L * 1000L;
 
-    private static final String[] TYPES = new String[]{"D","D","V","D","I","W","E"};
+    private static final String[] TYPES = new String[]{"D", "D", "V", "D", "I", "W", "E"};
 
-    public static boolean DEBUG = false;
+    private static final long TWO_DAYS = 48L * 60L * 60L * 1000L;
 
     @SuppressLint("SdCardPath")
-    public static String externalFilesDir = "/sdcard/Android/data/com.telenav.osv/files/";
+    public static String externalFilesDir = "/sdcard/Android/data/com.telenav.streetview/files/";
 
     private static File logFile;
 
@@ -63,34 +69,23 @@ public class Log {
     }
 
     public static void d(String tag, String message) {
-        if (DEBUG) {
-            appendLog(android.util.Log.DEBUG, tag, message);
-        }
+        appendLog(android.util.Log.DEBUG, tag, message);
     }
 
     public static void w(String tag, String message) {
-        if (DEBUG) {
-            appendLog(android.util.Log.WARN, tag,  message);
-        }
+        appendLog(android.util.Log.WARN, tag, message);
     }
 
     public static void e(String tag, String message) {
-        if (DEBUG) {
-            appendLog(android.util.Log.ERROR, tag,  message);
-        }
+        appendLog(android.util.Log.ERROR, tag, message);
     }
 
     public static void v(String tag, String message) {
-        if (DEBUG) {
-            appendLog(android.util.Log.VERBOSE, tag,  message);
-        }
+        appendLog(android.util.Log.VERBOSE, tag, message);
     }
 
     public static void i(String tag, String message) {
-        if (DEBUG) {
-            appendLog(android.util.Log.INFO, tag,  message);
-        }
-//        android.util.Log.i(tag, message);
+        appendLog(android.util.Log.INFO, tag, message);
     }
 
     public static String getStackTraceString(Throwable throwable) {
@@ -98,34 +93,21 @@ public class Log {
     }
 
     public static void d(String tag, String message, Exception e) {
-        if (DEBUG) {
-            appendLog(android.util.Log.DEBUG, tag,  message + " " + android.util.Log.getStackTraceString(e));
-        }
+        appendLog(android.util.Log.DEBUG, tag, message + " " + android.util.Log.getStackTraceString(e));
         android.util.Log.d(tag, message, e);
     }
 
     public static void e(String tag, String message, Exception e) {
-        if (DEBUG) {
-            appendLog(android.util.Log.ERROR, tag,  message + " " + android.util.Log.getStackTraceString(e));
-        }
+        appendLog(android.util.Log.ERROR, tag, message + " " + android.util.Log.getStackTraceString(e));
         android.util.Log.e(tag, message, e);
     }
 
     public static void i(String tag, String message, Exception e) {
-        if (DEBUG) {
-            appendLog(android.util.Log.INFO, tag,  message + " " + android.util.Log.getStackTraceString(e));
-        }
+        appendLog(android.util.Log.INFO, tag, message + " " + android.util.Log.getStackTraceString(e));
         android.util.Log.i(tag, message, e);
     }
 
     private static void appendLog(int priority, String tag, String text) {
-        if (Fabric.isInitialized()) {
-            try {
-                Crashlytics.log(priority, tag, text);
-            } catch (Exception ignored) {}
-        } else {
-            android.util.Log.println(priority,tag,text);
-        }
         if (logFile == null) {
             logFile = new File(externalFilesDir, "log_" + dateFormat.format(OSVApplication.runTime) + ".txt");
         }
@@ -146,6 +128,13 @@ public class Log {
             buf.close();
         } catch (IOException e) {
             //e.printStackTrace();
+        }
+        if (Fabric.isInitialized()) {
+            try {
+                Crashlytics.log(priority, tag, text);
+            } catch (Exception ignored) {}
+        } else {
+            android.util.Log.println(priority, tag, text);
         }
     }
 
@@ -171,9 +160,20 @@ public class Log {
                 avPlayerLog.delete();
             }
         } catch (Exception e) {
-            if (DEBUG) {
-                android.util.Log.d("Log", "deleteOldLogs: " + e.getLocalizedMessage());
-            }
+            android.util.Log.d("Log", "deleteOldLogs: " + e.getLocalizedMessage());
         }
+    }
+
+    public static ArrayList<OSVFile> getLogFiles(Context context) {
+        ArrayList<OSVFile> files = new ArrayList<>();
+        OSVFile folder = new OSVFile(context.getExternalFilesDir(null).getPath());
+        Collections.addAll(files, folder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                OSVFile file = new OSVFile(dir, filename);
+                return (filename.contains("log") || filename.contains("av_")) && System.currentTimeMillis() - file.lastModified() <= TWO_DAYS;
+            }
+        }));
+        return files;
     }
 }

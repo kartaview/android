@@ -16,7 +16,7 @@ import com.telenav.osv.application.PreferenceTypes;
 @SuppressWarnings("MissingPermission")
 class LocationDataProvider {
 
-    private static final String TAG = "BestLocationProvider";
+    private static final String TAG = "LocationDataProvider";
 
     private static final int TOO_OLD_LOCATION_DELTA = 1000 * 60 * 2;
 
@@ -150,12 +150,9 @@ class LocationDataProvider {
     private void initLocationListener() {
         mLocationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
-                Log.i(TAG, "onLocationChanged: " + locationToString(location));
 
                 if (isBetterLocation(location, mLocation)) {
                     updateLocation(location, providerToLocationType(location.getProvider()), true);
-
-                    Log.d(TAG, "onLocationChanged NEW BEST LOCATION: " + locationToString(mLocation));
                 }
             }
 

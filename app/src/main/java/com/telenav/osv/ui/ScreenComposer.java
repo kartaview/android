@@ -9,12 +9,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -32,9 +32,11 @@ import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
+import com.telenav.osv.event.hardware.camera.CameraInfoEvent;
 import com.telenav.osv.event.hardware.camera.CameraInitEvent;
 import com.telenav.osv.event.ui.FullscreenEvent;
 import com.telenav.osv.event.ui.PreviewSwitchEvent;
+import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.manager.playback.LocalPlaybackManager;
@@ -42,17 +44,24 @@ import com.telenav.osv.manager.playback.OnlinePlaybackManager;
 import com.telenav.osv.manager.playback.PlaybackManager;
 import com.telenav.osv.manager.playback.SafePlaybackManager;
 import com.telenav.osv.ui.custom.FixedFrameLayout;
+import com.telenav.osv.ui.fragment.ByodProfileFragment;
 import com.telenav.osv.ui.fragment.CameraControlsFragment;
 import com.telenav.osv.ui.fragment.CameraPreviewFragment;
+import com.telenav.osv.ui.fragment.DisplayFragment;
+import com.telenav.osv.ui.fragment.FullscreenFragment;
 import com.telenav.osv.ui.fragment.HintsFragment;
+import com.telenav.osv.ui.fragment.IssueReportFragment;
 import com.telenav.osv.ui.fragment.LeaderboardFragment;
 import com.telenav.osv.ui.fragment.MapFragment;
 import com.telenav.osv.ui.fragment.NearbyFragment;
+import com.telenav.osv.ui.fragment.OSVFragment;
 import com.telenav.osv.ui.fragment.ProfileFragment;
 import com.telenav.osv.ui.fragment.RecordingSummaryFragment;
 import com.telenav.osv.ui.fragment.SettingsFragment;
+import com.telenav.osv.ui.fragment.SimpleProfileFragment;
 import com.telenav.osv.ui.fragment.TrackPreviewFragment;
 import com.telenav.osv.ui.fragment.UploadProgressFragment;
+import com.telenav.osv.ui.fragment.UserProfileFragment;
 import com.telenav.osv.ui.fragment.WaitingFragment;
 import com.telenav.osv.utils.DimenUtils;
 import com.telenav.osv.utils.Log;
@@ -66,8 +75,6 @@ import io.fabric.sdk.android.Fabric;
 public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
 
 //  ==========================SCREENS==============================
-
-    public final static String TAG = "ScreenComposer";
 
     public static final int SCREEN_MAP = 0;
 
@@ -93,6 +100,13 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
 
     public static final int SCREEN_SUMMARY = 11;
 
+    public static final int SCREEN_REPORT = 12;
+
+    @SuppressWarnings("WeakerAccess")
+    public static final int SCREEN_PREVIEW_FULLSCREEN = 13;
+
+    private final static String TAG = "ScreenComposer";
+
 //  ==========================STATES==============================
 
     private static final int STATE_MAP = 1;
@@ -102,6 +116,10 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
     private static final int STATE_SPLIT = 5;
 
     private static final int STATE_SPLIT_FULLSCREEN = 7;
+
+    private static final float SPLIT_RATIO_LARGE = 0.64f;
+
+    private static final float SPLIT_RATIO_SMALL = 0.36f;
 
     private final Recorder mRecorder;
 
@@ -113,29 +131,7 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
 
     private final FrameLayout.LayoutParams fullScreenLP = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-    private MapFragment mapFragment;
-
-    private SettingsFragment settingsFragment;
-
-    private ProfileFragment profileFragment;
-
-    private LeaderboardFragment leaderboardFragment;
-
-    private UploadProgressFragment uploadProgressFragment;
-
-    private RecordingSummaryFragment recordingSummaryFragment;
-
-    private TrackPreviewFragment trackPreviewFragment;
-
-    private WaitingFragment waitingFragment;
-
-    private HintsFragment hintsFragment;
-
-    private NearbyFragment nearbyFragment;
-
-    private CameraControlsFragment cameraControlsFragment;
-
-    private CameraPreviewFragment cameraPreviewFragment;
+    private DisplayFragment mapFragment;
 
     private Stack<Integer> mScreenStack = new Stack<>();
 
@@ -158,6 +154,8 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
     private FrameLayout.LayoutParams splitSixLP = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
     private FrameLayout.LayoutParams splitFourLP = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+    private FrameLayout.LayoutParams splitHiddenLP = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
     private int mPreviewSizeLarge;
 
@@ -186,15 +184,14 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
         mFragmentManager = activity.getSupportFragmentManager();
         mDecorator = new ScreenDecorator(activity);
         mDecorator.setBackListener(this);
-        progressBar = (ProgressBar) activity.findViewById(R.id.progressbar);
+        progressBar = activity.findViewById(R.id.progressbar);
         //noinspection deprecation
         progressBar.getIndeterminateDrawable().setColorFilter(activity.getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
-        mapHolder = (FrameLayout) activity.findViewById(R.id.content_frame_map);
-        previewHolder = (FrameLayout) activity.findViewById(R.id.content_frame_camera);
-        controlsHolder = (FrameLayout) activity.findViewById(R.id.content_frame_controls);
-        largeHolder = (FrameLayout) activity.findViewById(R.id.content_frame_large);
-        mRecordingFeedbackLayout = (FixedFrameLayout) activity.findViewById(R.id.recording_feedback_layout);
-
+        mapHolder = activity.findViewById(R.id.content_frame_map);
+        previewHolder = activity.findViewById(R.id.content_frame_camera);
+        controlsHolder = activity.findViewById(R.id.content_frame_controls);
+        largeHolder = activity.findViewById(R.id.content_frame_large);
+        mRecordingFeedbackLayout = activity.findViewById(R.id.recording_feedback_layout);
         initFragments();
 
         if (!isPortrait()) {
@@ -232,8 +229,14 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                 case TrackPreviewFragment.TAG:
                     mScreenStack.add(SCREEN_PREVIEW);
                     break;
+                case FullscreenFragment.TAG:
+                    mScreenStack.add(SCREEN_PREVIEW_FULLSCREEN);
+                    break;
                 case RecordingSummaryFragment.TAG:
                     mScreenStack.add(SCREEN_SUMMARY);
+                    break;
+                case IssueReportFragment.TAG:
+                    mScreenStack.add(SCREEN_REPORT);
                     break;
                 case NearbyFragment.TAG:
                     mScreenStack.add(SCREEN_NEARBY);
@@ -246,55 +249,36 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
     private void initFragments() {
         if (mapFragment == null) {
             mapFragment = new MapFragment();
-            mapFragment.setRecorder(getApp().getRecorder());
         }
-        if (cameraPreviewFragment == null) {
-            cameraPreviewFragment = new CameraPreviewFragment();
-            cameraPreviewFragment.setRecorder(getApp().getRecorder());
-        }
-        if (cameraControlsFragment == null) {
-            cameraControlsFragment = new CameraControlsFragment();
-            cameraControlsFragment.setRecorder(getApp().getRecorder());
-        }
-        if (settingsFragment == null) {
-            settingsFragment = new SettingsFragment();
-            settingsFragment.setRecorder(getApp().getRecorder());
-        }
-        if (profileFragment == null) {
-            profileFragment = new ProfileFragment();
-        }
-        if (leaderboardFragment == null) {
-            leaderboardFragment = new LeaderboardFragment();
-        }
-        if (uploadProgressFragment == null) {
-            uploadProgressFragment = new UploadProgressFragment();
-        }
-        if (recordingSummaryFragment == null) {
-            recordingSummaryFragment = new RecordingSummaryFragment();
-        }
-        if (trackPreviewFragment == null) {
-            trackPreviewFragment = new TrackPreviewFragment();
-        }
+        CameraPreviewFragment cameraPreviewFragment = new CameraPreviewFragment();
+        cameraPreviewFragment.setRecorder(getApp().getRecorder());
+        CameraControlsFragment cameraControlsFragment = new CameraControlsFragment();
+        cameraControlsFragment.setRecorder(getApp().getRecorder());
+        FragmentTransaction ft = mFragmentManager.beginTransaction();
+        ft.add(R.id.content_frame_map, mapFragment, MapFragment.TAG);
+        ft.add(R.id.content_frame_camera, cameraPreviewFragment, CameraPreviewFragment.TAG);
+        ft.add(R.id.content_frame_controls, cameraControlsFragment, CameraControlsFragment.TAG);
+        ft.commit();
+        mScreenStack.push(SCREEN_MAP);
 
-        if (waitingFragment == null) {
-            waitingFragment = new WaitingFragment();
-        }
-        if (hintsFragment == null) {
-            hintsFragment = new HintsFragment();
-        }
-        if (nearbyFragment == null) {
-            nearbyFragment = new NearbyFragment();
-        }
-
-        if (mapFragment != null && cameraPreviewFragment != null) {
-            FragmentTransaction ft = mFragmentManager.beginTransaction();
-            ft.add(R.id.content_frame_map, mapFragment, MapFragment.TAG);
-            ft.add(R.id.content_frame_camera, cameraPreviewFragment, CameraPreviewFragment.TAG);
-            ft.add(R.id.content_frame_controls, cameraControlsFragment, CameraControlsFragment.TAG);
-            ft.commit();
-            mScreenStack.push(SCREEN_MAP);
-        }
         onScreenChanged(getCurrentScreen());
+    }
+
+    private ProfileFragment getProfileFragmentForType(int userType) {
+        Log.d(TAG, "getProfileFragmentForType: " + userType);
+        switch (userType) {
+            default:
+            case PreferenceTypes.USER_TYPE_BYOD:
+                return new ByodProfileFragment();
+            case PreferenceTypes.USER_TYPE_CONTRIBUTOR:
+            case PreferenceTypes.USER_TYPE_QA:
+                if (appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
+                    return new UserProfileFragment();
+                }
+            case PreferenceTypes.USER_TYPE_DEDICATED:
+            case PreferenceTypes.USER_TYPE_BAU:
+                return new SimpleProfileFragment();
+        }
     }
 
     private void setCameraPreviewRatio(int previewWidth, int previewHeight) {
@@ -346,25 +330,29 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
     private void setSplitHoldersSize(boolean portrait) {
         Point point = new Point();
         DimenUtils.getContentSize(activity, portrait, point);
-        int screenSizeLarge = Math.max(point.x, point.y);
+        float screenSizeLarge = Math.max(point.x, point.y);
         if (portrait) {
             splitSixLP.width = FrameLayout.LayoutParams.MATCH_PARENT;
-            splitSixLP.height = screenSizeLarge * 6 / 10;
+            splitSixLP.height = (int) (screenSizeLarge * SPLIT_RATIO_LARGE + 0.5f);
             splitSixLP.gravity = Gravity.BOTTOM;
             splitSixLP.setMargins(0, 0, 0, 0);
             splitFourLP.width = FrameLayout.LayoutParams.MATCH_PARENT;
-            splitFourLP.height = screenSizeLarge * 4 / 10;
+            splitFourLP.height = (int) (screenSizeLarge * SPLIT_RATIO_SMALL + 0.5f);
             splitFourLP.gravity = Gravity.TOP;
             splitFourLP.setMargins(0, 0, 0, 0);
+            splitHiddenLP.gravity = Gravity.TOP;
+            splitHiddenLP.height = 0;
         } else {
             splitSixLP.height = FrameLayout.LayoutParams.MATCH_PARENT;
-            splitSixLP.width = screenSizeLarge * 6 / 10;
+            splitSixLP.width = (int) (screenSizeLarge * SPLIT_RATIO_LARGE + 0.5f);
             splitSixLP.gravity = Gravity.RIGHT;
             splitSixLP.setMargins(0, 0, 0, 0);
             splitFourLP.height = FrameLayout.LayoutParams.MATCH_PARENT;
-            splitFourLP.width = screenSizeLarge * 4 / 10;
+            splitFourLP.width = (int) (screenSizeLarge * SPLIT_RATIO_SMALL + 0.5f);
             splitFourLP.gravity = Gravity.LEFT;
             splitFourLP.setMargins(0, 0, 0, 0);
+            splitHiddenLP.gravity = Gravity.LEFT;
+            splitHiddenLP.height = 0;
         }
     }
 
@@ -396,8 +384,9 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                 transitionToState(mCurrentState, STATE_RECORDING);
                 break;
             case SCREEN_PREVIEW:
+//            case SCREEN_PREVIEW_FULLSCREEN:
                 transitionToState(mCurrentState, STATE_SPLIT);
-                if (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)){
+                if (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
                     transitionToState(mCurrentState, STATE_SPLIT_FULLSCREEN);
                 }
                 break;
@@ -408,12 +397,12 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
 
         mDecorator.onScreenChanged();
         if (Fabric.isInitialized()) {
-            Crashlytics.setInt(Log.CURRENT_SCREEN, SCREEN_LEADERBOARD);
+            Crashlytics.setInt(Log.CURRENT_SCREEN, screen);
         }
     }
 
     private void transitionToState(int current, int next) {
-        Log.d(TAG, "transitionToState: from " + current + " to " + next);
+        Log.d(TAG, "transitionToState: from " + current + " to " + next + " is " + (current << next));
         switch (current << next) {
             default:
             case STATE_MAP << STATE_MAP:
@@ -443,14 +432,17 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                     largeHolder.bringToFront();
                 }
                 break;
+            case STATE_SPLIT << STATE_SPLIT:
             case STATE_MAP << STATE_SPLIT:
                 mapHolder.bringToFront();
                 largeHolder.bringToFront();
 //                copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)splitFourLP);
 //                copy.gravity = splitFourLP.gravity;
-                mapHolder.setLayoutParams(splitFourLP);
+                animateToSplitRatioSmall(mapHolder, splitFourLP);
                 mapHolder.requestLayout();
-                animateToSixer(largeHolder, splitSixLP);
+                animateToSplitRatioLarge(largeHolder, splitSixLP);
+                animateToHidden(controlsHolder, splitHiddenLP);
+                animateToHidden(previewHolder, splitHiddenLP);
                 break;
             case STATE_RECORDING << STATE_RECORDING:
                 if (isMinimapAvailable()) {
@@ -471,14 +463,49 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                 animateToFullscreen(mapHolder, fullScreenLP);
                 animateToFullscreen(largeHolder, fullScreenLP);
                 break;
-            case STATE_SPLIT << STATE_SPLIT_FULLSCREEN:
+            case STATE_SPLIT_FULLSCREEN << STATE_MAP:
+                mapHolder.bringToFront();
+                largeHolder.bringToFront();
+                animateToFullscreen(mapHolder, fullScreenLP);
                 animateToFullscreen(largeHolder, fullScreenLP);
                 break;
+            case STATE_SPLIT << STATE_SPLIT_FULLSCREEN:
+                animateToFullscreen(largeHolder, fullScreenLP);
+                animateToHidden(mapHolder, splitHiddenLP);
+                break;
             case STATE_SPLIT_FULLSCREEN << STATE_SPLIT:
-                animateToSixer(largeHolder, splitSixLP);
+                animateToSplitRatioSmall(mapHolder, splitFourLP);
+                mapHolder.requestLayout();
+                animateToSplitRatioLarge(largeHolder, splitSixLP);
                 break;
         }
         mCurrentState = next;
+        setPaddingToHolder(largeHolder, mCurrentState);
+    }
+
+    private void setPaddingToHolder(FrameLayout holder, int state) {
+        Resources res = activity.getResources();
+        switch (state) {
+            case STATE_SPLIT:
+                largeHolder.setPadding(
+                        (int) res.getDimension(R.dimen.track_preview_card_padding_sides),
+                        (int) res.getDimension(R.dimen.track_preview_card_padding_top),
+                        (int) res.getDimension(R.dimen.track_preview_card_padding_sides),
+                        (int) res.getDimension(R.dimen.track_preview_card_padding_bottom));
+                break;
+            case STATE_SPLIT_FULLSCREEN:
+                largeHolder.setPadding(
+                        (int) res.getDimension(R.dimen.track_preview_card_padding_sides),
+                        (int) (res.getDimension(R.dimen.track_preview_card_padding_top) + res.getDimension(R.dimen.track_preview_card_additional_padding_top)),
+                        (int) res.getDimension(R.dimen.track_preview_card_padding_sides),
+                        (int) res.getDimension(R.dimen.track_preview_card_padding_bottom));
+                break;
+            default:
+                holder.setPadding(0, 0, 0, 0);
+                break;
+
+        }
+
     }
 
     private void animateToLarge(FrameLayout holder, FrameLayout.LayoutParams lp) {
@@ -487,7 +514,19 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
         holder.setLayoutParams(lp);
     }
 
-    private void animateToSixer(FrameLayout holder, FrameLayout.LayoutParams lp) {
+    private void animateToSplitRatioLarge(FrameLayout holder, FrameLayout.LayoutParams lp) {
+//        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
+//        copy.gravity = lp.gravity;
+        holder.setLayoutParams(lp);
+    }
+
+    private void animateToSplitRatioSmall(FrameLayout holder, FrameLayout.LayoutParams lp) {
+//        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
+//        copy.gravity = lp.gravity;
+        holder.setLayoutParams(lp);
+    }
+
+    private void animateToHidden(FrameLayout holder, FrameLayout.LayoutParams lp) {
 //        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
 //        copy.gravity = lp.gravity;
         holder.setLayoutParams(lp);
@@ -507,21 +546,24 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onCameraReady(final CameraInitEvent event) {
-        if (event.type == CameraInitEvent.TYPE_READY) {
-            setCameraPreviewRatio(event.previewWidth, event.previewHeight);
-            setupLayoutBoundaries(isPortrait());
-        } else {
+        if (event.type == CameraInitEvent.TYPE_FAILED) {
             Log.e(TAG, "Could not open camera HAL");
             mDecorator.showSnackBar(R.string.cannot_connect_hal, Snackbar.LENGTH_LONG);
         }
     }
 
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onCameraInfoReceived(final CameraInfoEvent event) {
+        setCameraPreviewRatio(event.previewWidth, event.previewHeight);
+        setupLayoutBoundaries(isPortrait());
+    }
+
     @Subscribe
     public void onFullscreenRequest(FullscreenEvent event) {
-        if (event.fullscreen) {
-            transitionToState(mCurrentState, STATE_SPLIT_FULLSCREEN);
-        } else {
-            if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
+        if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
+            if (event.fullscreen) {
+                transitionToState(mCurrentState, STATE_SPLIT_FULLSCREEN);
+            } else {
                 transitionToState(mCurrentState, STATE_SPLIT);
             }
         }
@@ -559,7 +601,7 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
             @Override
             public void run() {
                 enableProgressBar(false);
-                Fragment fragment = null;
+                OSVFragment fragment = null;
                 String tag = "";
                 boolean animate = true;
                 mDecorator.closeDrawerIfOpen();
@@ -574,8 +616,8 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                         break;
                     case SCREEN_RECORDING:
                         int cameraPermitted = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA);
-                        if (cameraPermitted == PackageManager.PERMISSION_DENIED){
-                            showSnackBar("Camera permission was denied, please grant access to camera.",Snackbar.LENGTH_LONG, null, null);
+                        if (cameraPermitted == PackageManager.PERMISSION_DENIED) {
+                            showSnackBar("Camera permission was denied, please grant access to camera.", Snackbar.LENGTH_LONG, null, null);
                             return;
                         }
                         removeUpperFragments();
@@ -585,41 +627,46 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                         break;
                     case SCREEN_MY_PROFILE:
                         tag = ProfileFragment.TAG;
-                        fragment = profileFragment;
+                        int userType = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
+                        fragment = getProfileFragmentForType(userType);
                         break;
                     case SCREEN_LEADERBOARD:
                         tag = LeaderboardFragment.TAG;
-                        fragment = leaderboardFragment;
+                        fragment = new LeaderboardFragment();
                         break;
                     case SCREEN_SETTINGS:
                         tag = SettingsFragment.TAG;
-                        fragment = settingsFragment;
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        settingsfragment.setRecorder(getApp().getRecorder());
+                        fragment = settingsfragment;
                         break;
                     case SCREEN_PREVIEW:
                         animate = false;
-                        boolean fromMap = false;
-                        if (getCurrentScreen() == SCREEN_NEARBY) {
-                            fromMap = true;
-                        }
                         PlaybackManager player;
-                        if (((Sequence) extra).online) {
+                        if (((Sequence) extra).isOnline()) {
                             player = new OnlinePlaybackManager(activity, (Sequence) extra);
                         } else {
-                            if (((Sequence) extra).safe) {
+                            if (((LocalSequence) extra).isSafe()) {
                                 player = new SafePlaybackManager(activity, (Sequence) extra);
                             } else {
                                 player = new LocalPlaybackManager(activity, (Sequence) extra);
                             }
                         }
                         mapFragment.setSource(player);
+                        TrackPreviewFragment trackPreviewFragment = new TrackPreviewFragment();
                         trackPreviewFragment.setSource(player);
-                        trackPreviewFragment.hideDelete(fromMap);
                         tag = TrackPreviewFragment.TAG;
                         fragment = trackPreviewFragment;
                         break;
+                    case SCREEN_PREVIEW_FULLSCREEN:
+                        tag = FullscreenFragment.TAG;
+                        FullscreenFragment fullscreenFragment = new FullscreenFragment();
+                        fragment = fullscreenFragment;
+                        fullscreenFragment.setSource(extra);
+                        break;
                     case SCREEN_WAITING:
                         tag = WaitingFragment.TAG;
-                        fragment = waitingFragment;
+                        fragment = new WaitingFragment();
                         break;
                     case SCREEN_UPLOAD_PROGRESS:
                         removeUpperFragments();
@@ -627,26 +674,27 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                             mScreenStack.pop();
                         }
                         tag = UploadProgressFragment.TAG;
-                        fragment = uploadProgressFragment;
+                        fragment = new UploadProgressFragment();
                         break;
                     case SCREEN_SUMMARY:
                         tag = RecordingSummaryFragment.TAG;
-                        recordingSummaryFragment.setSource((Sequence) extra);
+                        RecordingSummaryFragment recordingSummaryFragment = new RecordingSummaryFragment();
+                        recordingSummaryFragment.setSource(extra);
                         fragment = recordingSummaryFragment;
+                        break;
+                    case SCREEN_REPORT:
+                        tag = IssueReportFragment.TAG;
+                        fragment = new IssueReportFragment();
                         break;
                     case SCREEN_RECORDING_HINTS:
                         tag = HintsFragment.TAG;
-                        fragment = hintsFragment;
+                        fragment = new HintsFragment();
                         break;
                     case SCREEN_NEARBY:
                         tag = NearbyFragment.TAG;
+                        NearbyFragment nearbyFragment = new NearbyFragment();
                         fragment = nearbyFragment;
-                        if (extra == null) {
-                            //repeat latest
-                            nearbyFragment.handleNearbyResult(null);
-                        } else {
-                            nearbyFragment.handleNearbyResult((String) extra);
-                        }
+                        nearbyFragment.setSource(extra);
                         break;
                 }
                 try {
@@ -685,6 +733,7 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                 int orientation = newConfig.orientation;
                 boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
                 setupLayoutBoundaries(portrait);
+                setPaddingToHolder(largeHolder, mCurrentState);
                 mRecordingFeedbackLayout.requestLayout();
                 previewHolder.requestLayout();
                 controlsHolder.requestLayout();
@@ -706,32 +755,29 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
         mDecorator.onConfigurationChanged(newConfig);
     }
 
-    private void displayFragment(Fragment fragment, String tag, boolean animate) {
+    private void displayFragment(OSVFragment fragment, String tag, boolean animate) {
         Log.d(TAG, "displayFragment: " + fragment + " tag = " + tag + ", animate = " + animate);
         FragmentTransaction ft = mFragmentManager.beginTransaction();
         if (animate) {
-            if (fragment == hintsFragment) {
-                ft.setCustomAnimations(R.anim.alpha_add, R.anim.alpha_remove, R.anim.alpha_add, R.anim.alpha_remove);
-            } else {
-                ft.setCustomAnimations(R.anim.slide_up_add, R.anim.slide_down_remove, R.anim.slide_up_add, R.anim.slide_down_remove);
-            }
+            ft.setCustomAnimations(fragment.getEnterAnimation(), fragment.getExitAnimation(), fragment.getEnterAnimation(), fragment.getExitAnimation());
         }
         if (fragment.isAdded()) {
             ft.remove(fragment);
         }
-        ft.commitAllowingStateLoss();
+        ft.commit();
         mFragmentManager.executePendingTransactions();
         ft = mFragmentManager.beginTransaction();
         if (animate) {
-            if (fragment == hintsFragment) {
-                ft.setCustomAnimations(R.anim.alpha_add, R.anim.alpha_remove, R.anim.alpha_add, R.anim.alpha_remove);
-            } else {
-                ft.setCustomAnimations(R.anim.slide_up_add, R.anim.slide_down_remove, R.anim.slide_up_add, R.anim.slide_down_remove);
-            }
+            ft.setCustomAnimations(fragment.getEnterAnimation(), fragment.getExitAnimation(), fragment.getEnterAnimation(), fragment.getExitAnimation());
         }
         ft.addToBackStack(tag);
+//        if (mCurrentFragment != null && mCurrentFragment.getSharedElement() != null) {
+//            ft.replace(R.id.content_frame_large, fragment, tag);
+//            ft.addSharedElement(mCurrentFragment.getSharedElement(), mCurrentFragment.getSharedElementTransitionName());
+//        } else {
         ft.add(R.id.content_frame_large, fragment, tag);
-        ft.commitAllowingStateLoss();
+//        }
+        ft.commit();
     }
 
     private void removeUpperFragments() {
@@ -763,6 +809,7 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                 if (mDecorator.closeDrawerIfOpen()) {
                     return;
                 }
+                cancelAction();
                 int screen = getCurrentScreen();
 
                 Log.d(TAG, "onBackPressed: " + screen);
@@ -776,10 +823,6 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
                         openScreen(SCREEN_MAP);
                     }
                     return;
-                } else if (screen == SCREEN_PREVIEW) {
-                    if (trackPreviewFragment.onBackPressed()) {//fragment consumed the event
-                        return;
-                    }
                 }
                 try {
                     mFragmentManager.popBackStackImmediate();
@@ -792,6 +835,13 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
         });
     }
 
+    private void cancelAction() {
+        enableProgressBar(false);
+        if (mapFragment != null) {
+            mapFragment.cancelAction();
+        }
+    }
+
 
     public void onWindowFocusChanged(boolean hasFocus) {
         if (hasFocus && (getCurrentScreen() == SCREEN_RECORDING || getCurrentScreen() == SCREEN_RECORDING_HINTS)) {
@@ -799,7 +849,7 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
         }
     }
 
-    public boolean isPortrait() {
+    private boolean isPortrait() {
         int orientation = activity.getResources().getConfiguration().orientation;
         return orientation == Configuration.ORIENTATION_PORTRAIT;
     }
@@ -843,12 +893,16 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
         }).create().show();
     }
 
-    public OSVApplication getApp() {
+    private OSVApplication getApp() {
         return activity.getApp();
     }
 
     public void showSnackBar(CharSequence text, int duration, CharSequence button, Runnable onClick) {
         mDecorator.showSnackBar(text, duration, button, onClick);
+    }
+
+    public void hideSnackBar() {
+        mDecorator.hideSnackBar();
     }
 
     public void unregister() {
@@ -860,35 +914,4 @@ public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
         EventBus.register(this);
         EventBus.register(mDecorator);
     }
-
-//    private void createDialogUpdateVersion() {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
-//        builder.setMessage(R.string.update_available_message).setTitle(R.string.update_label).setNeutralButton(R.string.update_now_label, new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                mHandler.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        try {
-//                            activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + "com.telenav.streetview")));
-//                        } catch (ActivityNotFoundException anfe) {
-//                            activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + "com.telenav.streetview")));
-//                        }
-//                    }
-//                });
-//
-//            }
-//        }).setCancelable(false);
-//        alertDialog = builder.create();
-//    }
-
-//    private void showDialogUpdateVersion() {
-//        if (alertDialog == null) {
-//            createDialogUpdateVersion();
-//        }
-//        if (!alertDialog.isShowing()) {
-//            alertDialog.show();
-//        }
-//    }
-
 }

@@ -2,18 +2,19 @@ package com.telenav.osv.activity;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONObject;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -34,6 +35,8 @@ import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
 import com.google.android.gms.common.api.Status;
+import com.skobbler.ngx.SKMaps;
+import com.skobbler.ngx.util.SKLogging;
 import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
@@ -45,6 +48,7 @@ import com.telenav.osv.event.SdkEnabledEvent;
 import com.telenav.osv.event.hardware.CameraPermissionEvent;
 import com.telenav.osv.event.hardware.LocationPermissionEvent;
 import com.telenav.osv.event.hardware.camera.CameraInitEvent;
+import com.telenav.osv.event.hardware.camera.FrameQueueEvent;
 import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.hardware.gps.AccuracyEvent;
 import com.telenav.osv.event.hardware.gps.SpeedCategoryEvent;
@@ -53,20 +57,25 @@ import com.telenav.osv.event.hardware.obd.ObdStatusEvent;
 import com.telenav.osv.event.network.LoginChangedEvent;
 import com.telenav.osv.event.network.matcher.CoverageEvent;
 import com.telenav.osv.event.network.matcher.ScoreChangedEvent;
+import com.telenav.osv.event.ui.GamificationSettingEvent;
 import com.telenav.osv.event.ui.ObdPressedEvent;
 import com.telenav.osv.event.ui.OrientationChangedEvent;
 import com.telenav.osv.event.ui.PositionerEvent;
 import com.telenav.osv.event.ui.ShutterPressEvent;
-import com.telenav.osv.http.RequestListener;
-import com.telenav.osv.http.RequestResponseListener;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.event.ui.UserTypeChangedEvent;
+import com.telenav.osv.item.LocalSequence;
+import com.telenav.osv.item.AccountData;
+import com.telenav.osv.item.network.UserData;
+import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.manager.Recorder;
+import com.telenav.osv.manager.location.LocationManager;
+import com.telenav.osv.manager.network.UserDataManager;
 import com.telenav.osv.manager.obd.ObdManager;
 import com.telenav.osv.service.CameraHandlerService;
+import com.telenav.osv.service.NetworkBroadcastReceiver;
 import com.telenav.osv.service.UploadHandlerService;
 import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.ui.custom.ScoreView;
-import com.telenav.osv.ui.fragment.ProfileFragment;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
 import com.telenav.osv.utils.Utils;
@@ -172,6 +181,32 @@ public class MainActivity extends OSVActivity {
 
     private Recorder mRecorder;
 
+    private TextView distanceDebugText;
+
+    private TextView speedDebugText;
+
+    private TextView mOBDIcon;
+
+    private FrameLayout mOBDIconHolder;
+
+    private TextView mOBDUnit;
+
+    private ImageView mGPSIcon;
+
+    //    private ImageView signDetectionHolder;
+
+    private ScoreView scoreText;
+
+    private AlertDialog mSafeModeDialog;
+
+    private AlertDialog mClearRecentsDialog;
+
+    private AlertDialog mDriverModeDialog;
+
+    private ScreenComposer mScreenComposer;
+
+    private OSVServiceConnection mUploadHandlerConnection;
+
     public View.OnClickListener actionUploadAllListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -197,7 +232,7 @@ public class MainActivity extends OSVActivity {
 
                 return;
             }
-            if (Sequence.getStaticSequences().values().isEmpty()) {
+            if (LocalSequence.getStaticSequences().values().isEmpty()) {
                 showSnackBar(R.string.no_local_recordings_message, Snackbar.LENGTH_SHORT);
                 return;
             }
@@ -219,70 +254,20 @@ public class MainActivity extends OSVActivity {
                     }).setPositiveButton(R.string.upload_all_label, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    if (mUploadHandlerService != null && !mRecorder.isRecording()) {
-                        mUploadManager.uploadCache(new RequestListener() {
+                    if (mUploadHandlerService == null || !mBoundUploadHandler) {
+                        bindUploadService(new OSVServiceConnection() {
                             @Override
-                            public void requestFinished(final int status) {
-                                if (status == STATUS_FAILED) {
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                        }
-                                    });
+                            public void onServiceConnected(ComponentName className, IBinder service) {
+                                super.onServiceConnected(className, service);
+                                if (mUploadHandlerService != null && !mRecorder.isRecording()) {
+                                    mUploadManager.uploadCache(LocalSequence.getStaticSequences().values());
+                                    openScreen(ScreenComposer.SCREEN_UPLOAD_PROGRESS);
                                 }
                             }
-                        }, Sequence.getStaticSequences().values());
-                        openScreen(ScreenComposer.SCREEN_UPLOAD_PROGRESS);
+                        });
                     }
                 }
             }).create().show();
-        }
-    };
-
-    private TextView distanceDebugText;
-
-    private TextView speedDebugText;
-
-    private TextView mOBDIcon;
-
-    private FrameLayout mOBDIconHolder;
-
-    private TextView mOBDUnit;
-
-    //    private ImageView signDetectionHolder;
-
-    private ImageView mGPSIcon;
-
-    private ScoreView scoreText;
-
-    private AlertDialog mSafeModeDialog;
-
-    private AlertDialog mClearRecentsDialog;
-
-    private AlertDialog mDriverModeDialog;
-
-    private ScreenComposer mScreenComposer;
-
-    /**
-     * Defines callbacks for service binding, passed to bindService()
-     */
-    private ServiceConnection mUploadHandlerConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-
-            UploadHandlerService.UploadHandlerBinder binder = (UploadHandlerService.UploadHandlerBinder) service;
-            mUploadHandlerService = binder.getService();
-            mBoundUploadHandler = true;
-            if (mBoundCameraHandler) {
-                enableProgressBar(false);
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mUploadHandlerService = null;
-            mBoundUploadHandler = false;
         }
     };
 
@@ -315,24 +300,26 @@ public class MainActivity extends OSVActivity {
         }
     };
 
+    private BroadcastReceiver mNetworkBroadcastReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         appPrefs = ((OSVApplication) getApplication()).getAppPrefs();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SKLogging.enableLogs(false);
         mRecorder = getApp().getRecorder();
         OSVApplication.sUiThreadId = Thread.currentThread().getId();
         mUploadManager = getApp().getUploadManager();
-
         mScreenComposer = new ScreenComposer(this);
-        mOBDIcon = (TextView) findViewById(R.id.obd_icon);
-        mGPSIcon = (ImageView) findViewById(R.id.gps_icon);
-        scoreText = (ScoreView) findViewById(R.id.score_text);
-        mOBDIconHolder = (FrameLayout) findViewById(R.id.obd_icon_holder);
-        mOBDUnit = (TextView) findViewById(R.id.obd_icon_unit);
+        mOBDIcon = findViewById(R.id.obd_icon);
+        mGPSIcon = findViewById(R.id.gps_icon);
+        scoreText = findViewById(R.id.score_text);
+        mOBDIconHolder = findViewById(R.id.obd_icon_holder);
+        mOBDUnit = findViewById(R.id.obd_icon_unit);
 //        signDetectionHolder = (ImageView) findViewById(R.id.sign_detection_container);
-        distanceDebugText = (TextView) findViewById(R.id.debug_distance_text);
-        speedDebugText = (TextView) findViewById(R.id.debug_speed_text);
+        distanceDebugText = findViewById(R.id.debug_distance_text);
+        speedDebugText = findViewById(R.id.debug_speed_text);
 
         if (appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_SPEED_DIST, false)) {
             distanceDebugText.setVisibility(View.VISIBLE);
@@ -348,6 +335,7 @@ public class MainActivity extends OSVActivity {
         if (!mBoundCameraHandler || !mBoundUploadHandler) {
             enableProgressBar(true);
         }
+        mNetworkBroadcastReceiver = new NetworkBroadcastReceiver(MainActivity.this, appPrefs, mUploadManager);
     }
 
     @Override
@@ -360,6 +348,8 @@ public class MainActivity extends OSVActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        registerReceiver(mNetworkBroadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        mUserDataManager = new UserDataManager(this);
         appPrefs.saveBooleanPreference(PreferenceTypes.K_CRASHED, true);
         Log.d(TAG, "onStart: K_CRASHED is set to true");
         EventBus.register(this);
@@ -373,86 +363,70 @@ public class MainActivity extends OSVActivity {
             Log.d(TAG, "Service not killed, connecting to camera fragment");
         }
 
+        checkUserInfo();
+    }
+
+    public void bindUploadService(OSVServiceConnection osvServiceConnection) {
         if (!mBoundUploadHandler) {
+            mUploadHandlerConnection = osvServiceConnection;
             Intent service = new Intent(getApplicationContext(), UploadHandlerService.class);
-            bindService(service, mUploadHandlerConnection, BIND_AUTO_CREATE);
+            mBoundUploadHandler = bindService(service, osvServiceConnection, BIND_AUTO_CREATE);
         }
-        String userType = appPrefs.getStringPreference(PreferenceTypes.K_USER_TYPE);
-        if (!appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN).equals("") && (userType.equals("") || userType.equals(PreferenceTypes.V_USER_TYPE_DRIVER))) {
-            if (userType.equals(PreferenceTypes.V_USER_TYPE_DRIVER)) {
-                EventBus.postSticky(new LoginChangedEvent(true, appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME), appPrefs.getStringPreference(PreferenceTypes
-                        .K_DISPLAY_NAME), appPrefs.getStringPreference(PreferenceTypes
-                        .K_USER_PHOTO_URL), true));
-            } else {
-                mUploadManager.getProfileDetails(new RequestResponseListener() {
-                    @Override
-                    public void requestFinished(int status, String result) {
-                        Log.d(TAG, "getProfileDetails: " + " status - > " + status + " result - > " + result);
-                        if (result != null && !result.isEmpty() && status == RequestResponseListener.STATUS_SUCCESS_PROFILE_DETAILS) {
-                            final String userName, name, obdDistance, totalDistance, totalPhotos, totalTracks;
-                            int rank = 0, score = 0, level = 0, xpProgress = 0, xpTarget = 0;
-                            boolean isDriver = false;
-                            try {
-                                JSONObject obj = new JSONObject(result);
-                                JSONObject osv = obj.getJSONObject("osv");
-                                userName = osv.getString("username");
-                                name = osv.getString("full_name");
-                                String userType = osv.getString("type");
-                                appPrefs.saveStringPreference(PreferenceTypes.K_USER_TYPE, userType);
-                                if (userType.equals("driver")) {
-                                    isDriver = true;
-                                }
-                                obdDistance = osv.getString("obdDistance");
-                                totalDistance = osv.getString("totalDistance");
-                                totalPhotos = Utils.formatNumber(osv.getDouble("totalPhotos"));
-                                totalTracks = Utils.formatNumber(osv.getDouble("totalTracks"));
-                                try {
-                                    JSONObject gamification = osv.getJSONObject("gamification");
+    }
 
-                                    score = gamification.getInt("total_user_points");
-                                    level = gamification.getInt("level");
-                                    xpProgress = gamification.getInt("level_progress");
-                                    try {
-                                        xpTarget = gamification.getInt("level_target");
-                                    } catch (Exception e) {
-                                        Log.w(TAG, "requestFinished: " + Log.getStackTraceString(e));
-                                    }
-                                    rank = gamification.getInt("rank");
+    public void unbindUploadService() {
+        if (mBoundUploadHandler) {
+            mUploadHandlerService.stopSelf();
+            unbindService(mUploadHandlerConnection);
+            mBoundUploadHandler = false;
+        }
+    }
 
-                                } catch (Exception e) {
-                                    Log.w(TAG, "requestFinished: " + Log.getStackTraceString(e));
-                                }
+    private void checkUserInfo() {
+        boolean logged = !appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN).equals("");
+        if (logged) {
+            final int userType = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
+            if (userType == -1) {
+                if (mUserDataManager != null) {
+                    mUserDataManager.getUserProfileDetails(new NetworkResponseDataListener<UserData>() {
 
-                                SharedPreferences prefs = getSharedPreferences(ProfileFragment.PREFS_NAME, MODE_PRIVATE);
-                                SharedPreferences.Editor prefsEditor = prefs.edit();
-                                prefsEditor.putInt(ProfileFragment.K_RANK, rank);
-                                prefsEditor.putInt(ProfileFragment.K_SCORE, score);
-                                prefsEditor.putInt(ProfileFragment.K_LEVEL, level);
-                                prefsEditor.putInt(ProfileFragment.K_XP_PROGRESS, xpProgress);
-                                prefsEditor.putInt(ProfileFragment.K_XP_TARGET, xpTarget);
-                                prefsEditor.putString(ProfileFragment.K_TOTAL_PHOTOS, totalPhotos);
-                                prefsEditor.putString(ProfileFragment.K_TOTAL_TRACKS, totalTracks);
-                                prefsEditor.putString(ProfileFragment.K_TOTAL_DISTANCE, totalDistance);
-                                prefsEditor.putString(ProfileFragment.K_OBD_DISTANCE, obdDistance);
-                                prefsEditor.apply();
-                                EventBus.postSticky(new LoginChangedEvent(true, userName, name, appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL), isDriver));
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                        @Override
+                        public void requestFailed(int status, UserData details) {
+                            Log.d(TAG, "checkUserInfo: " + status + ", details: " + details);
+                        }
+
+                        @Override
+                        public void requestFinished(int status, UserData userdata) {
+                            Log.d(TAG, "checkUserInfo: " + " status - > " + status + " result - > " + userdata);
+                            if (userdata != null) {
+                                String id = appPrefs.getStringPreference(PreferenceTypes.K_USER_ID);
+                                String loginType = appPrefs.getStringPreference(PreferenceTypes.K_LOGIN_TYPE);
+                                String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
+                                String displayName = appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME);
+                                EventBus.postSticky(new LoginChangedEvent(true,
+                                        new AccountData(id, userName, displayName, appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL)
+                                                        , userType
+                                                , AccountData.getAccountTypeForString(loginType)
+                                                )
+                                        )
+                                );
+                                EventBus.postSticky(new UserTypeChangedEvent(userType));
                             }
                         }
-                    }
-
-                    @Override
-                    public void requestFinished(int status) {
-
-                    }
-                });
+                    });
+                }
+            } else if (userType == PreferenceTypes.USER_TYPE_BYOD || userType == PreferenceTypes.USER_TYPE_BAU || userType == PreferenceTypes.USER_TYPE_DEDICATED) {
+                EventBus.postSticky(new UserTypeChangedEvent(userType));
             }
         }
     }
 
     @Override
     protected void onStop() {
+        if (mUserDataManager != null) {
+            mUserDataManager.destroy();
+            mUserDataManager = null;
+        }
         if (mBoundCameraHandler && !mRecorder.isRecording()) {
             if (mCameraHandlerService != null) {
                 mCameraHandlerService.stopSelf();
@@ -461,11 +435,7 @@ public class MainActivity extends OSVActivity {
             mBoundCameraHandler = false;
 
         }
-        if (mBoundUploadHandler) {
-            mUploadHandlerService.stopSelf();
-            unbindService(mUploadHandlerConnection);
-            mBoundUploadHandler = false;
-        }
+        unbindUploadService();
         appPrefs.saveIntPreference(PreferenceTypes.K_RESTART_COUNTER, 0);
         if (!mRecorder.isRecording()) {
             EventBus.postSticky(new ObdCommand(false));
@@ -477,6 +447,7 @@ public class MainActivity extends OSVActivity {
         if (Fabric.isInitialized()) {
             Crashlytics.setInt(Log.CURRENT_SCREEN, -1);//means background
         }
+        unregisterReceiver(mNetworkBroadcastReceiver);
         super.onStop();
     }
 
@@ -487,15 +458,11 @@ public class MainActivity extends OSVActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.splash_background_no_drawable));
         Log.d(TAG, "onResume: ");
-        Utils.checkGooglePlaySevices(this);
+        Utils.checkGooglePlayServices(this);
         mUploadManager = getApp().getUploadManager();
         enableProgressBar(false);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {//set status bar color
-//            Window window = getWindow();
-//            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-//            window.setStatusBarColor(getResources().getColor(R.color.md_grey_300));
-//        }
 
         if (getIntent().getBooleanExtra(K_OPEN_CAMERA, false)) {//go directly to camera view, removing any fragments over the pager
             runOnUiThread(new Runnable() {
@@ -505,21 +472,6 @@ public class MainActivity extends OSVActivity {
                 }
             });
         }
-//        int orientation = getResources().getConfiguration().orientation;
-//        if (cameraPreviewFragment != null) {
-//            cameraPreviewFragment.onOrientationChanged(orientation == Configuration.ORIENTATION_PORTRAIT);
-//        }
-//        int runCounter = appPrefs.getIntPreference(PreferenceTypes.K_RUN_COUNTER);
-//        if (runCounter <= 4) {
-//            if (runCounter == 4) {
-//                Instabug.showIntroMessage();
-//                runCounter++;
-//            }
-//            runCounter++;
-//            appPrefs.saveIntPreference(PreferenceTypes.K_RUN_COUNTER, runCounter);
-//        }
-
-//        sFragmentOverlayTag = "";
 
         if (getIntent() != null && getIntent().getBooleanExtra(SplashActivity.RESTART_FLAG, false)) {
             getIntent().removeExtra(SplashActivity.RESTART_FLAG);
@@ -565,123 +517,79 @@ public class MainActivity extends OSVActivity {
                 mClearRecentsDialog.show();
             }
         }
-
-//        mUploadManager.version(new RequestResponseListener() {
-//            @Override
-//            public void requestFinished(int status, String result) {
-//                Log.d(TAG, "version: " + result);
-//
-//                PackageInfo pInfo;
-//                int version = 1000;
-//                try {
-//                    pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-//                    version = pInfo.versionCode;
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//
-//                try {
-//                    JSONObject obj = new JSONObject(result);
-//                    String ver = obj.getString("version");
-//                    if (Double.parseDouble(ver) > version) {
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                showDialogUpdateVersion();
-//                            }
-//                        });
-//
-//                    }
-//                } catch (Exception e) {
-//                    Log.d(TAG, "requestFinished: " + Log.getStackTraceString(e));
-//                }
-//            }
-//
-//            @Override
-//            public void requestFinished(int status) {
-//                Log.d(TAG, "version: status " + status);
-//            }
-//        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        SKMaps.getInstance().destroySKMaps();
         if (mBoundCameraHandler) {
             mCameraHandlerService.stopSelf();
             unbindService(mCameraHandlerConnection);
             mBoundCameraHandler = false;
         }
-        if (mBoundUploadHandler) {
-            mUploadHandlerService.stopSelf();
-            unbindService(mUploadHandlerConnection);
-            mBoundUploadHandler = false;
-        }
+        unbindUploadService();
     }
 
     @Override
     public void onBackPressed() {
-        cancelNearby();
         mScreenComposer.onBackPressed();
     }
 
-    public void cancelNearby() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                enableProgressBar(false);
-                mUploadManager.cancelNearby();
-            }
-        });
-    }
 
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onUserTypeChanged(UserTypeChangedEvent event) {
+        if (event.isDriver()) {
+            boolean mapWasDisabled = appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false);
+            boolean miniMap = appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true);
+            boolean gamification = appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true);
+            boolean signDetection = appPrefs.getBooleanPreference(PreferenceTypes.K_SIGN_DETECTION_ENABLED, false);
+
+            boolean needed = !mapWasDisabled || miniMap || gamification || signDetection;
+            if (mDriverModeDialog == null && needed) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog);
+                mDriverModeDialog = builder.setMessage(R.string.warning_optimization_message)
+                        .setTitle(R.string.warning_optimization_label)
+                        .setCancelable(false).setPositiveButton(R.string.ok_label,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        boolean mapWasDisabled = appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false);
+                                        appPrefs.saveBooleanPreference(PreferenceTypes.K_MAP_DISABLED, true);
+                                        appPrefs.saveBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, false);
+                                        appPrefs.saveBooleanPreference(PreferenceTypes.K_GAMIFICATION, false);
+                                        EventBus.post(new GamificationSettingEvent(false));
+                                        appPrefs.saveBooleanPreference(PreferenceTypes.K_SIGN_DETECTION_ENABLED, false);
+                                        if (!mapWasDisabled) {
+                                            EventBus.postSticky(new SdkEnabledEvent(false));
+                                            Intent mStartActivity = new Intent(MainActivity.this, SplashActivity.class);
+                                            int mPendingIntentId = 123456;
+                                            PendingIntent mPendingIntent = PendingIntent.getActivity(MainActivity.this, mPendingIntentId, mStartActivity, PendingIntent
+                                                    .FLAG_CANCEL_CURRENT);
+                                            AlarmManager mgr = (AlarmManager) MainActivity.this.getSystemService(Context.ALARM_SERVICE);
+                                            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+                                            appPrefs.saveBooleanPreference(PreferenceTypes.K_CRASHED, false);
+                                            android.os.Process.killProcess(android.os.Process.myPid());
+                                            System.exit(0);
+                                        }
+                                    }
+                                }).create();
+            }
+            if (needed && !mDriverModeDialog.isShowing() && !appPrefs.getBooleanPreference(PreferenceTypes.K_DRIVER_MODE_DIALOG_SHOWN)) {
+                mDriverModeDialog.show();
+                appPrefs.saveBooleanPreference(PreferenceTypes.K_DRIVER_MODE_DIALOG_SHOWN, true);
+                if (Fabric.isInitialized()) {
+                    Answers.getInstance().logCustom(new CustomEvent("Drivermode dialog displayed").putCustomAttribute(PreferenceTypes.K_USER_NAME, appPrefs
+                            .getStringPreference(PreferenceTypes.K_USER_NAME)));
+                }
+            }
+        }
+    }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onLoginChanged(LoginChangedEvent event) {
         if (event.logged) {
             showSnackBar("Logged in as " + appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME), Snackbar.LENGTH_SHORT);
-            if (event.driver) {
-                boolean mapWasDisabled = appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false);
-                boolean miniMap = appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true);
-                boolean gamification = appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true);
-                boolean signDetection = appPrefs.getBooleanPreference(PreferenceTypes.K_SIGN_DETECTION_ENABLED, false);
-
-                boolean needed = !mapWasDisabled || miniMap || gamification || signDetection;
-                if (mDriverModeDialog == null && needed) {
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog);
-                    mDriverModeDialog = builder.setMessage(R.string.warning_optimization_message)
-                            .setTitle(R.string.warning_optimization_label)
-                            .setCancelable(false).setPositiveButton(R.string.ok_label,
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            boolean mapWasDisabled = appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false);
-                                            appPrefs.saveBooleanPreference(PreferenceTypes.K_MAP_DISABLED, true);
-                                            appPrefs.saveBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, false);
-                                            appPrefs.saveBooleanPreference(PreferenceTypes.K_GAMIFICATION, false);
-                                            appPrefs.saveBooleanPreference(PreferenceTypes.K_SIGN_DETECTION_ENABLED, false);
-                                            if (!mapWasDisabled) {
-                                                EventBus.postSticky(new SdkEnabledEvent(false));
-                                                Intent mStartActivity = new Intent(MainActivity.this, SplashActivity.class);
-                                                int mPendingIntentId = 123456;
-                                                PendingIntent mPendingIntent = PendingIntent.getActivity(MainActivity.this, mPendingIntentId, mStartActivity, PendingIntent
-                                                        .FLAG_CANCEL_CURRENT);
-                                                AlarmManager mgr = (AlarmManager) MainActivity.this.getSystemService(Context.ALARM_SERVICE);
-                                                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-                                                appPrefs.saveBooleanPreference(PreferenceTypes.K_CRASHED, false);
-                                                android.os.Process.killProcess(android.os.Process.myPid());
-                                                System.exit(0);
-                                            }
-                                        }
-                                    }).create();
-                }
-                if (needed && !mDriverModeDialog.isShowing()) {
-                    mDriverModeDialog.show();
-                    if (Fabric.isInitialized()) {
-                        Answers.getInstance().logCustom(new CustomEvent("Drivermode dialog displayed").putCustomAttribute(PreferenceTypes.K_USER_NAME, appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME)));
-                    }
-                }
-            }
         }
 //        else {
 //            showSnackBar(R.string.logged_out_confirmation, Snackbar.LENGTH_SHORT);
@@ -697,12 +605,13 @@ public class MainActivity extends OSVActivity {
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onRecordingStatusChanged(final RecordingEvent event) {
         final boolean started = event.started;
-        if (scoreText != null) {
+        if (scoreText != null && appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
+            scoreText.setScore(0);
             scoreText.setActive(event.started);
             scoreText.setObdConnected(ObdManager.isConnected());
         }
-        if (!started) {
-            if (event.sequence != null && event.sequence.score >= 10) {
+        if (!started && !appPrefs.getBooleanPreference(PreferenceTypes.K_HIDE_RECORDING_SUMMARY)) {
+            if (event.sequence != null && event.sequence.getScore() >= 10) {
                 openScreen(ScreenComposer.SCREEN_SUMMARY, event.sequence);
                 event.sequence = null;
             }
@@ -758,6 +667,17 @@ public class MainActivity extends OSVActivity {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFrameQueueChanged(FrameQueueEvent event) {
+        if (Utils.DEBUG) {
+            if (event.queueSize > 3) {
+                showSnackBar("Frames in queue: " + event.queueSize, Snackbar.LENGTH_INDEFINITE);
+            } else {
+                hideSnackBar();
+            }
+        }
+    }
+
     public void enableProgressBar(final boolean enable) {
         mScreenComposer.enableProgressBar(enable);
     }
@@ -771,6 +691,11 @@ public class MainActivity extends OSVActivity {
     @Override
     public void openScreen(int screen, Object extra) {
         mScreenComposer.openScreen(screen, extra);
+    }
+
+    @Override
+    public boolean hasPosition() {
+        return mRecorder != null && mRecorder.hasPosition();
     }
 
 
@@ -796,15 +721,15 @@ public class MainActivity extends OSVActivity {
         }
     }
 
+    @Override
+    public void hideSnackBar() {
+        mScreenComposer.hideSnackBar();
+    }
+
     @Subscribe(sticky = true)
     public void onCameraReady(final CameraInitEvent event) {
         if (event.type == CameraInitEvent.TYPE_READY) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    EventBus.post(new OrientationChangedEvent());
-                }
-            });
+            EventBus.post(new OrientationChangedEvent());
         }
     }
 
@@ -817,34 +742,28 @@ public class MainActivity extends OSVActivity {
     @SuppressWarnings("deprecation")
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onAccuracyChanged(AccuracyEvent event) {
-        float accuracy = event.accuracy;
-        Log.d(TAG, "onAccuracyChanged: " + getAccuracyStatus(accuracy));
+        int type = event.type;
         if (mGPSIcon != null) {
-            if (accuracy <= Recorder.ACCURACY_GOOD) {
-                mGPSIcon.setImageDrawable(getResources().getDrawable(R.drawable.vector_gps_good));
-            } else if (accuracy <= Recorder.ACCURACY_MEDIUM) {
-                mGPSIcon.setImageDrawable(getResources().getDrawable(R.drawable.vector_gps_medium));
-            } else {
-                mGPSIcon.setImageDrawable(getResources().getDrawable(R.drawable.vector_gps_low));
+            switch (type) {
+                case LocationManager.ACCURACY_GOOD:
+                    Log.d(TAG, "onAccuracyChanged: " + getString(R.string.gps_ok_label));
+                    mGPSIcon.setImageDrawable(getResources().getDrawable(R.drawable.vector_gps_good));
+                    break;
+                case LocationManager.ACCURACY_MEDIUM:
+                    Log.d(TAG, "onAccuracyChanged: " + getString(R.string.gps_medium_label));
+                    mGPSIcon.setImageDrawable(getResources().getDrawable(R.drawable.vector_gps_medium));
+                    break;
+                case LocationManager.ACCURACY_BAD:
+                default:
+                    Log.d(TAG, "onAccuracyChanged: " + getString(R.string.gps_bad_label));
+                    mGPSIcon.setImageDrawable(getResources().getDrawable(R.drawable.vector_gps_low));
+                    break;
             }
         }
     }
 
-    private String getAccuracyStatus(float accuracy) {
-        String textAccuracy;
-        if (accuracy <= Recorder.ACCURACY_GOOD) {
-            textAccuracy = getString(R.string.gps_ok_label);
-        } else if (accuracy <= Recorder.ACCURACY_MEDIUM) {
-            textAccuracy = getString(R.string.gps_medium_label);
-        } else {
-            textAccuracy = getString(R.string.gps_bad_label);
-        }
-        return textAccuracy;
-    }
-
-    @Subscribe(sticky = true)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onSpeedCategoryChanged(SpeedCategoryEvent event) {
-        Log.d(TAG, "onSpeedCategoryChanged: ");
         if (Utils.isDebugEnabled(this) && appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_SPEED_DIST) && distanceDebugText != null && speedDebugText != null) {
             distanceDebugText.setVisibility(View.VISIBLE);
             speedDebugText.setVisibility(View.VISIBLE);
@@ -858,7 +777,7 @@ public class MainActivity extends OSVActivity {
         }
     }
 
-    @Subscribe(sticky = true)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onObdStatusEvent(ObdStatusEvent event) {
         switch (event.type) {
             case ObdStatusEvent.TYPE_CONNECTED:
@@ -901,15 +820,15 @@ public class MainActivity extends OSVActivity {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onObdSpeed(ObdSpeedEvent event) {
-        if (mOBDIcon != null && event.data.getSpeed() != -1) {
-            mOBDIcon.setText(Utils.formatSpeedFromKmph(this, event.data.getSpeed())[0]);
+        if (mOBDIcon != null) {
+            if (event.data.getSpeed() != -1) {
+                mOBDIcon.setText(Utils.formatSpeedFromKmph(this, event.data.getSpeed())[0]);
+            } else {
+                mOBDIcon.setText("-");
+            }
         }
-    }
-
-    public void goToLeaderboard() {
-        openScreen(ScreenComposer.SCREEN_LEADERBOARD);
     }
 
     @Override
@@ -923,7 +842,13 @@ public class MainActivity extends OSVActivity {
                     mRecorder.startRecording();
                 }
             } else if (requestCode == REQUEST_CODE_GPS) {
-                EventBus.post(new PositionerEvent());
+                EventBus.postSticky(new GpsCommand(true));
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        EventBus.post(new PositionerEvent());
+                    }
+                }, 700);
             }
         } else {
             Log.d(TAG, "onActivityResult: result is error for " + requestCode);
@@ -1022,6 +947,27 @@ public class MainActivity extends OSVActivity {
                 }
                 break;
         }
+    }
+
+    public abstract class OSVServiceConnection implements ServiceConnection {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+
+            UploadHandlerService.UploadHandlerBinder binder = (UploadHandlerService.UploadHandlerBinder) service;
+            mUploadHandlerService = binder.getService();
+            mBoundUploadHandler = true;
+            if (mBoundCameraHandler) {
+                enableProgressBar(false);
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mUploadHandlerService = null;
+            mBoundUploadHandler = false;
+        }
+
     }
 
 

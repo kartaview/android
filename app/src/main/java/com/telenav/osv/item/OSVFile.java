@@ -6,7 +6,6 @@ import java.io.FilenameFilter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import com.telenav.osv.utils.Log;
 
 /**
  * Created by Kalman on 1/13/16.
@@ -64,7 +63,7 @@ public class OSVFile extends File {
         if (filter == null || files == null) {
             return files;
         }
-        List<OSVFile> result = new ArrayList<OSVFile>(files.length);
+        List<OSVFile> result = new ArrayList<>(files.length);
         for (OSVFile file : files) {
             if (filter.accept(file)) {
                 result.add(file);

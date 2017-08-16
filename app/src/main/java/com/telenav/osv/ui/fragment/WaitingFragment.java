@@ -26,7 +26,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import com.skobbler.ngx.SKCoordinate;
+import com.skobbler.ngx.reversegeocode.SKReverseGeocoderManager;
+import com.skobbler.ngx.search.SKSearchResult;
+import com.skobbler.ngx.search.SKSearchResultParent;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.activity.PlayerActivity;
@@ -35,8 +37,9 @@ import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.network.upload.UploadCancelledEvent;
 import com.telenav.osv.event.network.upload.UploadFinishedEvent;
+import com.telenav.osv.event.network.upload.UploadStartedEvent;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
@@ -45,7 +48,7 @@ import com.telenav.osv.utils.Utils;
  * fragment displaying local tracks
  * Created by alexandra on 7/14/16.
  */
-public class WaitingFragment extends Fragment {
+public class WaitingFragment extends OSVFragment {
     public final static String TAG = "WaitingFragment";
 
     private MainActivity activity;
@@ -63,12 +66,12 @@ public class WaitingFragment extends Fragment {
         final View view = inflater.inflate(R.layout.fragment_waiting, null);
         activity = (MainActivity) getActivity();
         appPrefs = activity.getApp().getAppPrefs();
-        RecyclerView localRecyclerView = (RecyclerView) view.findViewById(R.id.local_list);
-        final ConcurrentHashMap<Integer, Sequence> localSequences = Sequence.getStaticSequences();
-        localSequencesAdapter = new SequenceListAdapter(activity, new ArrayList<>(localSequences.values()), false);
-        localRecyclerView.setLayoutManager(new LinearLayoutManager(activity,LinearLayoutManager.VERTICAL,false));
+        RecyclerView localRecyclerView = view.findViewById(R.id.local_list);
+        final ConcurrentHashMap<Integer, LocalSequence> localSequences = LocalSequence.getStaticSequences();
+        localSequencesAdapter = new SequenceListAdapter(activity, new ArrayList<>(localSequences.values()));
+        localRecyclerView.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
         localRecyclerView.setAdapter(localSequencesAdapter);
-        uploadButton = (Button) view.findViewById(R.id.upload_button);
+        uploadButton = view.findViewById(R.id.upload_button);
 
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
 
@@ -142,12 +145,12 @@ public class WaitingFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        int size = Sequence.checkDeletedSequences();
-        if (size <= 0 && activity != null){
+        int size = LocalSequence.checkDeletedSequences();
+        if (size <= 0 && activity != null) {
             activity.openScreen(ScreenComposer.SCREEN_MAP);
             return;
         }
-        if (localSequencesAdapter != null){
+        if (localSequencesAdapter != null) {
             localSequencesAdapter.refresh();
         }
         setupUploadButton();
@@ -159,7 +162,7 @@ public class WaitingFragment extends Fragment {
         setupUploadButton();
     }
 
-    public void setupUploadButton() {
+    private void setupUploadButton() {
         Log.d(TAG, "setupUploadButton: ");
         if (uploadButton != null) {
             uploadButton.setText(R.string.upload_all_label);
@@ -167,14 +170,67 @@ public class WaitingFragment extends Fragment {
         }
     }
 
-    private void reverseGeocodeAddress(final Sequence sequence, final WaitingFragment.ViewHolder holder, boolean retry) {
-        if (sequence.location.getLatitude() == 0 || sequence.location.getLongitude() == 0) {
+    private void reverseGeocodeAddress(final LocalSequence sequence, final WaitingFragment.ViewHolder holder, boolean retry) {
+        if (sequence.getLocation().getLatitude() == 0 || sequence.getLocation().getLongitude() == 0) {
             Log.e(TAG, "reverseGeocodeAddress: lat or lon 0");
             return;
         }
-        Sequence.reverseGeocodeAddress(sequence, activity);
+        if (SKReverseGeocoderManager.getInstance() != null) {
+            SKSearchResult addr = SKReverseGeocoderManager.getInstance().reverseGeocodePosition(sequence.getLocation());
+            if (addr != null) {
+                String address = "" + addr.getName();
+                String city = "", state = "";
+                for (SKSearchResultParent p : addr.getParentsList()) {
+                    switch (p.getParentType()) {
+                        case CITY:
+                            city = p.getParentName();
+                            break;
+                        case CITY_SECTOR:
+                            if (city.equals("")) {
+                                city = p.getParentName();
+                            }
+                            break;
+                        case STATE:
+                            state = p.getParentName();
+                            break;
+                    }
+                }
+                if (!city.equals("")) {
+                    address += ", " + city;
+                }
+                if (!state.equals("")) {
+                    address += ", " + state;
+                }
+                sequence.setAddress(address);
+            }
+            if (sequence.getAddress().contains("Track ") && retry) {
+                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        reverseGeocodeAddress(sequence, holder, false);
+                    }
+                }, 1500);
+            }
+        } else {
+            Log.d(TAG, "reverseGeocodeAddress: not ready");
+            if (retry) {
+                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        reverseGeocodeAddress(sequence, holder, false);
+                    }
+                }, 1500);
+            }
+        }
 
-        holder.addressTitle.setText(sequence.address);
+        holder.addressTitle.setText(sequence.getAddress());
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onUploadStarted(UploadStartedEvent event) {
+        if (activity != null) {
+            activity.openScreen(ScreenComposer.SCREEN_UPLOAD_PROGRESS);
+        }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -195,8 +251,11 @@ public class WaitingFragment extends Fragment {
 
     @Subscribe
     public void onRefreshNeeded(SequencesChangedEvent event) {
-        if (!event.online && localSequencesAdapter != null) {
+        if (!event.online && !event.diskChange && localSequencesAdapter != null) {
             localSequencesAdapter.refresh();
+        }
+        if (localSequencesAdapter != null && localSequencesAdapter.getItemCount() == 0) {
+            activity.onBackPressed();
         }
     }
 
@@ -212,10 +271,10 @@ public class WaitingFragment extends Fragment {
 
         ViewHolder(View view) {
             super(view);
-            addressTitle = (TextView) view.findViewById(R.id.address_text);
-            totalImages = (TextView) view.findViewById(R.id.total_images_text);
-            totalDistance = (TextView) view.findViewById(R.id.total_distance_text);
-            dateTimeText = (TextView) view.findViewById(R.id.date_time_text);
+            addressTitle = view.findViewById(R.id.address_text);
+            totalImages = view.findViewById(R.id.total_images_text);
+            totalDistance = view.findViewById(R.id.total_distance_text);
+            dateTimeText = view.findViewById(R.id.date_time_text);
         }
     }
 
@@ -223,21 +282,21 @@ public class WaitingFragment extends Fragment {
 
         private LayoutInflater inflater;
 
-        private ArrayList<Sequence> data;
+        private ArrayList<LocalSequence> data;
 
         private Handler mDeleteHandler = new Handler(Looper.getMainLooper());
 
 
-        SequenceListAdapter(Context context, ArrayList<Sequence> data, boolean online) {
+        SequenceListAdapter(Context context, ArrayList<LocalSequence> data) {
             this.data = data;
-            Sequence.order(this.data);
+            LocalSequence.order(this.data);
             inflater = LayoutInflater.from(context);
         }
 
         void refresh() {
-            synchronized (Sequence.getStaticSequences()) {
-                data = (new ArrayList<>(Sequence.getStaticSequences().values()));
-                Sequence.order(data);
+            synchronized (LocalSequence.getStaticSequences()) {
+                data = (new ArrayList<>(LocalSequence.getStaticSequences().values()));
+                LocalSequence.order(data);
             }
 
             super.notifyDataSetChanged();
@@ -255,35 +314,35 @@ public class WaitingFragment extends Fragment {
         public void onBindViewHolder(RecyclerView.ViewHolder iholder, int position) {
             if (iholder instanceof WaitingFragment.ViewHolder) {
                 WaitingFragment.ViewHolder holder = (WaitingFragment.ViewHolder) iholder;
-                final Sequence sequence = data.get(position);
+                final LocalSequence sequence = data.get(position);
 
-                if (sequence.address.contains("Track ")) {
+                if (sequence.getAddress().contains("Track ")) {
                     reverseGeocodeAddress(sequence, holder, true);
                 } else {
-                    holder.addressTitle.setText(sequence.address);
+                    holder.addressTitle.setText(sequence.getAddress());
                 }
                 holder.addressTitle.setTag(sequence);
                 int status = sequence.getStatus();
-                if (status == Sequence.STATUS_NEW || status == Sequence.STATUS_INTERRUPTED) {
-                    if (sequence.folder.getPath().contains(Utils.EXTERNAL_STORAGE_PATH)) {
-                        sequence.mIsExternal = true;
+                if (status == LocalSequence.STATUS_NEW || status == LocalSequence.STATUS_INTERRUPTED) {
+                    if (sequence.getFolder().getPath().contains(Utils.EXTERNAL_STORAGE_PATH)) {
+                        sequence.setExternal(true);
                     }
 
                 }
-                if (sequence.mIsExternal) {
+                if (sequence.isExternal()) {
                     holder.addressTitle.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.ic_sd_storage_black_18dp)), null, null, null);
                 }
 
                 String distanceText = "";
-                if (sequence.mTotalLength >= 0) {
-                    String[] distance = Utils.formatDistanceFromMeters(activity, sequence.mTotalLength);
+                if (sequence.getDistance() >= 0) {
+                    String[] distance = Utils.formatDistanceFromMeters(activity, sequence.getDistance());
                     distanceText = distance[0] + distance[1];
                 }
 
-                holder.totalImages.setText(sequence.originalImageCount + " IMG");
+                holder.totalImages.setText(sequence.getOriginalFrameCount() + " IMG");
                 holder.totalDistance.setText(distanceText);
-                holder.dateTimeText.setText(sequence.title);
-                if (sequence.getStatus() == Sequence.STATUS_NEW || sequence.getStatus() == Sequence.STATUS_INDEXING) {
+                holder.dateTimeText.setText(Utils.numericDateFormat.format(sequence.getDate()));
+                if (sequence.getStatus() == LocalSequence.STATUS_NEW || sequence.getStatus() == LocalSequence.STATUS_INDEXING) {
                     int color = activity.getResources().getColor(R.color.md_grey_900);
                     holder.addressTitle.setTextColor(color);
                     holder.totalImages.setTextColor(color);
@@ -296,13 +355,13 @@ public class WaitingFragment extends Fragment {
                     holder.itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            if (sequence.getStatus() == Sequence.STATUS_NEW) {
-                                if (Utils.checkSDCard(activity) || !sequence.mIsExternal) {
-                                    if (sequence.safe){
+                            if (sequence.getStatus() == LocalSequence.STATUS_NEW) {
+                                if (Utils.checkSDCard(activity) || !sequence.isExternal()) {
+                                    if (sequence.isSafe()) {
                                         activity.openScreen(ScreenComposer.SCREEN_PREVIEW, sequence);
                                     } else {
                                         Intent intent = new Intent(activity, PlayerActivity.class);
-                                        intent.putExtra(PlayerActivity.EXTRA_SEQUENCE_ID, sequence.folder.getPath());
+                                        intent.putExtra(PlayerActivity.EXTRA_SEQUENCE_ID, sequence.getFolder().getPath());
                                         activity.startActivity(intent);
                                     }
                                 } else {
@@ -312,7 +371,7 @@ public class WaitingFragment extends Fragment {
                         }
 
                     });
-                } else if (sequence.getStatus() == Sequence.STATUS_INTERRUPTED) {
+                } else if (sequence.getStatus() == LocalSequence.STATUS_INTERRUPTED) {
                     int color = activity.getResources().getColor(R.color.gray_summary_primary_text);
                     holder.addressTitle.setTextColor(color);
                     holder.addressTitle.setText("Interrupted: " + holder.addressTitle.getText());
@@ -351,25 +410,25 @@ public class WaitingFragment extends Fragment {
 
         void onDeleteItem(RecyclerView.ViewHolder viewHolder) {
             final int position = viewHolder.getAdapterPosition();
-            final Sequence sequence = data.get(Math.max(0,position));
-            final int sequenceId = sequence.sequenceId;
+            final LocalSequence sequence = data.get(Math.max(0, position));
+            final int sequenceId = sequence.getId();
             data.remove(position);
             activity.showSnackBar(R.string.recording_deleted, 1500, "Undo", new Runnable() {
                 @Override
                 public void run() {
                     mDeleteHandler.removeCallbacksAndMessages(null);
-                    data.add(position,sequence);
-                    notifyDataSetChanged();
+                    data.add(position, sequence);
+                    notifyItemInserted(position);
                 }
             });
             mDeleteHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Sequence.deleteSequence(sequenceId);
-                    EventBus.post(new SequencesChangedEvent(false));
+                    LocalSequence.deleteSequence(sequenceId);
+                    EventBus.post(new SequencesChangedEvent(false, true));
                 }
             }, 1600);
-            notifyDataSetChanged();
+            notifyItemRemoved(position);
         }
     }
 

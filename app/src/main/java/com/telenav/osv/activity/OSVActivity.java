@@ -12,30 +12,31 @@ import android.support.v7.app.AppCompatActivity;
 import com.telenav.osv.R;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.manager.network.LoginManager;
 import com.telenav.osv.manager.network.UploadManager;
-import com.telenav.osv.service.CameraHandlerService;
+import com.telenav.osv.manager.network.UserDataManager;
 import com.telenav.osv.utils.Log;
 
 /**
+ * Abstract activity used in the project
  * Created by Kalman on 26/09/16.
  */
-
 public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListener*/ {
 
     private static final String TAG = "OSVActivity";
 
     public UploadManager mUploadManager;
 
-    public ApplicationPreferences appPrefs;
+    ApplicationPreferences appPrefs;
 
-    private CameraHandlerService mCameraHandlerService;
+    UserDataManager mUserDataManager;
 
     public abstract OSVApplication getApp();
 
     public abstract int getCurrentScreen();
 
     public abstract void resolveLocationProblem(boolean b);
+
+    public abstract void hideSnackBar();
 
     public void showSnackBar(final int resId, final int duration) {
         showSnackBar(resId, duration, null, null);
@@ -53,7 +54,7 @@ public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListen
         showSnackBar(getText(resId), duration, getText(buttonResId), onClick);
     }
 
-    public abstract void showSnackBar(final CharSequence text, final int duration, final CharSequence button, final Runnable onClick);
+    protected abstract void showSnackBar(final CharSequence text, final int duration, final CharSequence button, final Runnable onClick);
 
     public abstract void enableProgressBar(boolean b);
 
@@ -91,7 +92,7 @@ public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListen
         return true;
     }
 
-    public boolean checkPermissionsForCamera() {
+    void checkPermissionsForCamera() {
         Log.d(TAG, "checkPermissionsForCamera: ");
         ArrayList<String> needed = new ArrayList<>();
         int cameraPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
@@ -103,42 +104,7 @@ public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListen
             String[] array = new String[needed.size()];
             needed.toArray(array);
             ActivityCompat.requestPermissions(this, array, OSVApplication.CAMERA_PERMISSION);
-            return false;
         }
-        return true;
-    }
-
-    public boolean checkPermissionsForAccounts(final String loginType) {
-        Log.d(TAG, "checkPermissionsForAccounts: ");
-        final ArrayList<String> needed = new ArrayList<>();
-        int cameraPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
-        if (cameraPermitted == PackageManager.PERMISSION_DENIED) {
-            needed.add(Manifest.permission.GET_ACCOUNTS);
-        }
-        if (needed.size() > 0) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.GET_ACCOUNTS)) {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog);
-                AlertDialog dialog = builder.setMessage("The app needs the Contacts permission in order to read your account info. Press allow in the next popup.").setTitle
-                        ("Permission request")
-                        .setNeutralButton("I understand", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String[] array = new String[needed.size()];
-                                needed.toArray(array);
-                                ActivityCompat.requestPermissions(OSVActivity.this, array, loginType.equals(LoginManager.LOGIN_TYPE_FACEBOOK) ? OSVApplication
-                                        .ACCOUNTS_PERMISSION_FACEBOOK : OSVApplication.ACCOUNTS_PERMISSION_GOOGLE);
-                            }
-                        }).create();
-                dialog.show();
-            } else {
-                String[] array = new String[needed.size()];
-                needed.toArray(array);
-                ActivityCompat.requestPermissions(OSVActivity.this, array, loginType.equals(LoginManager.LOGIN_TYPE_FACEBOOK) ? OSVApplication
-                        .ACCOUNTS_PERMISSION_FACEBOOK : OSVApplication.ACCOUNTS_PERMISSION_GOOGLE);
-            }
-            return false;
-        }
-        return true;
     }
 
     public boolean checkPermissionsForGPS() {
@@ -227,5 +193,12 @@ public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListen
         Log.d(TAG, "onTrimMemory: --------------------------- level " + levelRepr);
     }
 
-    public abstract void cancelNearby();
+    public UserDataManager getUserDataManager() {
+        if (mUserDataManager == null) {
+            mUserDataManager = new UserDataManager(this);
+        }
+        return mUserDataManager;
+    }
+
+    public abstract boolean hasPosition();
 }

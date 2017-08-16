@@ -1,10 +1,13 @@
 package com.telenav.osv.ui.fragment;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Point;
 import android.graphics.Typeface;
@@ -13,7 +16,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,26 +35,29 @@ import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.FullscreenEvent;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
-import com.telenav.osv.http.RequestListener;
+import com.telenav.osv.item.LocalSequence;
+import com.telenav.osv.item.NearbySequence;
 import com.telenav.osv.item.ScoreHistory;
+import com.telenav.osv.item.ScoreItem;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.manager.network.UploadManager;
+import com.telenav.osv.item.network.ApiResponse;
+import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.manager.playback.PlaybackManager;
 import com.telenav.osv.manager.playback.SafePlaybackManager;
 import com.telenav.osv.ui.custom.RevealRelativeLayout;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
+import com.telenav.osv.ui.fragment.transition.ScaleFragmentTransition;
 import com.telenav.osv.ui.list.ScoreHistoryAdapter;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 import com.telenav.streetview.scalablevideoview.ScalableVideoView;
 import io.fabric.sdk.android.Fabric;
 
-public class TrackPreviewFragment extends Fragment implements View.OnClickListener, PlaybackManager.PlaybackListener {
+public class TrackPreviewFragment extends DisplayFragment implements View.OnClickListener, PlaybackManager.PlaybackListener {
 
     public static final String TAG = "TrackPreviewFragment";
 
@@ -68,16 +73,11 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
 
     private ImageView mDeleteButton;
 
-    private ImageView mMaximizeButton;
-
-
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
     private boolean mMaximized = false;
 
     private TextView mCurrentImageText;
-
-    private TextView mImageDateText;
 
     private boolean shouldHideDelete = false;
 
@@ -93,89 +93,111 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
 
     private ImageView mPointsBackground;
 
+    private SeekBar mSeekBar;
+
+    private ImageView mMaximizeButton;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setSharedElementEnterTransition(new ScaleFragmentTransition());
+        setSharedElementReturnTransition(new ScaleFragmentTransition());
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_track_details, null);
         activity = (OSVActivity) getActivity();
-        mFrameHolder = (FrameLayout) view.findViewById(R.id.image_holder);
-        SeekBar mSeekBar = (SeekBar) view.findViewById(R.id.seek_bar_for_preview);
+        mFrameHolder = view.findViewById(R.id.image_holder);
+        mSeekBar = view.findViewById(R.id.seek_bar_for_preview);
         mSeekBar.setProgress(0);
-        if (!mPrepared){
+        if (!mPrepared) {
             activity.enableProgressBar(true);
         }
         if (mPlayer != null) {
-            mPlayer.addPlaybackListener(this);
             mPlayer.setSeekBar(mSeekBar);
         }
-        ImageView mPreviousButton = (ImageView) view.findViewById(R.id.previous_button);
-        ImageView mFastBackwardButton = (ImageView) view.findViewById(R.id.fast_backward_button);
-        mPlayButton = (ImageView) view.findViewById(R.id.play_button);
-        ImageView mFastForwardButton = (ImageView) view.findViewById(R.id.fast_forward_button);
-        ImageView mNextButton = (ImageView) view.findViewById(R.id.next_button);
-        mDeleteButton = (ImageView) view.findViewById(R.id.delete_button);
-        mMaximizeButton = (ImageView) view.findViewById(R.id.maximize_button);
-        mPointsText = (TextView) view.findViewById(R.id.points_text);
-        mPointsBackground = (ImageView) view.findViewById(R.id.points_background);
-        TextView mTotalPointsText = (TextView) view.findViewById(R.id.total_points_text);
-        mScoreLayout = (RevealRelativeLayout) view.findViewById(R.id.score_reveal_layout);
-        RecyclerView mPointsDetails = (RecyclerView) view.findViewById(R.id.points_details);
-        ImageView mScoreClose = (ImageView) view.findViewById(R.id.score_close);
+        ImageView mPreviousButton = view.findViewById(R.id.previous_button);
+        ImageView mFastBackwardButton = view.findViewById(R.id.fast_backward_button);
+        mPlayButton = view.findViewById(R.id.play_button);
+        ImageView mFastForwardButton = view.findViewById(R.id.fast_forward_button);
+        ImageView mNextButton = view.findViewById(R.id.next_button);
+        mDeleteButton = view.findViewById(R.id.delete_button);
+        mMaximizeButton = view.findViewById(R.id.maximize_button);
+        mPointsText = view.findViewById(R.id.points_text);
+        mPointsBackground = view.findViewById(R.id.points_background);
+        TextView mTotalPointsText = view.findViewById(R.id.total_points_text);
+        mScoreLayout = view.findViewById(R.id.score_reveal_layout);
+        RecyclerView mPointsDetails = view.findViewById(R.id.points_details);
+        ImageView mScoreClose = view.findViewById(R.id.score_close);
 
-        mCurrentImageText = (TextView) view.findViewById(R.id.current_image_text);
-        mImageDateText = (TextView) view.findViewById(R.id.image_date_text);
+        mCurrentImageText = view.findViewById(R.id.current_image_text);
+        mCurrentImageText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable(R.drawable.vector_camera_gray), null, null, null);
+        TextView mImageDateText = view.findViewById(R.id.image_date_text);
         if (mSequence == null) {
             activity.onBackPressed();
             return view;
         }
         mCurrentImageText.setText(getSpannable("0", "/0 IMG"));
-        mImageDateText.setText(getSpannable("January 1st", " | 02:00 AM"));
-        if (mSequence.score > 0) {
-//            List<ScoreHistory> results = new ArrayList<>();
+        mCurrentImageText.setText(getSpannable("0", "/" + mSequence.getFrameCount() + " IMG"));
 
-//            if (!mSequence.online) {
-//                Cursor scores = SequenceDB.instance.getScores(mSequence.sequenceId);
-//                while (scores != null && !scores.isAfterLast()) {
-//                    int coverage = scores.getInt(scores.getColumnIndex(SequenceDB.SCORE_COVERAGE));
-//                    int photoCount = scores.getInt(scores.getColumnIndex(SequenceDB.SCORE_COUNT));
-//                    int obdCount = scores.getInt(scores.getColumnIndex(SequenceDB.SCORE_OBD_COUNT));
-//                    ScoreHistory score = new ScoreHistory(coverage, photoCount, obdCount);
-//                    results.add(score);
-//                    scores.moveToNext();
-//                }
-//                if (scores != null) {
-//                    scores.close();
-//                }
-//
-//            } else {
-////                activity.getApp().getUploadManager(). //todo online point details
-//            }
-            ArrayList<ScoreHistory> array = new ArrayList<>(mSequence.scoreHistories.values());
+        if (mSequence.getDate() != null) {
+            String date = "";
+            try {
+                date = Utils.niceDateFormat.format(mSequence.getDate());
+            } catch (Exception e) {
+                Log.d(TAG, "onPrepared: " + e.getLocalizedMessage());
+            }
+            String[] parts = date.split("\\| ");
+            if (parts.length > 1) {
+                mImageDateText.setText(getSpannable(parts[0], parts[1]));
+            }
+        }
+        if (mSequence.getScore() > 0 && activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
+            ArrayList<ScoreHistory> array = new ArrayList<>(mSequence.getScoreHistories().values());
             Iterator<ScoreHistory> iter = array.iterator();
-            while (iter.hasNext()){
+            while (iter.hasNext()) {
                 ScoreHistory sch = iter.next();
-                if (sch.coverage == -1){
+                if (sch.coverage == -1) {
                     iter.remove();
                 }
             }
-            @SuppressLint("UseSparseArrays") HashMap<Integer, ScoreHistory> res = new HashMap<>();
-            for (ScoreHistory hist : array){
-                int value = Utils.getValueOnSegment(hist.coverage);
-                if (res.containsKey(value)){
-                    res.get(value).photoCount += hist.photoCount;
-                    res.get(value).obdPhotoCount += hist.obdPhotoCount;
-                    res.get(value).detectedSigns += hist.detectedSigns;
-                } else {
-                    res.put(value, hist);
+            @SuppressLint("UseSparseArrays") HashMap<Integer, ScoreItem> res = new HashMap<>();
+            for (ScoreHistory hist : array) {
+                ScoreItem normal = new ScoreItem(Utils.getValueOnSegment(hist.coverage), hist.photoCount, false);
+                ScoreItem obd = new ScoreItem(Utils.getValueOnSegment(hist.coverage) * 2, hist.obdPhotoCount, true);
+                if (normal.photoCount > 0) {
+                    if (res.containsKey(normal.value)) {
+                        res.get(normal.value).photoCount += normal.photoCount;
+                        res.get(normal.value).detectedSigns += normal.detectedSigns;
+                    } else {
+                        res.put(normal.value, normal);
+                    }
+                }
+                if (obd.photoCount > 0) {
+                    if (res.containsKey(obd.value)) {
+                        res.get(obd.value).photoCount += obd.photoCount;
+                        res.get(obd.value).detectedSigns += obd.detectedSigns;
+                    } else {
+                        res.put(obd.value, obd);
+                    }
                 }
             }
-            mPointsDetails.setAdapter(new ScoreHistoryAdapter(new ArrayList<>(res.values()), activity));
-            String first;
+            ArrayList<ScoreItem> scores = new ArrayList<>(res.values());
+            Collections.sort(scores, new Comparator<ScoreItem>() {
+                @Override
+                public int compare(ScoreItem rhs, ScoreItem lhs) {
+                    return rhs.value - lhs.value;
+                }
+            });
             mPointsDetails.setLayoutManager(new LinearLayoutManager(activity));
-            if (mSequence.score > 10000){
-                first = mSequence.score / 1000 + "K\n";
+            mPointsDetails.setAdapter(new ScoreHistoryAdapter(scores, activity));
+            String first;
+            if (mSequence.getScore() > 10000) {
+                first = mSequence.getScore() / 1000 + "K\n";
             } else {
-                first = mSequence.score + "\n";
+                first = mSequence.getScore() + "\n";
             }
             String second = "pts";
             SpannableString styledString = new SpannableString(first + second);
@@ -183,7 +205,7 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
             styledString.setSpan(new StyleSpan(Typeface.NORMAL), first.length(), second.length() + first.length(), 0);
             styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
             styledString.setSpan(new AbsoluteSizeSpan(12, true), first.length(), second.length() + first.length(), 0);
-            mTotalPointsText.setText("Total Points: " + mSequence.score);
+            mTotalPointsText.setText("Total Points: " + mSequence.getScore());
             mPointsText.setText(styledString);
             mPointsText.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -192,20 +214,24 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                         mPlayer.pause();
                     }
                     mScoreVisible = true;
-                    mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth()-(mPointsText.getWidth()/2 + Utils.dpToPx(activity, 9))),(int) (mPointsText.getWidth()/2 + Utils.dpToPx(activity, 7))),500);
+                    float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+                    mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)), 500);
                 }
             });
             mScoreClose.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mScoreVisible = false;
-                    mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth()-(mPointsText.getWidth()/2 + Utils.dpToPx(activity, 9))),(int) (mPointsText.getWidth()/2 + Utils.dpToPx(activity, 7))),500);
+                    float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+                    mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)), 500);
                 }
             });
-//            mSequence.scoreHistories;todo
         } else {
             mPointsBackground.setVisibility(View.GONE);
             mPointsText.setVisibility(View.GONE);
+            mPointsBackground = null;
+            mPointsText = null;
+            mScoreLayout = null;
         }
 
         mPreviousButton.setOnClickListener(this);
@@ -215,7 +241,6 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
         mNextButton.setOnClickListener(this);
         mDeleteButton.setOnClickListener(this);
         mMaximizeButton.setOnClickListener(this);
-        mMaximized = false;
 
         if (activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
             mMaximizeButton.setVisibility(View.GONE);
@@ -226,40 +251,55 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
         } else {
             mDeleteButton.setVisibility(View.VISIBLE);
         }
-        if (!mOnline) {
-            ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
-            mSurfaceView.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-            mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
-            if (mPlayer != null) {
-                mPlayer.setSurface(mSurfaceView);
-            }
-            mFrameHolder.addView(mSurfaceView);
-        } else {
-            ScrollDisabledViewPager mPager = new ScrollDisabledViewPager(activity);
-
-            if (mPlayer != null) {
-                mPlayer.setSurface(mPager);
-            }
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-            int fiveDp = (int) Utils.dpToPx(activity, 5);
-            lp.bottomMargin = -fiveDp;
-            lp.topMargin = -fiveDp;
-            lp.leftMargin = -fiveDp;
-            lp.rightMargin = -fiveDp;
-            mPager.setLayoutParams(lp);
-            mFrameHolder.addView(mPager);
-        }
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        activity.enableProgressBar(true);
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-//        if (mPlayer != null && mPrepared){
-//            mPlayer.play();
-//        }
+        if (mPlayer != null) {
+            if (mPlayer.isPlaying()) {
+                onPlaying();
+            } else {
+                onPaused();
+            }
+        }
+        if (mFrameHolder != null) {
+            mFrameHolder.removeAllViews();
+            if (!mOnline) {
+                ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
+                mSurfaceView.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
+                mFrameHolder.addView(mSurfaceView);
+                if (mPlayer != null) {
+                    mPlayer.setSurface(mSurfaceView);
+                }
+            } else {
+                ScrollDisabledViewPager mPager = new ScrollDisabledViewPager(activity);
+
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+                int fiveDp = (int) Utils.dpToPx(activity, 5);
+                lp.bottomMargin = -fiveDp;
+                lp.topMargin = -fiveDp;
+                lp.leftMargin = -fiveDp;
+                lp.rightMargin = -fiveDp;
+                mPager.setLayoutParams(lp);
+                mFrameHolder.addView(mPager);
+                if (mPlayer != null) {
+                    mPlayer.setSurface(mPager);
+                }
+            }
+        }
         if (Fabric.isInitialized() && mPlayer != null) {
             Crashlytics.setString(Log.PLAYBACK, mPlayer.isSafe() ? "safe" : "local-mp4");
         }
@@ -273,7 +313,8 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     mPointsBackground.clearAnimation();
-                    mPointsBackground.animate().scaleXBy(-0.3f).scaleYBy(-0.3f).setDuration(500).setInterpolator(new BounceInterpolator()).setListener(new Animator.AnimatorListener() {
+                    mPointsBackground.animate().scaleXBy(-0.3f).scaleYBy(-0.3f).setDuration(500).setInterpolator(new BounceInterpolator()).setListener(new Animator
+                            .AnimatorListener() {
 
 
                         @Override
@@ -324,31 +365,30 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
 
     private SpannableString getSpannable(String first, String second) {
         SpannableString spannable = new SpannableString(first + second);
-        spannable.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default)), 0, first.length(), 0);
-        spannable.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.md_grey_600)), first.length(), second.length() + first.length(), 0);
+        spannable.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default_light)), 0, first.length(), 0);
+        spannable.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default_light_faded)), first.length(), second.length() + first.length(), 0);
         return spannable;
     }
 
-    public void setSource(PlaybackManager playbackManager) {
-        mPlayer = playbackManager;
-        mSequence = playbackManager.getSequence();
-        mOnline = playbackManager.isSafe();
+    @Override
+    public void setSource(Object extra) {
+        mPlayer = (PlaybackManager) extra;
+        mSequence = mPlayer.getSequence();
+        mOnline = mPlayer.isSafe();
+        hideDelete(mSequence instanceof NearbySequence);
     }
 
     @Override
     public void onDestroyView() {
-        if (mPlayer != null) {
-            mPlayer.destroy();
-        }
-        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.onDestroyView();
     }
 
     @Override
     public void onClick(View v) {
-        if (mScoreVisible){
+        if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
             mScoreVisible = false;
-            mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth()-(mPointsText.getWidth()/2 + Utils.dpToPx(activity, 9))),(int) (mPointsText.getWidth()/2 + Utils.dpToPx(activity, 7))),500);
+            mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + Utils.dpToPx(activity, 9))), (int) (mPointsText.getWidth() / 2 + Utils
+                    .dpToPx(activity, 7))), 500);
         }
         switch (v.getId()) {
             case R.id.previous_button:
@@ -386,7 +426,7 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                         mPlayer.pause();
                     }
                     final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
-                    if (mSequence.online) {
+                    if (mSequence.isOnline()) {
                         builder.setMessage(activity.getString(R.string.delete_online_track));
                     } else {
                         builder.setMessage(activity.getString(R.string.delete_local_track));
@@ -400,33 +440,58 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                             }).setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            if (mSequence.online) {
+                            if (mSequence.isOnline()) {
                                 deleteOnlineTrack();
                             } else {
-                                deleteLocalTrack();
+                                deleteLocalTrack((LocalSequence) mSequence);
                             }
                         }
                     }).create().show();
                 }
                 break;
             case R.id.maximize_button:
-                toggleMaximize();
+                if (mPrepared) {
+                    toggleMaximize();
+                }
                 break;
         }
     }
 
     private void toggleMaximize() {
+//        ViewCompat.setTransitionName(mPlayer.getSurface(), activity.getString(R.string.transition_name_fullscreen_preview));
+////        Bitmap bitmap = ((GlideBitmapDrawable)((ImageView)((ScrollDisabledViewPager)mPlayer.getSurface()).getChildAt(0)).getDrawable()).getBitmap();
+//        mPlayer.pause();
+//        activity.openScreen(ScreenComposer.SCREEN_PREVIEW_FULLSCREEN, mSequence);
+//        mFrameHolder.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (mPlayer != null) {
+//                    mPlayer.onSizeChanged();
+//                }
+//            }
+//        });
+
         if (mMaximized) {
             mMaximized = false;
             mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_maximize));
             mDeleteButton.setVisibility(View.VISIBLE);
-            mFrameHolder.setBackground(activity.getResources().getDrawable(R.drawable.custom_pattern_preview_background));
+            if (mPointsBackground != null) {
+                mPointsBackground.setVisibility(View.VISIBLE);
+            }
+            if (mPointsText != null) {
+                mPointsText.setVisibility(View.VISIBLE);
+            }
             EventBus.post(new FullscreenEvent(false));
         } else {
             mMaximized = true;
             mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_minimize));
             mDeleteButton.setVisibility(View.GONE);
-            mFrameHolder.setBackground(null);
+            if (mPointsBackground != null) {
+                mPointsBackground.setVisibility(View.GONE);
+            }
+            if (mPointsText != null) {
+                mPointsText.setVisibility(View.GONE);
+            }
             EventBus.post(new FullscreenEvent(true));
         }
         mFrameHolder.post(new Runnable() {
@@ -440,39 +505,36 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
     }
 
     public boolean isOnline() {
-        return mSequence != null && mSequence.online;
+        return mSequence != null && mSequence.isOnline();
     }
 
 
     private void deleteOnlineTrack() {
-        UploadManager uploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
         activity.enableProgressBar(true);
-        uploadManager.deleteSequence(mSequence.sequenceId, new RequestListener() {
+        activity.getUserDataManager().deleteSequence(mSequence.getId(), new NetworkResponseDataListener<ApiResponse>() {
             @Override
-            public void requestFinished(final int status) {
+            public void requestFailed(int status, ApiResponse details) {
+                activity.showSnackBar(R.string.something_wrong_try_again, Snackbar.LENGTH_SHORT);
+            }
+
+            @Override
+            public void requestFinished(int status, final ApiResponse details) {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         activity.enableProgressBar(false);
-                        if (status == STATUS_FAILED) {
-                            activity.showSnackBar(R.string.something_wrong_try_again, Snackbar.LENGTH_SHORT);
-                        } else {
-                            if (mScoreLayout != null && mScoreVisible) {
-                                mScoreVisible = false;
-                                mScoreLayout.reveal();
-                            }
-                            if (mMaximized && mDeleteButton != null && mMaximizeButton != null) {
-                                toggleMaximize();
-                            }
-                            activity.onBackPressed();
-                            EventBus.post(new SequencesChangedEvent(true));
-                            mHandler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
-                                }
-                            }, 250);
+                        if (mScoreLayout != null && mScoreVisible) {
+                            mScoreVisible = false;
+                            mScoreLayout.reveal();
                         }
+                        activity.onBackPressed();
+                        EventBus.post(new SequencesChangedEvent(true));
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
+                            }
+                        }, 250);
                     }
                 });
             }
@@ -480,13 +542,13 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void deleteLocalTrack() {
+    private void deleteLocalTrack(LocalSequence mSequence) {
         if (mSequence != null) {
-            final int sequenceId = mSequence.sequenceId;
+            final int sequenceId = mSequence.getId();
             activity.enableProgressBar(true);
-            Sequence.deleteSequence(mSequence.sequenceId);
-            if (mSequence.folder.exists()) {
-                mSequence.folder.delete();
+            LocalSequence.deleteSequence(mSequence.getId());
+            if (mSequence.getFolder().exists()) {
+                mSequence.getFolder().delete();
             }
             activity.enableProgressBar(false);
             mHandler.postDelayed(new Runnable() {
@@ -497,9 +559,6 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
                         if (mScoreLayout != null && mScoreVisible) {
                             mScoreVisible = false;
                             mScoreLayout.reveal();
-                        }
-                        if (mMaximized && mDeleteButton != null && mMaximizeButton != null) {
-                            toggleMaximize();
                         }
                         activity.onBackPressed();
                         EventBus.postSticky(new SequencesChangedEvent(false, sequenceId));
@@ -516,21 +575,21 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
     @Override
     public void onPlaying() {
         if (mPlayButton != null) {
-            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_pause_white));
+            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_pause));
         }
     }
 
     @Override
     public void onPaused() {
         if (mPlayButton != null) {
-            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_play_white));
+            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_play));
         }
     }
 
     @Override
     public void onStopped() {
         if (mPlayButton != null) {
-            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_play_white));
+            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_play));
         }
 
     }
@@ -540,38 +599,16 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
     public void onPrepared() {
         mPrepared = true;
         activity.enableProgressBar(false);
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (mCurrentImageText != null && mPlayer != null) {
-                    mCurrentImageText.setText(getSpannable("0", "/" + mPlayer.getLength() + " IMG"));
-                }
-                if (mImageDateText != null) {
-                    if (mSequence != null) {
-                        if (mSequence.title != null) {
-                            String date = "";
-                            try {
-                                date = Utils.niceDateFormat.format(Utils.numericDateFormat.parse(mSequence.title));
-                            } catch (Exception e) {
-                                Log.d(TAG, "onPrepared: " + e.getLocalizedMessage());
-                            }
-                            String[] parts = date.split("\\|");
-                            if (parts.length > 1) {
-                                mImageDateText.setText(getSpannable(parts[0], "|" + parts[1]));
-                            }
-                        }
-                    }
-                }
-            }
-        });
     }
 
     @Override
     public void onProgressChanged(int index) {
         if (mPlayer != null) {
-            if (mScoreVisible){
+            if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
                 mScoreVisible = false;
-                mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth()-(mPointsText.getWidth()/2 + Utils.dpToPx(activity, 9))),(int) (mPointsText.getWidth()/2 + Utils.dpToPx(activity, 7))),500);
+                float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+                mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 +
+                        tenDp)), 500);
             }
             if (mCurrentImageText != null) {
                 mCurrentImageText.setText(getSpannable("" + index, "/" + mPlayer.getLength() + " IMG"));
@@ -585,11 +622,23 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        activity = (OSVActivity) context;
+        if (mPlayer != null) {
+            mPlayer.addPlaybackListener(this);
+        }
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
     public void onDetach() {
         if (mPlayer != null) {
             mPlayer.stop();
             mPlayer.destroy();
+            mPlayer.removePlaybackListener(this);
         }
+        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.onDetach();
     }
 
@@ -604,14 +653,12 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
         }
     }
 
+    @Override
     public boolean onBackPressed() {
         activity.enableProgressBar(false);
         if (mScoreLayout != null && mScoreVisible && !fromNearby()) {
             mScoreVisible = false;
             mScoreLayout.reveal();
-            return true;
-        } else if (mMaximized && mDeleteButton != null && mMaximizeButton != null && activity != null) {
-            toggleMaximize();
             return true;
         } else {
             if (mPlayer != null) {
@@ -645,7 +692,17 @@ public class TrackPreviewFragment extends Fragment implements View.OnClickListen
         }
     }
 
-    public boolean fromNearby() {
-        return mSequence != null && mSequence.isPublic;
+    private boolean fromNearby() {
+        return mSequence instanceof NearbySequence;
+    }
+
+    @Override
+    public View getSharedElement() {
+        return mPlayer == null ? null : mPlayer.getSurface();
+    }
+
+    @Override
+    public String getSharedElementTransitionName() {
+        return activity == null ? "" : activity.getString(R.string.transition_name_fullscreen_preview);
     }
 }

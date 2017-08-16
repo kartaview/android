@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "000000000000",
+    "firebase_url": "https://openstreetcam-000000.firebaseio.com",
+    "project_id": "openstreetcam-000000",
+    "storage_bucket": "openstreetcam-000000.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "0:000000000000:android:0000000000000000",
+        "android_client_info": {
+          "package_name": "com.telenav.streetview"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "00000000000000000b000000000000000000000000000.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "00000000000000000b000000000000000000000000000.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "00000000000000000b000000000000000000000"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

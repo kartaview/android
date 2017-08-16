@@ -9,9 +9,9 @@ import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.utils.Log;
 
 /**
+ * service waiting for the app to be removed from the recent apps panel
  * Created by Kalman on 13/12/2016.
  */
-
 public class RecentClearedService extends Service {
 
     private static final String TAG = "RecentClearedService";
@@ -38,7 +38,7 @@ public class RecentClearedService extends Service {
         //Code here
         Recorder recorder = ((OSVApplication) getApplication()).getRecorder();
         if (recorder != null && recorder.isRecording()) {
-            recorder.stopSequence(true);
+            recorder.stopRecording(true);
             ((OSVApplication) getApplication()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_CRASHED, false);
             ((OSVApplication) getApplication()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_SHOW_CLEAR_RECENTS_WARNING, true);
         }

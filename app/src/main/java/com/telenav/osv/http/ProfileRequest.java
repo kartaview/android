@@ -1,13 +1,12 @@
 package com.telenav.osv.http;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.toolbox.StringRequest;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by adrianbostan on 22/07/16.
@@ -17,12 +16,12 @@ public class ProfileRequest extends StringRequest {
 
     private static final String PARAM_USER_NAME = "username";
 
-    private final Response.Listener<String> mListener;
+    private final GenericResponseListener mListener;
 
     private final String mName;
 
-    public ProfileRequest(String url, Response.ErrorListener errorListener, Response.Listener<String> listener, String name) {
-        super(Request.Method.POST, url, listener, errorListener);
+    public ProfileRequest(String url, GenericResponseListener listener, String name) {
+        super(Request.Method.POST, url, listener, listener);
         mName = name;
         mListener = listener;
     }

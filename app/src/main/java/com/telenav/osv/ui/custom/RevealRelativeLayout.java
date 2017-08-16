@@ -20,11 +20,13 @@ import com.telenav.osv.R;
 import com.telenav.osv.utils.Log;
 
 /**
- *
+ * relative layout with reveal animation
  * Created by Dmitri on 22/05/2015.
  */
 public class RevealRelativeLayout extends RelativeLayout {
-    public static final int STATE_REVEALED = 0, STATE_HIDDEN = 1;
+    private static final int STATE_REVEALED = 0;
+
+    private static final int STATE_HIDDEN = 1;
 
     private static final int DEFAULT_COLOR = Color.WHITE;
 

@@ -6,12 +6,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.item.UserData;
+import com.telenav.osv.item.LeaderboardData;
+import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
 /**
@@ -27,7 +30,9 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private static final int TYPE_ITEM_NO_INTERNET = 2;
 
-    private List<UserData> mUserList;
+    private static final String TAG = "LeaderboardAdapter";
+
+    private List<LeaderboardData> mUserList;
 
     private MainActivity activity;
 
@@ -35,7 +40,9 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private int mUserPosition;
 
-    public LeaderboardAdapter(List<UserData> results, MainActivity activity) {
+    private int lastPosition = 0;
+
+    public LeaderboardAdapter(List<LeaderboardData> results, MainActivity activity) {
         mUserList = results;
         this.activity = activity;
         mInternetAvailable = Utils.isInternetAvailable(this.activity);
@@ -47,7 +54,6 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         if (viewType == TYPE_HEADER) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.partial_leaderboard_header, parent, false);
             return new LeaderboardAdapter.HeaderViewHolder(v);
@@ -55,32 +61,31 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             FrameLayout layoutView = (FrameLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.item_leaderboard, null);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutView.setLayoutParams(params);
-            LeaderboardAdapter.UserHolder userHolder = new LeaderboardAdapter.UserHolder(layoutView);
-            return userHolder;
+            return new UserHolder(layoutView);
 
         } else if (viewType == TYPE_ITEM_NO_INTERNET) {
             FrameLayout layoutView = (FrameLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.item_leaderboard_no_internet, null);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutView.setLayoutParams(params);
-            LeaderboardAdapter.MessageCardHolder messageCardHolder = new LeaderboardAdapter.MessageCardHolder(layoutView);
-            return messageCardHolder;
+            Log.d(TAG, "onCreateViewHolder: No internet card created.");
+            return new MessageCardHolder(layoutView);
         }
         return null;
 
     }
 
+
+
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         try {
-            if (holder instanceof LeaderboardAdapter.HeaderViewHolder) {
-                LeaderboardAdapter.HeaderViewHolder headerHolder = (LeaderboardAdapter.HeaderViewHolder) holder;
-            } else if (holder instanceof LeaderboardAdapter.UserHolder) {
+            if (holder instanceof LeaderboardAdapter.UserHolder) {
                 LeaderboardAdapter.UserHolder userHolder = (LeaderboardAdapter.UserHolder) holder;
-                final UserData userData = mUserList.get(Math.min(position - 1, mUserList.size() - 1));
-                userHolder.nameText.setText(userData.getName());
-                userHolder.rankText.setText("" + userData.getRank());
-                userHolder.pointsText.setText(Utils.formatNumber(userData.getPoints()));
-                if (mUserPosition == position){
+                final LeaderboardData leaderboardData = mUserList.get(Math.min(position - 1, mUserList.size() - 1));
+                userHolder.nameText.setText(leaderboardData.getName());
+                userHolder.rankText.setText("" + leaderboardData.getRank());
+                userHolder.pointsText.setText(Utils.formatNumber(leaderboardData.getPoints()));
+                if (mUserPosition == position) {
                     userHolder.itemView.setBackgroundColor(activity.getResources().getColor(R.color.leaderboard_green));
                     userHolder.nameText.setTextColor(Color.WHITE);
                     userHolder.rankText.setTextColor(Color.WHITE);
@@ -92,14 +97,13 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     userHolder.rankText.setTextColor(clr);
                     userHolder.pointsText.setTextColor(clr);
                 }
-            } else if (holder instanceof LeaderboardAdapter.MessageCardHolder) {
-                LeaderboardAdapter.MessageCardHolder messageCardHolder = (LeaderboardAdapter.MessageCardHolder) holder;
-
             }
             holder.itemView.setBackgroundColor(activity.getResources().getColor(position % 2 == 0 ? R.color.leaderboard_grey : R.color.white));
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        setAnimation(holder.itemView, position);
     }
 
     private boolean isPositionHeader(int position) {
@@ -111,7 +115,7 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (mInternetAvailable) {
             return mUserList.size() + 1;
         } else {
-            return mUserList.size() + 2;
+            return 2;
         }
     }
 
@@ -127,13 +131,36 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
+    @Override
+    public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
+        ((ViewHolder) holder).clearAnimation();
+    }
+
     public void setUserPosition(int userPosition) {
         this.mUserPosition = userPosition;
         this.notifyItemChanged(mUserPosition);
     }
 
+    /**
+     * method for the item animation
+     */
+    private void setAnimation(View viewToAnimate, int position) {
+        if (position != 0) {
+            int last = lastPosition;
+            lastPosition = position;
+            if (Math.abs(last - position)>1){
+                return;
+            }
+            Animation animation = AnimationUtils.loadAnimation(activity, (position >= last) ? R.anim.item_slide_up : R.anim.item_slide_down);
+            viewToAnimate.startAnimation(animation);
+        }
+    }
 
-    private static class UserHolder extends RecyclerView.ViewHolder {
+    public void resetLastAnimatedItem() {
+        lastPosition = 0;
+    }
+
+    private class UserHolder extends ViewHolder {
 
         private final TextView rankText;
 
@@ -143,13 +170,13 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         UserHolder(View v) {
             super(v);
-            rankText = (TextView) v.findViewById(R.id.rank_text);
-            nameText = (TextView) v.findViewById(R.id.name_text);
-            pointsText = (TextView) v.findViewById(R.id.points_text);
+            rankText = v.findViewById(R.id.rank_text);
+            nameText = v.findViewById(R.id.name_text);
+            pointsText = v.findViewById(R.id.points_text);
         }
     }
 
-    private static class MessageCardHolder extends RecyclerView.ViewHolder {
+    private class MessageCardHolder extends ViewHolder {
         View container;
 
         MessageCardHolder(View v) {
@@ -158,10 +185,21 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    private class HeaderViewHolder extends RecyclerView.ViewHolder {
+    private class HeaderViewHolder extends ViewHolder {
 
         HeaderViewHolder(View itemView) {
             super(itemView);
+        }
+    }
+
+    private abstract class ViewHolder extends RecyclerView.ViewHolder {
+
+        ViewHolder(View itemView) {
+            super(itemView);
+        }
+
+        void clearAnimation() {
+            itemView.clearAnimation();
         }
     }
 }

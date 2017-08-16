@@ -8,13 +8,8 @@ import com.telenav.osv.event.OSVStickyEvent;
 public class CoverageEvent extends OSVStickyEvent {
     public final boolean available;
 
-    public CoverageEvent(boolean missing) {
-        this.available = missing;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof CoverageEvent;
+    public CoverageEvent(boolean available) {
+        this.available = available;
     }
 
     @Override

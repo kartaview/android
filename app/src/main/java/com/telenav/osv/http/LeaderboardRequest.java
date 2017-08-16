@@ -1,15 +1,11 @@
 package com.telenav.osv.http;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import com.android.volley.AuthFailureError;
-import com.android.volley.Response;
 import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 22/11/2016.
@@ -27,8 +23,8 @@ public class LeaderboardRequest extends StringRequest {
 
     private final String stateCode;
 
-    public LeaderboardRequest(String url, Response.ErrorListener errorListener, Response.Listener<String> listener, String date, String countryCode, String stateCode) {
-        super(Method.POST, url, listener, errorListener);
+    public LeaderboardRequest(String url, GenericResponseListener listener, String date, String countryCode, String stateCode) {
+        super(Method.POST, url, listener, listener);
         this.date = date;
         this.countryCode = countryCode;
         this.stateCode = stateCode;

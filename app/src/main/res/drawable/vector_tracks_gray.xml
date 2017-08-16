@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:viewportHeight="24"
+    android:viewportWidth="24">
 
     <group
             android:name="Icons"
@@ -17,7 +18,6 @@
                 android:name="Shape"
                 android:fillColor="#B7BAC5"
                 android:fillType="evenOdd"
-                android:strokeWidth="1"
                 android:pathData="M4.59,6.89 C5.29,6.18 5.99,5.54 6.3,5.67 C6.8,5.87 6.3,6.7 6,7.19 C5.75,7.61
 3.14,11.08 3.14,13.5 C3.14,14.78 3.62,15.84 4.48,16.48 C5.23,17.04 6.22,17.21
 7.12,16.94 C8.19,16.63 9.07,15.54 10.18,14.17 C11.39,12.68 13.01,10.73
@@ -29,7 +29,10 @@ C12.25,8.18 10.32,10.09 9.56,11.02 C8.98,11.75 7.5,13.5 7.27,13.74 C7.02,14.04
 7.65,9.14 C8.43,8 8.95,7.22 8.95,5.86 C8.95,3.69 7.31,3 6.44,3 C5.12,3 3.97,4
 3.72,4.25 C3.36,4.61 3.06,4.91 2.84,5.18 L4.59,6.89 L4.59,6.89 Z M13.88,18.55
 C13.57,18.55 13.14,18.29 13.14,17.83 C13.14,17.23 13.87,15.63 16.01,15.07
-C15.71,17.76 14.58,18.55 13.88,18.55 L13.88,18.55 Z" />
+C15.71,17.76 14.58,18.55 13.88,18.55 L13.88,18.55 Z"
+                android:strokeWidth="1"
+                tools:ignore="InvalidVectorPath"
+                tools:targetApi="n" />
         </group>
     </group>
 </vector>

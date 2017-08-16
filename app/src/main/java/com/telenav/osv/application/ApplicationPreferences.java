@@ -1,5 +1,6 @@
 package com.telenav.osv.application;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -14,7 +15,7 @@ public class ApplicationPreferences {
     /**
      * preference name
      */
-    public static final String PREFS_NAME = "osvAppPrefs";
+    private static final String PREFS_NAME = "osvAppPrefs";
 
     /**
      * used for modifying values in a SharedPreferences prefs
@@ -26,6 +27,7 @@ public class ApplicationPreferences {
      */
     private SharedPreferences prefs;
 
+    @SuppressLint("CommitPrefEdits")
     public ApplicationPreferences(Context context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefsEditor = prefs.edit();
@@ -33,6 +35,10 @@ public class ApplicationPreferences {
 
     public int getIntPreference(String key) {
         return prefs.getInt(key, 0);
+    }
+
+    public int getIntPreference(String key, int def) {
+        return prefs.getInt(key, def);
     }
 
     public String getStringPreference(String key) {
@@ -73,6 +79,15 @@ public class ApplicationPreferences {
     public void saveFloatPreference(String key, float value) {
         prefsEditor.putFloat(key, value);
         prefsEditor.commit();
+    }
+
+    public void saveFloatPreference(String key, float value, boolean later) {
+        prefsEditor.putFloat(key, value);
+        if (later) {
+            prefsEditor.apply();
+        } else {
+            prefsEditor.commit();
+        }
     }
 
     public void saveIntPreference(String key, int value) {

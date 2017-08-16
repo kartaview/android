@@ -4,7 +4,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
-import com.telenav.osv.utils.Log;
 
 /**
  * an animation for resizing the view.
@@ -41,7 +40,7 @@ public class ResizeMoveAnimation extends Animation {
     private View mView;
 
     public ResizeMoveAnimation(View v, float fromWidth, float fromHeight, float toWidth, float toHeight
-            ,float fromPaddingTop, float fromPaddingLeft, float fromPaddingBottom, float fromPaddingRight
+            , float fromPaddingTop, float fromPaddingLeft, float fromPaddingBottom, float fromPaddingRight
             , float toPaddingTop, float toPaddingLeft, float toPaddingBottom, float toPaddingRight) {
         mToHeight = toHeight;
         mToWidth = toWidth;

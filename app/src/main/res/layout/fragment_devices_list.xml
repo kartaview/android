@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fragment_devices_list_root"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="500dp"
     android:layout_gravity="center"
+    android:background="@color/white"
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:minHeight="400dp"
@@ -26,39 +27,22 @@
             android:text="@string/ble_devices"
             android:textSize="25sp"
             android:textStyle="bold" />
+
         <ImageView
             android:id="@+id/refresh_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_refresh_black_48dp"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true" />
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_refresh_black_48dp"
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/devices_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp" />
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/new_devices_fragment_title"
-        style="@style/textStyle.Light"
-        android:layout_width="wrap_content"
-        android:layout_height="56dp"
-        android:layout_marginBottom="3dp"
-        android:layout_marginTop="3dp"
-        android:gravity="center|start"
-        android:text="@string/bt_new_devices_label"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        android:visibility="gone"/>
-
-    <ListView
-        android:id="@+id/new_devices_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:visibility="gone"/>
+    </android.support.v7.widget.RecyclerView>
 </LinearLayout>

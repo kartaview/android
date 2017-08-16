@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 /**
+ * frame layout with fixed physical position on children (for orientation change)
  * Created by Kalman on 26/10/16.
  */
 
@@ -23,14 +24,14 @@ public class FixedFrameLayout extends FrameLayout {
         super(context, attrs, defStyleAttr);
     }
 
-    public void refreshChildren(boolean portrait){
-        for (int i = 0; i < getChildCount(); i++){
+    public void refreshChildren(boolean portrait) {
+        for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            if (child != null){
+            if (child != null) {
                 if (child.getTag() instanceof String) {
                     String tag = (String) child.getTag();
                     LayoutParams lp = (LayoutParams) child.getLayoutParams();
-                    switch (tag){
+                    switch (tag) {
                         case "top|start":
                             lp.gravity = portrait ? (Gravity.TOP | Gravity.START) : (Gravity.BOTTOM | Gravity.START);
                             break;

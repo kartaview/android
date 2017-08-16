@@ -1,6 +1,6 @@
 package com.telenav.osv.ui.list;
 
-import java.util.List;
+import java.util.ArrayList;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,36 +9,32 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.telenav.osv.R;
-import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.item.ScoreHistory;
-import com.telenav.osv.item.UserData;
-import com.telenav.osv.utils.Utils;
+import com.telenav.osv.item.ScoreItem;
 
 /**
- *
+ * adapter for the score list on track preview
  * Created by Kalman on 30/12/2016.
  */
-
 public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_HEADER = 0;
 
     private static final int TYPE_ITEM = 1;
 
-    private List<ScoreHistory> mScoreHistory;
+    private ArrayList<ScoreItem> mScoreHistory;
 
     private OSVActivity activity;
 
-    public ScoreHistoryAdapter(List<ScoreHistory> results, OSVActivity activity) {
+    public ScoreHistoryAdapter(ArrayList<ScoreItem> results, OSVActivity activity) {
         mScoreHistory = results;
         this.activity = activity;
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == TYPE_HEADER){
-            FrameLayout layoutView = (FrameLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.header_score_history, null);
+        if (viewType == TYPE_HEADER) {
+            FrameLayout layoutView = (FrameLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.partial_score_history_header, null);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutView.setLayoutParams(params);
             HeaderHolder pointsHolder = new HeaderHolder(layoutView);
@@ -57,10 +53,10 @@ public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         try {
             if (holder instanceof PointsHolder) {
                 PointsHolder pointsHolder = (PointsHolder) holder;
-                final ScoreHistory score = mScoreHistory.get(Math.min(position - 1, mScoreHistory.size() - 1));
-                pointsHolder.multiplierText.setText("" + Utils.getValueOnSegment(score.coverage));
-                pointsHolder.distanceText.setText("" + (score.photoCount + score.obdPhotoCount));
-                pointsHolder.pointsText.setText("" + (Utils.getValueOnSegment(score.coverage) * (score.photoCount + score.obdPhotoCount)));
+                final ScoreItem score = mScoreHistory.get(Math.min(position - 1, mScoreHistory.size() - 1));
+                pointsHolder.multiplierText.setText("" + score.value);
+                pointsHolder.distanceText.setText("" + (score.photoCount));
+                pointsHolder.pointsText.setText("" + (score.value * (score.photoCount)));
 
                 int clr = activity.getResources().getColor(R.color.white);
                 pointsHolder.multiplierText.setTextColor(clr);
@@ -101,9 +97,9 @@ public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         PointsHolder(View v) {
             super(v);
-            distanceText = (TextView) v.findViewById(R.id.distance);
-            multiplierText = (TextView) v.findViewById(R.id.multiplier);
-            pointsText = (TextView) v.findViewById(R.id.points);
+            distanceText = v.findViewById(R.id.distance);
+            multiplierText = v.findViewById(R.id.multiplier);
+            pointsText = v.findViewById(R.id.points);
         }
     }
 

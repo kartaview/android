@@ -10,13 +10,8 @@ public class ObdCommand extends OSVStickyEvent {
 
     public final boolean start;
 
-    public ObdCommand(boolean start){
+    public ObdCommand(boolean start) {
         this.start = start;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof ObdCommand;
     }
 
     @Override

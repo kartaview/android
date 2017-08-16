@@ -2,15 +2,11 @@ package com.telenav.osv.activity;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import android.Manifest;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBar;
@@ -24,9 +20,9 @@ import android.widget.ProgressBar;
 import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.event.EventBus;
-import com.telenav.osv.event.hardware.ContactsPermissionEvent;
 import com.telenav.osv.event.network.LoginChangedEvent;
 import com.telenav.osv.manager.network.LoginManager;
+import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
 /**
@@ -34,9 +30,7 @@ import com.telenav.osv.utils.Utils;
  * Created by Kalman on 01/03/2017.
  */
 public class LoginActivity extends OSVActivity {
-    public final static String TAG = "LoginActivity";
-
-    private Handler mHandler = new Handler(Looper.getMainLooper());
+    private final static String TAG = "LoginActivity";
 
     private ProgressBar progressBar;
 
@@ -51,12 +45,12 @@ public class LoginActivity extends OSVActivity {
         super.onCreate(savedInstanceState);
         appPrefs = getApp().getAppPrefs();
         setContentView(R.layout.activity_login);
-        progressBar = (ProgressBar) findViewById(R.id.progressbar);
+        progressBar = findViewById(R.id.progressbar);
         //noinspection deprecation
-        mLogo = (ImageView) findViewById(R.id.osc_logo_view);
-        mButtonsHolder = (LinearLayout) findViewById(R.id.login_buttons_holder);
-        AppCompatButton facebookButton = (AppCompatButton) findViewById(R.id.facebook_login_button);
-        AppCompatButton googleButton = (AppCompatButton) findViewById(R.id.google_login_button);
+        mLogo = findViewById(R.id.osc_logo_view);
+        mButtonsHolder = findViewById(R.id.login_buttons_holder);
+        AppCompatButton facebookButton = findViewById(R.id.facebook_login_button);
+        AppCompatButton googleButton = findViewById(R.id.google_login_button);
 
         Drawable face = ResourcesCompat.getDrawable(getResources(), R.drawable.vector_facebook, null);
         Drawable goo = ResourcesCompat.getDrawable(getResources(), R.drawable.vector_google, null);
@@ -64,7 +58,7 @@ public class LoginActivity extends OSVActivity {
         googleButton.setCompoundDrawablesWithIntrinsicBounds(goo, null, null, null);
 
         progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        Toolbar toolbar = findViewById(R.id.app_toolbar);
         View.OnClickListener mMenuListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,7 +72,6 @@ public class LoginActivity extends OSVActivity {
             Drawable upArrow = ResourcesCompat.getDrawable(getResources(), R.drawable.vector_back_black, null);
             mActionBar.setDisplayHomeAsUpEnabled(true);
             mActionBar.setHomeAsUpIndicator(upArrow);
-            mActionBar.setTitle("Login");
         }
         toolbar.setNavigationOnClickListener(mMenuListener);
         mLoginManager = getApp().getLoginManager();
@@ -126,41 +119,12 @@ public class LoginActivity extends OSVActivity {
         }
     }
 
-    @Override
-    public void cancelNearby() {
-
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onLoginChanged(LoginChangedEvent event) {
+        Log.d(TAG, "onLoginChanged: logged=" + event.logged);
+        enableProgressBar(false);
         if (event.logged) {
             finish();
-        }
-    }
-
-    @Subscribe(sticky = true)
-    public void onContactsPermissionNeeded(ContactsPermissionEvent event) {
-        EventBus.clear(ContactsPermissionEvent.class);
-        checkPermissionsForAccounts(event.loginType);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(final int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        int i = 0;
-        for (String perm : permissions) {
-            if (perm.equals(Manifest.permission.GET_ACCOUNTS)) {
-                if (grantResults.length > i && grantResults[i] >= 0) {
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            mLoginManager.login(LoginActivity.this, LoginManager.LOGIN_TYPE_GOOGLE);
-                        }
-                    }, 500);
-                    return;
-                }
-            }
-            i++;
         }
     }
 
@@ -195,6 +159,11 @@ public class LoginActivity extends OSVActivity {
     }
 
     @Override
+    public void hideSnackBar() {
+
+    }
+
+    @Override
     public void showSnackBar(int tip_map_screen, int lengthLong, int got_it_label, Runnable runnable) {
 
     }
@@ -219,6 +188,11 @@ public class LoginActivity extends OSVActivity {
     @Override
     public void openScreen(int screenNearby, Object extra) {
 
+    }
+
+    @Override
+    public boolean hasPosition() {
+        return false;
     }
 
     @Override

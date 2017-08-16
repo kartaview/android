@@ -11,3 +11,10 @@ android {
         versionName "1.0"
     }
 }
+ext {
+    PUBLISH_GROUP_ID = 'com.facebook.network.connectionclass'
+    PUBLISH_ARTIFACT_ID = 'connectivity-osc'
+    PUBLISH_VERSION = '1.0.0'
+}
+
+apply from: 'buildRelease.gradle'

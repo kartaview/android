@@ -3,15 +3,15 @@ package com.telenav.osv.event.hardware.gps;
 import com.telenav.osv.event.OSVStickyEvent;
 
 /**
+ * Event for the speed category change
  * Created by Kalman on 14/11/2016.
  */
-
 public class SpeedCategoryEvent extends OSVStickyEvent {
     public final SpeedCategory category;
 
     public final float speed;
 
-    public SpeedCategoryEvent(float speed, SpeedCategory category){
+    public SpeedCategoryEvent(float speed, SpeedCategory category) {
         this.speed = speed;
         this.category = category;
     }

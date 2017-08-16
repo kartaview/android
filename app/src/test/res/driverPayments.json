@@ -1,0 +1,40 @@
+{
+  "status": {
+    "apiCode": "600",
+    "apiMessage": " The request has been processed without incidents ",
+    "httpCode": 200,
+    "httpMessage": "Success"
+  },
+  "osv": {
+    "page": "1",
+    "ipp": "30",
+    "totalFilteredItems": 4,
+    "currency": "USD",
+    "list": [
+      {
+        "index": 4,
+        "date": "25 Jul 17",
+        "distance": "2005.31",
+        "value": "160.42"
+      },
+      {
+        "index": 3,
+        "date": "25 Jul 17",
+        "distance": "1562.45",
+        "value": "125.00"
+      },
+      {
+        "index": 2,
+        "date": "18 Jul 17",
+        "distance": "2005.31",
+        "value": "160.42"
+      },
+      {
+        "index": 1,
+        "date": "11 Jul 17",
+        "distance": "2005.31",
+        "value": "160.42"
+      }
+    ]
+  }
+}

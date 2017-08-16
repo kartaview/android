@@ -1,7 +1,5 @@
 package com.telenav.osv.manager.network;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -9,35 +7,25 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Process;
 import android.widget.Toast;
 import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.ExecutorDelivery;
-import com.android.volley.Network;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.TimeoutError;
-import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.BasicNetwork;
-import com.android.volley.toolbox.DiskBasedCache;
-import com.android.volley.toolbox.HttpStack;
-import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.StringRequest;
 import com.crashlytics.android.Crashlytics;
 import com.facebook.network.connectionclass.ConnectionClassManager;
 import com.facebook.network.connectionclass.DeviceBandwidthSampler;
-import com.skobbler.ngx.SKCoordinate;
-import com.telenav.osv.R;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
@@ -45,34 +33,24 @@ import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.network.LoginChangedEvent;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
-import com.telenav.osv.http.AuthRequest;
-import com.telenav.osv.http.DeleteSequenceRequest;
-import com.telenav.osv.http.LeaderboardRequest;
-import com.telenav.osv.http.LeaderboardRequestFilter;
-import com.telenav.osv.http.ListPhotosRequest;
-import com.telenav.osv.http.ListRequestFilter;
-import com.telenav.osv.http.ListSequencesRequest;
-import com.telenav.osv.http.ListTracksRequest;
-import com.telenav.osv.http.NearbyRequest;
-import com.telenav.osv.http.NearbyRequestFilter;
 import com.telenav.osv.http.PhotoRequest;
-import com.telenav.osv.http.ProfileRequest;
 import com.telenav.osv.http.ProgressiveEntity;
-import com.telenav.osv.http.RequestListener;
-import com.telenav.osv.http.RequestResponseListener;
 import com.telenav.osv.http.SequenceFinishedRequest;
 import com.telenav.osv.http.SequenceRequest;
-import com.telenav.osv.http.SequenceRequestFilter;
-import com.telenav.osv.http.UploadRequestFilter;
-import com.telenav.osv.http.VersionRequest;
 import com.telenav.osv.http.VideoRequest;
-import com.telenav.osv.item.ImageCoordinate;
+import com.telenav.osv.http.requestFilters.SequenceRequestFilter;
+import com.telenav.osv.http.requestFilters.UploadRequestFilter;
+import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.OSVFile;
-import com.telenav.osv.item.Polyline;
-import com.telenav.osv.item.Sequence;
-import com.telenav.osv.listener.LoadAllSequencesListener;
+import com.telenav.osv.item.network.ApiResponse;
+import com.telenav.osv.item.network.SequenceData;
 import com.telenav.osv.listener.UploadProgressListener;
-import com.telenav.osv.utils.ComputingDistance;
+import com.telenav.osv.listener.network.NetworkResponseDataListener;
+import com.telenav.osv.listener.network.OsvRequestResponseListener;
+import com.telenav.osv.manager.network.encoder.ScoreJsonEncoder;
+import com.telenav.osv.manager.network.parser.HttpResponseParser;
+import com.telenav.osv.manager.network.parser.SequenceDataParser;
+import com.telenav.osv.service.UploadJobService;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
 import com.telenav.osv.utils.Utils;
@@ -83,16 +61,10 @@ import io.fabric.sdk.android.Fabric;
  * Created by Kalman on 10/6/2015.
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
-public class UploadManager implements Response.ErrorListener {
+public class UploadManager extends NetworkManager implements NetworkResponseDataListener<ApiResponse> {
 
-    /**
-     * test environment or production,
-     * if production, should be empty
-     */
-    public static final String[] URL_ENV = {"openstreetview.com/", "staging.openstreetview.com/", "testing.openstreetview.com/", "beta.openstreetcam.org/"};
 
     public static final int STATUS_IDLE = 0;
-//    public static final String URL_VER = "";
 
     public static final int STATUS_PAUSED = 3;
 
@@ -100,91 +72,18 @@ public class UploadManager implements Response.ErrorListener {
 
     private static final int STATUS_UPLOADING = 2;
 
-    /**
-     * version number, when it will be added to backend
-     */
-    private static final String URL_VER = "1.0/";
-
-
     private static final String TAG = "UploadManager";
 
-    private static final int API_ERROR_SEQUENCE_ID_OUT_OF_BOUNDS = 612;
-
-    private static final int TRACKS_IPP = 100000;
-
-    private static final int UPLOAD_REQUEST_TIMEOUT = 30000;
-
-    /**
-     * download photo file reques url
-     */
-    public static String URL_DOWNLOAD_PHOTO = "http://" + "&&";
-
     public static int sUploadStatus = STATUS_IDLE;
-
-    static String URL_AUTH_OSM = "http://" + "&&" + "auth/openstreetmap/client_auth";
-
-    static String URL_AUTH_GOOGLE = "http://" + "&&" + "auth/google/client_auth";
-
-    static String URL_AUTH_FACEBOOK = "http://" + "&&" + "auth/facebook/client_auth";
 
     /**
      * create sequence request url
      */
     private static String URL_SEQUENCE = "http://" + "&&" + URL_VER + "sequence/";
 
-    /**
-     * delete sequence request url
-     */
-    private static String URL_DELETE_SEQUENCE = "http://" + "&&" + URL_VER + "sequence/remove/";
-
     private static String URL_VIDEO = "http://" + "&&" + URL_VER + "video/";
 
     private static String URL_PHOTO = "http://" + "&&" + URL_VER + "photo/";
-
-    /**
-     * delete photo request url
-     */
-    private static String URL_DELETE_PHOTO = "http://" + "&&" + URL_VER + "photo/remove/";
-
-    /**
-     * list ALL sequences request url
-     */
-    private static String URL_LIST_SEQUENCES = "http://" + "&&" + URL_VER + "list/";
-
-    /**
-     * list ALL sequences request url
-     */
-    private static String URL_LIST_TRACKS = "http://" + "&&" + URL_VER + "tracks/";
-
-    /**
-     * list ALL sequences request url
-     */
-    private static String URL_NEARBY_TRACKS = "http://" + "&&" + "nearby-tracks";
-
-    /**
-     * list ALL sequences request url
-     */
-    private static String URL_VERSION = "http://" + "&&" + "version";
-
-    /**
-     * list ALL sequences request url
-     */
-    private static String URL_LIST_MY_SEQUENCES = "http://" + "&&" + URL_VER + "list/my-list/";
-
-    /**
-     * list photos from a specific sequence url
-     */
-    private static String URL_LIST_PHOTOS = "http://" + "&&" + URL_VER + "sequence/photo-list/";
-
-    /**
-     * list details of my profile from a specific url
-     */
-    private static String URL_PROFILE_DETAILS = "http://" + "&&" + URL_VER + "user/details/";
-
-    /**
-     * list details of my profile from a specific url
-     */
-    private static String URL_LEADERBOARD = "http://" + "&&" + "gm-leaderboard";
 
     /**
      * finish a sequence upload and mark for processing
@@ -193,28 +92,12 @@ public class UploadManager implements Response.ErrorListener {
 
     private final ConcurrentLinkedQueue<SequenceRequest> mCreateQueue = new ConcurrentLinkedQueue<>();
 
-    /**
-     * context used for operations, should use application context
-     */
-    private final Context mContext;
-
-    /**
-     * request queue for operations
-     * adding a request here will be automatically run in the next available time
-     */
-    private final RequestQueue mQueue;
 
     /**
      * request queue for operations
      * adding a request here will be automatically run in the next available time
      */
     private final RequestQueue mSequenceQueue;
-
-    private final ApplicationPreferences appPrefs;
-
-    private final RequestQueue mListQueue;
-
-    public int mCurrentServer = 0;
 
     /**
      * filter used for filtering only image upload requests
@@ -226,66 +109,69 @@ public class UploadManager implements Response.ErrorListener {
      */
     private VideoUploaderQueue videoUploaderQueue;
 
-    private Handler mBackgroundHandler;
-
-    private HandlerThread mHandlerThread;
-    private HandlerThread mQueueThread;
-
-    private Handler mTracksHandler;
-
-    private String mAccessToken;
-
     private Handler mPartialResponseHandler;
 
     private WifiManager.WifiLock mWifiLock;
 
+    private Handler mBackgroundHandler;
+
+    private HandlerThread mHandlerThread;
+
+    private SequenceDataParser mSequenceDataParser = new SequenceDataParser();
+
+    private HttpResponseParser mHttpResponseParser = new HttpResponseParser();
+
+
     public UploadManager(Context context) {
-        this.mContext = context;
-        mQueueThread = new HandlerThread("QueueThread", Thread.NORM_PRIORITY);
-        mQueueThread.start();
-        mHandlerThread = new HandlerThread("BackgroundUpload", Thread.NORM_PRIORITY);
+        super(context);
+        HandlerThread handlerThread2 = new HandlerThread("PartialResponse", Process.THREAD_PRIORITY_BACKGROUND);
+        handlerThread2.start();
+        mHandlerThread = new HandlerThread("BackgroundUpload", Process.THREAD_PRIORITY_BACKGROUND);
         mHandlerThread.start();
         mBackgroundHandler = new Handler(mHandlerThread.getLooper());
-        HandlerThread handlerThread = new HandlerThread("Tracks", Thread.NORM_PRIORITY);
-        handlerThread.start();
-        mTracksHandler = new Handler(handlerThread.getLooper());
-        HandlerThread handlerThread2 = new HandlerThread("PartialResponse", Thread.NORM_PRIORITY);
-        handlerThread2.start();
+
         mPartialResponseHandler = new Handler(handlerThread2.getLooper());
-        this.mQueue = newRequestQueue(mContext, 4);
-        this.mListQueue = newRequestQueue(mContext, 4);
         this.mSequenceQueue = newRequestQueue(mContext, 1);
         mSequenceQueue.stop();
         this.videoUploaderQueue = new VideoUploaderQueue(mContext);
-        appPrefs = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs();
-        mCurrentServer = appPrefs.getIntPreference(PreferenceTypes.K_DEBUG_SERVER_TYPE);
         setEnvironment();
         EventBus.register(this);
         VolleyLog.DEBUG = Utils.isDebugEnabled(mContext);
     }
 
-    private void setEnvironment() {
-        if (!Utils.isDebugBuild(mContext) && !appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED)) {
-            mCurrentServer = 0;
+    public static void cancelAutoUpload(Context context) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            jobScheduler.cancel(UploadJobService.UPLOAD_JOB_ID);
         }
-        URL_DELETE_PHOTO = URL_DELETE_PHOTO.replace("&&", URL_ENV[mCurrentServer]);
-        URL_DELETE_SEQUENCE = URL_DELETE_SEQUENCE.replace("&&", URL_ENV[mCurrentServer]);
-        URL_LIST_MY_SEQUENCES = URL_LIST_MY_SEQUENCES.replace("&&", URL_ENV[mCurrentServer]);
-        URL_LIST_SEQUENCES = URL_LIST_SEQUENCES.replace("&&", URL_ENV[mCurrentServer]);
-        URL_LIST_PHOTOS = URL_LIST_PHOTOS.replace("&&", URL_ENV[mCurrentServer]);
+    }
+
+    public static void scheduleAutoUpload(Context context) {
+        try {
+            ApplicationPreferences appPrefs = ((OSVApplication) context.getApplicationContext()).getAppPrefs();
+            final boolean autoSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO, false);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP && autoSet) {
+                JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+                jobScheduler.cancel(UploadJobService.UPLOAD_JOB_ID);
+                JobInfo.Builder builder = new JobInfo.Builder(UploadJobService.UPLOAD_JOB_ID, new ComponentName(context, UploadJobService.class))
+                        .setRequiredNetworkType(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED) ? JobInfo.NETWORK_TYPE_ANY : JobInfo.NETWORK_TYPE_UNMETERED)
+                        .setPersisted(true)
+                        .setRequiresCharging(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_CHARGING));
+                int result = jobScheduler.schedule(builder.build());
+                Log.d(TAG, "onCheckedChanged: scheduled upload task, result = " + result);
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "scheduleAutoUpload: " + Log.getStackTraceString(e));
+        }
+    }
+
+    @Override
+    protected void setEnvironment() {
+        super.setEnvironment();
         URL_SEQUENCE = URL_SEQUENCE.replace("&&", URL_ENV[mCurrentServer]);
         URL_VIDEO = URL_VIDEO.replace("&&", URL_ENV[mCurrentServer]);
         URL_PHOTO = URL_PHOTO.replace("&&", URL_ENV[mCurrentServer]);
-        URL_DOWNLOAD_PHOTO = URL_DOWNLOAD_PHOTO.replace("&&", URL_ENV[mCurrentServer]);
         URL_FINISH_SEQUENCE = URL_FINISH_SEQUENCE.replace("&&", URL_ENV[mCurrentServer]);
-        URL_LIST_TRACKS = URL_LIST_TRACKS.replace("&&", URL_ENV[mCurrentServer]);
-        URL_NEARBY_TRACKS = URL_NEARBY_TRACKS.replace("&&", URL_ENV[mCurrentServer]);
-        URL_PROFILE_DETAILS = URL_PROFILE_DETAILS.replace("&&", URL_ENV[mCurrentServer]);
-        URL_LEADERBOARD = URL_LEADERBOARD.replace("&&", URL_ENV[mCurrentServer]);
-        URL_VERSION = URL_VERSION.replace("&&", URL_ENV[mCurrentServer]);
-        URL_AUTH_OSM = URL_AUTH_OSM.replace("&&", URL_ENV[mCurrentServer]);
-        URL_AUTH_FACEBOOK = URL_AUTH_FACEBOOK.replace("&&", URL_ENV[mCurrentServer]);
-        URL_AUTH_GOOGLE = URL_AUTH_GOOGLE.replace("&&", URL_ENV[mCurrentServer]);
         Log.d(TAG, "setEnvironment: " + URL_ENV[mCurrentServer]);
     }
 
@@ -297,37 +183,43 @@ public class UploadManager implements Response.ErrorListener {
      * @param sequenceIndex the fileIndex of the image
      * @param listener request listener
      */
-    private void uploadVideo(final Sequence sequence, final OSVFile video, final int onlineSequenceID, final int sequenceIndex, final RequestListener listener) {
+    private void uploadVideo(final LocalSequence sequence, final OSVFile video, final int onlineSequenceID, final int sequenceIndex, final
+    NetworkResponseDataListener<ApiResponse> listener) {
         if (!video.exists()) {
             Log.w(TAG, "uploadVideo: file doesn't exist: " + video.getPath());
+            SequenceDB.instance.deleteVideo(video, sequence.getId(), sequenceIndex);
             return;
         }
-        final VideoRequest imageUploadReq = new VideoRequest(URL_VIDEO, new Response.ErrorListener() {
+        final VideoRequest imageUploadReq = new VideoRequest(URL_VIDEO, new OsvRequestResponseListener<HttpResponseParser, ApiResponse>(mHttpResponseParser) {
+
             @Override
-            public void onErrorResponse(final VolleyError error) {
+            public void onSuccess(final int status, final ApiResponse apiResponse) {
+                Log.d(TAG, "uploadVideo: success, entering background to delete file");
                 runInBackground(new Runnable() {
                     @Override
                     public void run() {
-                        Log.e(TAG, "uploadVideo: error uploading video: " + onlineSequenceID + "/" + video.getName(), error);
-                        int apiCode = 0;
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.e(TAG, "uploadVideo: " + new String(error.networkResponse.data));
-                                JSONObject ob = new JSONObject(new String(error.networkResponse.data));
-                                apiCode = ob.getJSONObject("status").getInt("apiCode");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            Log.w(TAG, "uploadVideo: " + error.getLocalizedMessage());
-                        }
-                        if (apiCode == 660) {
-                            sequence.size = sequence.size - Utils.fileSize(video);
-                            SequenceDB.instance.deleteVideo(video, sequence.sequenceId, sequenceIndex);
+                        Log.d(TAG, "uploadVideo: video uploaded successfully: " + onlineSequenceID + "/" + video.getName());
+                        sequence.setSize(sequence.getSize() - Utils.fileSize(video));
+                        SequenceDB.instance.deleteVideo(video, sequence.getId(), sequenceIndex);
+                        videoUploaderQueue.markDone(sequence);
+                        listener.requestFinished(status, apiResponse);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(final int status, final ApiResponse apiResponse) {
+                runInBackground(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e(TAG, "uploadVideo: error uploading video: " + onlineSequenceID + "/" + video.getName() + ": " + apiResponse);
+                        if (apiResponse.getApiCode() == API_DUPLICATE_ENTRY) {
+                            sequence.setSize(sequence.getSize() - Utils.fileSize(video));
+                            SequenceDB.instance.deleteVideo(video, sequence.getId(), sequenceIndex);
                             videoUploaderQueue.markDone(sequence);
-                            listener.requestFinished(RequestListener.STATUS_SUCCESS_IMAGE);
+                            listener.requestFinished(HTTP_OK, apiResponse);
                         } else {
-                            if (apiCode == API_ERROR_SEQUENCE_ID_OUT_OF_BOUNDS && videoUploaderQueue.uploadTaskQueue.size() > 0) {
+                            if (apiResponse.getApiCode() == API_ARGUMENT_OUT_OF_RANGE && videoUploaderQueue.uploadTaskQueue.size() > 0) {
                                 int nrRowsAffected = SequenceDB.instance.resetOnlineSequenceId(onlineSequenceID);
                                 Log.d(TAG, "uploadVideo: rollback on sequence "
                                         + onlineSequenceID + ", nr of rows affected: " + nrRowsAffected);
@@ -353,21 +245,6 @@ public class UploadManager implements Response.ErrorListener {
                     }
                 });
             }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Log.d(TAG, "uploadVideo: success, entering background to delete file");
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "uploadVideo: video uploaded successfully: " + onlineSequenceID + "/" + video.getName());
-                        sequence.size = sequence.size - Utils.fileSize(video);
-                        SequenceDB.instance.deleteVideo(video, sequence.sequenceId, sequenceIndex);
-                        videoUploaderQueue.markDone(sequence);
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_IMAGE);
-                    }
-                });
-            }
         }, new ProgressiveEntity.DataProgressListener() {
             @Override
             public void onProgressChanged(long totalSent, long totalSize) {
@@ -386,38 +263,46 @@ public class UploadManager implements Response.ErrorListener {
      * @param sequenceIndex the fileIndex of the image
      * @param listener request listener
      */
-    private void uploadImage(final Sequence sequence, final OSVFile image, final int onlineSequenceID, final int sequenceIndex, final double lat, final double lon, final int
-            acc, final RequestListener listener) {
+    private void uploadImage(final LocalSequence sequence, final OSVFile image, final int onlineSequenceID, final int sequenceIndex, final double lat, final double lon, final int
+            acc, final NetworkResponseDataListener<ApiResponse> listener) {
         if (!image.exists()) {
             Log.w(TAG, "uploadImage: file doesn't exist: " + image.getPath());
+            SequenceDB.instance.deletePhoto(image, sequence.getId(), sequenceIndex);
             return;
         }
-        final PhotoRequest imageUploadReq = new PhotoRequest(URL_PHOTO, new Response.ErrorListener() {
+        final PhotoRequest imageUploadReq = new PhotoRequest(URL_PHOTO, new OsvRequestResponseListener<HttpResponseParser, ApiResponse>(mHttpResponseParser) {
+
             @Override
-            public void onErrorResponse(final VolleyError error) {
+            public void onSuccess(final int status, final ApiResponse apiResponse) {
+                Log.d(TAG, "uploadImage: success, entering background to delete file");
                 runInBackground(new Runnable() {
                     @Override
                     public void run() {
-                        Log.e(TAG, "uploadImage: error uploading image: " + onlineSequenceID + "/" + image.getName(), error);
-                        int apiCode = 0;
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.e(TAG, "uploadImage: " + new String(error.networkResponse.data));
-                                JSONObject ob = new JSONObject(new String(error.networkResponse.data));
-                                apiCode = ob.getJSONObject("status").getInt("apiCode");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            Log.w(TAG, "uploadImage: " + error.getLocalizedMessage());
-                        }
-                        if (apiCode == 660) {
-                            sequence.size = sequence.size - Utils.fileSize(image);
-                            SequenceDB.instance.deletePhoto(image, sequence.sequenceId, sequenceIndex);
+                        Log.d(TAG, "uploadImage: image uploaded successfully: " + onlineSequenceID + "/" + image.getName());
+                        sequence.setSize(sequence.getSize() - Utils.fileSize(image));
+                        SequenceDB.instance.deletePhoto(image, sequence.getId(), sequenceIndex);
+                        videoUploaderQueue.markDone(sequence);
+                        listener.requestFinished(status, apiResponse);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int status, final ApiResponse apiResponse) {
+                runInBackground(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e(TAG, "uploadImage: error uploading image: " + onlineSequenceID + "/" + image.getName() + ": " + apiResponse);
+
+                        if (apiResponse.getApiCode() == API_DUPLICATE_ENTRY) {
+                            apiResponse.setHttpCode(HTTP_OK);
+                            apiResponse.setApiCode(API_SUCCESS);
+                            sequence.setSize(sequence.getSize() - Utils.fileSize(image));
+                            SequenceDB.instance.deletePhoto(image, sequence.getId(), sequenceIndex);
                             videoUploaderQueue.markDone(sequence);
-                            listener.requestFinished(RequestListener.STATUS_SUCCESS_IMAGE);
+                            listener.requestFinished(HTTP_OK, apiResponse);
                         } else {
-                            if (apiCode == API_ERROR_SEQUENCE_ID_OUT_OF_BOUNDS && videoUploaderQueue.uploadTaskQueue.size() > 0) {
+                            if (apiResponse.getApiCode() == API_ARGUMENT_OUT_OF_RANGE && videoUploaderQueue.uploadTaskQueue.size() > 0) {
                                 int nrRowsAffected = SequenceDB.instance.resetOnlineSequenceId(onlineSequenceID);
                                 Log.d(TAG, "uploadImage: rollback on sequence "
                                         + onlineSequenceID + ", nr of rows affected: " + nrRowsAffected);
@@ -443,21 +328,6 @@ public class UploadManager implements Response.ErrorListener {
                     }
                 });
             }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Log.d(TAG, "uploadImage: success, entering background to delete file");
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "uploadImage: image uploaded successfully: " + onlineSequenceID + "/" + image.getName());
-                        sequence.size = sequence.size - Utils.fileSize(image);
-                        SequenceDB.instance.deletePhoto(image, sequence.sequenceId, sequenceIndex);
-                        videoUploaderQueue.markDone(sequence);
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_IMAGE);
-                    }
-                });
-            }
         }, new ProgressiveEntity.DataProgressListener() {
             @Override
             public void onProgressChanged(long totalSent, long totalSize) {
@@ -468,84 +338,56 @@ public class UploadManager implements Response.ErrorListener {
         videoUploaderQueue.add(imageUploadReq);
     }
 
-
     /**
      * creates a sequence online, used before uploading the images
      * @param sequence folder of the sequence
-     * @param listener resuest listener
      */
-    private void createSequence(final Sequence sequence, final RequestListener listener) {
-        final int onlineId = SequenceDB.instance.getOnlineId(sequence.sequenceId);
-        OSVFile metafile = new OSVFile(sequence.folder, "track.txt.gz");
+    private void createSequence(final LocalSequence sequence) {
+        final int onlineId = SequenceDB.instance.getOnlineId(sequence.getId());
+        OSVFile metafile = new OSVFile(sequence.getFolder(), "track.txt.gz");
         if (!metafile.exists()) {
-            metafile = new OSVFile(sequence.folder, "track.txt");
+            metafile = new OSVFile(sequence.getFolder(), "track.txt");
         }
         final OSVFile finalMetafile = metafile;
         Log.d(TAG, "createSequence: creating sequence request");
         if (onlineId == -1) {
-            Cursor cursor = SequenceDB.instance.getFrames(sequence.sequenceId);
+            Cursor cursor = SequenceDB.instance.getFrames(sequence.getId());
             if (cursor != null && cursor.getCount() > 0) {
                 String position = "" + cursor.getDouble(cursor.getColumnIndex(SequenceDB.FRAME_LAT)) + "," + cursor.getDouble(cursor.getColumnIndex(SequenceDB.FRAME_LON));
-                final SequenceRequest seqRequest = new SequenceRequest(URL_SEQUENCE, new Response.ErrorListener() {
+                final SequenceRequest seqRequest = new SequenceRequest(URL_SEQUENCE, new OsvRequestResponseListener<SequenceDataParser, SequenceData>(mSequenceDataParser) {
+
                     @Override
-                    public void onErrorResponse(final VolleyError error) {
+                    public void onSuccess(final int status, final SequenceData sequenceData) {
                         runInBackground(new Runnable() {
                             @Override
                             public void run() {
-                                if (error.networkResponse != null && error.networkResponse.data != null && error.networkResponse.data.length > 0) {
-                                    try {
-                                        Log.w(TAG, "createSequence: " + new String(error.networkResponse.data));
-                                        JSONObject ob = new JSONObject(new String(error.networkResponse.data));
-                                        Log.d(TAG, ob.toString());
-                                        Toast.makeText(mContext, R.string.error_creating_sequence, Toast.LENGTH_SHORT).show();
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
+                                int updatedRows = SequenceDB.instance.updateSequenceOnlineId(sequence.getId(), sequenceData.getOnlineID());
+                                if (updatedRows > 0) {
+                                    sequence.setOnlineId(sequenceData.getOnlineID());
+                                    if (finalMetafile.exists()) {
+                                        sequence.setSize(sequence.getSize() - Utils.fileSize(finalMetafile));
+                                        finalMetafile.delete();
                                     }
-                                } else {
-                                    Log.d(TAG, "" + error);
+                                    uploadSequence(sequence, sequenceData.getOnlineID(), UploadManager.this);
+                                    requestFinished(status, sequenceData);
                                 }
-                                listener.requestFinished(RequestListener.STATUS_FAILED);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int status, final SequenceData sequenceData) {
+                        runInBackground(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.w(TAG, "createSequence: " + sequenceData);
+
                                 if (Thread.interrupted()) {
                                     Log.w(TAG, "createSequence: interrupted at error");
                                     return;
                                 }
-                                createSequence(sequence, listener);
+                                createSequence(sequence);
                                 commitNextSequence();
-                            }
-                        });
-
-                    }
-                }, new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(final String response) {
-                        runInBackground(new Runnable() {
-                            @Override
-                            public void run() {
-                                int sequenceID;
-                                try {
-
-                                    JSONObject jsonObject;
-                                    try {
-                                        jsonObject = new JSONObject(response);
-                                        sequenceID = jsonObject.getJSONObject("osv").getJSONObject("sequence").getInt("id");
-                                        SequenceDB.instance.updateSequenceOnlineId(sequence.sequenceId, sequenceID);
-                                        sequence.onlineSequenceId = sequenceID;
-                                        if (finalMetafile.exists()) {
-                                            sequence.size = sequence.size - Utils.fileSize(finalMetafile);
-                                            finalMetafile.delete();
-                                        }
-                                        uploadSequence(sequence, sequenceID, listener);
-                                        listener.requestFinished(RequestListener.STATUS_SUCCESS_SEQUENCE);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                    Log.d(TAG, "createSequence" + response);
-                                } catch (Exception e) {
-                                    Log.w(TAG, "createSequence: " + e.getLocalizedMessage());
-                                }
-                                if (Thread.interrupted()) {
-                                    Log.w(TAG, "createSequence: interrupted at hardcoded");
-                                }
                             }
                         });
                     }
@@ -554,7 +396,8 @@ public class UploadManager implements Response.ErrorListener {
                     public void onProgressChanged(long totalSent, long totalSize) {
                         videoUploaderQueue.partialProgressChanged(totalSent, totalSize);
                     }
-                }, sequence.sequenceId, getAccessToken(), position, metafile, sequence.appVersion, sequence.obd, sequence.score, sequence.getFlatScoreDetails(),
+                }, sequence.getId(), getAccessToken(), position, metafile, sequence.getAppVersion(), sequence.hasObd(), sequence.getScore(), ScoreJsonEncoder.encode(sequence
+                        .getScoreHistories()),
                         mPartialResponseHandler);
                 seqRequest.setRetryPolicy(new DefaultRetryPolicy(UPLOAD_REQUEST_TIMEOUT, 0, 1f));
                 seqRequest.setShouldCache(false);
@@ -566,37 +409,39 @@ public class UploadManager implements Response.ErrorListener {
                 cursor.close();
             }
         } else {//we need a request finished notification; hardcoded to fail since we have the sequence created already.
-            sequence.onlineSequenceId = onlineId;
-            SequenceRequest seqReq = new SequenceRequest("fail_on_purpose", new Response.ErrorListener() {
+            sequence.setOnlineId(onlineId);
+            SequenceRequest seqReq = new SequenceRequest("fail_on_purpose", new OsvRequestResponseListener<SequenceDataParser, SequenceData>(mSequenceDataParser) {
+
                 @Override
-                public void onErrorResponse(final VolleyError error) {
+                public void onSuccess(final int status, final SequenceData sequenceData) {
+                    runInBackground(new Runnable() {
+                        @Override
+                        public void run() {
+                            uploadSequence(sequence, onlineId, UploadManager.this);
+                            requestFinished(status, sequenceData);
+                            if (Thread.interrupted()) {
+                                Log.w(TAG, "createSequence: interrupted at hardcoded");
+                            }
+                        }
+                    });
+
+                }
+
+                @Override
+                public void onFailure(final int status, final SequenceData sequenceData) {
                     runInBackground(new Runnable() {
                         @Override
                         public void run() {
                             if (finalMetafile.exists()) {
-                                sequence.size = sequence.size - Utils.fileSize(finalMetafile);
+                                sequence.setSize(sequence.getSize() - Utils.fileSize(finalMetafile));
                                 finalMetafile.delete();
                             }
-                            uploadSequence(sequence, onlineId, listener);
-                            listener.requestFinished(RequestListener.STATUS_SUCCESS_SEQUENCE);
+                            uploadSequence(sequence, onlineId, UploadManager.this);
+                            requestFinished(status, sequenceData);
                             if (Thread.interrupted()) {
                                 Log.w(TAG, "createSequence: interrupted at hardcoded");
                             }
 
-                        }
-                    });
-                }
-            }, new Response.Listener<String>() {
-                @Override
-                public void onResponse(final String response) {
-                    runInBackground(new Runnable() {
-                        @Override
-                        public void run() {
-                            uploadSequence(sequence, onlineId, listener);
-                            listener.requestFinished(RequestListener.STATUS_SUCCESS_SEQUENCE);
-                            if (Thread.interrupted()) {
-                                Log.w(TAG, "createSequence: interrupted at hardcoded");
-                            }
                         }
                     });
                 }
@@ -605,7 +450,9 @@ public class UploadManager implements Response.ErrorListener {
                 public void onProgressChanged(long totalSent, long totalSize) {
                     videoUploaderQueue.partialProgressChanged(totalSent, totalSize);
                 }
-            }, sequence.sequenceId, getAccessToken(), "", null, sequence.appVersion, sequence.obd, sequence.score, sequence.getFlatScoreDetails(), mPartialResponseHandler);
+            }, sequence.getId(), getAccessToken(), "", null, sequence.getAppVersion(), sequence.hasObd(), sequence.getScore(), ScoreJsonEncoder.encode(sequence.getScoreHistories
+                    ()),
+                    mPartialResponseHandler);
             seqReq.setShouldCache(false);
             seqReq.setRetryPolicy(new DefaultRetryPolicy(UPLOAD_REQUEST_TIMEOUT, 0, 1f));
             mCreateQueue.add(seqReq);//need to add indexing cache notification
@@ -619,9 +466,12 @@ public class UploadManager implements Response.ErrorListener {
                 + "------------------------------------------------------------------------------------------------------------");
         sUploadStatus = STATUS_INDEXING;
         if (mCreateQueue.size() == 0) {
+            videoUploaderQueue.finishUpload();
             return;
         }
-        videoUploaderQueue.progressListener.onUploadingMetadata();
+        if (videoUploaderQueue.progressListener != null) {
+            videoUploaderQueue.progressListener.onUploadingMetadata();
+        }
         synchronized (mCreateQueue) {
             SequenceRequest request = mCreateQueue.poll();
             while (request == null) {
@@ -636,302 +486,36 @@ public class UploadManager implements Response.ErrorListener {
     }
 
     /**
-     * lists a certain amount of sequences from the server from the given page
-     * @param listener request listener
-     * @param pageNumber number of the page
-     * @param itemsPerPage number of items per page
-     */
-    public void listSequences(final RequestResponseListener listener, int pageNumber, int itemsPerPage) {
-        ListSequencesRequest seqRequest = new ListSequencesRequest(URL_LIST_MY_SEQUENCES, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.w(TAG, "listSequences: " + new String(error.networkResponse.data));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        listener.requestFinished(RequestListener.STATUS_FAILED);
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_LIST_SEQUENCE, response);
-                        Log.d(TAG, "listSequences: successful");
-                    }
-                });
-            }
-        }, getAccessToken(), pageNumber, itemsPerPage);
-        seqRequest.setRetryPolicy(new DefaultRetryPolicy(3500, 5, 1f));
-        seqRequest.setShouldCache(false);
-        cancelListTasks();
-        mListQueue.add(seqRequest);
-    }
-
-    public void nearby(final RequestResponseListener listener, String lat, String lon, int radius) {
-        NearbyRequest seqRequest = new NearbyRequest(URL_NEARBY_TRACKS, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.w(TAG, "nearby: " + new String(error.networkResponse.data));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        if (error instanceof TimeoutError) {
-                            Log.w(TAG, "nearby: Timed out");
-                        }
-                        listener.requestFinished(RequestListener.STATUS_FAILED);
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_NEARBY, response);
-                        Log.d(TAG, "nearby: successful");
-                    }
-                });
-            }
-        }, lat, lon, radius);
-        seqRequest.setRetryPolicy(new DefaultRetryPolicy(18000, 1, 1f));
-        mQueue.add(seqRequest);
-    }
-
-    public void version(final RequestResponseListener listener) {
-        VersionRequest seqRequest = new VersionRequest(URL_VERSION, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.w(TAG, "version: " + new String(error.networkResponse.data));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        listener.requestFinished(RequestListener.STATUS_FAILED);
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_NEARBY, response);
-                        Log.d(TAG, "version: successful");
-                    }
-                });
-            }
-        });
-        seqRequest.setRetryPolicy(new DefaultRetryPolicy(2500, 2, 1f));
-        cancelListTasks();
-        mQueue.add(seqRequest);
-    }
-
-
-    /**
-     * lists all existing sequences from the server, no images are downloaded, only details
-     * @param listener request listener
-     * @param zoom zoom level
-     */
-    public void listSegments(final LoadAllSequencesListener listener, final SKCoordinate position, final String upperLeft, final String lowerRight, final int page, final float
-            zoom) {
-        Log.d(TAG, "listSegments: starting for page " + page);
-        ListTracksRequest seqRequest = new ListTracksRequest(URL_LIST_TRACKS, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "listSegments: error " + error + ", details : "+ error.getLocalizedMessage());
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.w(TAG, "listSegments: " + new String(error.networkResponse.data));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        listener.onRequestFailed();
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String result) {
-                Log.d(TAG, "listSegments: onResponse: tracks response finished");
-                try {
-                    if (result != null && !result.isEmpty()) {
-                        JSONObject obj = new JSONObject(result);
-                        final JSONArray tracks = obj.getJSONArray("currentPageItems");
-                        final int totalTracks = obj.getJSONArray("totalFilteredItems").getInt(0);
-                        if (page * TRACKS_IPP < totalTracks) {
-                            int newPage = page + 1;
-                            listSegments(listener, position, upperLeft, lowerRight, newPage, zoom);
-                        }
-                        mTracksHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Polyline bestPolyline = null;
-                                double bestDistance = Double.MAX_VALUE;
-                                Log.d(TAG, "tracks: handler processing");
-                                try {
-                                    final int alreadyDisplayed = page * TRACKS_IPP;
-                                    if (tracks == null) {
-                                        listener.onFinished(null);
-                                        return;
-                                    }
-                                    listener.onRequestSuccess();
-                                    Log.d(TAG, "listSegments:  number of segments = " + tracks.length());
-//                                    if (page == 1) {
-//                                        listener.onRequestFinished(null, -1);
-//                                    }
-                                    Log.d(TAG, "onResponse: totaltracks = " + totalTracks + " , page = " + page + " , already displayed = " + alreadyDisplayed);
-                                    if (tracks.length() > 0) {
-                                        for (int i = alreadyDisplayed; i < alreadyDisplayed + tracks.length(); i++) {
-                                            JSONArray track = tracks.getJSONObject(i - alreadyDisplayed).getJSONArray("track");
-                                            int coverage = -1;
-                                            try {
-                                                coverage = tracks.getJSONObject(i - alreadyDisplayed).getInt("coverage");
-                                            } catch (Exception ignored) {}
-                                            final Polyline polyline = new Polyline(i);
-                                            polyline.coverage = coverage;
-                                            SKCoordinate start = null, end = null;
-                                            for (int j = 0; j < track.length(); j++) {
-                                                if (Thread.interrupted()) {
-                                                    return;
-                                                }
-                                                double lat = track.getJSONArray(j).getDouble(0);
-                                                double lon = track.getJSONArray(j).getDouble(1);
-                                                end = new ImageCoordinate(lat, lon, j);
-                                                if (start == null) {
-                                                    start = end;
-                                                }
-                                                polyline.getNodes().add(end);
-                                            }
-                                            if (position != null) {
-                                                double distanceToPos = ComputingDistance.getDistanceFromLine(position, start, end);
-                                                if (distanceToPos < bestDistance) {
-                                                    bestDistance = distanceToPos;
-                                                    bestPolyline = polyline;
-                                                }
-                                            }
-                                            listener.onRequestFinished(polyline, i);
-                                        }
-                                    }
-
-                                    if (bestDistance > 15) {
-                                        bestPolyline = null;
-                                    }
-                                    listener.onFinished(bestPolyline);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    listener.onFinished(null);
-                                }
-                            }
-                        });
-
-                    } else {
-                        listener.onFinished(null);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    listener.onFinished(null);
-                }
-            }
-        }, upperLeft, lowerRight, page, TRACKS_IPP, zoom);
-        seqRequest.setRetryPolicy(new DefaultRetryPolicy(10000,3,1f));
-        mListQueue.add(seqRequest);
-    }
-
-    /**
      * finishes a sequence upload
      * @param sequence sequence
      * @param listener listener
      */
-    private void finishSequence(final Sequence sequence, final RequestListener listener) {
-        SequenceFinishedRequest seqRequest = new SequenceFinishedRequest(URL_FINISH_SEQUENCE, new Response.ErrorListener() {
+    private void finishSequence(final LocalSequence sequence, final NetworkResponseDataListener<ApiResponse> listener) {
+        SequenceFinishedRequest seqRequest = new SequenceFinishedRequest(URL_FINISH_SEQUENCE, new OsvRequestResponseListener<HttpResponseParser, ApiResponse>(mHttpResponseParser) {
             @Override
-            public void onErrorResponse(final VolleyError error) {
+            public void onSuccess(final int status, final ApiResponse apiResponse) {
                 runInBackground(new Runnable() {
                     @Override
                     public void run() {
-                        Log.w(TAG, "finishSequence: error " + error.getLocalizedMessage());
-//                        listener.requestFinished(RequestListener.STATUS_FAILED);
+                        Log.d(TAG, "finishSequence: " + apiResponse);
+                        listener.requestFinished(status, apiResponse);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(final int status, final ApiResponse apiResponse) {
+                runInBackground(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.w(TAG, "finishSequence: error " + apiResponse);
                         finishSequence(sequence, listener);
+                        listener.requestFailed(status, apiResponse);
                     }
                 });
             }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_SEQUENCE_FINISHED);
-                        Log.d(TAG, "finishSequence: " + response);
-                    }
-                });
-            }
-        }, getAccessToken(), "" + sequence.onlineSequenceId);
+        }, getAccessToken(), "" + sequence.getOnlineId());
         seqRequest.setRetryPolicy(new DefaultRetryPolicy(UPLOAD_REQUEST_TIMEOUT, 0, 1f));
-        mQueue.add(seqRequest);
-    }
-
-
-    /**
-     * deletes a sequence from the server, together with the images that it contains
-     * @param sequenceId online id of the sequence
-     * @param listener request listener
-     */
-    public void deleteSequence(final int sequenceId, final RequestListener listener) {
-        DeleteSequenceRequest seqRequest = new DeleteSequenceRequest(URL_DELETE_SEQUENCE, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_FAILED);
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            String response = new String(error.networkResponse.data);
-                            Log.w(TAG, "deleteSequenceRecord: " + response);
-                        }
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_DELETE_SEQUENCE);
-                        Log.d(TAG, "deleteSequenceRecord: " + response);
-                    }
-                });
-            }
-        }, sequenceId, getAccessToken());
-        seqRequest.setRetryPolicy(new DefaultRetryPolicy(2500, 5, 1f));
         mQueue.add(seqRequest);
     }
 
@@ -941,12 +525,12 @@ public class UploadManager implements Response.ErrorListener {
      * @param sequenceIdOnline id
      * @param listener request listener
      */
-    private void uploadSequence(Sequence sequence, final int sequenceIdOnline, RequestListener listener) {
+    private void uploadSequence(LocalSequence sequence, final int sequenceIdOnline, NetworkResponseDataListener<ApiResponse> listener) {
         if (videoUploaderQueue.progressListener != null) {
             videoUploaderQueue.progressListener.onIndexingSequence(sequence, mCreateQueue.size());
         }
-        if (sequence.safe) {
-            Cursor cursor = SequenceDB.instance.getFrames(sequence.sequenceId);
+        if (sequence.isSafe()) {
+            Cursor cursor = SequenceDB.instance.getFrames(sequence.getId());
             if (cursor != null && cursor.getCount() > 0) {
                 while (!cursor.isAfterLast()) {
                     if (Thread.interrupted()) {
@@ -967,13 +551,13 @@ public class UploadManager implements Response.ErrorListener {
                     cursor.moveToNext();
                 }
                 cursor.close();
-                sequence.setStatus(Sequence.STATUS_UPLOADING);
+                sequence.setStatus(LocalSequence.STATUS_UPLOADING);
             }
             if (cursor != null) {
                 cursor.close();
             }
         } else {
-            Cursor cursor = SequenceDB.instance.getVideos(sequence.sequenceId);
+            Cursor cursor = SequenceDB.instance.getVideos(sequence.getId());
             if (cursor != null && cursor.getCount() > 0) {
                 while (!cursor.isAfterLast()) {
                     if (Thread.interrupted()) {
@@ -991,227 +575,29 @@ public class UploadManager implements Response.ErrorListener {
                     cursor.moveToNext();
                 }
                 cursor.close();
-                sequence.setStatus(Sequence.STATUS_UPLOADING);
+                sequence.setStatus(LocalSequence.STATUS_UPLOADING);
             }
             if (cursor != null) {
                 cursor.close();
             }
         }
+        if (videoUploaderQueue.uploadTaskQueue.isEmpty()) {
+            finishSequence(sequence, new NetworkResponseDataListener<ApiResponse>() {
+                @Override
+                public void requestFailed(int status, ApiResponse details) {
+                    Log.w(TAG, "finishSequence: failed ");
+                }
+
+                @Override
+                public void requestFinished(int status, ApiResponse details) {
+                    Log.d(TAG, "finishSequence: success ");
+                }
+
+            });
+        }
         //requests are done, start uploading
         mSequenceQueue.stop();
         videoUploaderQueue.commit();
-    }
-
-    /**
-     * error listener for volley
-     * @param error error thrown
-     */
-    @Override
-    public void onErrorResponse(VolleyError error) {
-        try {
-            JSONObject obj = new JSONObject(new String(error.networkResponse.data));
-            Log.e(TAG, "onErrorResponse" + obj.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void getProfileDetails(final RequestResponseListener listener) {
-        String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-        String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
-
-        if (userName.equals("") || token.equals("")) {
-            listener.requestFinished(RequestListener.STATUS_FAILED, mContext.getString(R.string.not_logged_in));
-            return;
-        }
-        ProfileRequest profileRequest = new ProfileRequest(URL_PROFILE_DETAILS, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.w(TAG, "getProfileDetails: " + new String(error.networkResponse.data));
-                                listener.requestFinished(RequestListener.STATUS_FAILED, new String(error.networkResponse.data));
-                                return;
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        listener.requestFinished(RequestListener.STATUS_FAILED);
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_PROFILE_DETAILS, response);
-                        Log.d(TAG, "getProfileDetails: success");
-                    }
-                });
-            }
-        }, userName);
-        mQueue.add(profileRequest);
-    }
-
-    public void getLeaderboardData(final RequestResponseListener listener, String date, String countryCode) {
-        LeaderboardRequest leaderboardRequest = new LeaderboardRequest(URL_LEADERBOARD, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.w(TAG, "getProfileDetails: " + new String(error.networkResponse.data));
-                                listener.requestFinished(RequestListener.STATUS_FAILED, new String(error.networkResponse.data));
-                                return;
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        listener.requestFinished(RequestListener.STATUS_FAILED);
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_LEADERBOARD, response);
-                        Log.d(TAG, "getProfileDetails: success");
-                    }
-                });
-            }
-        }, date, countryCode, null);
-        mQueue.cancelAll(new LeaderboardRequestFilter());
-        mQueue.add(leaderboardRequest);
-    }
-
-    /**
-     * lists the details of the images in an online sequence
-     * @param sequenceId online sequence id
-     * @param listener request listener
-     */
-    public void listImages(final int sequenceId, final RequestResponseListener listener) {
-        ListPhotosRequest seqRequest = new ListPhotosRequest(URL_LIST_PHOTOS, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.w(TAG, "listImages: " + new String(error.networkResponse.data));
-                                listener.requestFinished(RequestListener.STATUS_FAILED, new String(error.networkResponse.data));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        listener.requestFinished(RequestListener.STATUS_FAILED);
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_LIST_IMAGES, response);
-                        Log.d(TAG, "listImages: success");
-                    }
-                });
-            }
-        }, sequenceId, getAccessToken());
-        mQueue.add(seqRequest);
-    }
-
-    /**
-     * lists the details of the images in an online sequence
-     * @param listener request listener
-     */
-    void authenticate(final String url, final String requestToken, final String secretToken, final RequestResponseListener listener) {
-        Log.d(TAG, "authenticate: " + url);
-        AuthRequest request = new AuthRequest(url, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(final VolleyError error) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (error.networkResponse != null && error.networkResponse.data != null) {
-                            try {
-                                Log.w(TAG, "authenticate: " + new String(error.networkResponse.data));
-                                listener.requestFinished(RequestListener.STATUS_FAILED, new String(error.networkResponse.data));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        listener.requestFinished(RequestListener.STATUS_FAILED);
-                    }
-                });
-            }
-        }, new Response.Listener<String>() {
-            @Override
-            public void onResponse(final String response) {
-                runInBackground(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.requestFinished(RequestListener.STATUS_SUCCESS_LOGIN, response);
-                        Log.d(TAG, "authenticate: success");
-                    }
-                });
-            }
-        }, requestToken, secretToken);
-        request.setRetryPolicy(new DefaultRetryPolicy(10000, 3, 1f));
-        mQueue.add(request);
-    }
-
-    private String getAccessToken() {
-        if (mAccessToken == null) {
-            mAccessToken = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
-        }
-        return mAccessToken;
-    }
-//
-//    /**
-//     * m,ethod to sign the requests for future impl. of the backend
-//     */
-//    public void signRequest() {
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-//        String token = prefs.getString("OSM_OAUTH_TOKEN", "");
-//        String tokenSecret = prefs.getString("OSM_OAUTH_TOKEN_SECRET", "");
-//        if (token.equals("") || tokenSecret.equals("")) {
-//            Toast.makeText(mContext, R.string.login_to_see_online_warning, Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//        consumer = new CommonsHttpOAuthConsumer(CONSUMER_KEY, CONSUMER_SECRET_KEY);
-//
-//        provider = new CommonsHttpOAuthProvider(
-//                "https://www.openstreetmap.org/oauth/request_token",
-//                "https://www.openstreetmap.org/oauth/access_token",
-//                "https://www.openstreetmap.org/oauth/authorize");
-//        provider.setOAuth10a(true);
-//        consumer.setTokenWithSecret(token, tokenSecret);
-////        consumer.sign(request); //
-//    }
-
-    private void runInBackground(Runnable runnable) {
-        if (mBackgroundHandler == null
-                || mBackgroundHandler.getLooper() == null
-                || !mBackgroundHandler.getLooper().getThread().isAlive()) {
-            mHandlerThread = new HandlerThread("BackgroundUpload", Thread.NORM_PRIORITY);
-            mHandlerThread.start();
-            mBackgroundHandler = new Handler(mHandlerThread.getLooper());
-            Log.d(TAG, "runInBackground: new thread starting");
-        }
-        mBackgroundHandler.post(runnable);
     }
 
     /**
@@ -1226,20 +612,20 @@ public class UploadManager implements Response.ErrorListener {
             try {
                 mPartialResponseHandler.removeCallbacksAndMessages(null);
                 mPartialResponseHandler.getLooper().getThread().interrupt();
-            } catch (Exception ignored){}
+            } catch (Exception ignored) {}
             try {
                 mBackgroundHandler.removeCallbacksAndMessages(null);
                 mBackgroundHandler.getLooper().getThread().interrupt();
-            } catch (Exception ignored){}
-            if (mHandlerThread != null){
+            } catch (Exception ignored) {}
+            if (mHandlerThread != null) {
                 try {
                     mHandlerThread.quit();
-                } catch (Exception ignored){}
+                } catch (Exception ignored) {}
             }
-            mHandlerThread = new HandlerThread("BackgroundUpload", Thread.NORM_PRIORITY);
+            mHandlerThread = new HandlerThread("BackgroundUpload", Process.THREAD_PRIORITY_BACKGROUND);
             mHandlerThread.start();
             mBackgroundHandler = new Handler(mHandlerThread.getLooper());
-            HandlerThread handlerThread2 = new HandlerThread("PartialResponse", Thread.NORM_PRIORITY);
+            HandlerThread handlerThread2 = new HandlerThread("PartialResponse", Process.THREAD_PRIORITY_BACKGROUND);
             handlerThread2.start();
             mPartialResponseHandler = new Handler(handlerThread2.getLooper());
             mSequenceQueue.cancelAll(new SequenceRequestFilter());
@@ -1247,15 +633,19 @@ public class UploadManager implements Response.ErrorListener {
             uploadFilter = new UploadRequestFilter();
             videoUploaderQueue.mVideoUploadQueue.cancelAll(uploadFilter);
             videoUploaderQueue.uploadTaskQueue.clear();
-            videoUploaderQueue.progressListener.onUploadCancelled(getTotalSizeValue(), getRemainingSizeValue());
+
+            if (videoUploaderQueue.progressListener != null) {
+                videoUploaderQueue.progressListener.onUploadCancelled(getTotalSizeValue(), getRemainingSizeValue());
+            }
             SequenceDB.instance.interruptUploading();
             SequenceDB.instance.fixStatuses();
-            if (NetworkUtils.isWifiOn(mContext)) {
+            if (NetworkUtils.isWifiOn(mContext) || mWifiLock != null) {
                 try {
                     if (mWifiLock != null) {
                         mWifiLock.release();
+                        mWifiLock = null;
                     }
-                } catch (Exception ignored){}
+                } catch (Exception ignored) {}
             }
         }
     }
@@ -1277,39 +667,22 @@ public class UploadManager implements Response.ErrorListener {
         }
     }
 
-    /**
-     * cancells all upload request added
-     */
-    private void cancelListTasks() {
-        Log.d(TAG, "cancelListTasks: cancelled map list tasks and listSegments");
-        ListRequestFilter listFilter = new ListRequestFilter();
-        mListQueue.cancelAll(listFilter);
-    }
-
-    /**
-     * cancells all upload request added
-     */
-    public void cancelNearby() {
-        Log.d(TAG, "cancelListTasks: cancelled map list tasks");
-        NearbyRequestFilter listFilter = new NearbyRequestFilter();
-        mQueue.cancelAll(listFilter);
-    }
-
-
-    public void uploadCache(final RequestListener listener, final Collection<Sequence> sequences) {
+    public void uploadCache(final Collection<LocalSequence> sequences) {
         if (sUploadStatus != STATUS_IDLE) {
-            if (listener != null) {
-                listener.requestFinished(RequestListener.STATUS_FAILED);
+            if (videoUploaderQueue.progressListener != null) {
+                videoUploaderQueue.progressListener.onUploadCancelled(0, 0);
             }
+
             return;
         }
-        final List<Sequence> sequencesCopy = new ArrayList<>(sequences);
+        sUploadStatus = STATUS_INDEXING;
+        final List<LocalSequence> sequencesCopy = new ArrayList<>(sequences);
         String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
         String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
 
         if (userName.equals("") || token.equals("") || sequencesCopy.isEmpty()) {
-            if (listener != null) {
-                listener.requestFinished(RequestListener.STATUS_FAILED);
+            if (videoUploaderQueue.progressListener != null) {
+                videoUploaderQueue.progressListener.onUploadCancelled(0, 0);
             }
             return;
         }
@@ -1319,32 +692,24 @@ public class UploadManager implements Response.ErrorListener {
             @Override
             public void run() {
                 try {
-                    Sequence.order(sequencesCopy);
-                    Iterator<Sequence> iter = sequencesCopy.iterator();
+                    LocalSequence.order(sequencesCopy);
+                    Iterator<LocalSequence> iter = sequencesCopy.iterator();
                     while (iter.hasNext()) {
-                        Sequence seq = iter.next();
-                        if (SequenceDB.instance.getNumberOfFrames(seq.sequenceId) <= 0) {
+                        LocalSequence seq = iter.next();
+                        if (SequenceDB.instance.getNumberOfFrames(seq.getId()) <= 0) {
                             iter.remove();
                         } else {
-                            seq.setStatus(Sequence.STATUS_INDEXING);
+                            seq.setStatus(LocalSequence.STATUS_INDEXING);
                         }
                     }
                     videoUploaderQueue.initialize(sequencesCopy);
-                    for (final Sequence sequence : sequencesCopy) {
+                    for (final LocalSequence sequence : sequencesCopy) {
                         if (Thread.interrupted()) {
                             Log.w(TAG, "uploadCache: interrupted");
                             return;
                         }
-                        if (!sequence.mIsExternal || Utils.checkSDCard(mContext)) {
-                            if (listener == null) {
-                                createSequence(sequence, new RequestListener() {
-                                    @Override
-                                    public void requestFinished(final int status) {
-                                    }
-                                });
-                            } else {
-                                createSequence(sequence, listener);
-                            }
+                        if (!sequence.isExternal() || Utils.checkSDCard(mContext)) {
+                            createSequence(sequence);
                         }
                     }
                     if (Thread.interrupted()) {
@@ -1366,89 +731,6 @@ public class UploadManager implements Response.ErrorListener {
         videoUploaderQueue.setUploadProgressListener(listener);
     }
 
-    public void consistencyCheck() {
-        Log.d(TAG, "consistencyCheck: starting");
-        try {
-            OSVFile osv = Utils.generateOSVFolder(mContext);
-            for (OSVFile folder : osv.listFiles()) {
-                if (folder.getName().contains("&")) {
-                    Log.d(TAG, "consistencyCheck: renaming " + folder.getName());
-                    OSVFile file = new OSVFile(folder.getParentFile(), folder.getName().replace("&", ""));
-                    folder.renameTo(file);
-                    folder = file;
-                    Log.d(TAG, "consistencyCheck: renamed to " + folder.getName());
-                }
-                OSVFile[] imgs = folder.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String filename) {
-                        return filename.contains(".jpg") || filename.contains(".mp4");
-                    }
-                });
-                if (imgs.length == 0) {
-                    folder.delete();
-                } else {
-                    for (OSVFile img : imgs) {
-                        try {
-                            if (img.getName().endsWith("tmp")) {
-                                String seqId = folder.getName().split("_")[1];
-                                String index = img.getName().split("\\.")[0];
-                                SequenceDB.instance.deleteVideo(Integer.valueOf(seqId), Integer.valueOf(index));
-                                img.delete();
-                            }
-                        } catch (Exception e) {
-                            Log.w(TAG, "consistencyCheck: " + e.getLocalizedMessage());
-                        }
-                    }
-                    if (folder.listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String filename) {
-                            return filename.contains(".jpg") || filename.contains(".mp4");
-                        }
-                    }).length == 0) {
-                        folder.delete();
-                    } else if (Utils.isInternetAvailable(mContext)) {
-                        //we check if the onlineSequenceId, stored on the device, exists on the server also
-                        final int onlineSequenceId = SequenceDB.instance.getOnlineId(Integer.valueOf(folder.getName().split("_")[1]));
-                        if (onlineSequenceId != -1) {
-
-                            final int sequenceId = Integer.valueOf(folder.getName().split("_")[1]);
-                            Cursor cursor = SequenceDB.instance.getFrames(Integer.valueOf(folder.getName().split("_")[1]));
-                            if (cursor != null && cursor.getCount() > 0) {
-                                listImages(onlineSequenceId, new RequestResponseListener() {
-                                    @Override
-                                    public void requestFinished(int status, String result) {
-                                        if (status == STATUS_FAILED) {
-                                            try {
-                                                JSONObject ob = new JSONObject(result);
-                                                int apiCode = ob.getJSONObject("status").getInt("apiCode");
-                                                if (apiCode == API_ERROR_SEQUENCE_ID_OUT_OF_BOUNDS) {
-                                                    int nrRowsAffected = SequenceDB.instance.resetOnlineSequenceId(onlineSequenceId);
-                                                    Log.d(TAG, "consistencyCheck: rollback on sequence " + sequenceId + ", nr of rows affected: " + nrRowsAffected);
-                                                }
-                                            } catch (JSONException e) {
-                                                Log.w(TAG, "consistencyCheck: " + e.getLocalizedMessage());
-                                            }
-                                        }
-                                    }
-
-                                    @Override
-                                    public void requestFinished(int status) {
-
-                                    }
-                                });
-                            }
-                            if (cursor != null) {
-                                cursor.close();
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "consistencyCheck: " + e.getLocalizedMessage());
-        }
-    }
-
     public boolean isUploading() {
         return sUploadStatus != STATUS_IDLE;
     }
@@ -1461,38 +743,10 @@ public class UploadManager implements Response.ErrorListener {
         return sUploadStatus == STATUS_INDEXING;
     }
 
-    /**
-     * Creates a default instance of the worker pool and calls {@link RequestQueue#start()} on it.
-     * @param context A {@link Context} to use for creating the cache dir.
-     * @return A started {@link RequestQueue} instance.
-     */
-    private RequestQueue newRequestQueue(Context context, int nrOfThreads) {
-        File cacheDir = new File(context.getCacheDir(), "volley");
-
-//        String userAgent = "volley/0";
-//        try {
-//            String packageName = context.getPackageName();
-//            PackageInfo info = context.getPackageManager().getPackageInfo(packageName, 0);
-//            userAgent = packageName + "/" + info.versionCode;
-//        } catch (PackageManager.NameNotFoundException e) {
-//            Log.d(TAG, "newRequestQueue: " + Log.getStackTraceString(e));
-//        }
-        HttpStack stack = new HurlStack();
-        Network network = new BasicNetwork(stack);
-        if (mQueueThread == null) {
-            mQueueThread = new HandlerThread("QueueThread", Thread.NORM_PRIORITY);
-        }
-        Handler bh = new Handler(mQueueThread.getLooper());
-        RequestQueue queue = new RequestQueue(new DiskBasedCache(cacheDir), network, nrOfThreads, new ExecutorDelivery(bh));
-        queue.start();
-
-        return queue;
-    }
-
     public long getRemainingSizeValue() {
         long number = 0;
-        for (final Sequence sequence : videoUploaderQueue.mSequences) {
-            number = number + sequence.size;
+        for (final LocalSequence sequence : videoUploaderQueue.mSequences) {
+            number = number + sequence.getSize();
         }
         return number;
     }
@@ -1504,8 +758,8 @@ public class UploadManager implements Response.ErrorListener {
     private long getTotalSizeValue() {
         if (videoUploaderQueue.mTotalSize == 0) {
             long number = 0;
-            for (final Sequence sequence : videoUploaderQueue.mSequences) {
-                number = number + sequence.originalSize;
+            for (final LocalSequence sequence : videoUploaderQueue.mSequences) {
+                number = number + sequence.getOriginalSize();
             }
             videoUploaderQueue.mTotalSize = number;
         }
@@ -1519,6 +773,34 @@ public class UploadManager implements Response.ErrorListener {
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void onLoginChanged(LoginChangedEvent event) {
         mAccessToken = null;
+    }
+
+    @Override
+    void runInBackground(Runnable runnable) {
+        if (mBackgroundHandler == null
+                || mBackgroundHandler.getLooper() == null
+                || !mBackgroundHandler.getLooper().getThread().isAlive()) {
+            mHandlerThread = new HandlerThread("BackgroundUpload", Process.THREAD_PRIORITY_BACKGROUND);
+            mHandlerThread.start();
+            mBackgroundHandler = new Handler(mHandlerThread.getLooper());
+            Log.d(TAG, "runInBackground: new thread starting");
+        }
+        mBackgroundHandler.post(runnable);
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+    }
+
+    @Override
+    public void requestFinished(int status, ApiResponse response) {
+        Log.d(TAG, "requestFinished: " + response);
+    }
+
+    @Override
+    public void requestFailed(int status, ApiResponse response) {
+        Log.d(TAG, "requestFailed: " + response);
     }
 
     private class VideoUploaderQueue implements RequestQueue.RequestFinishedListener<Object> {
@@ -1539,7 +821,7 @@ public class UploadManager implements Response.ErrorListener {
 
         private long mTotalSize = 0;
 
-        private ConcurrentLinkedQueue<Sequence> mSequences = new ConcurrentLinkedQueue<>();
+        private ConcurrentLinkedQueue<LocalSequence> mSequences = new ConcurrentLinkedQueue<>();
 
         VideoUploaderQueue(Context context) {
             mVideoUploadQueue = newRequestQueue(context, 1);
@@ -1558,7 +840,7 @@ public class UploadManager implements Response.ErrorListener {
             }
         }
 
-        void initialize(Collection<Sequence> sequences) {
+        void initialize(Collection<LocalSequence> sequences) {
             if (NetworkUtils.isWifiOn(mContext)) {
                 WifiManager wifi = (WifiManager) mContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 if (mWifiLock == null) {
@@ -1570,11 +852,11 @@ public class UploadManager implements Response.ErrorListener {
             mSequences.clear();
             mSequences.addAll(sequences);
             boolean thereIsSafe = false;
-            for (final Sequence sequence : sequences) {
-                thereIsSafe = thereIsSafe || sequence.safe;
-                int number = (int) SequenceDB.instance.getNumberOfVideos(sequence.sequenceId);
-                mTotalSize = mTotalSize + sequence.originalSize;
-                sequence.numberOfVideos = number;
+            for (final LocalSequence sequence : sequences) {
+                thereIsSafe = thereIsSafe || sequence.isSafe();
+                int number = (int) SequenceDB.instance.getNumberOfVideos(sequence.getId());
+                mTotalSize = mTotalSize + sequence.getOriginalSize();
+                sequence.setVideoCount(number);
             }
             if (mVideoUploadQueue != null) {
                 mVideoUploadQueue.removeRequestFinishedListener(this);
@@ -1592,7 +874,7 @@ public class UploadManager implements Response.ErrorListener {
         }
 
         void commit() {
-            if (uploadTaskQueue.size() > 0) {
+            if (!uploadTaskQueue.isEmpty()) {
                 if (progressListener != null) {
                     progressListener.onIndexingFinished();
                 }
@@ -1606,11 +888,7 @@ public class UploadManager implements Response.ErrorListener {
                 DeviceBandwidthSampler.getInstance().startSampling();
                 mVideoUploadQueue.start();
             } else {
-                sUploadStatus = STATUS_IDLE;
-                if (progressListener != null) {
-                    progressListener.onUploadCancelled(1, 0);
-                }
-                Log.w(TAG, "commitImages: empty upload queue - cancelled");
+                commitNextSequence();
             }
         }
 
@@ -1642,11 +920,12 @@ public class UploadManager implements Response.ErrorListener {
                     if (req.isCanceled()) {
                         req.reInit();
                     }
+                    req.reInit();
                     mVideoUploadQueue.add(req);
                     uploadTaskQueue.add(req);
                 }
                 tempTaskQueue.clear();
-                Log.d(TAG, "pause: continuing " + uploadTaskQueue.size() + " requests");
+                Log.d(TAG, "resume: continuing " + uploadTaskQueue.size() + " requests");
                 mVideoUploadQueue.start();
                 Log.d(TAG, "resume: upload resumed");
                 sUploadStatus = STATUS_UPLOADING;
@@ -1661,9 +940,7 @@ public class UploadManager implements Response.ErrorListener {
             if (progressListener != null) {
                 if (sUploadStatus != STATUS_IDLE) {
                     progressListener.onUploadStarted(getTotalSizeValue(), mCreateQueue.size());
-                    if (progressListener != null) {
-                        progressListener.onProgressChanged(Math.max(getTotalSizeValue(), 1), getRemainingSizeValue());
-                    }
+                    progressListener.onProgressChanged(Math.max(getTotalSizeValue(), 1), getRemainingSizeValue());
                 }
             }
         }
@@ -1677,7 +954,7 @@ public class UploadManager implements Response.ErrorListener {
             }
         }
 
-        void markDone(final Sequence sequence) {
+        void markDone(final LocalSequence sequence) {
             if (sUploadStatus == STATUS_IDLE) {
                 cancelUploadTasks();
                 return;
@@ -1691,7 +968,7 @@ public class UploadManager implements Response.ErrorListener {
             }
 
             try {
-                sequence.imageCount = (int) SequenceDB.instance.getNumberOfFrames(sequence.sequenceId);
+                sequence.setFrameCount((int) SequenceDB.instance.getNumberOfFrames(sequence.getId()));
             } catch (Exception e) {
                 Log.d(TAG, "markDone: " + Log.getStackTraceString(e));
             }
@@ -1700,30 +977,29 @@ public class UploadManager implements Response.ErrorListener {
             long totalSize = getTotalSizeValue();
             final long remainingSize = getRemainingSizeValue();
 
-            Log.d(TAG, "markDone: " + " imageCount " + sequence.imageCount);
-            if (sequence.imageCount <= 0) {
+            Log.d(TAG, "markDone: " + " imageCount " + sequence.getFrameCount());
+            if (sequence.getFrameCount() <= 0) {
                 runInBackground(new Runnable() {
                     @Override
                     public void run() {
-                        finishSequence(sequence, new RequestListener() {
+                        finishSequence(sequence, new NetworkResponseDataListener<ApiResponse>() {
                             @Override
-                            public void requestFinished(int status) {
-                                if (status == STATUS_FAILED) {
-                                    Log.w(TAG, "finishSequence: failed ");
-//                                    numberOfFailed++;
-                                } else {
-                                    Log.d(TAG, "finishSequence: success ");
-//                                    numberOfSuccessful++;
-                                }
+                            public void requestFailed(int status, ApiResponse details) {
+                                Log.d(TAG, "finishSequence: failed ");
+                            }
+
+                            @Override
+                            public void requestFinished(int status, ApiResponse details) {
+                                Log.w(TAG, "finishSequence: success ");
                             }
                         });
                     }
                 });
-                Sequence.deleteSequence(sequence.sequenceId);
+                LocalSequence.deleteSequence(sequence.getId());
                 if (progressListener != null) {
                     progressListener.onSequenceUploaded(sequence);
                 }
-                EventBus.postSticky(new SequencesChangedEvent(false, sequence.sequenceId));
+                EventBus.postSticky(new SequencesChangedEvent(false, sequence.getId()));
             }
             if (progressListener != null) {
                 progressListener.onProgressChanged(Math.max(totalSize, 1), remainingSize);
@@ -1737,6 +1013,7 @@ public class UploadManager implements Response.ErrorListener {
             }
         }
 
+        @SuppressWarnings("unused")
         private void partialProgressChanged(long totalSent, long fileSize) {
             long totalSize = getTotalSizeValue();
             final long remainingSize = getRemainingSizeValue();
@@ -1757,14 +1034,15 @@ public class UploadManager implements Response.ErrorListener {
             sUploadStatus = STATUS_IDLE;
             mVideoUploadQueue.stop();
             try {
-                if (NetworkUtils.isWifiOn(mContext)) {
+                if (NetworkUtils.isWifiOn(mContext) || mWifiLock != null) {
                     if (mWifiLock != null) {
                         mWifiLock.release();
+                        mWifiLock = null;
                     }
                 }
             } catch (Exception ignored) {}
             SequenceDB.instance.fixStatuses();
-            consistencyCheck();
+            ((OSVApplication) mContext.getApplicationContext()).consistencyCheck();
         }
     }
 }

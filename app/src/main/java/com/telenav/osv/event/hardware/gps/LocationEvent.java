@@ -11,13 +11,11 @@ public class LocationEvent extends OSVStickyEvent {
 
     public final Location location;
 
-    public LocationEvent(Location location){
-        this.location = location;
-    }
+    public boolean shouldCenter;
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof LocationEvent;
+    public LocationEvent(Location location, boolean shouldCenter) {
+        this.location = location;
+        this.shouldCenter = shouldCenter;
     }
 
     @Override

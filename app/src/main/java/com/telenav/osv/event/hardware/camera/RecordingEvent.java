@@ -1,7 +1,8 @@
 package com.telenav.osv.event.hardware.camera;
 
+import javax.annotation.Nullable;
 import com.telenav.osv.event.OSVStickyEvent;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.item.LocalSequence;
 
 /**
  * Created by Kalman on 07/11/2016.
@@ -11,15 +12,11 @@ public class RecordingEvent extends OSVStickyEvent {
 
     public final boolean started;
 
-    public Sequence sequence;
+    public LocalSequence sequence;
 
-    public RecordingEvent(Sequence sequence, boolean started){
+    public RecordingEvent(@Nullable LocalSequence sequence, boolean started) {
         this.started = started;
         this.sequence = sequence;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof RecordingEvent;
     }
 
     @Override

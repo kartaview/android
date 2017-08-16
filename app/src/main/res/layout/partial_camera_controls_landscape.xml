@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#1B1C1F">
 
     <LinearLayout
-        android:id="@+id/action_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignWithParentIfMissing="true"
@@ -17,7 +16,6 @@
         android:weightSum="3">
 
         <FrameLayout
-            android:id="@+id/home_layout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -29,14 +27,14 @@
                 android:layout_height="31dp"
                 android:layout_gravity="center"
                 android:clickable="false"
-                app:srcCompat="@drawable/vector_home_white"
                 android:textColor="@color/text_colour_default"
-                android:textSize="26sp" />
+                android:textSize="26sp"
+                app:srcCompat="@drawable/vector_home_white"
+                tools:ignore="ContentDescription" />
 
         </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/shutter_layout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
@@ -48,7 +46,28 @@
                 android:layout_gravity="center"
                 android:clickable="true"
                 android:scaleType="fitCenter"
-                app:srcCompat="@drawable/vector_button_record_inactive_2" />
+                app:srcCompat="@drawable/vector_button_record_inactive_2"
+                tools:ignore="ContentDescription" />
+
+            <com.pnikosis.materialishprogress.ProgressWheel
+                android:id="@+id/shutter_progress"
+                android:layout_width="71dp"
+                android:layout_height="71dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:indeterminate="true"
+                android:max="100"
+                android:minHeight="64dp"
+                android:minWidth="64dp"
+                android:visibility="visible"
+                app:matProg_barColor="#A233B1"
+                app:matProg_barWidth="7dp"
+                app:matProg_circleRadius="100dp"
+                app:matProg_linearProgress="false"
+                app:matProg_progressIndeterminate="true"
+                app:matProg_rimColor="#ffffff"
+                app:matProg_spinSpeed="0.45"
+                tools:visibility="visible"/>
 
         </FrameLayout>
 
@@ -60,12 +79,12 @@
             android:gravity="center">
 
             <ImageView
-                android:id="@+id/info_button_image"
                 android:layout_width="34dp"
                 android:layout_height="34dp"
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="8dp"
-                app:srcCompat="@drawable/vector_info_white">
+                app:srcCompat="@drawable/vector_info_white"
+                tools:ignore="ContentDescription">
 
             </ImageView>
         </RelativeLayout>
@@ -84,7 +103,6 @@
         tools:visibility="visible">
 
         <LinearLayout
-            android:id="@+id/recording_taken_images"
             android:layout_width="54dp"
             android:layout_height="0dp"
             android:layout_weight="1.66"
@@ -92,11 +110,11 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/camera_taken_images"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:layout_gravity="center"
-                app:srcCompat="@drawable/vector_camera_white" />
+                app:srcCompat="@drawable/vector_camera_white"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/images_recorded_value"
@@ -105,18 +123,17 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="3dp"
                 android:lines="1"
-                android:text="0"
+                android:text="@string/default_value_0"
                 android:textColor="@color/text_colour_default"
                 android:textSize="18sp" />
 
             <TextView
-                android:id="@+id/images_recorded_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="2dp"
                 android:lines="1"
-                android:text="IMG"
+                android:text="@string/partial_img_label"
                 android:textColor="@color/gray_text_color"
                 android:textSize="18sp" />
 
@@ -132,7 +149,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/recording_saved_mb"
             android:layout_width="54dp"
             android:layout_height="0dp"
             android:layout_weight="1.66"
@@ -140,11 +156,11 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/image_recording_size"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:layout_gravity="center"
-                app:srcCompat="@drawable/vector_size_white" />
+                app:srcCompat="@drawable/vector_size_white"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/size_recorder_images_value"
@@ -153,7 +169,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="3dp"
                 android:lines="1"
-                android:text="0"
+                android:text="@string/default_value_0"
                 android:textColor="@color/text_colour_default"
                 android:textSize="18sp" />
 
@@ -164,7 +180,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="2dp"
                 android:lines="1"
-                android:text="MB"
+                android:text="@string/partial_mb_label"
                 android:textColor="@color/gray_text_color"
                 android:textSize="18sp" />
 
@@ -180,7 +196,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/recording_distance_covered"
             android:layout_width="54dp"
             android:layout_height="0dp"
             android:layout_weight="1.66"
@@ -188,11 +203,11 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/distance_covered_image"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:layout_gravity="center"
-                app:srcCompat="@drawable/vector_distance_white" />
+                app:srcCompat="@drawable/vector_distance_white"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/distance_covered_value"
@@ -201,7 +216,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="3dp"
                 android:lines="1"
-                android:text="0"
+                android:text="@string/default_value_0"
                 android:textColor="@color/white"
                 android:textSize="18sp" />
 
@@ -212,7 +227,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="2dp"
                 android:lines="1"
-                android:text="KM"
+                android:text="@string/partial_km_label"
                 android:textColor="@color/gray_text_color"
                 android:textSize="18sp" />
 

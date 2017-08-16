@@ -30,7 +30,6 @@ import com.telenav.osv.event.network.upload.UploadFinishedEvent;
 import com.telenav.osv.event.network.upload.UploadPausedEvent;
 import com.telenav.osv.event.network.upload.UploadProgressEvent;
 import com.telenav.osv.event.network.upload.UploadStartedEvent;
-import com.telenav.osv.item.Sequence;
 import com.telenav.osv.manager.network.UploadManager;
 import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.utils.Log;
@@ -40,7 +39,7 @@ import com.telenav.osv.utils.Utils;
  * ui for upload progress
  * Created by Kalman on 10/15/2015.
  */
-public class UploadProgressFragment extends Fragment {
+public class UploadProgressFragment extends OSVFragment {
 
     public static final String TAG = "UploadProgressFragment";
 
@@ -117,11 +116,11 @@ public class UploadProgressFragment extends Fragment {
         if (mUploadLinearLayout != null) {
             mUploadLinearLayout.setOrientation(portrait ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
         }
-        if (progressLayout != null){
+        if (progressLayout != null) {
             progressLayout.getLayoutParams().height = (int) Utils.dpToPx(activity, portrait ? 400 : 400);
             progressLayout.getLayoutParams().width = (int) Utils.dpToPx(activity, portrait ? 400 : 300);
         }
-        if (progressbar != null){
+        if (progressbar != null) {
             progressbar.setCircleRadius((int) Utils.dpToPx(activity, portrait ? 140 : 110));
             progressbar.requestLayout();
             progressbar.postInvalidate();
@@ -140,19 +139,19 @@ public class UploadProgressFragment extends Fragment {
         super.onStop();
     }
 
-    public void init(MainActivity activity) {
+    private void init(MainActivity activity) {
         this.activity = activity;
-        uploadSpeedText = (TextView) view.findViewById(R.id.upload_speed_text);
-        mUploadLinearLayout = (LinearLayout) view.findViewById(R.id.upload_details_linear_layout);
-        progressLayout = (RelativeLayout) view.findViewById(R.id.progress_layout);
-        timeText = (TextView) view.findViewById(R.id.time_text);
-        percentText = (TextView) view.findViewById(R.id.percent_text);
-        remainingText = (TextView) view.findViewById(R.id.done_text);
-        totalText = (TextView) view.findViewById(R.id.total_text);
-        progressbar = (ProgressWheel) view.findViewById(R.id.upload_total_progress);
-        cancelAllButton = (LinearLayout) view.findViewById(R.id.cancel_all_button);
-        pauseButton = (LinearLayout) view.findViewById(R.id.pause_button);
-        pauseText = (TextView) view.findViewById(R.id.pause_text);
+        uploadSpeedText = view.findViewById(R.id.upload_speed_text);
+        mUploadLinearLayout = view.findViewById(R.id.upload_details_linear_layout);
+        progressLayout = view.findViewById(R.id.progress_layout);
+        timeText = view.findViewById(R.id.time_text);
+        percentText = view.findViewById(R.id.percent_text);
+        remainingText = view.findViewById(R.id.done_text);
+        totalText = view.findViewById(R.id.total_text);
+        progressbar = view.findViewById(R.id.upload_total_progress);
+        cancelAllButton = view.findViewById(R.id.cancel_all_button);
+        pauseButton = view.findViewById(R.id.pause_button);
+        pauseText = view.findViewById(R.id.pause_text);
     }
 
 
@@ -176,17 +175,17 @@ public class UploadProgressFragment extends Fragment {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        if (activity != null){
+        if (activity != null) {
             int orientation = newConfig.orientation;
             boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
             if (mUploadLinearLayout != null) {
                 mUploadLinearLayout.setOrientation(portrait ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
             }
-            if (progressLayout != null){
+            if (progressLayout != null) {
                 progressLayout.getLayoutParams().height = (int) Utils.dpToPx(activity, portrait ? 400 : 400);
                 progressLayout.getLayoutParams().width = (int) Utils.dpToPx(activity, portrait ? 400 : 300);
             }
-            if (progressbar != null){
+            if (progressbar != null) {
                 progressbar.setCircleRadius((int) Utils.dpToPx(activity, portrait ? 140 : 110));
                 progressbar.requestLayout();
                 progressbar.postInvalidate();
@@ -232,6 +231,7 @@ public class UploadProgressFragment extends Fragment {
                     percentText.setText("0");
                 }
                 if (activity != null) {
+                    activity.unbindUploadService();
                     activity.openScreen(ScreenComposer.SCREEN_MAP);
                 }
                 mUploadedSize = 0;
@@ -263,6 +263,7 @@ public class UploadProgressFragment extends Fragment {
                     percentText.setText("0");
                 }
                 if (activity != null) {
+                    activity.unbindUploadService();
                     activity.openScreen(ScreenComposer.SCREEN_MAP);
                 }
             }
@@ -342,7 +343,7 @@ public class UploadProgressFragment extends Fragment {
         }
     }
 
-    public void updateStats(final long mTotalSize, final long remaining) {
+    private void updateStats(final long mTotalSize, final long remaining) {
         if (remainingText != null) {
             long reported = mTotalSize - remaining;
             String remText = (String) remainingText.getText();

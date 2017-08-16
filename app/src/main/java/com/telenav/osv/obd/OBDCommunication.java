@@ -19,17 +19,17 @@ import android.util.Log;
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class OBDCommunication {
 
-    private final static String TAG = OBDCommunication.class.getSimpleName();
-
     /**
      * UUID service
      */
-    public static final UUID serviceUUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
+    private static final UUID serviceUUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
 
     /**
      * UUID characteristic for write and notify
      */
-    public static final UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
+    private static final UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
+
+    private final static String TAG = OBDCommunication.class.getSimpleName();
 
     /**
      * client characteristic
@@ -66,10 +66,6 @@ public class OBDCommunication {
 
     public static OBDCommunication getInstance() {
         return SingletonHolder.INSTANCE;
-    }
-
-    private static class SingletonHolder {
-        private static final OBDCommunication INSTANCE = new OBDCommunication();
     }
 
     /**
@@ -129,7 +125,6 @@ public class OBDCommunication {
         bluetoothDeviceAddress = address;
         return true;
     }
-
 
     /**
      * subscribe the characteristic for the notification
@@ -197,5 +192,9 @@ public class OBDCommunication {
             writeChar.setValue(p_command + '\r');
             gatt.writeCharacteristic(writeChar);
         }
+    }
+
+    private static class SingletonHolder {
+        private static final OBDCommunication INSTANCE = new OBDCommunication();
     }
 }

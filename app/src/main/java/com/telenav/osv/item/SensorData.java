@@ -7,9 +7,13 @@ import com.telenav.osv.utils.Log;
 
 /**
  * regex for filtering bad lines
- * ^(?!([0-9]*\.?[0-9]*;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;))
- *
- *
+ * ^(?!([0-9]*\.?[0-9]*;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*
+ * ([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)
+ * ?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\
+ * .?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*
+ * ([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;))
+ * <p>
+ * <p>
  * Created by Kalman on 2/11/16.
  */
 
@@ -23,15 +27,15 @@ public class SensorData {
 
     public static final int GRAVITY = 3;
 
-    public static final float ACCELERATION_TO_MPSS = 9.80665f;
+    private static final float ACCELERATION_TO_MPSS = 9.80665f;
 
     private static final String LINE_SEPARATOR = "\n";
 
     private static final String TAG = "SensorData";
 
-    private static final long Y2015 = 1_450_000_000;
+    private static final long Y2015 = 1_450_000_000L;
 
-    private final long mTimeStampNano;
+    private final long mTimeStamp;
 
     private int[] mSpeed = null;
 
@@ -54,9 +58,9 @@ public class SensorData {
     public SensorData(Location location) {
         mLocation = location;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            mTimeStampNano = System.currentTimeMillis() * 1_000_000 - (SystemClock.elapsedRealtimeNanos() - location.getElapsedRealtimeNanos());
+            mTimeStamp = System.currentTimeMillis() - (SystemClock.elapsedRealtimeNanos() - location.getElapsedRealtimeNanos()) / 1_000_000L;
         } else {
-            mTimeStampNano = System.currentTimeMillis() * 1_000_000;
+            mTimeStamp = System.currentTimeMillis();
         }
     }
 
@@ -75,26 +79,26 @@ public class SensorData {
                 mGravity = data;
                 break;
         }
-        boolean unixTs = (timeStamp / 1_000_000) > Y2015;
+        boolean unixTs = (timeStamp / 1_000_000L) > Y2015;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && !unixTs) {
-            mTimeStampNano = System.currentTimeMillis() * 1_000_000 - ((SystemClock.elapsedRealtimeNanos() - timeStamp));
-        } else if (unixTs){
-            mTimeStampNano = timeStamp * 1_000_000;
+            mTimeStamp = System.currentTimeMillis() - (SystemClock.elapsedRealtimeNanos() - timeStamp) / 1_000_000L;
+        } else if (unixTs) {
+            mTimeStamp = timeStamp / 1_000_000L;
         } else {
-            mTimeStampNano = System.currentTimeMillis() * 1_000_000;
+            mTimeStamp = System.currentTimeMillis();
         }
     }
 
     public SensorData(float pressure, long timeStamp) {
         mPressure = new float[1];
         mPressure[0] = pressure;
-        boolean unixTs = (timeStamp / 1_000_000) > Y2015;
+        boolean unixTs = (timeStamp / 1_000_000L) > Y2015;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && !unixTs) {
-            mTimeStampNano = System.currentTimeMillis() * 1_000_000 - ((SystemClock.elapsedRealtimeNanos() - timeStamp));
-        } else if (unixTs){
-            mTimeStampNano = timeStamp * 1_000_000;
+            mTimeStamp = System.currentTimeMillis() - (SystemClock.elapsedRealtimeNanos() - timeStamp) / 1_000_000L;
+        } else if (unixTs) {
+            mTimeStamp = timeStamp / 1_000_000L;
         } else {
-            mTimeStampNano = System.currentTimeMillis() * 1_000_000;
+            mTimeStamp = System.currentTimeMillis();
         }
     }
 
@@ -103,20 +107,20 @@ public class SensorData {
         mVideoIndex = new int[1];
         mIndex[0] = index;
         mVideoIndex[0] = videoIndex;
-        mTimeStampNano = millis * 1_000_000;
+        mTimeStamp = millis;
     }
 
     public SensorData(int speed, long millis) {
         mSpeed = new int[1];
         mSpeed[0] = speed;
-        mTimeStampNano = millis * 1_000_000;
+        mTimeStamp = millis;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        long seconds = mTimeStampNano / 1_000_000_000L;
-        long partial = mTimeStampNano - (seconds * 1_000_000_000L);
+        long seconds = mTimeStamp / 1_000L;
+        long partial = mTimeStamp - (seconds * 1_000L);
 //        Log.d(TAG, "toString: full   =" + mTimeStampNano);
 //        Log.d(TAG, "toString: seconds=" + seconds + "." + partial);
         builder.append(seconds);
@@ -197,8 +201,8 @@ public class SensorData {
         //todo builder.append(vertical_accuracy);
         builder.append(LINE_SEPARATOR);
         String str = builder.toString();
-        if (mIndex!= null && mVideoIndex != null){
-            Log.d(TAG, "toString: created for fileIndex = " + mIndex[0] + " and video file = " + mVideoIndex[0]);
+        if (mIndex != null && mVideoIndex != null) {
+            Log.d(TAG, "toString: created for video file = " + mVideoIndex[0] + " and frame = " + mIndex[0]);
         }
         return str;
     }

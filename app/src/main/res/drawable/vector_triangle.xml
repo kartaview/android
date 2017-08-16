@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:width="22dp"
     android:height="12dp"
-    android:viewportWidth="22"
-    android:viewportHeight="12">
+    android:viewportHeight="12"
+    android:viewportWidth="22">
 
     <group
             android:name="Icons"
@@ -13,7 +14,8 @@
             android:name="triangle"
             android:fillColor="#FFFFFF"
             android:fillType="evenOdd"
+            android:pathData="M541.313708,77 L531,87.3137085 L520.686292,77 L541.313708,77 Z"
             android:strokeWidth="1"
-            android:pathData="M541.313708,77 L531,87.3137085 L520.686292,77 L541.313708,77 Z" />
+            tools:targetApi="n" />
     </group>
 </vector>

@@ -35,10 +35,10 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 import com.telenav.osv.R;
 
-public class CircleImageView extends ImageView {
+@SuppressWarnings("unused")
+public class CircleImageView extends android.support.v7.widget.AppCompatImageView {
 
     public final static String TAG = "CircleImageView";
 
@@ -225,9 +225,7 @@ public class CircleImageView extends ImageView {
      * Set a color to be drawn behind the circle-shaped drawable. Note that
      * this has no effect if the drawable is opaque or no drawable is set.
      * @param fillColor The color to be drawn behind the drawable
-     * @deprecated Fill color support is going to be removed in the future
      */
-    @Deprecated
     public void setFillColor(@ColorInt int fillColor) {
         if (fillColor == mFillColor) {
             return;

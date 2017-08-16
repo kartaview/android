@@ -13,12 +13,10 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import android.os.Handler;
 import com.android.volley.AuthFailureError;
-import com.android.volley.Response;
-import com.android.volley.Response.ErrorListener;
-import com.android.volley.Response.Listener;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.telenav.osv.item.OSVFile;
+import com.telenav.osv.listener.network.GenericResponseListener;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
@@ -34,11 +32,11 @@ public class PhotoRequest<T> extends StringRequest {
 
     private static final String PARAM_TOKEN = "access_token";
 
-    public final int mSequenceId;
+    private final int mSequenceId;
 
-    public final int mSequenceIndex;
+    private final int mSequenceIndex;
 
-    private final Response.Listener<String> mListener;
+    private final GenericResponseListener mListener;
 
     private final OSVFile mImageFile;
 
@@ -60,9 +58,9 @@ public class PhotoRequest<T> extends StringRequest {
 
     private Handler mResponseHandler;
 
-    public PhotoRequest(String url, ErrorListener errorListener, Listener<String> listener, ProgressiveEntity.DataProgressListener dataProgressListener, String token
+    public PhotoRequest(String url, GenericResponseListener listener, ProgressiveEntity.DataProgressListener dataProgressListener, String token
             , OSVFile imageFile, int sequenceID, int sequenceIndex, double lat, double lon, float accuracy, Handler responseHandler) {
-        super(Method.POST, url, listener, errorListener);
+        super(Method.POST, url, listener, listener);
 
         mListener = listener;
         mImageFile = imageFile;
@@ -84,7 +82,7 @@ public class PhotoRequest<T> extends StringRequest {
 
         if (headers == null
                 || headers.equals(Collections.emptyMap())) {
-            headers = new HashMap<String, String>();
+            headers = new HashMap<>();
         }
 
         headers.put("Accept", "application/json");

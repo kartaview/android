@@ -7,31 +7,6 @@ import com.skobbler.ngx.SKCoordinate;
 public class ComputingDistance {
 
     /**
-     * Factor to convert rad into degree.
-     */
-    public static final double RAD2DEGFACTOR = 180.0 / Math.PI;
-
-    /**
-     * Factor to convert degree into rad.
-     */
-    public static final double DEG2RADFACTOR = Math.PI / 180.0;
-
-    /**
-     * Factor <i>pi</i> / 2.
-     */
-    public static final double KHalfPi = (Math.PI / 2d);
-
-    /**
-     * the number of meters in a km
-     */
-    public static final int METERSINKM = 1000;
-
-    /**
-     * the number of meters in a mile
-     */
-    public static final double METERSINMILE = 1609.34;
-
-    /**
      * the number of feet in a mile
      */
     public static final int FEETINMILE = 5280;
@@ -52,16 +27,6 @@ public class ComputingDistance {
     public static final int YARDSINMILE = 1760;
 
     /**
-     * converter from meters to yards
-     */
-    public static final double METERSTOYARDS = 1.0936133;
-
-    /**
-     * the number of feet in a yard
-     */
-    public static final int FEETINYARD = 3;
-
-    /**
      * the limit of feet where the distance should be converted into miles
      */
     public static final int LIMIT_TO_MILES = 1500;
@@ -72,13 +37,48 @@ public class ComputingDistance {
     public static final String ONE_DECIMAL_DISTANCE_FORMATTER_PATTERN = "0.0";
 
     /**
+     * Factor to convert rad into degree.
+     */
+    private static final double RAD2DEGFACTOR = 180.0 / Math.PI;
+
+    /**
+     * Factor to convert degree into rad.
+     */
+    private static final double DEG2RADFACTOR = Math.PI / 180.0;
+
+    /**
+     * Factor <i>pi</i> / 2.
+     */
+    private static final double KHalfPi = (Math.PI / 2d);
+
+    /**
+     * the number of meters in a km
+     */
+    private static final int METERSINKM = 1000;
+
+    /**
+     * the number of meters in a mile
+     */
+    private static final double METERSINMILE = 1609.34;
+
+    /**
+     * converter from meters to yards
+     */
+    private static final double METERSTOYARDS = 1.0936133;
+
+    /**
+     * the number of feet in a yard
+     */
+    private static final int FEETINYARD = 3;
+
+    /**
      * converter from meters to feet
      */
-    public static final double METERSTOFEET = 3.2808399;
+    private static final double METERSTOFEET = 3.2808399;
 
     /**
      * The radius of the earth as arithmetic mean of small and large semi-axis.
-     *  this radius is inaccurate! Oblateness not considered. WGS84 should
+     * this radius is inaccurate! Oblateness not considered. WGS84 should
      * be 6371000.8
      */
     private static final double KEarthRadius = 6367444;
@@ -241,8 +241,8 @@ public class ComputingDistance {
      * @param point_B_lat latitude of the seconds point in decimal degree
      * @return distance on surface in meter
      */
-    public static double getAirDistance(final double point_A_long, final double point_A_lat, final double point_B_long,
-                                        final double point_B_lat) {
+    private static double getAirDistance(final double point_A_long, final double point_A_lat, final double point_B_long,
+                                         final double point_B_lat) {
         // Convert degrees to radians
         final double pA_long_RAD = (point_A_long * DEG2RADFACTOR);
         final double pA_lat_RAD = (point_A_lat * DEG2RADFACTOR);
@@ -292,21 +292,22 @@ public class ComputingDistance {
         return sqr(vx - wx) + sqr(vy - wy);
     }
 
-    private static double distToSegmentSquared(SKCoordinate p,SKCoordinate v,SKCoordinate w) {
+    private static double distToSegmentSquared(SKCoordinate p, SKCoordinate v, SKCoordinate w) {
         double l2 = dist2(v.getLongitude(), v.getLatitude(), w.getLongitude(), w.getLatitude());
         if (l2 == 0) return dist2(p.getLongitude(), p.getLatitude(), v.getLongitude(), v.getLatitude());
         double t = ((p.getLongitude() - v.getLongitude()) * (w.getLongitude() - v.getLongitude()) + (p.getLatitude() - v.getLatitude()) * (w.getLatitude() - v.getLatitude())) / l2;
         t = Math.max(0, Math.min(1, t));
-        return dist2(p.getLongitude(),p.getLatitude(), v.getLongitude() + t * (w.getLongitude() - v.getLongitude()),
+        return dist2(p.getLongitude(), p.getLatitude(), v.getLongitude() + t * (w.getLongitude() - v.getLongitude()),
                 v.getLatitude() + t * (w.getLatitude() - v.getLatitude()));
     }
+
     public static double getDistanceFromLine(SKCoordinate position, SKCoordinate start, SKCoordinate end) {
         return Math.sqrt(distToSegmentSquared(position, start, end));
     }
 
     public static double getDistanceFromSegment(SKCoordinate origin, SKCoordinate pointA, SKCoordinate pointB) {
-        SKCoordinate dap = new SKCoordinate(origin.getLatitude() - pointA.getLatitude(),origin.getLongitude() - pointA.getLongitude());
-        SKCoordinate dab = new SKCoordinate(pointB.getLatitude() - pointA.getLatitude(),pointB.getLongitude() - pointA.getLongitude());
+        SKCoordinate dap = new SKCoordinate(origin.getLatitude() - pointA.getLatitude(), origin.getLongitude() - pointA.getLongitude());
+        SKCoordinate dab = new SKCoordinate(pointB.getLatitude() - pointA.getLatitude(), pointB.getLongitude() - pointA.getLongitude());
         double dot = dap.getLongitude() * dab.getLongitude() + dap.getLatitude() * dab.getLatitude();
 
         double squareLength = dab.getLongitude() * dab.getLongitude() + dab.getLatitude() * dab.getLatitude();

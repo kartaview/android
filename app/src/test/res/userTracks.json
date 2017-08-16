@@ -1,0 +1,1930 @@
+{
+  "status": {
+    "apiCode": "600",
+    "apiMessage": " The request has been processed without incidents ",
+    "httpCode": 200,
+    "httpMessage": "Success"
+  },
+  "currentPageItems": [
+    {
+      "id": "505823",
+      "date_added": "2017-07-31  (13:12)",
+      "country_code": "eu",
+      "current_lat": "47.092430",
+      "current_lng": "23.905450",
+      "nw_lat": "47.162214",
+      "nw_lng": "23.779885",
+      "se_lat": "47.092430",
+      "se_lng": "23.905450",
+      "location": "DN1C, Romania, RO",
+      "photo_no": "619",
+      "distance": "15.34",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.1.0-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/31\/505823_d875a_597f10aa64eab.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/31\/th\/505823_cdc67_597f10ad391f4.jpg",
+      "upload_history": {
+        "id": "108131",
+        "sequence_id": "505823",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "12.73",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "1",
+            "coverage_distance": "0.94",
+            "coverage_points": "195",
+            "coverage_photos_count": "39"
+          },
+          {
+            "coverage_value": "2",
+            "coverage_distance": "1.71",
+            "coverage_points": "350",
+            "coverage_photos_count": "70"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "2.41",
+            "coverage_points": "294",
+            "coverage_photos_count": "98"
+          },
+          {
+            "coverage_value": "4",
+            "coverage_distance": "0.59",
+            "coverage_points": "78",
+            "coverage_photos_count": "26"
+          },
+          {
+            "coverage_value": "5",
+            "coverage_distance": "0.22",
+            "coverage_points": "20",
+            "coverage_photos_count": "10"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "6.86",
+            "coverage_points": "301",
+            "coverage_photos_count": "301"
+          },
+          {
+            "coverage_value": "-",
+            "coverage_distance": "0",
+            "coverage_points": "750",
+            "coverage_photos_count": "75"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "47639",
+          "upload_history_id": "108131",
+          "sequence_date": "2017-07-31 13:12:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "1988",
+          "client_total": "0",
+          "total": "1988"
+        }
+      }
+    },
+    {
+      "id": "505821",
+      "date_added": "2017-07-31  (13:11)",
+      "country_code": "eu",
+      "current_lat": "47.092430",
+      "current_lng": "23.905450",
+      "nw_lat": "47.092725",
+      "nw_lng": "23.905288",
+      "se_lat": "47.092430",
+      "se_lng": "23.905450",
+      "location": "DN1C, Romania, RO",
+      "photo_no": "122",
+      "distance": "0.03",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.1.0-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/31\/505821_d875a_597f107d954e2.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/31\/th\/505821_cdc67_597f10a8b4856.jpg",
+      "upload_history": {
+        "id": "108125",
+        "sequence_id": "505821",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "0.04",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "0.04",
+            "coverage_points": "122",
+            "coverage_photos_count": "122"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "47633",
+          "upload_history_id": "108125",
+          "sequence_date": "2017-07-31 13:11:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "122",
+          "client_total": "0",
+          "total": "122"
+        }
+      }
+    },
+    {
+      "id": "505819",
+      "date_added": "2017-07-31  (13:11)",
+      "country_code": "us",
+      "current_lat": "46.773314",
+      "current_lng": "23.592969",
+      "nw_lat": "0.000000",
+      "nw_lng": "0.000000",
+      "se_lat": "0.000000",
+      "se_lng": "0.000000",
+      "location": "Strada Tipografiei, Some\u0219eni, Cluj-Napoca, Romania, RO",
+      "photo_no": "21",
+      "distance": "0.00",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.1.0-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/31\/505819_d875a_597f107b4d176.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/31\/th\/505819_a93bb_1.jpg",
+      "upload_history": {
+        "id": "108109",
+        "sequence_id": "505819",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "0",
+        "has_obd": "N",
+        "coverage": [],
+        "signs": [],
+        "points": {
+          "id": "47625",
+          "upload_history_id": "108109",
+          "sequence_date": "2017-07-31 13:11:00",
+          "country_code": "us",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "0",
+          "client_total": "0",
+          "total": "0"
+        }
+      }
+    },
+    {
+      "id": "499069",
+      "date_added": "2017-07-25  (14:56)",
+      "country_code": "eu",
+      "current_lat": "47.038322",
+      "current_lng": "23.912548",
+      "nw_lat": "47.075957",
+      "nw_lng": "23.907904",
+      "se_lat": "47.032243",
+      "se_lng": "23.943677",
+      "location": "Strada Dejului, Gherla, Romania, RO",
+      "photo_no": "272",
+      "distance": "9.28",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.1.0-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/25\/499069_d875a_59773fe35597c.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/25\/th\/499069_4c035_1.jpg",
+      "upload_history": {
+        "id": "101195",
+        "sequence_id": "499069",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "9.02",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "1",
+            "coverage_distance": "0.07",
+            "coverage_points": "15",
+            "coverage_photos_count": "3"
+          },
+          {
+            "coverage_value": "2",
+            "coverage_distance": "5.92",
+            "coverage_points": "875",
+            "coverage_photos_count": "175"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "1.07",
+            "coverage_points": "102",
+            "coverage_photos_count": "34"
+          },
+          {
+            "coverage_value": "4",
+            "coverage_distance": "0.86",
+            "coverage_points": "81",
+            "coverage_photos_count": "27"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "1.10",
+            "coverage_points": "33",
+            "coverage_photos_count": "33"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45959",
+          "upload_history_id": "101195",
+          "sequence_date": "2017-07-25 14:56:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "1106",
+          "client_total": "0",
+          "total": "1106"
+        }
+      }
+    },
+    {
+      "id": "499067",
+      "date_added": "2017-07-25  (14:54)",
+      "country_code": "eu",
+      "current_lat": "47.087955",
+      "current_lng": "23.907779",
+      "nw_lat": "47.087955",
+      "nw_lng": "23.907779",
+      "se_lat": "47.039856",
+      "se_lng": "23.921325",
+      "location": "DN1C, Romania, RO",
+      "photo_no": "170",
+      "distance": "5.80",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.1.0-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/25\/499067_d875a_59773f93cd75c.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/25\/th\/499067_cdc67_59773fe2459f3.jpg",
+      "upload_history": {
+        "id": "101197",
+        "sequence_id": "499067",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "5.67",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "2",
+            "coverage_distance": "2.52",
+            "coverage_points": "375",
+            "coverage_photos_count": "75"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "0.68",
+            "coverage_points": "63",
+            "coverage_photos_count": "21"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "2.47",
+            "coverage_points": "74",
+            "coverage_photos_count": "74"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45961",
+          "upload_history_id": "101197",
+          "sequence_date": "2017-07-25 14:54:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "512",
+          "client_total": "0",
+          "total": "512"
+        }
+      }
+    },
+    {
+      "id": "499065",
+      "date_added": "2017-07-25  (14:53)",
+      "country_code": "eu",
+      "current_lat": "47.135180",
+      "current_lng": "23.877390",
+      "nw_lat": "47.135989",
+      "nw_lng": "23.877390",
+      "se_lat": "47.088252",
+      "se_lng": "23.907624",
+      "location": "Strada Liviu Rebreanu, Dej, Romania, RO",
+      "photo_no": "177",
+      "distance": "6.06",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.1.0-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/25\/499065_d875a_59773f31166e2.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/25\/th\/499065_cdc67_59773f336cde7.jpg",
+      "upload_history": {
+        "id": "101193",
+        "sequence_id": "499065",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "5.37",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "1",
+            "coverage_distance": "0",
+            "coverage_points": "5",
+            "coverage_photos_count": "1"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "0.1",
+            "coverage_points": "15",
+            "coverage_photos_count": "5"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "5.27",
+            "coverage_points": "171",
+            "coverage_photos_count": "171"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45957",
+          "upload_history_id": "101193",
+          "sequence_date": "2017-07-25 14:53:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "191",
+          "client_total": "0",
+          "total": "191"
+        }
+      }
+    },
+    {
+      "id": "499023",
+      "date_added": "2017-07-25  (11:24)",
+      "country_code": "eu",
+      "current_lat": "51.506207",
+      "current_lng": "-0.135108",
+      "nw_lat": "51.600360",
+      "nw_lng": "-0.682401",
+      "se_lat": "0.000000",
+      "se_lng": "0.000000",
+      "location": "Pall Mall, London, United Kingdom, GB",
+      "photo_no": "1271",
+      "distance": "46.72",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "5.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/25\/499023_351f7_59770e4bc1d18.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/25\/th\/499023_cdc67_59770e5a76309.jpg",
+      "upload_history": {
+        "id": "100239",
+        "sequence_id": "499023",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "45.8",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "1",
+            "coverage_distance": "4.28",
+            "coverage_points": "595",
+            "coverage_photos_count": "119"
+          },
+          {
+            "coverage_value": "2",
+            "coverage_distance": "20.92",
+            "coverage_points": "2865",
+            "coverage_photos_count": "573"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "10.66",
+            "coverage_points": "885",
+            "coverage_photos_count": "295"
+          },
+          {
+            "coverage_value": "4",
+            "coverage_distance": "2.71",
+            "coverage_points": "228",
+            "coverage_photos_count": "76"
+          },
+          {
+            "coverage_value": "5",
+            "coverage_distance": "3.37",
+            "coverage_points": "188",
+            "coverage_photos_count": "94"
+          },
+          {
+            "coverage_value": "6",
+            "coverage_distance": "3.53",
+            "coverage_points": "202",
+            "coverage_photos_count": "101"
+          },
+          {
+            "coverage_value": "7",
+            "coverage_distance": "0.22",
+            "coverage_points": "18",
+            "coverage_photos_count": "9"
+          },
+          {
+            "coverage_value": "8",
+            "coverage_distance": "0.11",
+            "coverage_points": "8",
+            "coverage_photos_count": "4"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45873",
+          "upload_history_id": "100239",
+          "sequence_date": "2017-07-25 11:24:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "4989",
+          "client_total": "0",
+          "total": "4989"
+        }
+      }
+    },
+    {
+      "id": "499017",
+      "date_added": "2017-07-25  (11:17)",
+      "country_code": "eu",
+      "current_lat": "51.505858",
+      "current_lng": "-0.138630",
+      "nw_lat": "51.507717",
+      "nw_lng": "-0.263724",
+      "se_lat": "0.000000",
+      "se_lng": "0.000000",
+      "location": "St James\u0027s Street, London, United Kingdom, GB",
+      "photo_no": "264",
+      "distance": "9.51",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "5.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/25\/499017_d875a_59770cb50becd.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/25\/th\/499017_edeb5_1.jpg",
+      "upload_history": {
+        "id": "101111",
+        "sequence_id": "499017",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "9.07",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "2",
+            "coverage_distance": "2.07",
+            "coverage_points": "285",
+            "coverage_photos_count": "57"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "3.41",
+            "coverage_points": "291",
+            "coverage_photos_count": "97"
+          },
+          {
+            "coverage_value": "4",
+            "coverage_distance": "3.38",
+            "coverage_points": "300",
+            "coverage_photos_count": "100"
+          },
+          {
+            "coverage_value": "5",
+            "coverage_distance": "0.1",
+            "coverage_points": "10",
+            "coverage_photos_count": "5"
+          },
+          {
+            "coverage_value": "6",
+            "coverage_distance": "0.11",
+            "coverage_points": "8",
+            "coverage_photos_count": "4"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45949",
+          "upload_history_id": "101111",
+          "sequence_date": "2017-07-25 11:17:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "894",
+          "client_total": "0",
+          "total": "894"
+        }
+      }
+    },
+    {
+      "id": "499019",
+      "date_added": "2017-07-25  (11:17)",
+      "country_code": "eu",
+      "current_lat": "51.487550",
+      "current_lng": "-0.266919",
+      "nw_lat": "51.495830",
+      "nw_lng": "-0.422259",
+      "se_lat": "51.487550",
+      "se_lng": "-0.266919",
+      "location": "Ellesmere Road, Hounslow, London, United Kingdom, GB",
+      "photo_no": "321",
+      "distance": "11.44",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "5.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/25\/499019_d875a_59770cb52ccc5.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/25\/th\/499019_a2efc_1.jpg",
+      "upload_history": {
+        "id": "101121",
+        "sequence_id": "499019",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "11.4",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "1",
+            "coverage_distance": "10.75",
+            "coverage_points": "1515",
+            "coverage_photos_count": "303"
+          },
+          {
+            "coverage_value": "2",
+            "coverage_distance": "0.65",
+            "coverage_points": "90",
+            "coverage_photos_count": "18"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45951",
+          "upload_history_id": "101121",
+          "sequence_date": "2017-07-25 11:17:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "1605",
+          "client_total": "0",
+          "total": "1605"
+        }
+      }
+    },
+    {
+      "id": "499021",
+      "date_added": "2017-07-25  (11:17)",
+      "country_code": "eu",
+      "current_lat": "51.505830",
+      "current_lng": "-0.133480",
+      "nw_lat": "51.507666",
+      "nw_lng": "-0.277180",
+      "se_lat": "51.486655",
+      "se_lng": "-0.133443",
+      "location": "Carlton House Terrace, London, United Kingdom, GB",
+      "photo_no": "299",
+      "distance": "11.02",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "5.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/25\/499021_d875a_59770cb596a3b.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/25\/th\/499021_cdc67_59770ccb28194.jpg",
+      "upload_history": {
+        "id": "100237",
+        "sequence_id": "499021",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "10.22",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "2",
+            "coverage_distance": "0.15",
+            "coverage_points": "30",
+            "coverage_photos_count": "6"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "2.83",
+            "coverage_points": "237",
+            "coverage_photos_count": "79"
+          },
+          {
+            "coverage_value": "4",
+            "coverage_distance": "3.36",
+            "coverage_points": "288",
+            "coverage_photos_count": "96"
+          },
+          {
+            "coverage_value": "5",
+            "coverage_distance": "3.49",
+            "coverage_points": "202",
+            "coverage_photos_count": "101"
+          },
+          {
+            "coverage_value": "6",
+            "coverage_distance": "0.22",
+            "coverage_points": "18",
+            "coverage_photos_count": "9"
+          },
+          {
+            "coverage_value": "7",
+            "coverage_distance": "0.11",
+            "coverage_points": "8",
+            "coverage_photos_count": "4"
+          },
+          {
+            "coverage_value": "-",
+            "coverage_distance": "0.06",
+            "coverage_points": "30",
+            "coverage_photos_count": "3"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45871",
+          "upload_history_id": "100237",
+          "sequence_date": "2017-07-25 11:17:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "813",
+          "client_total": "0",
+          "total": "813"
+        }
+      }
+    },
+    {
+      "id": "499013",
+      "date_added": "2017-07-25  (11:10)",
+      "country_code": "eu",
+      "current_lat": "51.506319",
+      "current_lng": "-0.134803",
+      "nw_lat": "51.507670",
+      "nw_lng": "-0.235087",
+      "se_lat": "51.490430",
+      "se_lng": "-0.134803",
+      "location": "Pall Mall, London, United Kingdom, GB",
+      "photo_no": "213",
+      "distance": "7.73",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "5.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/25\/499013_d875a_59770aea0b423.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/25\/th\/499013_cdc67_59770af26d639.jpg",
+      "upload_history": {
+        "id": "100235",
+        "sequence_id": "499013",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "7.17",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "2",
+            "coverage_distance": "3.37",
+            "coverage_points": "490",
+            "coverage_photos_count": "98"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "3.33",
+            "coverage_points": "294",
+            "coverage_photos_count": "98"
+          },
+          {
+            "coverage_value": "4",
+            "coverage_distance": "0.21",
+            "coverage_points": "27",
+            "coverage_photos_count": "9"
+          },
+          {
+            "coverage_value": "5",
+            "coverage_distance": "0.26",
+            "coverage_points": "16",
+            "coverage_photos_count": "8"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45869",
+          "upload_history_id": "100235",
+          "sequence_date": "2017-07-25 11:10:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "827",
+          "client_total": "0",
+          "total": "827"
+        }
+      }
+    },
+    {
+      "id": "497781",
+      "date_added": "2017-07-24  (14:18)",
+      "country_code": "eu",
+      "current_lat": "46.743501",
+      "current_lng": "23.500528",
+      "nw_lat": "46.756079",
+      "nw_lng": "23.499031",
+      "se_lat": "46.736677",
+      "se_lng": "23.552165",
+      "location": "Strada Poligonului, Flore\u0219ti, Romania, RO",
+      "photo_no": "288",
+      "distance": "7.13",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "4.4.2",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/24\/497781_351f7_5975e57dea0a5.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/24\/th\/497781_cdc67_5975e5814e87c.jpg",
+      "upload_history": {
+        "id": "101771",
+        "sequence_id": "497781",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "6.04",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "6.04",
+            "coverage_points": "288",
+            "coverage_photos_count": "288"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "46131",
+          "upload_history_id": "101771",
+          "sequence_date": "2017-07-24 14:18:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "288",
+          "client_total": "0",
+          "total": "288"
+        }
+      }
+    },
+    {
+      "id": "497779",
+      "date_added": "2017-07-24  (14:18)",
+      "country_code": "eu",
+      "current_lat": "46.742800",
+      "current_lng": "23.502140",
+      "nw_lat": "46.742871",
+      "nw_lng": "23.501848",
+      "se_lat": "46.742800",
+      "se_lng": "23.502140",
+      "location": "Strada T\u0103u\u021biului, Flore\u0219ti, Romania, RO",
+      "photo_no": "2",
+      "distance": "0.02",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "4.4.2",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/24\/497779_d875a_5975e57a9c533.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/24\/th\/497779_0a6b3_1.jpg",
+      "upload_history": {
+        "id": "100075",
+        "sequence_id": "497779",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "0.02",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "0.02",
+            "coverage_points": "2",
+            "coverage_photos_count": "2"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45851",
+          "upload_history_id": "100075",
+          "sequence_date": "2017-07-24 14:18:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "2",
+          "client_total": "0",
+          "total": "2"
+        }
+      }
+    },
+    {
+      "id": "497775",
+      "date_added": "2017-07-24  (14:17)",
+      "country_code": "eu",
+      "current_lat": "46.716028",
+      "current_lng": "23.573762",
+      "nw_lat": "46.715805",
+      "nw_lng": "0.000000",
+      "se_lat": "0.000000",
+      "se_lng": "23.573728",
+      "location": "DJ107R, F\u0103get, Romania, RO",
+      "photo_no": "296",
+      "distance": "7.11",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "4.4.2",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/24\/497775_d875a_5975e56698848.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/24\/th\/497775_a6fb1_1.jpg",
+      "upload_history": {
+        "id": "100073",
+        "sequence_id": "497775",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "6.95",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "8",
+            "coverage_distance": "1.47",
+            "coverage_points": "124",
+            "coverage_photos_count": "62"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "5.48",
+            "coverage_points": "232",
+            "coverage_photos_count": "232"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45849",
+          "upload_history_id": "100073",
+          "sequence_date": "2017-07-24 14:17:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "356",
+          "client_total": "0",
+          "total": "356"
+        }
+      }
+    },
+    {
+      "id": "497773",
+      "date_added": "2017-07-24  (14:17)",
+      "country_code": "eu",
+      "current_lat": "46.718755",
+      "current_lng": "23.574430",
+      "nw_lat": "46.718530",
+      "nw_lng": "0.000000",
+      "se_lat": "0.000000",
+      "se_lng": "23.574933",
+      "location": "DJ107R, F\u0103get, Romania, RO",
+      "photo_no": "8",
+      "distance": "0.15",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "4.4.2",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/24\/497773_d875a_5975e560bf29f.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/24\/th\/497773_cdc67_5975e563269f0.jpg",
+      "upload_history": {
+        "id": "101769",
+        "sequence_id": "497773",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "0.12",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "0.12",
+            "coverage_points": "7",
+            "coverage_photos_count": "7"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "46129",
+          "upload_history_id": "101769",
+          "sequence_date": "2017-07-24 14:17:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "7",
+          "client_total": "0",
+          "total": "7"
+        }
+      }
+    },
+    {
+      "id": "497769",
+      "date_added": "2017-07-24  (14:00)",
+      "country_code": "eu",
+      "current_lat": "46.767216",
+      "current_lng": "23.598278",
+      "nw_lat": null,
+      "nw_lng": "23.591131",
+      "se_lat": "46.688256",
+      "se_lng": null,
+      "location": "Calea Turzii, Some\u0219eni, Cluj-Napoca, Romania, RO",
+      "photo_no": "1437",
+      "distance": "28.67",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Waylens",
+      "platform_version": "1.7.03",
+      "app_version": null,
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage5\/files\/photo\/2017\/7\/24\/497769_5975eb1c4a131.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/24\/th\/497769_f8e59_0.jpg",
+      "upload_history": {
+        "id": "100105",
+        "sequence_id": "497769",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "27.05",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "7",
+            "coverage_distance": "0.02",
+            "coverage_points": "14",
+            "coverage_photos_count": "7"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "27.03",
+            "coverage_points": "1430",
+            "coverage_photos_count": "1430"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45857",
+          "upload_history_id": "100105",
+          "sequence_date": "2017-07-24 14:00:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "1444",
+          "client_total": "0",
+          "total": "1444"
+        }
+      }
+    },
+    {
+      "id": "497759",
+      "date_added": "2017-07-24  (13:50)",
+      "country_code": "eu",
+      "current_lat": "46.778587",
+      "current_lng": "23.704741",
+      "nw_lat": null,
+      "nw_lng": "23.600018",
+      "se_lat": "46.778587",
+      "se_lng": null,
+      "location": "DN1N, Cluj-Napoca, Romania, RO",
+      "photo_no": "1103",
+      "distance": "19.36",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Waylens",
+      "platform_version": "1.7.03",
+      "app_version": null,
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage5\/files\/photo\/2017\/7\/24\/497759_5975e73e23d84.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/24\/th\/497759_2596a_0.jpg",
+      "upload_history": {
+        "id": "100095",
+        "sequence_id": "497759",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "18.2",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "18.20",
+            "coverage_points": "1103",
+            "coverage_photos_count": "1103"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45855",
+          "upload_history_id": "100095",
+          "sequence_date": "2017-07-24 13:50:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "1103",
+          "client_total": "0",
+          "total": "1103"
+        }
+      }
+    },
+    {
+      "id": "497757",
+      "date_added": "2017-07-24  (13:45)",
+      "country_code": "eu",
+      "current_lat": "46.792961",
+      "current_lng": "23.599825",
+      "nw_lat": null,
+      "nw_lng": "23.589412",
+      "se_lat": "46.773202",
+      "se_lng": null,
+      "location": "Strada Oa\u0219ului, D\u00e2mbul Rotund, Cluj-Napoca, Romania, RO",
+      "photo_no": "305",
+      "distance": "2.83",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Waylens",
+      "platform_version": "1.7.03",
+      "app_version": null,
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage5\/files\/photo\/2017\/7\/24\/497757_5975e173e5fcf.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/24\/th\/497757_8929c_0.jpg",
+      "upload_history": {
+        "id": "100107",
+        "sequence_id": "497757",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "2.41",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "2.41",
+            "coverage_points": "305",
+            "coverage_photos_count": "305"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45859",
+          "upload_history_id": "100107",
+          "sequence_date": "2017-07-24 13:45:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "305",
+          "client_total": "0",
+          "total": "305"
+        }
+      }
+    },
+    {
+      "id": "494273",
+      "date_added": "2017-07-21  (16:15)",
+      "country_code": "RO",
+      "current_lat": "46.772572",
+      "current_lng": "23.595261",
+      "nw_lat": null,
+      "nw_lng": null,
+      "se_lat": null,
+      "se_lng": null,
+      "location": "Bulevardul 21 Decembrie 1989, Some\u0219eni, Cluj-Napoca, Romania, RO",
+      "photo_no": "450",
+      "distance": "3.18",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Waylens",
+      "platform_version": "1.7.03",
+      "app_version": null,
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage5\/files\/photo\/2017\/7\/21\/494273_59720e1106d5b.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494273_9a49a_0.jpg",
+      "upload_history": {
+        "id": "101467",
+        "sequence_id": "494273",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "2.8",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "2.80",
+            "coverage_points": "450",
+            "coverage_photos_count": "450"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45985",
+          "upload_history_id": "101467",
+          "sequence_date": "2017-07-21 16:15:00",
+          "country_code": "RO",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "450",
+          "client_total": "0",
+          "total": "450"
+        }
+      }
+    },
+    {
+      "id": "494271",
+      "date_added": "2017-07-21  (16:10)",
+      "country_code": "eu",
+      "current_lat": "46.756950",
+      "current_lng": "23.561535",
+      "nw_lat": null,
+      "nw_lng": "23.495179",
+      "se_lat": "46.741313",
+      "se_lng": null,
+      "location": "Strada Ion Me\u0219ter, Some\u0219eni, Cluj-Napoca, Romania, RO",
+      "photo_no": "1050",
+      "distance": "6.64",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Waylens",
+      "platform_version": "1.7.03",
+      "app_version": null,
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage5\/files\/photo\/2017\/7\/21\/494271_59720f01f2953.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494271_a869c_0.jpg",
+      "upload_history": {
+        "id": "95903",
+        "sequence_id": "494271",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "6.17",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "4",
+            "coverage_distance": "0.21",
+            "coverage_points": "120",
+            "coverage_photos_count": "40"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "5.90",
+            "coverage_points": "994",
+            "coverage_photos_count": "994"
+          },
+          {
+            "coverage_value": "-",
+            "coverage_distance": "0.06",
+            "coverage_points": "160",
+            "coverage_photos_count": "16"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44911",
+          "upload_history_id": "95903",
+          "sequence_date": "2017-07-21 16:10:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "1274",
+          "client_total": "0",
+          "total": "1274"
+        }
+      }
+    },
+    {
+      "id": "494185",
+      "date_added": "2017-07-21  (13:58)",
+      "country_code": "eu",
+      "current_lat": "47.092963",
+      "current_lng": "23.905158",
+      "nw_lat": "47.126086",
+      "nw_lng": "23.892860",
+      "se_lat": "47.092963",
+      "se_lng": "23.905158",
+      "location": "DN1C, Romania, RO",
+      "photo_no": "156",
+      "distance": "3.89",
+      "image_processing_status": "NEW",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494185_d875a_5971ec701295c.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494185_cdc67_5971ec73b5732.jpg",
+      "upload_history": {
+        "id": "97297",
+        "sequence_id": "494185",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "1.61",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "1.61",
+            "coverage_points": "64",
+            "coverage_photos_count": "64"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45347",
+          "upload_history_id": "97297",
+          "sequence_date": "2017-07-21 13:58:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "64",
+          "client_total": "0",
+          "total": "64"
+        }
+      }
+    },
+    {
+      "id": "494181",
+      "date_added": "2017-07-21  (13:53)",
+      "country_code": "eu",
+      "current_lat": "47.135925",
+      "current_lng": "23.878270",
+      "nw_lat": "47.135968",
+      "nw_lng": "23.878270",
+      "se_lat": "47.032213",
+      "se_lng": "23.943704",
+      "location": "Strada Tudor Vladimirescu, Dej, Romania, RO",
+      "photo_no": "679",
+      "distance": "23.44",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494181_d875a_5971eb3e26a01.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494181_cdc67_5971eb3f93238.jpg",
+      "upload_history": {
+        "id": "97295",
+        "sequence_id": "494181",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "22.39",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "1",
+            "coverage_distance": "9.25",
+            "coverage_points": "1355",
+            "coverage_photos_count": "271"
+          },
+          {
+            "coverage_value": "2",
+            "coverage_distance": "1.89",
+            "coverage_points": "305",
+            "coverage_photos_count": "61"
+          },
+          {
+            "coverage_value": "3",
+            "coverage_distance": "0.19",
+            "coverage_points": "21",
+            "coverage_photos_count": "7"
+          },
+          {
+            "coverage_value": "9",
+            "coverage_distance": "0.03",
+            "coverage_points": "4",
+            "coverage_photos_count": "2"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "10.96",
+            "coverage_points": "335",
+            "coverage_photos_count": "335"
+          },
+          {
+            "coverage_value": "-",
+            "coverage_distance": "0.07",
+            "coverage_points": "30",
+            "coverage_photos_count": "3"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "45345",
+          "upload_history_id": "97295",
+          "sequence_date": "2017-07-21 13:53:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "2050",
+          "client_total": "0",
+          "total": "2050"
+        }
+      }
+    },
+    {
+      "id": "494179",
+      "date_added": "2017-07-21  (13:53)",
+      "country_code": "eu",
+      "current_lat": "47.141760",
+      "current_lng": "23.882150",
+      "nw_lat": "0.000000",
+      "nw_lng": "0.000000",
+      "se_lat": "0.000000",
+      "se_lng": "0.000000",
+      "location": "Strada Florilor, Dej, Romania, RO",
+      "photo_no": "1",
+      "distance": "0.00",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494179_d875a_5971eb3d3ebb8.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494179_13b72_1.jpg",
+      "upload_history": {
+        "id": "95757",
+        "sequence_id": "494179",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "0",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "-",
+            "coverage_distance": "0",
+            "coverage_points": "10",
+            "coverage_photos_count": "1"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44835",
+          "upload_history_id": "95757",
+          "sequence_date": "2017-07-21 13:53:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "10",
+          "client_total": "0",
+          "total": "10"
+        }
+      }
+    },
+    {
+      "id": "494173",
+      "date_added": "2017-07-21  (13:29)",
+      "country_code": "eu",
+      "current_lat": "46.741249",
+      "current_lng": "23.538856",
+      "nw_lat": "46.741210",
+      "nw_lng": "0.000000",
+      "se_lat": "0.000000",
+      "se_lng": "23.578116",
+      "location": "Drumul Sf\u00e2ntul Ioan, F\u0103get, Romania, RO",
+      "photo_no": "315",
+      "distance": "7.62",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "4.4.2",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494173_d875a_5971e5a293549.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494173_b5064_1.jpg",
+      "upload_history": {
+        "id": "95751",
+        "sequence_id": "494173",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "7.32",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "9",
+            "coverage_distance": "0.63",
+            "coverage_points": "54",
+            "coverage_photos_count": "27"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "6.69",
+            "coverage_points": "287",
+            "coverage_photos_count": "287"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44833",
+          "upload_history_id": "95751",
+          "sequence_date": "2017-07-21 13:29:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "341",
+          "client_total": "0",
+          "total": "341"
+        }
+      }
+    },
+    {
+      "id": "494171",
+      "date_added": "2017-07-21  (13:24)",
+      "country_code": "eu",
+      "current_lat": "46.773265",
+      "current_lng": "23.593166",
+      "nw_lat": "46.756079",
+      "nw_lng": "0.000000",
+      "se_lat": "0.000000",
+      "se_lng": "23.544102",
+      "location": "Strada Tipografiei, Some\u0219eni, Cluj-Napoca, Romania, RO",
+      "photo_no": "245",
+      "distance": "5.85",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "4.4.2",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494171_d875a_5971e473870c5.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494171_94296_1.jpg",
+      "upload_history": {
+        "id": "95749",
+        "sequence_id": "494171",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "4.78",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "4.78",
+            "coverage_points": "243",
+            "coverage_photos_count": "243"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44831",
+          "upload_history_id": "95749",
+          "sequence_date": "2017-07-21 13:24:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "243",
+          "client_total": "0",
+          "total": "243"
+        }
+      }
+    },
+    {
+      "id": "494169",
+      "date_added": "2017-07-21  (13:04)",
+      "country_code": "eu",
+      "current_lat": "47.032821",
+      "current_lng": "23.909282",
+      "nw_lat": "47.058087",
+      "nw_lng": "0.000000",
+      "se_lat": "0.000000",
+      "se_lng": "23.943707",
+      "location": "Strada Dejului, Gherla, Romania, RO",
+      "photo_no": "182",
+      "distance": "6.15",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494169_d875a_5971dfa09e166.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494169_ee591_1.jpg",
+      "upload_history": {
+        "id": "95747",
+        "sequence_id": "494169",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "6.08",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "1",
+            "coverage_distance": "0.55",
+            "coverage_points": "90",
+            "coverage_photos_count": "18"
+          },
+          {
+            "coverage_value": "-",
+            "coverage_distance": "5.53",
+            "coverage_points": "1630",
+            "coverage_photos_count": "163"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44829",
+          "upload_history_id": "95747",
+          "sequence_date": "2017-07-21 13:04:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "1720",
+          "client_total": "0",
+          "total": "1720"
+        }
+      }
+    },
+    {
+      "id": "494167",
+      "date_added": "2017-07-21  (13:03)",
+      "country_code": "eu",
+      "current_lat": "47.112949",
+      "current_lng": "23.895846",
+      "nw_lat": "47.112949",
+      "nw_lng": "23.895846",
+      "se_lat": "47.032221",
+      "se_lng": "23.921331",
+      "location": "Strada 1 Mai, Jichi\u0219u de Jos, Romania, RO",
+      "photo_no": "286",
+      "distance": "9.78",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494167_d875a_5971df9c5aa72.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494167_9241c_1.jpg",
+      "upload_history": {
+        "id": "95745",
+        "sequence_id": "494167",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "9.57",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "2",
+            "coverage_distance": "0.13",
+            "coverage_points": "25",
+            "coverage_photos_count": "5"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "5.29",
+            "coverage_points": "159",
+            "coverage_photos_count": "159"
+          },
+          {
+            "coverage_value": "-",
+            "coverage_distance": "4.15",
+            "coverage_points": "1220",
+            "coverage_photos_count": "122"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44827",
+          "upload_history_id": "95745",
+          "sequence_date": "2017-07-21 13:03:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "1404",
+          "client_total": "0",
+          "total": "1404"
+        }
+      }
+    },
+    {
+      "id": "494165",
+      "date_added": "2017-07-21  (13:03)",
+      "country_code": "eu",
+      "current_lat": "47.118941",
+      "current_lng": "23.889187",
+      "nw_lat": "47.118941",
+      "nw_lng": "23.889187",
+      "se_lat": "47.113543",
+      "se_lng": "23.895591",
+      "location": "Strada Cr\u00e2ngului, Dej, Romania, RO",
+      "photo_no": "26",
+      "distance": "0.83",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494165_d875a_5971df9a53068.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494165_45029_1.jpg",
+      "upload_history": {
+        "id": "95743",
+        "sequence_id": "494165",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "0.66",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "8",
+            "coverage_distance": "0",
+            "coverage_points": "2",
+            "coverage_photos_count": "1"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "0.66",
+            "coverage_points": "25",
+            "coverage_photos_count": "25"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44825",
+          "upload_history_id": "95743",
+          "sequence_date": "2017-07-21 13:03:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "27",
+          "client_total": "0",
+          "total": "27"
+        }
+      }
+    },
+    {
+      "id": "494163",
+      "date_added": "2017-07-21  (13:03)",
+      "country_code": "eu",
+      "current_lat": "47.119546",
+      "current_lng": "23.887673",
+      "nw_lat": "47.119546",
+      "nw_lng": "23.887673",
+      "se_lat": "47.119381",
+      "se_lng": "23.888057",
+      "location": "Strada Cr\u00e2ngului, Dej, Romania, RO",
+      "photo_no": "2",
+      "distance": "0.03",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494163_d875a_5971df9982d15.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494163_8a858_1.jpg",
+      "upload_history": {
+        "id": "95741",
+        "sequence_id": "494163",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "0.03",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "0.03",
+            "coverage_points": "2",
+            "coverage_photos_count": "2"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44823",
+          "upload_history_id": "95741",
+          "sequence_date": "2017-07-21 13:03:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "2",
+          "client_total": "0",
+          "total": "2"
+        }
+      }
+    },
+    {
+      "id": "494161",
+      "date_added": "2017-07-21  (13:03)",
+      "country_code": "eu",
+      "current_lat": "47.135904",
+      "current_lng": "23.878047",
+      "nw_lat": "47.135989",
+      "nw_lng": "23.878047",
+      "se_lat": "47.121376",
+      "se_lng": "23.886747",
+      "location": "Strada Tudor Vladimirescu, Dej, Romania, RO",
+      "photo_no": "54",
+      "distance": "1.81",
+      "image_processing_status": "PROCESSING_FINISHED",
+      "obd_info": "0",
+      "platform_name": "Android",
+      "platform_version": "7.0",
+      "app_version": "2.0.14-dev",
+      "reviewed": "0",
+      "changes": "0",
+      "recognitions": "0",
+      "user_id": "8138",
+      "meta_data_filename": "storage1\/files\/photo\/2017\/7\/21\/494161_d875a_5971df97a9f91.txt",
+      "thumb_name": "storage5\/files\/photo\/2017\/7\/21\/th\/494161_5a351_1.jpg",
+      "upload_history": {
+        "id": "95739",
+        "sequence_id": "494161",
+        "user_id": "8138",
+        "user_category": "REGULAR",
+        "distance": "1.51",
+        "has_obd": "N",
+        "coverage": [
+          {
+            "coverage_value": "1",
+            "coverage_distance": "0.07",
+            "coverage_points": "20",
+            "coverage_photos_count": "4"
+          },
+          {
+            "coverage_value": "10+",
+            "coverage_distance": "1.44",
+            "coverage_points": "49",
+            "coverage_photos_count": "49"
+          }
+        ],
+        "signs": [],
+        "points": {
+          "id": "44821",
+          "upload_history_id": "95739",
+          "sequence_date": "2017-07-21 13:03:00",
+          "country_code": "eu",
+          "state_code": null,
+          "obd_multiple": "1",
+          "signs_total": "0",
+          "coverage_total": "69",
+          "client_total": "0",
+          "total": "69"
+        }
+      }
+    }
+  ],
+  "totalFilteredItems": [
+    "219"
+  ],
+  "tracksStatus": {
+    "uploading": 4,
+    "processing": 22
+  }
+}

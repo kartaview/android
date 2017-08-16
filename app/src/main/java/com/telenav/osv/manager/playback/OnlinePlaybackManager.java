@@ -1,10 +1,6 @@
 package com.telenav.osv.manager.playback;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.os.Handler;
@@ -28,20 +24,18 @@ import com.bumptech.glide.signature.StringSignature;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.http.RequestResponseListener;
-import com.telenav.osv.item.ImageCoordinate;
 import com.telenav.osv.item.ImageFile;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.manager.network.UploadManager;
+import com.telenav.osv.item.network.PhotoCollection;
+import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
 import com.telenav.osv.utils.Log;
 import uk.co.senab.photoview.PhotoView;
 
 /**
+ * component responsible for playing back online content
  * Created by Kalman on 27/07/16.
  */
-
 public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.OnSeekBarChangeListener {
 
     private static final String TAG = "OnlinePlaybackManager";
@@ -54,9 +48,9 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     private final OSVActivity activity;
 
-    public ArrayList<ImageFile> mImages = new ArrayList<>();
+    private ArrayList<ImageFile> mImages = new ArrayList<>();
 
-    public ArrayList<SKCoordinate> mTrack = new ArrayList<>();
+    private ArrayList<SKCoordinate> mTrack = new ArrayList<>();
 
     private Glide mGlide;
 
@@ -84,8 +78,8 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                     mPlayHandler.postDelayed(mRunnable, 20);
                     return;
                 }
-                mPager.setCurrentItem(mPager.getCurrentItem() + mModifier, false);
-                int current = mPager.getCurrentItem();
+                mPager.setCurrentItem(mSequence.getRequestedFrameIndex() + mModifier, false);
+                int current = mSequence.getRequestedFrameIndex();
                 if (current + mModifier >= 0 || current + mModifier <= mImages.size()) {
                     mPlayHandler.postDelayed(mRunnable, PLAYBACK_RATE);
                 } else {
@@ -109,6 +103,10 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         }
     };
 
+    private ViewPager.OnPageChangeListener mPageChangedListener;
+
+    private boolean mPrepared;
+
     public OnlinePlaybackManager(OSVActivity act, Sequence sequence) {
         activity = act;
         mSequence = sequence;
@@ -118,97 +116,61 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     private void loadFrames() {
         activity.enableProgressBar(true);
-        final ArrayList<ImageFile> nodes = new ArrayList<>();
-        final ArrayList<ImageCoordinate> track = new ArrayList<>();
-        UploadManager uploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
-        final int finalSeqId = mSequence.sequenceId;
-        uploadManager.listImages(mSequence.sequenceId, new RequestResponseListener() {
+        activity.getUserDataManager().listImages(mSequence.getId(), new NetworkResponseDataListener<PhotoCollection>() {
+
             @Override
-            public void requestFinished(final int status, final String result) {
-                if (status == RequestResponseListener.STATUS_FAILED) {
-                    Log.w(TAG, "displaySequence: failed, " + result);
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            activity.enableProgressBar(false);
-                        }
-                    });
-                    return;
-                }
-                if (result != null && !result.isEmpty()) {
-                    try {
-                        JSONObject obj = new JSONObject(result);
-                        JSONArray array = obj.getJSONObject("osv").getJSONArray("photos");
-                        for (int i = 0; i < array.length(); i++) {
-                            String link = UploadManager.URL_DOWNLOAD_PHOTO + array.getJSONObject(i).getString("lth_name");
-                            String thumbLink = "";
-                            try {
-                                thumbLink = UploadManager.URL_DOWNLOAD_PHOTO + array.getJSONObject(i).getString("th_name");
-                            } catch (Exception e) {
-                                Log.w(TAG, "displaySequence: " + e.getLocalizedMessage());
-                            }
-                            int index = array.getJSONObject(i).getInt("sequence_index");
-                            int id = array.getJSONObject(i).getInt("id");
-                            double lat = array.getJSONObject(i).getDouble("lat");
-                            double lon = array.getJSONObject(i).getDouble("lng");
-                            if (lat != 0.0 && lon != 0.0) {
-                                ImageCoordinate coord = new ImageCoordinate(lat, lon, index);
-                                nodes.add(new ImageFile(finalSeqId, link, thumbLink, id, index, coord, false));
-                                track.add(coord);
-                            }
-                        }
-                        Collections.sort(nodes, new Comparator<ImageFile>() {
-                            @Override
-                            public int compare(ImageFile lhs, ImageFile rhs) {
-                                return lhs.index - rhs.index;
-                            }
-                        });
-                        Collections.sort(track, new Comparator<ImageCoordinate>() {
-                            @Override
-                            public int compare(ImageCoordinate lhs, ImageCoordinate rhs) {
-                                return lhs.index - rhs.index;
-                            }
-                        });
-                        Log.d(TAG, "listImages: id=" + finalSeqId + " length=" + nodes.size());
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mImages = nodes;
-                                mTrack = new ArrayList<SKCoordinate>(track);
-                                mSeekbar.setMax(mImages.size());
-                                mSeekbar.setProgress(0);
-                                mPagerAdapter.notifyDataSetChanged();
-                                for (PlaybackListener pl : mPlaybackListeners) {
-                                    pl.onPrepared();
-                                }
-                                if (mSequence.skipToValue != 0) {
-                                    if (mPager != null) {
-                                        mPager.setCurrentItem(mSequence.skipToValue);
-                                    }
-                                }
-//                                play();
-                            }
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
+            public void requestFailed(int status, PhotoCollection details) {
+                Log.w(TAG, "displaySequence: failed, " + details);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        activity.enableProgressBar(false);
                     }
-                }
-                activity.enableProgressBar(false);
+                });
             }
 
             @Override
-            public void requestFinished(final int status) {
-                activity.enableProgressBar(false);
+            public void requestFinished(int status, final PhotoCollection collectionData) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mPrepared = true;
+                        mImages.clear();
+                        mImages.addAll(collectionData.getNodes());
+                        mTrack = new ArrayList<SKCoordinate>(collectionData.getTrack());
+                        if (mSeekbar != null) {
+                            mSeekbar.setMax(mImages.size());
+                            mSeekbar.setProgress(0);
+                        }
+                        mPagerAdapter.notifyDataSetChanged();
+                        for (PlaybackListener pl : mPlaybackListeners) {
+                            pl.onPrepared();
+                        }
+                        if (mSequence.getRequestedFrameIndex() != 0) {
+                            if (mPager != null) {
+                                mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
+                            }
+                        }
+//                                play();
+                        activity.enableProgressBar(false);
+                    }
+                });
             }
         });
     }
 
     @Override
-    public void setSurface(Object surface) {
+    public void setSurface(View surface) {
+        Log.d(TAG, "setSurface: " + surface);
+        if (mPager != null){
+            mPager.removeOnPageChangeListener(mPageChangedListener);
+            mPager.setAdapter(null);
+        }
         mPager = (ScrollDisabledViewPager) surface;
         mPager.setOffscreenPageLimit(OFFSCREEN_LIMIT / 2);
         mPager.setAdapter(mPagerAdapter);
-        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
+        mPageChangedListener = new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -216,7 +178,10 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
             @Override
             public void onPageSelected(int position) {
-                mSeekbar.setProgress(position);
+                if (mSeekbar != null) {
+                    mSeekbar.setProgress(position);
+                }
+                mSequence.setRequestedFrameIndex(position);
                 View view = mPager.getChildAt(0);
                 if (view != null) {
                     View image = view.findViewById(R.id.image);
@@ -251,20 +216,33 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
             public void onPageScrollStateChanged(int state) {
 
             }
-        });
-        if (mSequence.skipToValue != 0) {
+        };
+        mPager.addOnPageChangeListener(mPageChangedListener);
+        if (mSequence.getRequestedFrameIndex() != 0) {
             if (mPager != null) {
-                mPager.setCurrentItem(mSequence.skipToValue);
+                mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
             }
         }
 
     }
 
     @Override
+    public View getSurface(){
+        return mPager;
+    }
+
+    @Override
+    public void prepare() {
+        if (!mPrepared) {
+            loadFrames();
+        }
+    }
+
+    @Override
     public void next() {
         pause();
         if (mPager != null) {
-            mPager.setCurrentItem(mPager.getCurrentItem() + 1);
+            mPager.setCurrentItem(mSequence.getRequestedFrameIndex() + 1);
         }
     }
 
@@ -272,7 +250,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
     public void previous() {
         pause();
         if (mPager != null) {
-            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
+            mPager.setCurrentItem(mSequence.getRequestedFrameIndex() - 1);
         }
     }
 
@@ -283,7 +261,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         playImpl();
     }
 
-    public void playImpl() {
+    private void playImpl() {
         try {
             if (mPlayHandler != null && !isPlaying()) {
                 mPlaying = true;
@@ -312,9 +290,6 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
     public void stop() {
         mPlaying = false;
         mPlayHandler.removeCallbacks(mRunnable);
-        if (mPager != null) {
-            mPager.setCurrentItem(0, false);
-        }
 
         for (PlaybackListener pl : mPlaybackListeners) {
             pl.onStopped();
@@ -343,8 +318,10 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
     @Override
     public void setSeekBar(SeekBar seekBar) {
         mSeekbar = seekBar;
-        mSeekbar.setProgress(0);
-        mSeekbar.setOnSeekBarChangeListener(this);
+        if (mSeekbar != null) {
+            mSeekbar.setProgress(0);
+            mSeekbar.setOnSeekBarChangeListener(this);
+        }
         loadFrames();
     }
 
@@ -424,7 +401,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         private final LayoutInflater inflater;
 
 
-        public FullscreenPagerAdapter(final OSVActivity activity) {
+        FullscreenPagerAdapter(final OSVActivity activity) {
             inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
@@ -438,6 +415,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
             return object == view;
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             View view;
@@ -456,7 +434,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                             .skipMemoryCache(false)
                             .signature(new StringSignature(mImages.get(position).coords.getLatitude() + "," + mImages.get(position).coords.getLongitude() + " full"))
                             .priority(Priority.NORMAL)
-                            .error(R.drawable.custom_image_broken_background)
+                            .error(R.drawable.vector_picture_placeholder)
                             .listener(mGlideListener);
                     if (PLAYBACK_RATE > 200 || !isPlaying()) {
                         if (!mImages.get(position).thumb.equals("") && mImages.get(position).file == null) {
@@ -468,7 +446,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                                     .skipMemoryCache(false)
                                     .signature(new StringSignature(mImages.get(position).coords.getLatitude() + "," + mImages.get(position).coords.getLongitude()))
                                     .priority(Priority.IMMEDIATE)
-                                    .error(R.drawable.custom_image_broken_background)
+                                    .error(R.drawable.vector_picture_placeholder)
                                     .listener(mGlideListener));
                         } else if (mImages.get(position).file != null) {
                             builder.thumbnail(0.2f)

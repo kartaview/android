@@ -3,14 +3,17 @@ package com.telenav.osv.manager.playback;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import android.database.Cursor;
 import android.graphics.SurfaceTexture;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Process;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
 import android.widget.SeekBar;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.ffmpeg.FFMPEGTrackPlayer;
 import com.telenav.osv.activity.OSVActivity;
@@ -29,13 +32,11 @@ import com.telenav.streetview.scalablevideoview.ScalableVideoView;
 public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrackPlayer.OnSeekCompleteListener, FFMPEGTrackPlayer.OnBufferingUpdateListener,
         FFMPEGTrackPlayer.OnCompletionListener, FFMPEGTrackPlayer.OnErrorListener, FFMPEGTrackPlayer.OnInfoListener, FFMPEGTrackPlayer.OnPreparedListener,
         SeekBar.OnSeekBarChangeListener, FFMPEGTrackPlayer.OnVideoSizeChangedListener, FFMPEGTrackPlayer.OnPlaybackListener {
-    public static final String TAG = "LocalPlaybackManager";
-
-    private final Handler mMediaHandler;
-
-    private HandlerThread mHandlerThread;
+    private static final String TAG = "LocalPlaybackManager";
 
     private final OSVActivity activity;
+
+    private final ThreadPoolExecutor mThreadPoolExec;
 
     private Sequence mSequence;
 
@@ -60,10 +61,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     private boolean mSeekComplete = true;
 
     public LocalPlaybackManager(OSVActivity context, Sequence sequence) {
-        mHandlerThread = new HandlerThread("MediaHandlerThread", Process.THREAD_PRIORITY_FOREGROUND);
-        mHandlerThread.start();
         activity = context;
-        mMediaHandler = new Handler(mHandlerThread.getLooper());
         this.mSequence = sequence;
         mTotalDuration = 0;
         mCurrentPlayer = new FFMPEGTrackPlayer();
@@ -79,13 +77,22 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
         if (!Utils.isDebuggableFlag(context)) {
             mCurrentPlayer.initSignalHandler();
         }
-        mMediaHandler.post(new Runnable() {
+
+        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
+        mThreadPoolExec = new ThreadPoolExecutor(
+                1,
+                1,
+                60,
+                TimeUnit.SECONDS,
+                workQueue,
+                new ThreadFactoryBuilder().setDaemon(false).setNameFormat("PlaybackThreadPool").setPriority(Thread.NORM_PRIORITY).build());
+        mThreadPoolExec.execute(new Runnable() {
             @Override
             public void run() {
                 videoFiles = new ArrayList<>();
                 activity.enableProgressBar(true);
                 try {
-                    Cursor records = SequenceDB.instance.getVideos(mSequence.sequenceId);//todo no playback for this release
+                    Cursor records = SequenceDB.instance.getVideos(mSequence.getId());
                     if (records != null && records.getCount() > 0) {
                         while (!records.isAfterLast()) {
                             try {
@@ -125,7 +132,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
                     if (records != null) {
                         records.close();
                     }
-                    mTrack = new ArrayList<>(mSequence.polyline.getNodes());
+                    mTrack = new ArrayList<>(mSequence.getPolyline().getNodes());
                 } catch (Exception e) {
 
                     Log.w(TAG, "displaySequence: " + e.getLocalizedMessage());
@@ -137,7 +144,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
 
     @Override
     public void setSeekBar(final SeekBar seekBar) {
-        mMediaHandler.post(new Runnable() {
+        mThreadPoolExec.execute(new Runnable() {
             @Override
             public void run() {
                 mSeekBar = seekBar;
@@ -153,12 +160,12 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     }
 
     @Override
-    public void setSurface(final Object surface) {
+    public void setSurface(final View surface) {
         mVideoView = (ScalableVideoView) surface;
         mVideoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
             @Override
             public void onSurfaceTextureAvailable(final SurfaceTexture surface, int width, int height) {
-                mMediaHandler.post(new Runnable() {
+                mThreadPoolExec.execute(new Runnable() {
                     @Override
                     public void run() {
                         if (mCurrentPlayer != null) {
@@ -187,13 +194,23 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     }
 
     @Override
+    public View getSurface(){
+        return mVideoView;
+    }
+
+    @Override
+    public void prepare() {
+
+    }
+
+    @Override
     public int getLength() {
         return mTrack.size();
 //        return mCurrentPlayer.getDuration();
     }
 
-    public void seekTo(final int milliseconds) {
-        mMediaHandler.post(new Runnable() {
+    private void seekTo(final int milliseconds) {
+        mThreadPoolExec.execute(new Runnable() {
             @Override
             public void run() {
                 if (!mCurrentPlayer.isPlaying()) {
@@ -213,7 +230,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
 
     @Override
     public void destroy() {
-        mMediaHandler.post(new Runnable() {
+        mThreadPoolExec.execute(new Runnable() {
             @Override
             public void run() {
                 if (mCurrentPlayer != null) {
@@ -234,12 +251,9 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
                     pl.onExit();
                 }
                 mPlaybackListeners.clear();
-                HandlerThread temp = mHandlerThread;
-                mHandlerThread = null;
-                temp.quit();
             }
         });
-
+        mThreadPoolExec.shutdown();
     }
 
     @Override
@@ -276,7 +290,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     @Override
     public void onSeekComplete(final FFMPEGTrackPlayer mp) {
         mSeekComplete = true;
-//        mMediaHandler.post(new Runnable() {
+//        mThreadPoolExec.post(new Runnable() {
 //            @Override
 //            public void run() {
 //                Log.d(TAG, "onSeekComplete: " + mp.getCurrentPosition());
@@ -326,7 +340,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
         for (PlaybackListener pl : mPlaybackListeners) {
             pl.onStopped();
         }
-        mMediaHandler.post(new Runnable() {
+        mThreadPoolExec.execute(new Runnable() {
             @Override
             public void run() {
                 Log.d(TAG, "onCompletion: ");
@@ -417,7 +431,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     @Override
     public void next() {
         if (mCurrentPlayer != null) {
-            mMediaHandler.post(new Runnable() {
+            mThreadPoolExec.execute(new Runnable() {
                 @Override
                 public void run() {
                     mCurrentPlayer.stepFrame(true);
@@ -429,7 +443,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     @Override
     public void previous() {
         if (mCurrentPlayer != null) {
-            mMediaHandler.post(new Runnable() {
+            mThreadPoolExec.execute(new Runnable() {
                 @Override
                 public void run() {
                     mCurrentPlayer.stepFrame(false);
@@ -442,7 +456,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     public void play() {
         if (mCurrentPlayer != null && mPrepared) {
             if (!mCurrentPlayer.isPlaying()) {
-                mMediaHandler.post(new Runnable() {
+                mThreadPoolExec.execute(new Runnable() {
                     @Override
                     public void run() {
                         mCurrentPlayer.setFPSDelay(false);
@@ -450,7 +464,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
                     }
                 });
             } else {
-                mMediaHandler.post(new Runnable() {
+                mThreadPoolExec.execute(new Runnable() {
                     @Override
                     public void run() {
                         mCurrentPlayer.setFPSDelay(false);
@@ -463,7 +477,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     @Override
     public void pause() {
         if (mCurrentPlayer != null) {
-            mMediaHandler.post(new Runnable() {
+            mThreadPoolExec.execute(new Runnable() {
                 @Override
                 public void run() {
                     mCurrentPlayer.pause();
@@ -476,7 +490,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     public void stop() {
         try {
             if (mCurrentPlayer != null) {
-                mMediaHandler.post(new Runnable() {
+                mThreadPoolExec.execute(new Runnable() {
                     @Override
                     public void run() {
                         mCurrentPlayer.stop();
@@ -489,7 +503,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     @Override
     public void fastForward() {
         if (mCurrentPlayer != null) {
-            mMediaHandler.post(new Runnable() {
+            mThreadPoolExec.execute(new Runnable() {
                 @Override
                 public void run() {
                     mCurrentPlayer.setFPSDelay(true);
@@ -503,7 +517,7 @@ public class LocalPlaybackManager extends PlaybackManager implements FFMPEGTrack
     @Override
     public void fastBackward() {
         if (mCurrentPlayer != null) {
-            mMediaHandler.post(new Runnable() {
+            mThreadPoolExec.execute(new Runnable() {
                 @Override
                 public void run() {
                     mCurrentPlayer.setFPSDelay(true);

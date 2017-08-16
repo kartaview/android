@@ -89,13 +89,19 @@ public final class PreferenceTypes {
 
     public static final String K_SHOW_CLEAR_RECENTS_WARNING = "clearRecentsWarning";
 
-    public static final String K_USER_TYPE = "userType";
+    public static final String K_USER_TYPE = "userTypeSecond";
 
-    public static final String V_USER_TYPE_DRIVER = "driver";
+    public static final int USER_TYPE_UNKNOWN = -1;
 
-    public static final String V_USER_TYPE_USER = "user";
+    public static final int USER_TYPE_CONTRIBUTOR = 0;
 
-    public static final String V_USER_TYPE_QA = "qa";
+    public static final int USER_TYPE_QA = 1;
+
+    public static final int USER_TYPE_DEDICATED = 2;
+
+    public static final int USER_TYPE_BYOD = 3;
+
+    public static final int USER_TYPE_BAU = 4;
 
     public static final String K_USER_PHOTO_URL = "userPhotoUrl";
 
@@ -104,6 +110,22 @@ public final class PreferenceTypes {
     public static final String K_LOGIN_TYPE = "loginType";
 
     public static final String K_FFMPEG_CRASH_COUNTER = "ffmpegCrashCounter";
+
+    public static final String K_RECORDING_MAP_ZOOM = "recordingMapZoom";
+
+    public static final String K_UPLOAD_CHARGING = "uploadCharging";
+
+    public static final String K_HIDE_RECORDING_SUMMARY = "hideSummary";
+
+    public static final String K_DRIVER_MODE_DIALOG_SHOWN = "driverModeDialogShown";
+
+    public static final String K_FOCUS_MODE_STATIC = "focusMode";
+
+    public static final String K_USE_CAMERA_API_NEW = "cameraApi";
+
+    public static final String K_PREVIEW_WIDTH = "previewWidth";
+
+    public static final String K_PREVIEW_HEIGHT = "previewHeight";
 
     private PreferenceTypes() {}
 }

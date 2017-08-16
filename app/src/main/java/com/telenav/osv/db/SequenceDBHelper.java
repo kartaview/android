@@ -3,16 +3,12 @@ package com.telenav.osv.db;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Utils;
 
 /**
  * Created by Kalman on 10/7/2015.
  */
-public class SequenceDBHelper extends SQLiteOpenHelper {
+class SequenceDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "Sequences";
 

@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name" translatable="false">OSC</string>
-    <string name="facebook_application_id" translatable="false">000000000000000</string>
-    <string name="facebook_login_protocol_scheme" translatable="false">fb0000000000000000</string>
-    <string name="google_client_id" translatable="false">00000000000000000000000.apps.googleusercontent.com</string>
     <string name="cannot_connect_hal">Unable to connect to camera, phone might need to be restarted.</string>
     <string name="main_process_name" translatable="false">:MainProcess</string>
     <string name="playback_process_name" translatable="false">:PlaybackProcess</string>
@@ -11,9 +8,6 @@
     <string name="ok_label">OK</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="ok_text">OK</string>
-    <string name="on_button"> On </string>
-    <string name="off_button">Off</string>
     <string name="descr_image">Image</string>
     <string name="stop_recording_warning_message">Do you also want to stop the recording session? You can keep recording in the background.</string>
     <string name="stop_recording_warning_title">Leaving application</string>
@@ -22,7 +16,6 @@
     <string name="login_to_upload_warning">Please log in to upload your recordings.</string>
     <string name="stop_value_string">Stop</string>
     <string name="keep_value_string">Keep recording</string>
-    <string name="select_all">Select all</string>
     <string name="log_in">Login</string>
     <string name="log_out">Logout </string>
     <string name="upload_on_data_label">Upload on data</string>
@@ -32,14 +25,11 @@
     <string name="upload_all_label">Upload all</string>
     <string name="upload_all_warning">Upload all recordings and remove local files?</string>
     <string name="upload_all_warning_title">Uploading all recordings</string>
-    <string name="please_login_label">Please login.</string>
     <string name="no_internet_connection_label">No internet connection.</string>
     <string name="logout_confirmation_message">Are you sure you want to logout?</string>
-    <string name="logged_out_confirmation">Logged out.</string>
     <string name="data_setting_subtitle">When enabled, the app will use cellular data if no Wi-Fi is available.</string>
     <string name="auto_setting_subtitle">When enabled, the app will automatically upload local recordings when possible.</string>
     <string name="no_wifi_label">Connect to a hotspot or turn on upload using data in the settings.</string>
-    <string name="sequence_will_be_uploaded">Recording will be uploaded.</string>
     <string name="something_wrong_try_again">Something went wrong, please try again later.</string>
     <string name="recording_deleted">Recording deleted.</string>
     <string name="restart_needed">Application restart needed to apply changes.</string>
@@ -47,9 +37,6 @@
     <string name="resuming_upload">Uploading…</string>
     <string name="upload_paused">Upload paused.</string>
     <string name="app_restarted">Application was restarted due to an error. Crash logs were sent.</string>
-    <string name="upload_sequence_warning">Upload recording and remove local files?</string>
-    <string name="upload_sequence_warning_title">Uploading recording</string>
-    <string name="upload_sequence_label">Upload</string>
     <string name="loading_too_long">Loading is taking unusually long.</string>
     <string name="metric_label">Distance unit</string>
     <string name="metric_subtitle">Use metric distance units instead of Imperial</string>
@@ -71,8 +58,6 @@
     <string name="delete_track_title">Delete track</string>
     <string name="my_profile">My Profile</string>
     <string name="settings">Settings</string>
-    <string name="drawer_open">Open</string>
-    <string name="drawer_close">Close</string>
     <string name="home_label">Home</string>
     <string name="turn_off_screen_hint">You can turn off the screen or put the app in the background.</string>
     <string name="got_it_label">Got it</string>
@@ -81,7 +66,6 @@
     <string name="gps_bad_label">GPS Bad</string>
     <string name="notification_sequence_recording_label">Sequence recording…</string>
     <string name="app_short_name" translatable="false">OSC</string>
-    <string name="no_gps_message">No gps position.</string>
     <string name="hint_mount_label">Phone mount</string>
     <string name="hint_mount_message">Check that the front hood of the car and the phone’s mount are not visible in the pictures.</string>
     <string name="hint_windshield_label">Windshield</string>
@@ -91,29 +75,20 @@
     <string name="hint_landscape_label">Landscape</string>
     <string name="hint_landscape_message">Record in landscape mode to capture better images. Turn your phone if possible.</string>
     <string name="login_label">Login</string>
-    <string name="loading_components_message">Loading components, just a minute…</string>
     <string name="no_local_recordings_message">You have no local recordings.</string>
     <string name="exit_app_message">Are you sure you want to exit the app?</string>
     <string name="app_name_formatted" translatable="false">Open Street Cam</string>
     <string name="exit_label">Exit</string>
-    <string name="p_upload_finished">"Upload finished: "</string>
     <string name="upload_finished">"Upload finished."</string>
-    <string name="p_successful">" successful, "</string>
-    <string name="p_failed">" failed."</string>
-    <string name="update_available_message">There is a new version available for OpenStreetCam.</string>
-    <string name="update_label">Update</string>
-    <string name="update_now_label">Update now</string>
-    <string name="settings_label">Settings</string>
+    <string name="general_settings_label">General</string>
     <string name="hey_label">"Hey "</string>
     <string name="uploading_track_label">Uploading Track</string>
-    <string name="waiting_upload_label">Waiting upload</string>
     <string name="nearby_label">Nearby</string>
     <string name="nearby_no_result_label">Nothing here.</string>
     <string name="osm_login_label">Log in to osm</string>
-    <string name="account_images_label">"Images: "</string>
-    <string name="account_tracks_label">"Tracks: "</string>
-    <string name="account_distance_label">"Distance: "</string>
-    <string name="account_obd_label" translatable="false">"OBD: "</string>
+    <string name="account_images_label">"IMAGES\n"</string>
+    <string name="account_distance_label">"DISTANCE\n"</string>
+    <string name="account_obd_label" translatable="false">"OBD\n"</string>
     <string name="debug_settings_notification">A wild debug settings appeared!</string>
     <string name="wifi_label" translatable="false">Wi-Fi</string>
     <string name="ble_label" translatable="false">BLE</string>
@@ -131,7 +106,6 @@
     <string name="error_creating_folder_message">Could not create new Recording folder. Please try again.</string>
     <string name="ffmpeg_init_error_message">Could not initialize encoder</string>
     <string name="error_creating_video_file_message">Could not create video file.</string>
-    <string name="upload_failed_message">Upload failed. Please retry later.</string>
     <string name="upload_finished_message">"Track upload finished. "</string>
     <string name="uploading_images_message">Uploading images…</string>
     <string name="resume_label">Resume</string>
@@ -144,16 +118,10 @@
     <string name="not_logged_in">Not logged in.</string>
     <string name="pause_caps_label">PAUSE</string>
     <string name="continue_caps_label">CONTINUE</string>
-    <string name="waiting_fragment_upload_paused">Upload Paused</string>
-    <string name="uploading_label">Uploading…</string>
-    <string name="clear_history_label">Clear History</string>
     <string name="sdcard_missing_message">SDcard is missing.</string>
-    <string name="refresh_label">Refresh</string>
     <string name="upload_label">Upload</string>
     <string name="no_internet_connection">No internet connection.</string>
     <string name="resolutions_label">Resolutions</string>
-    <string name="this_week_label">This week</string>
-    <string name="overall_ranking_label">Overall ranking</string>
     <string name="obd_type_label">OBD type</string>
     <string name="bluetooth_low_energy_label" translatable="false">Bluetooth Low Energy</string>
     <string name="bluetooth_label" translatable="false">Bluetooth</string>
@@ -174,8 +142,6 @@
     <string name="debug_label">Debug</string>
     <string name="debug_features_label">Debug features</string>
     <string name="current_server_label">Current server</string>
-    <string name="hdr_recording_label">HDR recording</string>
-    <string name="hdr_recording_text">Use HDR for the images in the recordings if available. May produce better quality images.</string>
     <string name="debug_speed_label">Show speed and distance filter</string>
     <string name="debug_speed_text">Show the current distance filter and speed.</string>
     <string name="remember_login_credentials_label">Remember login credentials</string>
@@ -185,14 +151,12 @@
     <string name="unknown_device">Unknown device</string>
     <string name="connected">Connected</string>
     <string name="ble_devices">BLE devices</string>
-    <string name="sdk_not_initialized">SDK is not initialized. Check if the map data path is correct.</string>
     <string name="map_visibility_subtitle">Map display increases battery and data consumption.</string>
     <string name="map_visibility_label">Show map while recording</string>
-    <string name="camera_permission_details">To preview and record the frames on the road, the OSV app needs to have access to the device\'s camera. Please grant permission on the next dialog to use the recording functionality.</string>
     <string name="permission_request">Permission request</string>
     <string name="bt_paired_devices_label">Paired devices</string>
-    <string name="bt_none_paired">No paired devices.</string>
-    <string name="bt_none_found">Found no devices.</string>
+    <string name="bt_none_paired">no paired devices</string>
+    <string name="bt_none_found">no devices found</string>
     <string name="bt_scanning_label">Scanning…</string>
     <string name="bt_new_devices_label">Found new devices</string>
     <string name="bt_select_device_label">Select device</string>
@@ -207,7 +171,6 @@
     <string name="safe_mode_title">JPEG recording mode</string>
     <string name="safe_mode_sub_title">By enabling this, the app reverts to jpeg format instead of the mp4 format. This requires less processing power but uses more storage space.</string>
     <string name="tap_to_start_recording_hint">Tap to start recording!</string>
-    <string name="upload_now_label">UPLOAD NOW</string>
     <string name="summary_label">Summary</string>
     <string name="map_sdk_label">Enable map</string>
     <string name="map_sdk_subtitle">Maps use more resources and it may decrease performance.</string>
@@ -221,10 +184,7 @@
     <string name="jpeg_recording_label">JPEG Recording Mode</string>
     <string name="disable_label">Disable</string>
     <string name="enable_label">Enable</string>
-    <string name="warning_moved_recordings">The application database was updated,you can upload any old recordings with the desktop OSV upload script.\nYou can find your old recordings at:</string>
-    <string name="recordings_backup_label">Recordings backup</string>
     <string name="warning_optimization_label">Optimize?</string>
-    <string name="not_now_label">Not now</string>
     <string name="warning_optimization_message">We detected that you are a driver with a signed contract. We optimised the app for longer recordings. The app might have to restart for these changes to take effect.</string>
     <string name="terms_text"><![CDATA[Terms & Conditions]]></string>
     <string name="policy_text">Privacy Policy</string>
@@ -235,9 +195,43 @@
     <string name="walkthrough_record_text">Use your phone to record the streets you drive, bike or walk, the app will take photos automatically and upload when Wi-Fi is available.</string>
     <string name="walkthrough_share_title">Make it count</string>
     <string name="walkthrough_share_text">Contribute your recordings, gain points and increase your ranking in the OpenStreetCam leaderboard.\n\nTip: Find streets that are not yet covered for many bonus points!</string>
-    <string name="progress_dialog_signing_up">Creating your shiny new account…</string>
     <string name="login_facebook_button_label">Login with Facebook</string>
     <string name="login_google_button_label">Login with Google</string>
     <string name="login_osm_button_label">Login with OpenStreetMap</string>
     <string name="check_internet_connection">No internet detected. Check your internet connection </string>
+    <string name="issue_reporting_hint">Please describe the issue you experienced</string>
+    <string name="issue_reporting_description">The app will send internal logs along with your observations, to correctly debug the issue you\'re describing.</string>
+    <string name="issue_report_label">Report a problem</string>
+    <string name="upload_charging_label">Auto upload while charging</string>
+    <string name="charging_setting_subtitle">If on, automatic upload only starts when the device is plugged in.</string>
+    <string name="well_done_label">Well done!</string>
+    <string name="points_label">Points </string>
+    <string name="partial_estimated">(estimated)</string>
+    <string name="don_t_show_again_label">Don\'t show again</string>
+    <string name="camera_label">Camera</string>
+    <string name="focus_mode_title">Fixed focus</string>
+    <string name="focus_mode_sub_title">Set focus to infinity to avoid focusing on the car\'s windshield.</string>
+    <string name="api_mode_title">Use the new camera API</string>
+    <string name="api_mode_sub_title">Start using the post-Lollipop camera implementation, which can bring improvements to the efficiency of the recording.</string>
+    <string name="filesystem_error_message">Encountered a filesystem error, please check if the storage device is correctly mounted.</string>
+    <string name="account_distance_accepted_label">ACCEPTED\n</string>
+    <string name="account_distance_rejected_label">REJECTED\n</string>
+    <string name="payment_header_label_id">ID</string>
+    <string name="payment_header_label_date">Date</string>
+    <string name="payment_header_label_distance">Distance (km)</string>
+    <string name="payment_header_label_value">Value (USD)</string>
+    <string name="payment_header_label_total_paid">Total paid</string>
+    <string name="profile_byod_label_to_be_paid">To be paid</string>
+    <string name="profile_tbp_label_distance">DISTANCE</string>
+    <string name="profile_tbp_label_pay_rate">PAY RATE</string>
+    <string name="profile_tbp_label_value">VALUE</string>
+    <string name="profile_byod_tab_uploaded_tracks">UPLOADED TRACKS</string>
+    <string name="profile_byod_tab_payments">PAYMENTS</string>
+    <string name="profile_user_rank">RANK</string>
+    <string name="profile_user_score">SCORE</string>
+    <string name="default_value_0">0</string>
+    <string name="partial_img_label">IMG</string>
+    <string name="partial_mb_label">MB</string>
+    <string name="partial_km_label">KM</string>
+    <string name="partial_kmh_label">km/h</string>
 </resources>

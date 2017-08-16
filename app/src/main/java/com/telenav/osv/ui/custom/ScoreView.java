@@ -23,12 +23,12 @@ import com.telenav.osv.utils.Utils;
  */
 @SuppressWarnings("SuspiciousNameCombination")
 public class ScoreView extends View {
-    
+
     public final static String TAG = "ScoreView";
 
-    public final static int FONT_SIZE_SMALL = 12;
+    private final static int FONT_SIZE_SMALL = 12;
 
-    public final static int FONT_SIZE_LARGE = 18;
+    private final static int FONT_SIZE_LARGE = 18;
 
     private static final int STATE_HIDDEN = 1;
 
@@ -393,18 +393,18 @@ public class ScoreView extends View {
         mPaintTextLarge.getTextBounds(mMultiplierText, 0, mMultiplierText.length(), mulBounds);
 
         int length = mPointsText.length();
-        String pointsPlaceHolder = "";
+        StringBuilder pointsPlaceHolder = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            pointsPlaceHolder = pointsPlaceHolder + "0";
+            pointsPlaceHolder.append("0");
         }
         Rect pointsBounds = new Rect();
-        mPaintTextLarge.getTextBounds(pointsPlaceHolder, 0, length, pointsBounds);
+        mPaintTextLarge.getTextBounds(pointsPlaceHolder.toString(), 0, length, pointsBounds);
         Rect ptsBounds = new Rect();
         mPaintTextSmall.getTextBounds(mPointsSuffix, 0, mPointsSuffix.length(), ptsBounds);
 
         //put down the cursor then move it to the right
         float centerY = (int) (mHeight / 2f);
-        int cursor = (int) (mHeight/2f - (xBounds.width() + mulBounds.width()) / 2f - oneDip * 3f/2f);
+        int cursor = (int) (mHeight / 2f - (xBounds.width() + mulBounds.width()) / 2f - oneDip * 3f / 2f);
         mPrefixY = (int) (centerY + xBounds.height() / 2f);
         mPrefixX = (int) (cursor + xBounds.width() / 2f);
         cursor = cursor + xBounds.width() + (int) (oneDip * 3f);
@@ -424,7 +424,8 @@ public class ScoreView extends View {
 
     private void extendAnimation(final Runnable runnable) {
 //        Log.d(TAG, "extendAnimation: ");
-        ResizeAnimation extend = new ResizeAnimation(this,  getWidthForState(STATE_DOT), getHeightForState(STATE_DOT), getWidthForState(STATE_EXTENDED), getHeightForState(STATE_EXTENDED));
+        ResizeAnimation extend = new ResizeAnimation(this, getWidthForState(STATE_DOT), getHeightForState(STATE_DOT), getWidthForState(STATE_EXTENDED), getHeightForState
+                (STATE_EXTENDED));
 //        extend.setFillAfter(true);
         extend.setAnimationListener(new AnimationListener() {
 
@@ -443,7 +444,8 @@ public class ScoreView extends View {
     private void retractAnimation(final Runnable endAction) {
 //        Log.d(TAG, "retractAnimation: ");
 
-        ResizeAnimation retract = new ResizeAnimation(this, getWidthForState(STATE_EXTENDED), getHeightForState(STATE_EXTENDED), getWidthForState(STATE_DOT), getHeightForState(STATE_DOT));
+        ResizeAnimation retract = new ResizeAnimation(this, getWidthForState(STATE_EXTENDED), getHeightForState(STATE_EXTENDED), getWidthForState(STATE_DOT), getHeightForState
+                (STATE_DOT));
 //        retract.setFillAfter(true);
         retract.setAnimationListener(new AnimationListener() {
 
@@ -524,6 +526,7 @@ public class ScoreView extends View {
 
     private abstract class AnimationListener implements Animation.AnimationListener {
         public static final String TAG = "AnimationListener";
+
         @Override
         public void onAnimationStart(Animation animation) {
             mDrawTexts = false;

@@ -5,8 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.Timer;
+import java.util.TimerTask;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -17,9 +17,9 @@ import android.os.Looper;
 import android.os.Process;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -30,25 +30,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.http.RequestResponseListener;
-import com.telenav.osv.item.UserData;
-import com.telenav.osv.manager.network.UploadManager;
+import com.telenav.osv.item.LeaderboardData;
+import com.telenav.osv.item.network.UserCollection;
+import com.telenav.osv.listener.network.NetworkResponseDataListener;
+import com.telenav.osv.ui.ScreenComposer;
+import com.telenav.osv.ui.custom.CenterLayoutManager;
 import com.telenav.osv.ui.list.LeaderboardAdapter;
+import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
 
 /**
- *
+ * Fragmnent holding the ui for the leaderboard screen
  * Created by Kalman on 22/11/2016.
  */
-public class LeaderboardFragment extends Fragment {
+public class LeaderboardFragment extends OSVFragment {
 
     public final static String TAG = "LeaderboardFragment";
 
     private MainActivity activity;
-
-    private UploadManager mUploadManager;
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -56,7 +56,7 @@ public class LeaderboardFragment extends Fragment {
 
     private ViewPager mTimeViewPager;
 
-    private ArrayList<UserData> mUserList = new ArrayList<>();
+    private ArrayList<LeaderboardData> mUserList = new ArrayList<>();
 
     private LeaderboardAdapter mLeaderboardAdapter;
 
@@ -70,30 +70,40 @@ public class LeaderboardFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
 
-    private View view;
-
     private String savedUsername;
 
     private Handler mBackgroundHandler;
 
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+
+    private Timer mTimer = new Timer();
+
+    private TimerTask mCancelTask = new TimerTask() {
+        @Override
+        public void run() {
+            if (mSwipeRefreshLayout != null) {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        }
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_leaderboard, null);
+        View view = inflater.inflate(R.layout.fragment_leaderboard, null);
 
         activity = (MainActivity) getActivity();
-        mUploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
         HandlerThread thread = new HandlerThread("leaderboardLoader", Process.THREAD_PRIORITY_LOWEST);
         thread.start();
         mBackgroundHandler = new Handler(thread.getLooper());
         savedUsername = activity.getApp().getAppPrefs().getStringPreference(PreferenceTypes.K_USER_NAME);
 
-        mTabLayout = (TabLayout) view.findViewById(R.id.tab_layout);
+        mTabLayout = view.findViewById(R.id.tab_layout);
         refreshRegionTab();
         mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 mRegionType = tab.getPosition();
-                requestLeaderboardData(mRegionType, mTimePeriod);
+                refreshContent();
             }
 
             @Override
@@ -106,20 +116,20 @@ public class LeaderboardFragment extends Fragment {
 
             }
         });
-        mTimeViewPager = (ViewPager) view.findViewById(R.id.time_view_pager);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.rank_recycler_view);
-        ImageView mTimePagerLeft = (ImageView) view.findViewById(R.id.button_time_pager_left);
-        ImageView mTimePagerRight = (ImageView) view.findViewById(R.id.button_time_pager_right);
+        mTimeViewPager = view.findViewById(R.id.time_view_pager);
+        mRecyclerView = view.findViewById(R.id.rank_recycler_view);
+        ImageView mTimePagerLeft = view.findViewById(R.id.button_time_pager_left);
+        ImageView mTimePagerRight = view.findViewById(R.id.button_time_pager_right);
         mTimePagerLeft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mTimeViewPager.setCurrentItem(Math.max(mTimeViewPager.getCurrentItem()-1,0), true);
+                mTimeViewPager.setCurrentItem(Math.max(mTimeViewPager.getCurrentItem() - 1, 0), true);
             }
         });
         mTimePagerRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mTimeViewPager.setCurrentItem(Math.min(mTimeViewPager.getCurrentItem()+1,3), true);
+                mTimeViewPager.setCurrentItem(Math.min(mTimeViewPager.getCurrentItem() + 1, 3), true);
             }
         });
         mTimeViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -131,7 +141,7 @@ public class LeaderboardFragment extends Fragment {
             @Override
             public void onPageSelected(int position) {
                 mTimePeriod = position;
-                requestLeaderboardData(mRegionType, mTimePeriod);
+                refreshContent();
             }
 
             @Override
@@ -142,7 +152,14 @@ public class LeaderboardFragment extends Fragment {
 
         mLeaderboardAdapter = new LeaderboardAdapter(mUserList, activity);
         mRecyclerView.setAdapter(mLeaderboardAdapter);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
+        mRecyclerView.setLayoutManager(new CenterLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
+        mSwipeRefreshLayout = view.findViewById(R.id.leaderboard_swipe_refresh_layout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshContent();
+            }
+        });
         return view;
     }
 
@@ -150,52 +167,88 @@ public class LeaderboardFragment extends Fragment {
     public void onDestroyView() {
         try {
             mBackgroundHandler.getLooper().getThread().interrupt();
-        } catch (Exception ignored){}
+        } catch (Exception ignored) {}
         super.onDestroyView();
+    }
+
+    private void refreshContent() {
+        BackgroundThreadPool.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "refreshContent ");
+                requestLeaderboardData(mRegionType, mTimePeriod);
+                startRefreshing();
+                mRecyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mUserList.clear();
+                        mLeaderboardAdapter.resetLastAnimatedItem();
+                        mLeaderboardAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
+    }
+
+    private void startRefreshing() {
+        if (mSwipeRefreshLayout != null) {
+            mSwipeRefreshLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mSwipeRefreshLayout != null) {
+                        mSwipeRefreshLayout.setRefreshing(true);
+                        if (mCancelTask != null) {
+                            mCancelTask.cancel();
+                        }
+                        mCancelTask = new TimerTask() {
+                            @Override
+                            public void run() {
+                                if (activity != null) {
+                                    activity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (mSwipeRefreshLayout != null) {
+                                                if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MY_PROFILE) {
+                                                    activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        };
+                        mTimer.schedule(mCancelTask, 10000);
+                    }
+                }
+            });
+        }
+    }
+
+    private void stopRefreshing() {
+        if (activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mSwipeRefreshLayout != null) {
+                        if (mCancelTask != null) {
+                            mCancelTask.cancel();
+                        }
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                }
+            });
+        }
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-//        if (activity != null && mSequencesRecyclerView != null) {
-//            if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-//                mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
-//            } else {
-//                mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
-//            }
-//        }
-//        if (mTabLayout != null){
-//            mTabLayout.requestLayout();
-//        }
         if (mLeaderboardAdapter != null && mRecyclerView != null) {
-//            mRecyclerView.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    mLeaderboardAdapter.setUserPosition(mUserPosition);
-//                    mLeaderboardAdapter.notifyDataSetChanged();
-//                    int viewsize = view.getMeasuredHeight();
-//                    int bottom = mRecyclerView.getTop();
-////                                    ((LinearLayoutManager) mRecyclerView.getLayoutManager()).scrollToPositionWithOffset(mUserPosition, (viewsize - bottom)/2);
-//                    mRecyclerView.smoothScrollToPosition(mUserPosition + (int)((viewsize - bottom)/Utils.dpToPx(activity, 40))/2);
-////                                    ((LinearLayoutManager) mRecyclerView.getLayoutManager()).scrollToPosition(mUserPosition);
-//
-//                }
-//            });
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mLeaderboardAdapter.setUserPosition(mUserPosition);
-                    mLeaderboardAdapter.notifyDataSetChanged();
-                }
-            });
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    int viewsize = view.getMeasuredHeight();
-                    int bottom = mRecyclerView.getTop();
-//                                                    mRecyclerView.smoothScrollToPosition(mUserPosition + (int) ((viewsize - bottom) / Utils.dpToPx(activity, 40)) / 2);
-                    mRecyclerView.scrollToPosition(mUserPosition + mRecyclerView.getChildCount() / 2);
+                    mRecyclerView.smoothScrollToPosition(mUserPosition);
                 }
-            }, 500);
+            }, 200);
         }
         super.onConfigurationChanged(newConfig);
     }
@@ -203,15 +256,6 @@ public class LeaderboardFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-//
-//        mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity);
-//        mSequencesRecyclerView.setAdapter(mOnlineSequencesAdapter);
-//
-//        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-//            mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
-//        } else {
-//            mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
-//        }
         mTimeViewPager.setOffscreenPageLimit(4);
         mTimeViewPager.setAdapter(new PagerAdapter() {
 
@@ -231,7 +275,7 @@ public class LeaderboardFragment extends Fragment {
                 ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
                 tv.setLayoutParams(lp);
                 tv.setGravity(Gravity.CENTER);
-                switch (position){
+                switch (position) {
                     case 0:
                         tv.setText("All Time");
                         break;
@@ -261,12 +305,7 @@ public class LeaderboardFragment extends Fragment {
         if (tab != null) {
             tab.select();
         }
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                requestLeaderboardData(mRegionType, mTimePeriod);
-            }
-        }, 500);
+        refreshContent();
     }
 
     @Override
@@ -310,86 +349,66 @@ public class LeaderboardFragment extends Fragment {
                 }
                 Log.d(TAG, "requestLeaderboardData: date " + date);
                 mUserPosition = 0;
-                mUploadManager.getLeaderboardData(new RequestResponseListener() {
+                activity.getUserDataManager().getLeaderboardData(new NetworkResponseDataListener<UserCollection>() {
                     @Override
-                    public void requestFinished(final int status, final String result) {
+                    public void requestFailed(int status, UserCollection details) {
+                        activity.showSnackBar("No Internet connection detected.", Snackbar.LENGTH_LONG);
+                        Log.d(TAG, "requestLeaderboardData: " + details);
+                        stopRefreshing();
+                    }
+
+                    @Override
+                    public void requestFinished(final int status, final UserCollection collection) {
                         mBackgroundHandler.post(new Runnable() {
                             @Override
                             public void run() {
-
-                                Log.d(TAG, "requestLeaderboardData: " + " status - > " + status + " result - > " + result);
-                                if (result != null && !result.isEmpty() && status == RequestResponseListener.STATUS_SUCCESS_LEADERBOARD) {
-                                    final ArrayList<UserData> userList = new ArrayList<>();
-                                    try {
-                                        JSONObject obj = new JSONObject(result);
-                                        JSONObject osv = obj.getJSONObject("osv");
-
-                                        JSONArray users = osv.getJSONArray("users");
-                                        for (int i = 0; i < users.length(); i++) {
-                                            JSONObject user = users.getJSONObject(i);
-                                            int rank = i + 1;
-                                            String userName = user.getString("username");
-                                            int points = Integer.parseInt(user.getString("total_user_points"));
-                                            userList.add(new UserData(userName, rank, points));
-                                            if (userName.equals(savedUsername)) {
-                                                try {
-                                                    mCountryCode = user.getString("country_code");
-                                                    mUserPosition = rank;
-                                                    refreshRegionTab();
-                                                } catch (Exception ignored) {}
+                                if (collection != null) {
+                                    if (!savedUsername.equals("")) {
+                                        for (LeaderboardData user : collection.getUserList()) {
+                                            if (user.getName().equals(savedUsername)) {
+                                                mCountryCode = user.getCountryCode();
+                                                mUserPosition = user.getRank();
+                                                refreshRegionTab();
+                                                break;
                                             }
                                         }
-                                        if (savedUsername.equals("")) {
-                                            mUserPosition = 0;
-                                            mCountryCode = "";
-                                        }
-
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
+                                    } else {
+                                        mUserPosition = 0;
+                                        mCountryCode = "";
                                     }
                                     if (mTimePeriod == periodType && mRegionType == regionType) {
                                         mUserList.clear();
-                                        mUserList.addAll(userList);
+                                        mLeaderboardAdapter.resetLastAnimatedItem();
+                                        mUserList.addAll(collection.getUserList());
                                         if (mLeaderboardAdapter != null) {
                                             mHandler.post(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                     mLeaderboardAdapter.setUserPosition(mUserPosition);
                                                     mLeaderboardAdapter.notifyDataSetChanged();
+                                                    mRecyclerView.scrollToPosition(0);
+                                                    mRecyclerView.stopScroll();
+                                                    mRecyclerView.smoothScrollToPosition(mUserPosition);
                                                 }
                                             });
-                                            mHandler.postDelayed(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    int viewsize = view.getMeasuredHeight();
-                                                    int bottom = mRecyclerView.getTop();
-//                                                    mRecyclerView.smoothScrollToPosition(mUserPosition + (int) ((viewsize - bottom) / Utils.dpToPx(activity, 40)) / 2);
-                                                    mRecyclerView.scrollToPosition(mUserPosition + mRecyclerView.getChildCount() / 2);
-                                                }
-                                            }, 500);
                                         }
                                     }
                                 }
+                                stopRefreshing();
                             }
                         });
-                    }
-
-                    @Override
-                    public void requestFinished(int status) {
-                        activity.showSnackBar("No Internet connection detected.", Snackbar.LENGTH_LONG);
-                        Log.d(TAG, "getProfileDetails: " + " status - > " + status);
                     }
                 }, date, region);
             }
         });
     }
 
-    public void refreshRegionTab(){
+    private void refreshRegionTab() {
         if (activity != null && mTabLayout != null) {
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (savedUsername.equals("")){
+                    if (savedUsername.equals("")) {
                         mTabLayout.removeTabAt(1);
                     } else {
                         TabLayout.Tab tab = mTabLayout.getTabAt(1);

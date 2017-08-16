@@ -6,9 +6,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 
 /**
+ * quick fix for drawer layout error
  * Created by Kalman on 29/07/16.
  */
-
 public class CustomDrawerLayout extends DrawerLayout {
     public CustomDrawerLayout(Context context) {
         super(context);

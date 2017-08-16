@@ -14,11 +14,11 @@ import android.os.Build;
 import android.os.Handler;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
-import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.telenav.osv.item.OSVFile;
+import com.telenav.osv.listener.network.GenericResponseListener;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
@@ -50,7 +50,7 @@ public class SequenceRequest<T> extends StringRequest {
 
     private static final String PARAM_SCORE_DETAILS = "clientTotalDetails";
 
-    public final int mLocalSequenceId;
+    private final int mLocalSequenceId;
 
     private final int mScore;
 
@@ -74,10 +74,10 @@ public class SequenceRequest<T> extends StringRequest {
 
     private Handler mResponseHandler;
 
-    public SequenceRequest(String url, ErrorListener errorListener, Listener<String> listener, ProgressiveEntity.DataProgressListener dataProgressListener, int localSequenceId,
+    public SequenceRequest(String url, GenericResponseListener listener, ProgressiveEntity.DataProgressListener dataProgressListener, int localSequenceId,
                            String token, String startCoord, OSVFile file,
                            String appVersion, boolean obd, int score, String scoreDetails, Handler responseHandler) {
-        super(Request.Method.POST, url, listener, errorListener);
+        super(Request.Method.POST, url, listener, listener);
         mListener = listener;
         mLocalSequenceId = localSequenceId;
         mToken = token;

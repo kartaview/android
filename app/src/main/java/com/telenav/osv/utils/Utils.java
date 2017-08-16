@@ -15,6 +15,8 @@ import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -22,6 +24,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -37,6 +40,11 @@ import com.faraji.environment3.Environment3;
 import com.faraji.environment3.NoSecondaryStorageException;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.skobbler.ngx.SKDeveloperKeyException;
+import com.skobbler.ngx.SKMaps;
+import com.skobbler.ngx.SKMapsInitSettings;
+import com.skobbler.ngx.SKMapsInitializationListener;
+import com.skobbler.ngx.map.SKMapViewStyle;
 import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.application.PreferenceTypes;
@@ -50,9 +58,19 @@ public class Utils {
 
     public static final SimpleDateFormat onlineDateFormat = new SimpleDateFormat("yyyy-MM-dd  (hh:mm)");
 
+    public static final SimpleDateFormat onlineDriverDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
     public static final SimpleDateFormat numericDateFormat = new SimpleDateFormat("MM-dd hh:mm");
 
+    public static final SimpleDateFormat numericCardDateFormat = new SimpleDateFormat("MMM dd, hh:mm");
+
+    public static final SimpleDateFormat numericPaymentDateFormat = new SimpleDateFormat("MMM dd ''yy");
+
+    public static final SimpleDateFormat paymentServerDateFormat = new SimpleDateFormat("dd MMM yy");
+
     public static final SimpleDateFormat niceDateFormat = new SimpleDateFormat("MMMM dd | h:mm a");
+
+    public static final int REQUEST_ENABLE_BT = 1;
 
     // Orientation hysteresis amount used in rounding, in degrees
     private static final int ORIENTATION_HYSTERESIS = 10;
@@ -137,6 +155,35 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    /**
+     * Initializes the SKMaps framework
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public static boolean initializeLibrary(final Activity context, SKMapsInitializationListener initListener) {
+
+        // get object holding map initialization settings
+        SKMapsInitSettings initMapSettings = new SKMapsInitSettings();
+
+        final String mapResourcesPath = ((OSVApplication) context.getApplicationContext()).getAppPrefs().getStringPreference("mapResourcesPath");
+        // set path to map resources and initial map style
+        initMapSettings.setMapResourcesPath(mapResourcesPath);
+        initMapSettings.setCurrentMapViewStyle(new SKMapViewStyle(mapResourcesPath + "grayscalestyle/", "grayscalestyle.json"));
+
+        if (context.getApplicationContext() != null) {
+            try {
+                SKMaps.getInstance().initializeSKMaps((Application) context.getApplicationContext(), initListener, initMapSettings);
+                return true;
+            } catch (SKDeveloperKeyException exception) {
+                exception.printStackTrace();
+                showApiKeyErrorDialog(context);
+                return false;
+            }
+        } else {
+            initListener.onLibraryInitialized(false);
+            return false;
+        }
     }
 
     public static boolean isDebugBuild(Context ctx) {
@@ -561,7 +608,7 @@ public class Utils {
 
 
     @SuppressWarnings("UnusedReturnValue")
-    public static boolean checkGooglePlaySevices(final Activity activity) {
+    public static boolean checkGooglePlayServices(final Activity activity) {
         final int googlePlayServicesCheck = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity);
         switch (googlePlayServicesCheck) {
             case ConnectionResult.SUCCESS:
@@ -590,10 +637,30 @@ public class Utils {
      */
     public static int getValueOnSegment(int coverage) {
         if (coverage < 0) {
-            return 0;
+            return -1;
         }
         coverage = Math.min(SCORES.length - 1, coverage);
         coverage = Math.max(0, coverage);
         return SCORES[coverage];
+    }
+
+    public static boolean isCharging(Context context) {
+        Intent intent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        int plugged = intent == null ? -1 : intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+        return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB;
+    }
+
+    public static String formatMoney(double value) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator(',');
+        DecimalFormat df2 = new DecimalFormat("#,###,###,###.##", symbols);
+        return df2.format(value);
+    }
+
+    public static void trace() {
+        StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+        for (StackTraceElement e : trace) {
+            Log.d(TAG, "####### " + e);
+        }
     }
 }

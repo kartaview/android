@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/local_sequence_holder"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/white">
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#f8f8fa"/>
+        android:background="#f8f8fa" />
 
     <TextView
         android:id="@+id/address_text"
@@ -27,13 +27,12 @@
         android:textSize="16sp" />
 
     <LinearLayout
-        android:id="@+id/details_holder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/address_text"
         android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
-        android:weightSum="3" >
+        android:weightSum="3">
 
         <TextView
             android:id="@+id/total_images_text"

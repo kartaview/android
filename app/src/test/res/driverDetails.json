@@ -1,0 +1,21 @@
+{
+  "status": {
+    "apiCode": "600",
+    "apiMessage": " The request has been processed without incidents ",
+    "httpCode": 200,
+    "httpMessage": "Success"
+  },
+  "osv": {
+    "full_name": "Joe Smith",
+    "tbp_distance": 2470.00,
+    "tbp_payrate": 0.10,
+    "tbp_value": 247.00,
+    "total_accepted_distance": 5231.1,
+    "total_rejected_distance": 175.93,
+    "total_obd_distance": 340.5,
+    "total_images": 12393,
+    "total_tracks": 36,
+    "total_paid": 5032.41,
+    "currency": "USD"
+  }
+}

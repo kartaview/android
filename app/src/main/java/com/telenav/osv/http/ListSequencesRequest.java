@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import com.android.volley.AuthFailureError;
-import com.android.volley.Response.ErrorListener;
-import com.android.volley.Response.Listener;
 import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -21,7 +20,7 @@ public class ListSequencesRequest extends StringRequest {
 
     private static final String PARAM_TOKEN = "access_token";
 
-    private final Listener<String> mListener;
+    private final GenericResponseListener mListener;
 
     private final int mPageIndex;
 
@@ -29,8 +28,8 @@ public class ListSequencesRequest extends StringRequest {
 
     private final String mToken;
 
-    public ListSequencesRequest(String url, ErrorListener errorListener, Listener<String> listener, String token, int pageNr, int numberOfResults) {
-        super(Method.POST, url, listener, errorListener);
+    public ListSequencesRequest(String url, GenericResponseListener listener, String token, int pageNr, int numberOfResults) {
+        super(Method.POST, url, listener, listener);
         mToken = token;
         mListener = listener;
         mPageIndex = pageNr;

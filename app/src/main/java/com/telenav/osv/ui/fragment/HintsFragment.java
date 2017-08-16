@@ -1,9 +1,6 @@
 package com.telenav.osv.ui.fragment;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
-
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.matthewtamlin.dotindicator.DotIndicator;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
@@ -24,12 +20,9 @@ import com.telenav.osv.activity.MainActivity;
 /**
  * Created by Kalman on 18/07/16.
  */
-
-public class HintsFragment extends Fragment {
+public class HintsFragment extends OSVFragment {
 
     public static final String TAG = "HintsFragment";
-
-    private View view;
 
     private ViewPager hintPager;
 
@@ -41,15 +34,13 @@ public class HintsFragment extends Fragment {
 
     private MainActivity activity;
 
-    private ImageView mCloseButton;
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_recording_hints, null);
+        View view = inflater.inflate(R.layout.fragment_recording_hints, null);
         activity = (MainActivity) getActivity();
-        hintPager = (ViewPager) view.findViewById(R.id.hint_pager);
-        hintIndicator = (DotIndicator) view.findViewById(R.id.hint_indicator);
+        hintPager = view.findViewById(R.id.hint_pager);
+        hintIndicator = view.findViewById(R.id.hint_indicator);
         hintPagerAdapter = new HintPagerAdapter(inflater);
         int orientation = activity.getResources().getConfiguration().orientation;
         boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
@@ -80,7 +71,7 @@ public class HintsFragment extends Fragment {
             }
         });
         hintPager.postDelayed(hintPagerAutoRunnable, 8000);
-        mCloseButton = (ImageView) view.findViewById(R.id.close_button);
+        ImageView mCloseButton = view.findViewById(R.id.close_button);
         mCloseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,6 +81,36 @@ public class HintsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void cancelAction() {
+
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        return false;
+    }
+
+    @Override
+    public View getSharedElement() {
+        return null;
+    }
+
+    @Override
+    public String getSharedElementTransitionName() {
+        return null;
+    }
+
+    @Override
+    public int getEnterAnimation() {
+        return R.anim.alpha_add;
+    }
+
+    @Override
+    public int getExitAnimation() {
+        return R.anim.alpha_remove;
+    }
+
     public class HintPagerAdapter extends PagerAdapter {
 
         private final LayoutInflater mInflater;
@@ -97,13 +118,13 @@ public class HintsFragment extends Fragment {
         /**
          * The fragments used in the pager
          */
-        public ArrayList<FrameLayout> views = new ArrayList<>();
+        ArrayList<FrameLayout> views = new ArrayList<>();
 
-        public ArrayList<Integer> colors = new ArrayList<>();
+        ArrayList<Integer> colors = new ArrayList<>();
 
-        public ArrayList<String[]> hints = new ArrayList<>();
+        ArrayList<String[]> hints = new ArrayList<>();
 
-        public HintPagerAdapter(LayoutInflater inflater) {
+        HintPagerAdapter(LayoutInflater inflater) {
             super();
             mInflater = inflater;
             hints.clear();
@@ -140,7 +161,7 @@ public class HintsFragment extends Fragment {
             return POSITION_NONE;
         }
 
-        public void populate(boolean portrait) {
+        void populate(boolean portrait) {
             views.clear();
 //            long seed = System.nanoTime();
 //            Collections.shuffle(hints, new Random(seed));
@@ -151,10 +172,10 @@ public class HintsFragment extends Fragment {
             int numberOfItems;
             if (portrait) {
                 landscape = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
-                landscape.setBackgroundColor(activity.getResources().getColor(colors.get((views.size()+1) % colors.size())));
-                viewTitleHint = (TextView) landscape.findViewById(R.id.title_hint_text_vertical);
+                landscape.setBackgroundColor(activity.getResources().getColor(colors.get((views.size() + 1) % colors.size())));
+                viewTitleHint = landscape.findViewById(R.id.title_hint_text_vertical);
                 viewTitleHint.setText(R.string.hint_landscape_label);
-                viewHintDescription = (TextView) landscape.findViewById(R.id.hint_text_vertical);
+                viewHintDescription = landscape.findViewById(R.id.hint_text_vertical);
                 viewHintDescription.setText(R.string.hint_landscape_message);
                 numberOfItems = hints.size() + 1;
             } else {
@@ -162,13 +183,13 @@ public class HintsFragment extends Fragment {
             }
             int i = 0;
             for (String[] hint : hints) {
-                if (i == 1 && landscape != null){
+                if (i == 1 && landscape != null) {
                     views.add(landscape);
                 }
                 frameLayout = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
                 frameLayout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
-                viewTitleHint = (TextView) frameLayout.findViewById(R.id.title_hint_text_vertical);
-                viewHintDescription = (TextView) frameLayout.findViewById(R.id.hint_text_vertical);
+                viewTitleHint = frameLayout.findViewById(R.id.title_hint_text_vertical);
+                viewHintDescription = frameLayout.findViewById(R.id.hint_text_vertical);
                 viewTitleHint.setText(hint[0]);
                 viewHintDescription.setText(hint[1]);
                 views.add(frameLayout);

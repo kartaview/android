@@ -27,21 +27,19 @@ import com.bumptech.glide.signature.StringSignature;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.item.ImageCoordinate;
 import com.telenav.osv.item.ImageFile;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.manager.network.UploadManager;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
 import com.telenav.osv.utils.Log;
 import uk.co.senab.photoview.PhotoView;
 
 /**
+ * component responsible of local jpeg playback
  * Created by Kalman on 27/07/16.
  */
-
 public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSeekBarChangeListener {
 
     private static final String TAG = "SafePlaybackManager";
@@ -54,9 +52,9 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
 
     private final OSVActivity activity;
 
-    public ArrayList<ImageFile> mImages = new ArrayList<>();
+    private ArrayList<ImageFile> mImages = new ArrayList<>();
 
-    public ArrayList<SKCoordinate> mTrack = new ArrayList<>();
+    private ArrayList<SKCoordinate> mTrack = new ArrayList<>();
 
     private Glide mGlide;
 
@@ -109,6 +107,8 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
         }
     };
 
+    private boolean mPrepared;
+
     public SafePlaybackManager(OSVActivity act, Sequence sequence) {
         activity = act;
         mSequence = sequence;
@@ -120,8 +120,7 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
         activity.enableProgressBar(true);
         final ArrayList<ImageFile> nodes = new ArrayList<>();
         final ArrayList<ImageCoordinate> track = new ArrayList<>();
-        UploadManager uploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
-        final int finalSeqId = mSequence.sequenceId;
+        final int finalSeqId = mSequence.getId();
         Cursor cursor = SequenceDB.instance.getFrames(finalSeqId);
         while (cursor != null && !cursor.isAfterLast()) {
             int index = cursor.getInt(cursor.getColumnIndex(SequenceDB.FRAME_SEQ_INDEX));
@@ -155,6 +154,7 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                mPrepared = true;
                 mImages = nodes;
                 mTrack = new ArrayList<SKCoordinate>(track);
                 mSeekbar.setMax(mImages.size());
@@ -163,9 +163,9 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
                 for (PlaybackListener pl : mPlaybackListeners) {
                     pl.onPrepared();
                 }
-                if (mSequence.skipToValue != 0) {
+                if (mSequence.getRequestedFrameIndex() != 0) {
                     if (mPager != null) {
-                        mPager.setCurrentItem(mSequence.skipToValue);
+                        mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
                     }
                 }
 //                                play();
@@ -174,7 +174,7 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
     }
 
     @Override
-    public void setSurface(Object surface) {
+    public void setSurface(View surface) {
         mPager = (ScrollDisabledViewPager) surface;
         mPager.setOffscreenPageLimit(OFFSCREEN_LIMIT / 2);
         mPager.setAdapter(mPagerAdapter);
@@ -222,12 +222,24 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
 
             }
         });
-        if (mSequence.skipToValue != 0) {
+        if (mSequence.getRequestedFrameIndex() != 0) {
             if (mPager != null) {
-                mPager.setCurrentItem(mSequence.skipToValue);
+                mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
             }
         }
 
+    }
+
+    @Override
+    public View getSurface(){
+        return mPager;
+    }
+
+    @Override
+    public void prepare() {
+        if (!mPrepared) {
+            loadFrames();
+        }
     }
 
     @Override
@@ -253,7 +265,7 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
         playImpl();
     }
 
-    public void playImpl() {
+    private void playImpl() {
         try {
             if (mPlayHandler != null && !isPlaying()) {
                 mPlaying = true;
@@ -394,7 +406,7 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
         private final LayoutInflater inflater;
 
 
-        public FullscreenPagerAdapter(final OSVActivity activity) {
+        FullscreenPagerAdapter(final OSVActivity activity) {
             inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
@@ -408,6 +420,7 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
             return object == view;
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             View view;
@@ -426,7 +439,7 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
                             .skipMemoryCache(false)
                             .signature(new StringSignature(mImages.get(position).coords.getLatitude() + "," + mImages.get(position).coords.getLongitude() + " full"))
                             .priority(Priority.NORMAL)
-                            .error(R.drawable.custom_image_broken_background)
+                            .error(R.drawable.vector_picture_placeholder)
                             .listener(mGlideListener);
                     if (PLAYBACK_RATE > 200 || !isPlaying()) {
                         builder.thumbnail(0.2f).listener(mGlideListener);

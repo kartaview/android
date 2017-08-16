@@ -11,7 +11,7 @@ import com.telenav.osv.item.Polyline;
  * Created by Kalman on 03/02/2017.
  */
 public class BoundingBoxChangedEvent extends OSVEvent {
-    
+
     public final static String TAG = "BoundingBoxChangedEvent";
 
     public Polyline lastBB;
@@ -61,5 +61,5 @@ public class BoundingBoxChangedEvent extends OSVEvent {
             this.smallBB.setNodes(nodes3);
         }
     }
-    
+
 }

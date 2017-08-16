@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fragment_map_root"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <FrameLayout
         android:id="@+id/frameLayout"
@@ -32,37 +31,37 @@
         android:id="@+id/record_button"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        app:elevation="6dp"
-        app:pressedTranslationZ="12dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp"
         android:clickable="true"
         android:scaleType="center"
-        app:srcCompat="@drawable/vector_button_record"
         app:backgroundTint="@color/black"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp"
         app:rippleColor="@color/md_grey_600"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:layout_gravity="bottom|center" />
+        app:srcCompat="@drawable/vector_button_record" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/position_button"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        app:elevation="6dp"
-        app:pressedTranslationZ="12dp"
-        android:clickable="true"
-        app:srcCompat="@drawable/vector_recenter"
-        app:backgroundTint="@color/white"
-        app:rippleColor="@color/md_grey_400"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="bottom|end"
         android:layout_marginBottom="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="bottom|end"
-        android:layout_alignParentRight="true"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:scaleType="center"
         android:visibility="gone"
-        android:scaleType="center" />
+        app:backgroundTint="@color/white"
+        app:elevation="6dp"
+        app:pressedTranslationZ="12dp"
+        app:rippleColor="@color/md_grey_400"
+        app:srcCompat="@drawable/vector_recenter" />
 </android.support.design.widget.CoordinatorLayout>

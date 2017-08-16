@@ -3,14 +3,14 @@ package com.telenav.osv.event.hardware.gps;
 import com.telenav.osv.event.OSVStickyEvent;
 
 /**
+ * Event holding accuracyType
  * Created by Kalman on 07/11/2016.
  */
-
 public class AccuracyEvent extends OSVStickyEvent {
-    public final float accuracy;
+    public final int type;
 
-    public AccuracyEvent(float accuracy){
-        this.accuracy = accuracy;
+    public AccuracyEvent(int type) {
+        this.type = type;
     }
 
     @Override

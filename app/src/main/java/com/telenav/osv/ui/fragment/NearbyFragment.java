@@ -1,316 +1,65 @@
 package com.telenav.osv.ui.fragment;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.telenav.osv.R;
-import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.item.Sequence;
-import com.telenav.osv.manager.network.UploadManager;
-import com.telenav.osv.ui.ScreenComposer;
-import com.telenav.osv.ui.list.SequenceAdapter;
-import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Utils;
+import com.telenav.osv.item.network.TrackCollection;
 
 /**
+ * Fragment displaying nearby recordings
  * Created by adrianbostan on 11/07/16.
  */
-
-public class NearbyFragment extends Fragment {
+public class NearbyFragment extends SimpleProfileFragment {
 
     public final static String TAG = "NearbyFragment";
 
-    private static final int NUMBER_OF_ITEMS_PER_PAGE = 20;
-
-    private MainActivity activity;
-
-    private RecyclerView mSequencesRecyclerView;
-
-    private SequenceAdapter mOnlineSequencesAdapter;
-
-    private UploadManager mUploadManager;
-
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-
-    private ArrayList<Sequence> mOnlineSequences = new ArrayList<>();
-
-//    private int mCurrentPageToList = 1;
-
-    private int mLastVisibleItem, mTotalItemCount;
-
-    private boolean mLoading;
-
-    private Timer mTimer = new Timer();
-
-    private TimerTask mCancelTask = new TimerTask() {
-        @Override
-        public void run() {
-            if (mSwipeRefreshLayout != null) {
-                mSwipeRefreshLayout.setRefreshing(false);
-            }
-        }
-    };
-
-    private Handler mHandler = new Handler(Looper.getMainLooper());
-
-    private int mMaxNumberOfResults = 10000;
-
-    private LinearLayoutManager mPortraitLayoutManager;
-
-    private GridLayoutManager mLandscapeLayoutManager;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, null);
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        appBar.setActivated(false);
+        //you will need to hide also all content inside CollapsingToolbarLayout
+        //plus you will need to hide title of it
+        mProfileImage.setVisibility(View.GONE);
+        collapsingToolbar.setTitleEnabled(false);
 
-        activity = (MainActivity) getActivity();
-        mSequencesRecyclerView = (RecyclerView) view.findViewById(R.id.sequences_recycle_view);
-        mPortraitLayoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
-        mLandscapeLayoutManager = new GridLayoutManager(activity, 2);
-        mUploadManager = ((OSVApplication) activity.getApplication()).getUploadManager();
-        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.profile_swipe_refresh_layout);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshContent();
-            }
-        });
+        AppBarLayout.LayoutParams p = (AppBarLayout.LayoutParams) collapsingToolbar.getLayoutParams();
+        p.setScrollFlags(0);
+        collapsingToolbar.setLayoutParams(p);
+        collapsingToolbar.setActivated(false);
+
+        CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) appBar.getLayoutParams();
+        lp.height = getResources().getDimensionPixelSize(R.dimen.action_bar_size);
+        appBar.requestLayout();
+        mSwipeRefreshLayout.setEnabled(false);
+        toolbar.setTitle("Nearby");
         return view;
     }
 
-    public void refreshContent() {
-        Log.d(TAG, "refreshContent ");
-        startRefreshing();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-//                mCurrentPageToList = 1;
-//                mOnlineSequences.clear();
-                mOnlineSequencesAdapter.notifyDataSetChanged();
-                loadMoreResults();
-            }
-        }).start();
-    }
-
-    public void startRefreshing() {
-        if (mSwipeRefreshLayout != null) {
-            mSwipeRefreshLayout.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mSwipeRefreshLayout != null) {
-                        mSwipeRefreshLayout.setRefreshing(true);
-                        if (mCancelTask != null) {
-                            mCancelTask.cancel();
-                        }
-                        mCancelTask = new TimerTask() {
-                            @Override
-                            public void run() {
-                                if (activity != null) {
-                                    activity.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (mSwipeRefreshLayout != null) {
-                                                if (activity.getCurrentScreen() == ScreenComposer.SCREEN_NEARBY) {
-                                                    activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
-                                                }
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-                        };
-                        mTimer.schedule(mCancelTask, 10000);
-                    }
-                }
-            });
-        }
-    }
-
-    public void stopRefreshing() {
-        if (activity != null) {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (mSwipeRefreshLayout != null) {
-                        if (mCancelTask != null) {
-                            mCancelTask.cancel();
-                        }
-                        mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                }
-            });
-        }
-    }
-
-
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        if (activity != null && mSequencesRecyclerView != null) {
-            if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-                mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
-            } else {
-                mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
-            }
-        }
-        super.onConfigurationChanged(newConfig);
+    protected void loadMoreResults() {
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity, false);
-        mSequencesRecyclerView.setAdapter(mOnlineSequencesAdapter);
-
-        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            mSequencesRecyclerView.setLayoutManager(mPortraitLayoutManager);
-        } else {
-            mSequencesRecyclerView.setLayoutManager(mLandscapeLayoutManager);
-        }
-
-//
-//        final LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
-//        if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-//            mSequencesRecyclerView.setLayoutManager(layoutManager);
-//
-//        } else {
-//            GridLayoutManager manager = new GridLayoutManager(activity, 3);
-//            manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-//                @Override
-//                public int getSpanSize(int position) {
-//                    return (3 - position % 3);
-//                }
-//            });
-//        }
-
-        mSequencesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView,
-                                   int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                RecyclerView.LayoutManager lm = mSequencesRecyclerView.getLayoutManager();
-                if (lm instanceof LinearLayoutManager) {
-                    mTotalItemCount = lm.getItemCount() - 1;
-                    mLastVisibleItem = ((LinearLayoutManager)lm).findLastVisibleItemPosition();
-
-                    if (!mLoading && mTotalItemCount == mLastVisibleItem && mTotalItemCount < mMaxNumberOfResults) {
-                        // End has been reached
-                        mSwipeRefreshLayout.setRefreshing(true);
-                        loadMoreResults();
-                        mLoading = true;
-                    }
-                }
-            }
-        });
+    protected void requestDetails() {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    protected void displayCachedStats() {
 
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    protected void refreshContent() {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
-
-
-    private void loadMoreResults() {
-//        mUploadManager.listSequences(this, mCurrentPageToList, NUMBER_OF_ITEMS_PER_PAGE, null, null, true);
-    }
-
-    public void handleNearbyResult(String result) {
-        if (result != null && !result.isEmpty()) {
-            if (mOnlineSequences != null){
-                mOnlineSequences.clear();
-            }
-            try {
-                JSONObject obj = new JSONObject(result);
-                JSONObject osv = obj.getJSONObject("osv");
-                JSONArray array1 = osv.getJSONArray("sequences");
-//                mCurrentPageToList++;
-                if (array1.length() > 0) {
-                    for (int i = 0; i < array1.length(); i++) {
-                        JSONObject item = array1.getJSONObject(i);
-                        int id = item.getInt("sequence_id");
-                        String date = item.getString("date");
-                        String hour = item.getString("hour");
-                        SimpleDateFormat onlineDateFormat = new SimpleDateFormat("MM.dd.yyyy hh:mm a");
-                        try {
-                            date = Utils.numericDateFormat.format(onlineDateFormat.parse(date + " " + hour));
-                        } catch (Exception e) {
-                            Log.w(TAG, "handleSequenceListResult: " + e.getLocalizedMessage());
-                        }
-                        String imgNum = item.getString("photo_no");
-                        String sequenceIndex = item.getString("sequence_index");
-                        String distance = item.getString("distance");
-                        double lat = item.getDouble("lat");
-                        double lon = item.getDouble("lng");
-                        boolean obd = false;
-                        String platform = "";
-                        String platformVersion = "";
-                        String appVersion = "";
-                        String partialAddress = "";
-                        try {
-                            String address = item.getString("address");
-                            String[] list = address.split(", ");
-                            partialAddress = list[0] + ", " + list[2];
-                        } catch (Exception e) {
-//                            Log.d(TAG, "handleSequenceListResult: exception during adress parsing");
-                        }
-                        String thumbLink = UploadManager.URL_DOWNLOAD_PHOTO + item.getString("photo");
-                        double distanceNum = 0;
-                        try {
-                            if (distance != null) {
-                                distanceNum = Double.parseDouble(distance);
-                            }
-                        } catch (NumberFormatException e) {
-                            Log.d(TAG, "handleSequenceListResult: couldn't parse distance");
-                        }
-                        Sequence seq = new Sequence(id, date, Integer.valueOf(imgNum), partialAddress, thumbLink, obd, platform, platformVersion, appVersion, (int) (distanceNum
-                                * 1000d), 0);
-//                        seq.processing = !processing.equals("PROCESSING_FINISHED");
-                        seq.isPublic = true;
-                        seq.location.setLatitude(lat);
-                        seq.location.setLongitude(lon);
-                        seq.skipToValue = Integer.valueOf(sequenceIndex);
-                        mOnlineSequences.add(seq);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    public void setSource(Object collection) {
+        mOnlineSequences.clear();
+        mOnlineSequences.addAll(((TrackCollection)collection).getTrackList());
         mLoading = false;
 
         mHandler.post(new Runnable() {

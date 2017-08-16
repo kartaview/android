@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportHeight="24"
+    android:viewportWidth="24">
+
+    <group
+            android:name="Icons"
+            android:translateX="-190.000000"
+            android:translateY="-129.000000">
+        <group
+                android:name="camera_darkBG"
+                android:translateX="190.000000"
+                android:translateY="129.000000">
+            <group
+                    android:name="ic_camera_alt_black_24px"
+                    android:translateX="4.000000"
+                    android:translateY="5.000000">
+                <path
+                    android:name="Oval"
+                    android:fillColor="@color/sequence_card_text_color_secondary_grey"
+                    android:fillType="evenOdd"
+                    android:pathData="M7.77777778,10.2666667 C9.15235316,10.2666667 10.2666667,9.15235316
+10.2666667,7.77777778 C10.2666667,6.4032024 9.15235316,5.28888889
+7.77777778,5.28888889 C6.4032024,5.28888889 5.28888889,6.4032024
+5.28888889,7.77777778 C5.28888889,9.15235316 6.4032024,10.2666667
+7.77777778,10.2666667 Z"
+                    android:strokeWidth="1"
+                    tools:ignore="InvalidVectorPath"
+                    tools:targetApi="n" />
+                <path
+                    android:name="Shape"
+                    android:fillColor="@color/sequence_card_text_color_secondary_grey"
+                    android:fillType="evenOdd"
+                    android:pathData="M5.44444444,0 L4.02111111,1.55555556 L1.55555556,1.55555556 C0.7,1.55555556
+0,2.25555556 0,3.11111111 L0,12.4444444 C0,13.3 0.7,14 1.55555556,14 L14,14
+C14.8555556,14 15.5555556,13.3 15.5555556,12.4444444 L15.5555556,3.11111111
+C15.5555556,2.25555556 14.8555556,1.55555556 14,1.55555556
+L11.5344444,1.55555556 L10.1111111,0 L5.44444444,0 L5.44444444,0 Z
+M7.77777778,11.6666667 C5.63111111,11.6666667 3.88888889,9.92444444
+3.88888889,7.77777778 C3.88888889,5.63111111 5.63111111,3.88888889
+7.77777778,3.88888889 C9.92444444,3.88888889 11.6666667,5.63111111
+11.6666667,7.77777778 C11.6666667,9.92444444 9.92444444,11.6666667
+7.77777778,11.6666667 L7.77777778,11.6666667 Z"
+                    android:strokeWidth="1"
+                    tools:ignore="InvalidVectorPath"
+                    tools:targetApi="n" />
+            </group>
+        </group>
+    </group>
+</vector>

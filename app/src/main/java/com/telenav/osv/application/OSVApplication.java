@@ -1,5 +1,7 @@
 package com.telenav.osv.application;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Date;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
@@ -8,27 +10,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.database.Cursor;
+import android.os.Build;
 import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Process;
+import android.os.Looper;
 import android.support.multidex.MultiDexApplication;
 import android.support.v7.app.AppCompatDelegate;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.CustomEvent;
 import com.crashlytics.android.ndk.CrashlyticsNdk;
+import com.skobbler.ngx.reversegeocode.SKReverseGeocoderManager;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.SplashActivity;
 import com.telenav.osv.command.LogoutCommand;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.event.AppReadyEvent;
 import com.telenav.osv.event.EventBus;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.item.LocalSequence;
+import com.telenav.osv.item.OSVFile;
+import com.telenav.osv.item.network.PhotoCollection;
+import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.manager.network.LoginManager;
 import com.telenav.osv.manager.network.UploadManager;
+import com.telenav.osv.manager.network.UserDataManager;
 import com.telenav.osv.service.CameraHandlerService;
 import com.telenav.osv.ui.fragment.ProfileFragment;
+import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 import io.fabric.sdk.android.Fabric;
@@ -52,15 +61,15 @@ public class OSVApplication extends MultiDexApplication {
 
     private final static String TAG = "OSVApplication";
 
-    public static String PACKAGE_NAME;
-
     public static long sUiThreadId;
 
-    public static Date runTime;
+    public static Date runTime = new Date(System.currentTimeMillis());
 
     public static String VERSION_NAME = "";
 
-    public boolean isDebug;
+    private static String PACKAGE_NAME;
+
+    private boolean isDebug;
 
     private Thread.UncaughtExceptionHandler mDefaultExHandler;
 
@@ -134,13 +143,14 @@ public class OSVApplication extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate: progress time " + System.currentTimeMillis());
+        runTime = new Date(System.currentTimeMillis());
+        Log.d(TAG, "onCreate: time " + System.currentTimeMillis());
+
+        Log.d(TAG, "onCreate: " + Build.MANUFACTURER + " " + android.os.Build.MODEL + ";" + Build.VERSION.RELEASE + ";" + OSVApplication.VERSION_NAME);
+
         appPrefs = new ApplicationPreferences(this);
         isDebug = Utils.isDebugBuild(this);
-        final HandlerThread mHandlerThread = new HandlerThread("BackgroundCreator", Process.THREAD_PRIORITY_BACKGROUND);
-        mHandlerThread.start();
-        Handler mBackgroundHandler = new Handler(mHandlerThread.getLooper());
-        mBackgroundHandler.post(new Runnable() {
+        BackgroundThreadPool.post(new Runnable() {
             @Override
             public void run() {
                 String currentProcName = "";
@@ -164,9 +174,9 @@ public class OSVApplication extends MultiDexApplication {
                     boolean crashed = appPrefs.getBooleanPreference(PreferenceTypes.K_CRASHED, false);
                     boolean safe = appPrefs.getBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED, false);
                     int counter = appPrefs.getIntPreference(PreferenceTypes.K_FFMPEG_CRASH_COUNTER);
-                    if (crashed && !safe && counter>=2) {
+                    if (crashed && !safe && counter >= 2) {
                         Log.d(TAG, "onCreate: K_CRASHED is true, showing message and setting safe mode");
-                        appPrefs.saveIntPreference(PreferenceTypes.K_FFMPEG_CRASH_COUNTER,0);
+                        appPrefs.saveIntPreference(PreferenceTypes.K_FFMPEG_CRASH_COUNTER, 0);
                         appPrefs.saveBooleanPreference(PreferenceTypes.K_SHOW_SAFE_MODE_MESSAGE, true);
                         appPrefs.saveBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED, true);
                     }
@@ -176,8 +186,6 @@ public class OSVApplication extends MultiDexApplication {
                 }
                 AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
                 Log.d(TAG, "onCreate: process " + currentProcName);
-
-                runTime = new Date(System.currentTimeMillis());
                 try {
                     if (getExternalFilesDir(null) != null) {
                         Log.externalFilesDir = getExternalFilesDir(null).getPath();
@@ -187,27 +195,29 @@ public class OSVApplication extends MultiDexApplication {
                     Log.d(TAG, "onCreate: " + e.getLocalizedMessage());
                 }
                 Utils.getSelectedStorage(OSVApplication.this);
-                Log.DEBUG = true;//isDebug || appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED);
                 Utils.isDebugEnabled(OSVApplication.this);
                 try {
-//                    Fabric.with(new Fabric.Builder(OSVApplication.this)
-//                            .kits(new Crashlytics(), new CrashlyticsNdk(), new Answers())
-//                            .build());
-//                    Crashlytics.setBool(Log.RECORD_STATUS, false);
-//                    Crashlytics.setString(Log.LOG_FILE, Log.getLogFile().getAbsolutePath());
-//                    Crashlytics.setBool(Log.SDK_ENABLED, !appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED));
-//                    Answers.getInstance().logCustom(new CustomEvent("New app session").putCustomAttribute(Log.SDK_ENABLED, "" + !appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)));
-//                    Crashlytics.setBool(Log.POINTS_ENABLED, appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION));
-//                    Crashlytics.setBool(Log.UPLOAD_STATUS, false);
-//                    Crashlytics.setString(Log.PLAYBACK, "none");
-//                    String type = appPrefs.getStringPreference(PreferenceTypes.K_USER_TYPE);
-//                    Crashlytics.setString(Log.USER_TYPE, type);
-//                    Crashlytics.setBool(Log.SAFE_RECORDING, appPrefs.getBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED));
-//                    Crashlytics.setUserIdentifier(appPrefs.getStringPreference(PreferenceTypes.K_USER_ID));
-//                    Crashlytics.setUserName(appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME));
+                    Fabric.with(new Fabric.Builder(OSVApplication.this)
+                            .kits(new Crashlytics(), new CrashlyticsNdk(), new Answers())
+                            .build());
+                    Crashlytics.setBool(Log.RECORD_STATUS, false);
+                    Crashlytics.setString(Log.LOG_FILE, Log.getLogFile().getAbsolutePath());
+                    Crashlytics.setBool(Log.SDK_ENABLED, !appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED));
+                    Answers.getInstance().logCustom(new CustomEvent("New app session").putCustomAttribute(Log.SDK_ENABLED, "" + !appPrefs.getBooleanPreference(PreferenceTypes
+                            .K_MAP_DISABLED)));
+                    Crashlytics.setBool(Log.POINTS_ENABLED, appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION));
+                    Crashlytics.setBool(Log.UPLOAD_STATUS, false);
+                    Crashlytics.setString(Log.PLAYBACK, "none");
+                    int type = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
+                    Crashlytics.setInt(Log.USER_TYPE, type);
+                    Crashlytics.setBool(Log.SAFE_RECORDING, appPrefs.getBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED));
+                    Crashlytics.setBool(Log.STATIC_FOCUS, appPrefs.getBooleanPreference(PreferenceTypes.K_FOCUS_MODE_STATIC));
+                    Crashlytics.setBool(Log.CAMERA_API_NEW, appPrefs.getBooleanPreference(PreferenceTypes.K_USE_CAMERA_API_NEW));
+                    Crashlytics.setUserIdentifier(appPrefs.getStringPreference(PreferenceTypes.K_USER_ID));
+                    Crashlytics.setUserName(appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME));
+                    Log.d(TAG, "Crashlytics: initialized");
                     if (!isDebug && mIsMainProcess) {
-                        Log.d(TAG, "Crashlytics: initialized");
-                        new Handler().postDelayed(new Runnable() {
+                        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 try {
@@ -215,15 +225,16 @@ public class OSVApplication extends MultiDexApplication {
                                     float version = pInfo.versionCode;
                                     float savedVersion = appPrefs.getFloatPreference(PreferenceTypes.K_VERSION_CODE);
                                     if (savedVersion != version) {
-                                        if (Fabric.isInitialized()){
-                                            Answers.getInstance().logCustom(new CustomEvent("UpdateEvent").putCustomAttribute(Log.OLD_VERSION, savedVersion).putCustomAttribute(Log.NEW_VERSION, version));
+                                        if (Fabric.isInitialized()) {
+                                            Answers.getInstance().logCustom(new CustomEvent("UpdateEvent").putCustomAttribute(Log.OLD_VERSION, savedVersion).putCustomAttribute
+                                                    (Log.NEW_VERSION, version));
                                         }
                                         if (version == 42) {
                                             EventBus.post(new LogoutCommand());
                                             SharedPreferences prefs = getSharedPreferences(ProfileFragment.PREFS_NAME, MODE_PRIVATE);
                                             prefs.edit().clear().apply();
                                         }
-                                        if (version == 68 || (savedVersion < 68 && version == 69)) {
+                                        if (version == 68 || (savedVersion < 68 && version >= 69)) {
                                             appPrefs.saveBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED, false);
                                             appPrefs.saveBooleanPreference(PreferenceTypes.K_SHOW_SAFE_MODE_MESSAGE, false);
                                         }
@@ -254,6 +265,7 @@ public class OSVApplication extends MultiDexApplication {
                     mDefaultExHandler = Thread.getDefaultUncaughtExceptionHandler();
                     Thread.setDefaultUncaughtExceptionHandler(mExHandler);
                 }
+                SKReverseGeocoderManager.getInstance();
                 if (mIsMainProcess) {
                     mUploadManager = new UploadManager(OSVApplication.this);
                     mLoginManager = new LoginManager(OSVApplication.this);
@@ -275,20 +287,91 @@ public class OSVApplication extends MultiDexApplication {
 //                            .penaltyDeath()
 //                            .build());
 //                }
-                try {
-                    mHandlerThread.quit();
-                } catch (Exception ignored) {}
             }
         });
     }
 
-    private void consistencyCheck() {
+    public void consistencyCheck() {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 SequenceDB.instance.consistencyCheck(OSVApplication.this);
-                Sequence.getLocalSequences();
-                mUploadManager.consistencyCheck();
+                LocalSequence.forceRefreshLocalSequences();
+
+                Log.d(TAG, "consistencyCheck: starting");
+                try {
+                    OSVFile osv = Utils.generateOSVFolder(OSVApplication.this);
+                    for (OSVFile folder : osv.listFiles()) {
+                        if (folder.getName().contains("&")) {
+                            Log.d(TAG, "consistencyCheck: renaming " + folder.getName());
+                            OSVFile file = new OSVFile(folder.getParentFile(), folder.getName().replace("&", ""));
+                            folder.renameTo(file);
+                            folder = file;
+                            Log.d(TAG, "consistencyCheck: renamed to " + folder.getName());
+                        }
+                        OSVFile[] imgs = folder.listFiles(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File dir, String filename) {
+                                return filename.contains(".jpg") || filename.contains(".mp4");
+                            }
+                        });
+                        if (imgs.length == 0) {
+                            folder.delete();
+                        } else {
+                            for (OSVFile img : imgs) {
+                                try {
+                                    if (img.getName().endsWith("tmp")) {
+                                        String seqId = folder.getName().split("_")[1];
+                                        String index = img.getName().split("\\.")[0];
+                                        SequenceDB.instance.deleteVideo(Integer.valueOf(seqId), Integer.valueOf(index));
+                                        img.delete();
+                                    }
+                                } catch (Exception e) {
+                                    Log.w(TAG, "consistencyCheck: " + e.getLocalizedMessage());
+                                }
+                            }
+                            if (folder.listFiles(new FilenameFilter() {
+                                @Override
+                                public boolean accept(File dir, String filename) {
+                                    return filename.contains(".jpg") || filename.contains(".mp4");
+                                }
+                            }).length == 0) {
+                                folder.delete();
+                            } else if (Utils.isInternetAvailable(OSVApplication.this)) {
+                                //we check if the onlineSequenceId, stored on the device, exists on the server also
+                                final int onlineSequenceId = SequenceDB.instance.getOnlineId(Integer.valueOf(folder.getName().split("_")[1]));
+                                if (onlineSequenceId != -1) {
+
+                                    final int sequenceId = Integer.valueOf(folder.getName().split("_")[1]);
+                                    Cursor cursor = SequenceDB.instance.getFrames(Integer.valueOf(folder.getName().split("_")[1]));
+                                    if (cursor != null && cursor.getCount() > 0) {
+                                        new UserDataManager(OSVApplication.this).listImages(onlineSequenceId, new NetworkResponseDataListener<PhotoCollection>() {
+
+                                            @Override
+                                            public void requestFailed(int status, PhotoCollection details) {
+                                                if (details.getApiCode() == UserDataManager.API_ERROR_SEQUENCE_ID_OUT_OF_BOUNDS) {
+                                                    int nrRowsAffected = SequenceDB.instance.resetOnlineSequenceId(onlineSequenceId);
+                                                    Log.d(TAG, "consistencyCheck: rollback on sequence " + sequenceId + ", nr of rows affected: " + nrRowsAffected);
+                                                }
+
+                                            }
+
+                                            @Override
+                                            public void requestFinished(int status, PhotoCollection collectionData) {
+
+                                            }
+                                        });
+                                    }
+                                    if (cursor != null) {
+                                        cursor.close();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "consistencyCheck: " + e.getLocalizedMessage());
+                }
                 Log.d(TAG, "consistencyCheck: done.");
             }
         }).start();

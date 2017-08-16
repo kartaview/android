@@ -11,7 +11,7 @@ public class LocationPermissionEvent extends OSVStickyEvent {
 
     public final Status status;
 
-    public LocationPermissionEvent(Status status){
+    public LocationPermissionEvent(Status status) {
         this.status = status;
     }
 

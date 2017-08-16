@@ -1,22 +1,21 @@
 package com.telenav.osv.item;
 
 /**
- *
  * Created by Kalman on 11/18/15.
  */
 public class VideoFile extends RecordingFile {
 
     private static final String TAG = "VideoFile";
 
-    public int sequenceId;
-
     public int fileIndex;
-
-    public int frameCount;
 
     public String link;
 
-    public OSVFile file;
+    private int sequenceId;
+
+    private int frameCount;
+
+    private OSVFile file;
 
     public VideoFile(int sequenceId, String link, int fileIndex) {
         this.sequenceId = sequenceId;
@@ -25,7 +24,7 @@ public class VideoFile extends RecordingFile {
     }
 
     public VideoFile(OSVFile video, int fileIndex, int count) {
-        this.sequenceId = Sequence.getSequenceId(video.getParentFile());
+        this.sequenceId = LocalSequence.getSequenceId(video.getParentFile());
         this.file = video;
         this.fileIndex = fileIndex;
         this.frameCount = count;

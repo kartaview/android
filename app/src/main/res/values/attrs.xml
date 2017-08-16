@@ -40,4 +40,19 @@
         <attr name="civ_border_overlay" format="boolean" />
         <attr name="civ_fill_color" format="color" />
     </declare-styleable>
+
+    <declare-styleable name="ProgressImageView">
+        <attr name="piv_progressIndeterminate" format="boolean" />
+        <attr name="piv_barColor" format="color" />
+        <attr name="piv_rimColor" format="color" />
+        <attr name="piv_rimWidth" format="dimension" />
+        <attr name="piv_spinSpeed" format="float" />
+        <attr name="piv_level" format="integer" />
+        <attr name="piv_progress" format="float" />
+        <attr name="piv_barSpinCycleTime" format="integer" />
+        <attr name="piv_circleRadius" format="dimension" />
+        <attr name="piv_fillRadius" format="boolean" />
+        <attr name="piv_barWidth" format="dimension" />
+        <attr name="piv_linearProgress" format="boolean" />
+    </declare-styleable>
 </resources>

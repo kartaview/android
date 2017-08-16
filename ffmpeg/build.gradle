@@ -142,3 +142,11 @@ model {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
+
+ext {
+    PUBLISH_GROUP_ID = 'com.telenav.ffmpeg'
+    PUBLISH_ARTIFACT_ID = 'ffmpeg'
+    PUBLISH_VERSION = '1.0.4'
+}
+
+apply from: 'buildRelease.gradle'

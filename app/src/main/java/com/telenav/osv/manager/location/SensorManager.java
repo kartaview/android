@@ -23,7 +23,7 @@ import com.telenav.osv.item.SensorData;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
-@SuppressWarnings("MissingPermission")
+@SuppressWarnings({"MissingPermission", "ResultOfMethodCallIgnored"})
 public class SensorManager implements SensorEventListener, LocationListener {
 
     private static final String LINE_SEPARATOR = "\n";
@@ -40,27 +40,6 @@ public class SensorManager implements SensorEventListener, LocationListener {
 
     private static FileOutputStream mOutputStream;
 
-    private static Runnable sFlushRunnable = new Runnable() {
-        @Override
-        public void run() {
-            StringBuilder result = new StringBuilder();
-            while (!sensorDataQueue.isEmpty()) {
-                result.append(sensorDataQueue.poll());
-                if (result.length() > 2000) {
-                    appendLog(result.toString());
-                    result = new StringBuilder();
-                }
-            }
-//        Log.d(TAG, "flushToDisk: flushing " + size);
-            if (result.length() > 0) {
-                appendLog(result.toString());
-            }
-            try {
-                mOutputStream.flush();
-            } catch (Exception ignored) {}
-        }
-    };
-
     private static HandlerThread mBackgroundThread;
 
     private static Handler mBackgroundHandler;
@@ -73,8 +52,6 @@ public class SensorManager implements SensorEventListener, LocationListener {
 
     private float[] mGravity = new float[3];
 
-    private float[] mGeomagnetic = new float[3];
-
     private float[] mRotationMatrixS = new float[16];
 
     private float[] mOrientationS = new float[3];
@@ -85,13 +62,6 @@ public class SensorManager implements SensorEventListener, LocationListener {
         // get sensorManager and initialise sensor listeners
         mSensorManager = (android.hardware.SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mLocationService = (android.location.LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        try {
-            mBackgroundThread = new HandlerThread("SensorCollector", Process.THREAD_PRIORITY_FOREGROUND);
-            mBackgroundThread.start();
-            mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-        } catch (InternalError error) {
-            Log.w(TAG, "SensorManager: " + Log.getStackTraceString(error));
-        }
     }
 
     public static void logSensorData(SensorData sensorData) {
@@ -104,13 +74,33 @@ public class SensorManager implements SensorEventListener, LocationListener {
             mBackgroundThread.start();
             mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
         }
-        mBackgroundHandler.post(sFlushRunnable);
+        final ConcurrentLinkedQueue<SensorData> tempQueue = sensorDataQueue;
+        mBackgroundHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                StringBuilder result = new StringBuilder();
+                while (!tempQueue.isEmpty()) {
+                    result.append(tempQueue.poll());
+                    if (result.length() > 2000) {
+                        appendLog(result.toString());
+                        result = new StringBuilder();
+                    }
+                }
+//        Log.d(TAG, "flushToDisk: flushing " + size);
+                if (result.length() > 0) {
+                    appendLog(result.toString());
+                }
+                try {
+                    mOutputStream.flush();
+                } catch (Exception ignored) {}
+            }
+        });
     }
 
     private static void appendLog(String string) {
         try {
             mOutputStream.write(string.getBytes());
-        } catch (IOException io) {
+        } catch (IOException ignored) {
         } catch (Exception e) {
             Log.w(TAG, "compress: " + Log.getStackTraceString(e));
         }
@@ -186,19 +176,18 @@ public class SensorManager implements SensorEventListener, LocationListener {
     }
 
     public void onResume(final OSVFile sequence, final boolean safe) {
-        if (sequence == null){
+        if (sequence == null) {
             return;
         }
         if (mBackgroundHandler == null || mBackgroundThread == null || !mBackgroundThread.isAlive()) {
             mBackgroundThread = new HandlerThread("SensorCollector", Process.THREAD_PRIORITY_FOREGROUND);
             mBackgroundThread.start();
             mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-        } else {
-            mBackgroundHandler.removeCallbacksAndMessages(null);
         }
         mBackgroundHandler.post(new Runnable() {
             @Override
             public void run() {
+                sensorDataQueue = new ConcurrentLinkedQueue<>();
                 sSequence = sequence;
                 if (!sSequence.exists()) {
                     sSequence.mkdir();
@@ -254,7 +243,7 @@ public class SensorManager implements SensorEventListener, LocationListener {
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
 //                Log.d(TAG, "onSensorChanged: magnetometer");
-                mGeomagnetic = event.values;
+                float[] mGeomagnetic = event.values;
                 if (mGravity != null && mGeomagnetic != null) {
                     boolean success = android.hardware.SensorManager.getRotationMatrix(mHeadingMatrix, null, mGravity, mGeomagnetic);
                     if (success) {

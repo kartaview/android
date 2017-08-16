@@ -75,7 +75,7 @@ public class OAuthDialogFragment extends DialogFragment {
                              Bundle savedInstanceState) {
         //Retrieve the webview
         View v = inflater.inflate(R.layout.fragment_oauth, container, false);
-        webViewOauth = (WebView) v.findViewById(R.id.web_oauth);
+        webViewOauth = v.findViewById(R.id.web_oauth);
         getDialog().setTitle(R.string.osm_login_label);
         return v;
     }
