@@ -1,26 +1,30 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/menu_profile"
-        android:icon="@drawable/vector_profile_gray"
-        android:title="@string/my_profile" />
-    <item
-        android:id="@+id/menu_leaderboard"
-        android:icon="@drawable/vector_leaderboard"
-        android:title="@string/leaderboard" />
-    <item
-        android:id="@+id/menu_upload"
-        android:icon="@drawable/vector_tracks_gray"
-        android:title="@string/upload_label" />
-    <item
-        android:id="@+id/menu_settings"
-        android:icon="@drawable/vector_settings_gray"
-        android:title="@string/settings" />
-    <!--<item-->
-    <!--android:id="@+id/menu_first"-->
-    <!--android:icon="@drawable/vector_settings_gray"-->
-    <!--android:title="first" />-->
-    <!--<item-->
-    <!--android:id="@+id/menu_second"-->
-    <!--android:icon="@drawable/vector_settings_gray"-->
-    <!--android:title="second" />-->
+  <item
+      android:id="@+id/menu_profile"
+      android:icon="@drawable/vector_profile_gray"
+      android:title="@string/my_profile"
+      />
+  <item
+      android:id="@+id/menu_leaderboard"
+      android:icon="@drawable/vector_leaderboard"
+      android:title="@string/leaderboard"
+      />
+  <item
+      android:id="@+id/menu_upload"
+      android:icon="@drawable/vector_tracks_gray"
+      android:title="@string/upload_label"
+      />
+  <item
+      android:id="@+id/menu_settings"
+      android:icon="@drawable/vector_settings_gray"
+      android:title="@string/settings"
+      />
+  <!--<item-->
+  <!--android:id="@+id/menu_first"-->
+  <!--android:icon="@drawable/vector_settings_gray"-->
+  <!--android:title="first" />-->
+  <!--<item-->
+  <!--android:id="@+id/menu_second"-->
+  <!--android:icon="@drawable/vector_settings_gray"-->
+  <!--android:title="second" />-->
 </menu>

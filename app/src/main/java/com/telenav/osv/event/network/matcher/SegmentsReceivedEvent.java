@@ -1,37 +1,38 @@
 package com.telenav.osv.event.network.matcher;
 
-import java.util.List;
 import com.skobbler.ngx.map.SKBoundingBox;
 import com.telenav.osv.event.OSVStickyEvent;
 import com.telenav.osv.item.Polyline;
+import java.util.List;
 
 /**
  * event which marks segments received from server
  * Created by Kalman on 01/02/2017.
  */
 public class SegmentsReceivedEvent extends OSVStickyEvent {
-    public final static String TAG = "SegmentsReceivedEvent";
 
-    public final List<Polyline> all;
+  public final static String TAG = "SegmentsReceivedEvent";
 
-    public final boolean matcher;
+  public final List<Polyline> all;
 
-    public final Object syncObject;
+  public final boolean matcher;
 
-    public final float zoom;
+  public final Object syncObject;
 
-    public SKBoundingBox boundingBox;
+  public final float zoom;
 
-    public SegmentsReceivedEvent(List<Polyline> all, Object syncObject, boolean matcher, SKBoundingBox boundingBox, float zoom) {
-        this.zoom = zoom;
-        this.all = all;
-        this.matcher = matcher;
-        this.syncObject = syncObject;
-        this.boundingBox = boundingBox;
-    }
+  public SKBoundingBox boundingBox;
 
-    @Override
-    public Class getStickyClass() {
-        return SegmentsReceivedEvent.class;
-    }
+  public SegmentsReceivedEvent(List<Polyline> all, Object syncObject, boolean matcher, SKBoundingBox boundingBox, float zoom) {
+    this.zoom = zoom;
+    this.all = all;
+    this.matcher = matcher;
+    this.syncObject = syncObject;
+    this.boundingBox = boundingBox;
+  }
+
+  @Override
+  public Class getStickyClass() {
+    return SegmentsReceivedEvent.class;
+  }
 }

@@ -5,5 +5,6 @@ package com.telenav.osv.listener;
  * Created by Kalman on 17/05/2017.
  */
 public interface ShutterListener {
-    void takeSnapshot(float distance);
+
+  void takeSnapshot(float distance);
 }

@@ -6,7 +6,7 @@ package com.telenav.osv.item;
 
 class DriverModeThrowable extends Throwable {
 
-    public DriverModeThrowable(String message) {
-        super(message);
-    }
+  public DriverModeThrowable(String message) {
+    super(message);
+  }
 }

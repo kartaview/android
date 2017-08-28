@@ -6,21 +6,22 @@ import com.telenav.spherical.view.JpegInputStream;
  * Created by Kalman on 2/6/16.
  */
 public interface CameraEventListener {
-    void onStarted(WifiCamManager.CameraTask task);
 
-    void onImageSizeChanged(int width, int height);
+  void onStarted(WifiCamManager.CameraTask task);
 
-    void onImageSizeReceived();
+  void onImageSizeChanged(int width, int height);
 
-    void onImageTaken();
+  void onImageSizeReceived();
 
-    void onImageReceived();
+  void onImageTaken();
 
-    void onPreviewStarted(JpegInputStream inputStream);
+  void onImageReceived();
 
-    void onPreviewStopped();
+  void onPreviewStarted(JpegInputStream inputStream);
 
-    void onImageListReceived();
+  void onPreviewStopped();
 
-    void onDisconnected();
+  void onImageListReceived();
+
+  void onDisconnected();
 }

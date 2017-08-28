@@ -8,6 +8,6 @@ import com.telenav.osv.event.OSVEvent;
  */
 public class CameraShutterEvent extends OSVEvent {
 
-    public CameraShutterEvent() {
-    }
+  public CameraShutterEvent() {
+  }
 }

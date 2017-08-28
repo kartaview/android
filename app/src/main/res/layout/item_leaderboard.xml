@@ -1,46 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
-
-    <TextView
-        android:id="@+id/rank_text"
-        style="@style/textStyle"
-        android:layout_width="60dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:layout_margin="10dp"
-        android:fontFamily="sans-serif"
-        android:gravity="center"
-        android:text="55"
-        android:textColor="@color/leaderboard_text_grey" />
-
-    <TextView
-        android:id="@+id/name_text"
-        style="@style/textStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginLeft="80dp"
-        android:layout_marginRight="100dp"
-        android:layout_marginStart="80dp"
-        android:layout_marginTop="10dp"
-        android:fontFamily="sans-serif"
-        android:lines="1"
-        android:text="telenavdrivers"
-        android:textColor="@color/leaderboard_text_grey" />
-
-    <TextView
-        android:id="@+id/points_text"
-        style="@style/textStyle"
-        android:layout_width="90dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="end"
-        android:layout_margin="10dp"
-        android:fontFamily="sans-serif"
-        android:gravity="center"
-        android:text="36167"
-        android:textColor="@color/leaderboard_text_grey" />
+    android:orientation="horizontal"
+    >
+  <TextView
+      android:id="@+id/rank_text"
+      style="@style/textStyle"
+      android:layout_width="60dp"
+      android:layout_height="match_parent"
+      android:layout_gravity="start"
+      android:layout_margin="10dp"
+      android:fontFamily="sans-serif"
+      android:gravity="center"
+      tools:text="55"
+      android:textColor="@color/leaderboard_text_grey"
+      />
+  <TextView
+      android:id="@+id/name_text"
+      style="@style/textStyle"
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:layout_marginBottom="10dp"
+      android:layout_marginEnd="100dp"
+      android:layout_marginLeft="80dp"
+      android:layout_marginRight="100dp"
+      android:layout_marginStart="80dp"
+      android:layout_marginTop="10dp"
+      android:fontFamily="sans-serif"
+      android:lines="1"
+      tools:text="telenavdrivers"
+      android:textColor="@color/leaderboard_text_grey"
+      />
+  <TextView
+      android:id="@+id/points_text"
+      style="@style/textStyle"
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:layout_gravity="end"
+      android:layout_margin="10dp"
+      android:fontFamily="sans-serif"
+      android:gravity="center"
+      android:singleLine="true"
+      android:ellipsize="none"
+      tools:text="3 636 167"
+      android:textColor="@color/leaderboard_text_grey"
+      />
 </FrameLayout>

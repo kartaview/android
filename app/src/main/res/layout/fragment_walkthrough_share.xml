@@ -5,55 +5,51 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/walkthrought_3"
-    android:paddingBottom="@dimen/appIntroBottomBarHeight">
-
-
-    <ImageView
-        android:id="@+id/icon"
+    android:paddingBottom="@dimen/appIntroBottomBarHeight"
+    >
+  <ImageView
+      android:id="@+id/icon"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerHorizontal="true"
+      android:layout_marginTop="50dp"
+      android:scaleType="centerInside"
+      app:srcCompat="@drawable/vector_walkthrough_cup"
+      tools:ignore="ContentDescription"
+      />
+  <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/icon"
+      android:layout_gravity="center"
+      android:layout_marginTop="20dp"
+      android:orientation="vertical"
+      android:weightSum="2"
+      >
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:scaleType="centerInside"
-        app:srcCompat="@drawable/vector_walkthrough_cup"
-        tools:ignore="ContentDescription" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/icon"
         android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:orientation="vertical"
-        android:weightSum="2">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:paddingLeft="32dp"
-            android:paddingRight="32dp"
-            android:text="@string/walkthrough_share_title"
-            android:textColor="@color/white"
-            android:textSize="24sp" />
-
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="30dp"
-            android:gravity="center"
-            android:paddingEnd="60dp"
-            android:paddingLeft="60dp"
-            android:paddingRight="60dp"
-            android:paddingStart="60dp"
-            android:text="@string/walkthrough_share_text"
-            android:textColor="@color/white_transparent"
-            android:textSize="18sp" />
-
-
-    </LinearLayout>
-
+        android:gravity="center"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:text="@string/walkthrough_share_title"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:paddingEnd="60dp"
+        android:paddingLeft="60dp"
+        android:paddingRight="60dp"
+        android:paddingStart="60dp"
+        android:text="@string/walkthrough_share_text"
+        android:textColor="@color/white_transparent"
+        android:textSize="18sp"
+        />
+  </LinearLayout>
 </RelativeLayout>

@@ -5,5 +5,5 @@ package com.telenav.osv.ui.fragment;
  */
 public abstract class DisplayFragment extends OSVFragment {
 
-    public abstract void setSource(Object extra);
+  public abstract void setSource(Object extra);
 }

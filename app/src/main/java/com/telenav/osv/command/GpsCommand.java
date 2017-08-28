@@ -8,21 +8,21 @@ import com.telenav.osv.event.OSVStickyEvent;
 
 public class GpsCommand extends OSVStickyEvent {
 
-    public final boolean start;
+  public final boolean start;
 
-    public boolean singlePosition;
+  public boolean singlePosition;
 
-    public GpsCommand(boolean start) {
-        this.start = start;
-    }
+  public GpsCommand(boolean start) {
+    this.start = start;
+  }
 
-    public GpsCommand(boolean start, boolean singlePosition) {
-        this.start = start;
-        this.singlePosition = singlePosition;
-    }
+  public GpsCommand(boolean start, boolean singlePosition) {
+    this.start = start;
+    this.singlePosition = singlePosition;
+  }
 
-    @Override
-    public Class getStickyClass() {
-        return GpsCommand.class;
-    }
+  @Override
+  public Class getStickyClass() {
+    return GpsCommand.class;
+  }
 }

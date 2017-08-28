@@ -7,5 +7,5 @@ import com.telenav.osv.manager.Recorder;
  */
 public abstract class FunctionalFragment extends OSVFragment {
 
-    public abstract void setRecorder(Recorder recorder);
+  public abstract void setRecorder(Recorder recorder);
 }

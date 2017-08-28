@@ -5,149 +5,152 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="@dimen/action_bar_size"
-    android:background="@color/gray_summary_background">
-
+    android:background="@color/gray_summary_background"
+    >
+  <TextView
+      android:id="@+id/well_done_label"
+      style="@style/textStyle"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="72dp"
+      android:layout_marginEnd="20dp"
+      android:layout_marginStart="20dp"
+      android:layout_marginTop="72dp"
+      android:fontFamily="sans-serif"
+      android:gravity="center"
+      android:text="@string/well_done_label"
+      android:textColor="@color/gray_summary_primary_text"
+      android:textSize="36sp"
+      android:textStyle="normal"
+      />
+  <RelativeLayout
+      android:id="@+id/estimated_points_container"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/well_done_label"
+      android:layout_marginBottom="15dp"
+      android:layout_marginEnd="20dp"
+      android:layout_marginStart="20dp"
+      >
     <TextView
-        android:id="@+id/well_done_label"
+        android:id="@+id/points_label"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/points_label"
+        android:textColor="@color/gray_summary_secondary_text"
+        android:textSize="36sp"
+        />
+    <TextView
+        android:id="@+id/estimated_label"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/points_label"
+        android:layout_toEndOf="@+id/points_label"
+        android:layout_toRightOf="@+id/points_label"
+        android:text="@string/partial_estimated"
+        android:textColor="@color/gray_summary_secondary_text"
+        android:textSize="17sp"
+        />
+    <TextView
+        android:id="@+id/summary_points_text"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_toEndOf="@+id/estimated_label"
+        android:layout_toRightOf="@+id/estimated_label"
+        android:fontFamily="sans-serif"
+        android:textColor="@color/gray_summary_primary_text"
+        android:textSize="36sp"
+        android:textStyle="normal"
+        tools:text="372"
+        />
+  </RelativeLayout>
+  <View
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_below="@+id/estimated_points_container"
+      android:layout_marginEnd="20dp"
+      android:layout_marginStart="20dp"
+      android:background="#31333b"
+      />
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_above="@+id/buttons_layout"
+      android:layout_marginEnd="20dp"
+      android:layout_marginStart="20dp"
+      android:orientation="vertical"
+      >
+    <TextView
+        android:id="@+id/summary_images_text"
         style="@style/textStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="72dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="72dp"
-        android:fontFamily="sans-serif"
-        android:gravity="center"
-        android:text="@string/well_done_label"
-        android:textColor="@color/gray_summary_primary_text"
-        android:textSize="36sp"
-        android:textStyle="normal" />
-
-    <RelativeLayout
-        android:id="@+id/estimated_points_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/well_done_label"
         android:layout_marginBottom="15dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp">
-
-        <TextView
-            android:id="@+id/points_label"
-            style="@style/textStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/points_label"
-            android:textColor="@color/gray_summary_secondary_text"
-            android:textSize="36sp" />
-
-        <TextView
-            style="@style/textStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/points_label"
-            android:layout_toEndOf="@+id/points_label"
-            android:layout_toRightOf="@+id/points_label"
-            android:text="@string/partial_estimated"
-            android:textColor="@color/gray_summary_secondary_text"
-            android:textSize="17sp" />
-
-        <TextView
-            android:id="@+id/summary_points_text"
-            style="@style/textStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:fontFamily="sans-serif"
-            android:textColor="@color/gray_summary_primary_text"
-            android:textSize="36sp"
-            android:textStyle="normal"
-            tools:text="372" />
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_below="@+id/estimated_points_container"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:background="#31333b" />
-
-    <LinearLayout
+        tools:text="Photos 943"
+        />
+    <TextView
+        android:id="@+id/summary_distance_text"
+        style="@style/textStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/buttons_layout"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/summary_images_text"
-            style="@style/textStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            tools:text="Photos 943" />
-
-        <TextView
-            android:id="@+id/summary_distance_text"
-            style="@style/textStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            tools:text="Distance 19.3 km" />
-
-        <TextView
-            android:id="@+id/summary_size_text"
-            style="@style/textStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            tools:text="Disk size 216 mb" />
-
-        <CheckBox
-            android:id="@+id/dont_show_checkbox"
-            style="@style/textStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="25dp"
-            android:text="@string/don_t_show_again_label"
-            android:textColor="@color/gray_summary_secondary_text" />
-
-    </LinearLayout>
-
-    <android.support.percent.PercentRelativeLayout
-        android:id="@+id/buttons_layout"
+        android:layout_marginBottom="15dp"
+        tools:text="Distance 19.3 km"
+        />
+    <TextView
+        android:id="@+id/summary_size_text"
+        style="@style/textStyle"
         android:layout_width="match_parent"
-        android:layout_height="68dp"
-        android:layout_alignParentBottom="true"
-        android:background="#1B1C1F"
-        android:padding="10dp">
-
-        <LinearLayout
-            android:id="@+id/ok_button"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="5dp"
-            android:background="@drawable/custom_bg_uploading_buttons"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_heightPercent="100%"
-            app:layout_widthPercent="50%">
-
-            <TextView
-                style="@style/toolbarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:fontFamily="sans-serif-light"
-                android:gravity="center"
-                android:text="@string/ok_label"
-                android:textColor="@color/gray_text_color"
-                android:textSize="19sp" />
-        </LinearLayout>
-    </android.support.percent.PercentRelativeLayout>
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        tools:text="Disk size 216 mb"
+        />
+    <CheckBox
+        android:id="@+id/dont_show_checkbox"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
+        android:text="@string/don_t_show_again_label"
+        android:textColor="@color/gray_summary_secondary_text"
+        />
+  </LinearLayout>
+  <android.support.percent.PercentRelativeLayout
+      android:id="@+id/buttons_layout"
+      android:layout_width="match_parent"
+      android:layout_height="68dp"
+      android:layout_alignParentBottom="true"
+      android:background="#1B1C1F"
+      android:padding="10dp"
+      >
+    <LinearLayout
+        android:id="@+id/ok_button"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="5dp"
+        android:background="@drawable/custom_bg_uploading_buttons"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_heightPercent="100%"
+        app:layout_widthPercent="50%"
+        >
+      <TextView
+          style="@style/toolbarButtonStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:fontFamily="sans-serif-light"
+          android:gravity="center"
+          android:text="@string/ok_label"
+          android:textColor="@color/gray_text_color"
+          android:textSize="19sp"
+          />
+    </LinearLayout>
+  </android.support.percent.PercentRelativeLayout>
 </RelativeLayout>

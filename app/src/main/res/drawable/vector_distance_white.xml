@@ -4,16 +4,17 @@
     android:width="24dp"
     android:height="24dp"
     android:viewportHeight="24"
-    android:viewportWidth="24">
-
-    <group
-            android:name="Shape"
-            android:translateX="5.000000"
-            android:translateY="6.000000">
-        <path
-            android:fillColor="#FFFFFF"
-            android:fillType="evenOdd"
-            android:pathData="M1.24768519,2.77342593 C1.74675926,2.26722222 2.24583333,1.81092593
+    android:viewportWidth="24"
+    >
+  <group
+      android:name="Shape"
+      android:translateX="5.000000"
+      android:translateY="6.000000"
+      >
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M1.24768519,2.77342593 C1.74675926,2.26722222 2.24583333,1.81092593
 2.46685185,1.90361111 C2.82333333,2.0462037 2.46685185,2.63796296
 2.25296296,2.98731481 C2.07472222,3.28675926 0.213888889,5.76074074
 0.213888889,7.48611111 C0.213888889,8.3987037 0.556111111,9.15444444
@@ -39,8 +40,9 @@ L1.24768519,2.77342593 Z M7.87111111,11.0865741 C7.65009259,11.0865741
 7.34351852,10.9012037 7.34351852,10.5732407 C7.34351852,10.145463
 7.86398148,9.00472222 9.38972222,8.60546296 C9.17583333,10.5233333
 8.37018519,11.0865741 7.87111111,11.0865741 L7.87111111,11.0865741 Z"
-            android:strokeWidth="1"
-            tools:ignore="InvalidVectorPath"
-            tools:targetApi="n" />
-    </group>
+        android:strokeWidth="1"
+        tools:ignore="InvalidVectorPath"
+        tools:targetApi="n"
+        />
+  </group>
 </vector>

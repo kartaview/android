@@ -8,9 +8,10 @@ import com.telenav.osv.item.Polyline;
  */
 
 abstract class MatcherEvent extends OSVEvent {
-    private final Polyline polyline;
 
-    MatcherEvent(Polyline polyline) {
-        this.polyline = polyline;
-    }
+  private final Polyline polyline;
+
+  MatcherEvent(Polyline polyline) {
+    this.polyline = polyline;
+  }
 }

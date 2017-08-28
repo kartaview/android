@@ -7,7 +7,8 @@ import com.telenav.osv.item.Polyline;
  */
 
 class SegmentEvent extends MatcherEvent {
-    public SegmentEvent(Polyline polyline) {
-        super(polyline);
-    }
+
+  public SegmentEvent(Polyline polyline) {
+    super(polyline);
+  }
 }

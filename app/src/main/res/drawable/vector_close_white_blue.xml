@@ -4,50 +4,51 @@
     android:width="48dp"
     android:height="48dp"
     android:viewportHeight="44"
-    android:viewportWidth="44">
-
-    <group
-        android:name="Mobile">
-        <group
-            android:name="fill">
-            <path
-                android:name="points/multiplier"
-                android:fillColor="#019ED3"
-                android:fillType="evenOdd"
-                android:pathData="
+    android:viewportWidth="44"
+    >
+  <group android:name="Mobile">
+    <group android:name="fill">
+      <path
+          android:name="points/multiplier"
+          android:fillColor="#019ED3"
+          android:fillType="evenOdd"
+          android:pathData="
                 M 22,44
                 C 34.150264  ,44            44         ,34.150264    44      ,22
                 C 44         ,9.849736      34.150264  ,0            22      ,0
                 C 9.849736   ,0             0          ,9.849736     0       ,22
                 C 0          ,34.150264     9.849736   ,44           22      ,44
                 Z"
-                tools:targetApi="n" />
-            <path
-                android:name="points/multiplier"
-                android:fillColor="#00000000"
-                android:fillType="evenOdd"
-                android:pathData="
+          tools:targetApi="n"
+          />
+      <path
+          android:name="points/multiplier"
+          android:fillColor="#00000000"
+          android:fillType="evenOdd"
+          android:pathData="
                 M 22,42.5
                 C 32.650264  ,42.5          42.5       ,34.150264    42.5     ,22
                 C 42.5       ,9.849736      32.650264  ,1.5          22       ,1.5
                 C 11.349736  ,1.5           1.5        ,9.849736     1.5      ,22
                 C 1.5        ,34.150264     11.349736  ,42.5         22       ,42.5
                 Z"
-                android:strokeAlpha="0.5"
-                android:strokeColor="#FFFFFF"
-                android:strokeWidth="3"
-                tools:targetApi="n" />
-        </group>
+          android:strokeAlpha="0.5"
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="3"
+          tools:targetApi="n"
+          />
     </group>
-    <group
-            android:name="Group-5"
-            android:translateX="15.000000"
-            android:translateY="15.000000">
-        <path
-            android:name="Shape"
-            android:fillColor="#FFFFFF"
-            android:fillType="evenOdd"
-            android:pathData="
+  </group>
+  <group
+      android:name="Group-5"
+      android:translateX="15.000000"
+      android:translateY="15.000000"
+      >
+    <path
+        android:name="Shape"
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="
             M 14 1.41
             L 12.59              0
             L 7                  5.59
@@ -61,7 +62,8 @@
             L 14                 12.59
             L 8.41               7
             Z"
-            android:strokeWidth="1"
-            tools:targetApi="n" />
-    </group>
+        android:strokeWidth="1"
+        tools:targetApi="n"
+        />
+  </group>
 </vector>

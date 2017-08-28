@@ -9,14 +9,14 @@ import com.telenav.osv.event.OSVEvent;
 
 public class FrameSaveError extends OSVEvent {
 
-    public final static String TAG = "FrameSaveError";
+  public final static String TAG = "FrameSaveError";
 
-    public final Exception exception;
+  public final Exception exception;
 
-    public String message;
+  public String message;
 
-    public FrameSaveError(Exception e, String message) {
-        this.exception = e;
-        this.message = message;
-    }
+  public FrameSaveError(Exception e, String message) {
+    this.exception = e;
+    this.message = message;
+  }
 }

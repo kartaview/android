@@ -5,9 +5,9 @@ package com.telenav.osv.event.network.upload;
  */
 public class UploadPausedEvent extends UploadEvent {
 
-    public boolean paused;
+  public boolean paused;
 
-    public UploadPausedEvent(boolean paused) {
-        this.paused = paused;
-    }
+  public UploadPausedEvent(boolean paused) {
+    this.paused = paused;
+  }
 }

@@ -4,40 +4,45 @@
     android:width="44dp"
     android:height="44dp"
     android:viewportHeight="44"
-    android:viewportWidth="44">
-
+    android:viewportWidth="44"
+    >
+  <group
+      android:name="Icons"
+      android:translateX="-16.000000"
+      android:translateY="-129.000000"
+      >
     <group
-            android:name="Icons"
-            android:translateX="-16.000000"
-            android:translateY="-129.000000">
-        <group
-                android:name="info"
-                android:translateX="21.000000"
-                android:translateY="134.000000">
-            <path
-                android:name="Oval-20"
-                android:fillType="evenOdd"
-                android:pathData="M17,34 C26.3888407,34 34,26.3888407 34,17 C34,7.61115925 26.3888407,0 17,0
+        android:name="info"
+        android:translateX="21.000000"
+        android:translateY="134.000000"
+        >
+      <path
+          android:name="Oval-20"
+          android:fillType="evenOdd"
+          android:pathData="M17,34 C26.3888407,34 34,26.3888407 34,17 C34,7.61115925 26.3888407,0 17,0
 C7.61115925,0 0,7.61115925 0,17 C0,26.3888407 7.61115925,34 17,34 Z"
-                android:strokeColor="#FFFFFF"
-                android:strokeWidth="4"
-                tools:targetApi="n" />
-            <path
-                android:name="Oval-20"
-                android:fillType="evenOdd"
-                android:pathData="M17,34 C26.3888407,34 34,26.3888407 34,17 C34,7.61115925 26.3888407,0 17,0
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="4"
+          tools:targetApi="n"
+          />
+      <path
+          android:name="Oval-20"
+          android:fillType="evenOdd"
+          android:pathData="M17,34 C26.3888407,34 34,26.3888407 34,17 C34,7.61115925 26.3888407,0 17,0
 C7.61115925,0 0,7.61115925 0,17 C0,26.3888407 7.61115925,34 17,34 Z"
-                android:strokeColor="#FFFFFF"
-                android:strokeWidth="4"
-                tools:targetApi="n" />
-            <path
-                android:name="Shape"
-                android:fillColor="#FFFFFF"
-                android:fillType="evenOdd"
-                android:pathData="M15,25.9682617 L19,25.9682617 L19,16 L15,16 L15,25.9682617 L15,25.9682617 Z
+          android:strokeColor="#FFFFFF"
+          android:strokeWidth="4"
+          tools:targetApi="n"
+          />
+      <path
+          android:name="Shape"
+          android:fillColor="#FFFFFF"
+          android:fillType="evenOdd"
+          android:pathData="M15,25.9682617 L19,25.9682617 L19,16 L15,16 L15,25.9682617 L15,25.9682617 Z
 M15,12.3227539 L19,12.3227539 L19,9 L15,9 L15,12.3227539 L15,12.3227539 Z"
-                android:strokeWidth="1"
-                tools:targetApi="n" />
-        </group>
+          android:strokeWidth="1"
+          tools:targetApi="n"
+          />
     </group>
+  </group>
 </vector>

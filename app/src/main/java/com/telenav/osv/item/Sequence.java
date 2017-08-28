@@ -1,8 +1,8 @@
 package com.telenav.osv.item;
 
+import com.skobbler.ngx.SKCoordinate;
 import java.util.Date;
 import java.util.HashMap;
-import com.skobbler.ngx.SKCoordinate;
 
 /**
  * abstract sequence base class
@@ -10,176 +10,176 @@ import com.skobbler.ngx.SKCoordinate;
  */
 public abstract class Sequence {
 
-    private static final String TAG = "Sequence";
+  private static final String TAG = "Sequence";
 
-    double mTotalLength;
+  double mTotalLength;
 
-    int mOriginalFrameCount;
+  int mOriginalFrameCount;
 
-    int mFrameCount;
+  int mFrameCount;
 
-    String mThumbLink = "";
+  String mThumbLink = "";
 
-    String mAddress = "";
+  String mAddress = "";
 
-    Polyline mPolyline;
+  Polyline mPolyline;
 
-    int mId = -1;
+  int mId = -1;
 
-    Date mDate;
+  Date mDate;
 
-    SKCoordinate mLocation = new SKCoordinate();
+  SKCoordinate mLocation = new SKCoordinate();
 
-    boolean mHasObd = false;
+  boolean mHasObd = false;
 
-    String mAppVersion = "";
+  String mAppVersion = "";
 
-    double value;
+  double value;
 
-    HashMap<Integer, ScoreHistory> mScoreHistory = new HashMap<>();
+  HashMap<Integer, ScoreHistory> mScoreHistory = new HashMap<>();
 
-    String mPlatform = "";
+  String mPlatform = "";
 
-    String mPlatformVersion = "";
+  String mPlatformVersion = "";
 
-    String mCurrency = "";
+  String mCurrency = "";
 
-    private String mServerStatus = "";
+  private String mServerStatus = "";
 
-    private boolean mIsPublic;
+  private boolean mIsPublic;
 
-    private int mSeekToFrame = 0;
+  private int mSeekToFrame = 0;
 
-    public double getTotalLength() {
-        return mTotalLength;
-    }
+  public double getTotalLength() {
+    return mTotalLength;
+  }
 
-    public void setTotalLength(double totalLength) {
-        this.mTotalLength = totalLength;
-    }
+  public void setTotalLength(double totalLength) {
+    this.mTotalLength = totalLength;
+  }
 
-    public int getOriginalFrameCount() {
-        return mOriginalFrameCount;
-    }
+  public int getOriginalFrameCount() {
+    return mOriginalFrameCount;
+  }
 
-    public int getFrameCount() {
-        return mFrameCount;
-    }
+  public int getFrameCount() {
+    return mFrameCount;
+  }
 
-    public void setFrameCount(int count) {
-        mFrameCount = count;
-    }
+  public void setFrameCount(int count) {
+    mFrameCount = count;
+  }
 
-    public String getThumbLink() {
-        return mThumbLink;
-    }
+  public String getThumbLink() {
+    return mThumbLink;
+  }
 
-    public String getAddress() {
-        return mAddress;
-    }
+  public String getAddress() {
+    return mAddress;
+  }
 
-    public void setAddress(String address) {
-        this.mAddress = address;
-    }
+  public void setAddress(String address) {
+    this.mAddress = address;
+  }
 
-    public Polyline getPolyline() {
-        return mPolyline;
-    }
+  public Polyline getPolyline() {
+    return mPolyline;
+  }
 
-    public int getId() {
-        return mId;
-    }
+  public int getId() {
+    return mId;
+  }
 
-    public Date getDate() {
-        return mDate;
-    }
+  public Date getDate() {
+    return mDate;
+  }
 
-    public SKCoordinate getLocation() {
-        return mLocation;
-    }
+  public SKCoordinate getLocation() {
+    return mLocation;
+  }
 
-    public void setLocation(SKCoordinate mLocation) {
-        this.mLocation = mLocation;
-    }
+  public void setLocation(SKCoordinate mLocation) {
+    this.mLocation = mLocation;
+  }
 
-    public boolean hasObd() {
-        return mHasObd;
-    }
+  public boolean hasObd() {
+    return mHasObd;
+  }
 
-    public String getAppVersion() {
-        return mAppVersion;
-    }
+  public String getAppVersion() {
+    return mAppVersion;
+  }
 
-    public double getValue() {
-        return value;
-    }
+  public double getValue() {
+    return value;
+  }
 
-    public HashMap<Integer, ScoreHistory> getScoreHistories() {
-        return mScoreHistory;
-    }
+  public HashMap<Integer, ScoreHistory> getScoreHistories() {
+    return mScoreHistory;
+  }
 
-    public String getPlatform() {
-        return mPlatform;
-    }
+  public String getPlatform() {
+    return mPlatform;
+  }
 
-    public String getPlatformVersion() {
-        return mPlatformVersion;
-    }
+  public String getPlatformVersion() {
+    return mPlatformVersion;
+  }
 
-    public String getServerStatus() {
-        return mServerStatus;
-    }
+  public String getServerStatus() {
+    return mServerStatus;
+  }
 
-    public void setServerStatus(String mServerStatus) {
-        this.mServerStatus = mServerStatus;
-    }
+  public void setServerStatus(String mServerStatus) {
+    this.mServerStatus = mServerStatus;
+  }
 
-    public String getCurrency() {
-        return mCurrency;
-    }
+  public String getCurrency() {
+    return mCurrency;
+  }
 
-    public boolean isPublic() {
-        return mIsPublic;
-    }
+  public boolean isPublic() {
+    return mIsPublic;
+  }
 
-    public void setPublic(boolean isPublic) {
-        this.mIsPublic = isPublic;
-    }
+  public void setPublic(boolean isPublic) {
+    this.mIsPublic = isPublic;
+  }
 
-    public int getRequestedFrameIndex() {
-        return mSeekToFrame;
-    }
+  public int getRequestedFrameIndex() {
+    return mSeekToFrame;
+  }
 
-    public void setRequestedFrameIndex(int seekToFrame) {
-        this.mSeekToFrame = seekToFrame;
-    }
+  public void setRequestedFrameIndex(int seekToFrame) {
+    this.mSeekToFrame = seekToFrame;
+  }
 
-    public int getDistance() {
-        return (int) mTotalLength;
-    }
+  public int getDistance() {
+    return (int) mTotalLength;
+  }
 
-    @Override
-    public String toString() {
-        return "Sequence (id " + mId + " images " + mFrameCount + " from " + mOriginalFrameCount + " and " + value + " Points" + ")";
-    }
+  @Override
+  public String toString() {
+    return "Sequence (id " + mId + " images " + mFrameCount + " from " + mOriginalFrameCount + " and " + value + " Points" + ")";
+  }
 
-    public void setScoreHistory(HashMap<Integer, ScoreHistory> scoreHistory) {
-        this.mScoreHistory = scoreHistory;
-    }
+  public void setScoreHistory(HashMap<Integer, ScoreHistory> scoreHistory) {
+    this.mScoreHistory = scoreHistory;
+  }
 
-    public void setHasObd(boolean hasObd) {
-        this.mHasObd = hasObd;
-    }
+  public void setHasObd(boolean hasObd) {
+    this.mHasObd = hasObd;
+  }
 
-    public abstract boolean isOnline();
+  public abstract boolean isOnline();
 
-    public int getScore() {
-        return (int) getValue();
-    }
+  public int getScore() {
+    return (int) getValue();
+  }
 
-    public void setScore(double score) {
-        this.value = score;
-    }
+  public void setScore(double score) {
+    this.value = score;
+  }
 
-    public abstract boolean isSafe();
+  public abstract boolean isSafe();
 }

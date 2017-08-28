@@ -1,171 +1,146 @@
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
-apply plugin: 'com.google.protobuf'
-buildscript {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-    }
+apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'org.sonarqube'
 
-    dependencies {
-        classpath 'io.fabric.tools:gradle:1.23.0'
-    }
-}
-
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-    maven {
-        url 'https://maven.fabric.io/public'
-    }
-    maven {
-        url "http://share.skobbler.com/android/maven/"
-    }
-    maven {
-        url "https://maven.google.com"
-    }
-}
-def VERSION_CODE = 80
-def VERSION_NAME = "2.1.0"
 
 android {
 
-    compileSdkVersion 26
-    buildToolsVersion '26.0.1'
-    defaultConfig {
-        versionCode VERSION_CODE
-        versionName VERSION_NAME
-        applicationId "com.telenav.streetview"
-        minSdkVersion 16
-        targetSdkVersion 25
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        vectorDrawables.useSupportLibrary = true
-        multiDexEnabled = true
-    }
-    buildTypes {
-        release {
-            debuggable false
-            jniDebuggable false
-            minifyEnabled false
-            shrinkResources false
-//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
-            ndk {
-                abiFilters = []
-                abiFilters.addAll(['armeabi', 'armeabi-v7a', 'x86'])
-            }
-        }
-        debug {
-            versionNameSuffix '-dev'
-            debuggable true
-            jniDebuggable true
-            minifyEnabled false
-            shrinkResources false
-//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
-            ndk {
-                abiFilters = []
-                abiFilters.addAll(['armeabi', 'armeabi-v7a', 'x86'])
-            }
-        }
-    }
-    configurations.all {
-        resolutionStrategy.force 'com.google.code.findbugs:jsr305:1.3.9'
-    }
-    dexOptions {
-        javaMaxHeapSize "1g"
-    }
-    lintOptions {
-        abortOnError false
-        ignoreWarnings true
-        quiet true
-    }
-    aaptOptions {
-        useNewCruncher false
-    }
-    sourceSets {
-        main {
-            proto {
-                // In addition to the default 'src/main/proto'
-                srcDir 'src/main/proto'
-                // In addition to the default '**/*.proto' (use with caution).
-                // Using an extension other than 'proto' is NOT recommended,
-                // because when proto files are published along with class files, we can
-                // only tell the type of a file from its extension.
-                include '**/*.protodevel'
-            }
-            aidl.srcDirs = ['src/main/java']
-            jni.srcDirs = []
-            jniLibs.srcDir 'src/main/jniLibs'
-        }
-    }
-    packagingOptions {
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/CERT.RSA'
-        exclude 'META-INF'
-    }
-    productFlavors {
-        mock {
-            applicationIdSuffix = ".mock"
-        }
-        prod
-    }
+  def globalConfiguration = rootProject.ext.config
 
-// Remove mockRelease as it's not needed.
-    android.variantFilter { variant ->
-        if(variant.buildType.name == 'release'
-                && variant.getFlavors().get(0).name == 'mock') {
-            variant.setIgnore(true)
-        }
-    }
-// Always show the result of every unit test, even if it passes.
-    testOptions.unitTests.all {
-        testLogging {
-            events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
-        }
-    }
+  compileSdkVersion globalConfiguration.androidCompileSdkVersion
+  buildToolsVersion globalConfiguration.androidBuildToolsVersion
 
-    dataBinding {
-        enabled = true
+  defaultConfig {
+    minSdkVersion globalConfiguration.androidMinSdkVersion
+    targetSdkVersion globalConfiguration.androidTargetSdkVersion
+
+    applicationId globalConfiguration.appId
+    versionCode globalConfiguration.appVersionCode
+    versionName globalConfiguration.appVersionName
+    testInstrumentationRunner globalConfiguration.testInstrumentationRunner
+    testApplicationId globalConfiguration.testAppId
+    vectorDrawables.useSupportLibrary = true
+    multiDexEnabled = true
+  }
+  buildTypes {
+    release {
+      debuggable false
+      jniDebuggable false
+      minifyEnabled false
+      shrinkResources false
+      //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      //            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
+      ndk {
+        abiFilters = []
+        abiFilters.addAll(['armeabi', 'armeabi-v7a', 'x86'])
+      }
     }
+    debug {
+      versionNameSuffix '-dev'
+      debuggable true
+      jniDebuggable true
+      minifyEnabled false
+      shrinkResources false
+      //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      //            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
+      ndk {
+        abiFilters = []
+        abiFilters.addAll(['armeabi', 'armeabi-v7a', 'x86'])
+      }
+    }
+  }
+  configurations.all {
+    resolutionStrategy.force 'com.google.code.findbugs:jsr305:1.3.9'
+  }
+  dexOptions {
+    javaMaxHeapSize "1g"
+  }
+  lintOptions {
+    abortOnError false
+    ignoreWarnings true
+    quiet true
+  }
+  aaptOptions {
+    useNewCruncher false
+  }
+  sourceSets {
+    main {
+      aidl.srcDirs = ['src/main/java']
+      jni.srcDirs = []
+      jniLibs.srcDir 'src/main/jniLibs'
+    }
+  }
+  packagingOptions {
+    exclude 'META-INF/DEPENDENCIES'
+    exclude 'META-INF/NOTICE'
+    exclude 'META-INF/LICENSE'
+    exclude 'META-INF/LICENSE.txt'
+    exclude 'META-INF/NOTICE.txt'
+    exclude 'META-INF/CERT.RSA'
+    exclude 'META-INF'
+  }
+  productFlavors {
+    mock {
+      applicationIdSuffix = ".mock"
+    }
+    prod
+  }
+
+  // Remove mockRelease as it's not needed.
+  android.variantFilter { variant ->
+    if (variant.buildType.name == 'release' && variant.getFlavors().get(0).name == 'mock') {
+      variant.setIgnore(true)
+    }
+  }
+  // Always show the result of every unit test, even if it passes.
+  testOptions.unitTests.all {
+    testLogging {
+      events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+    }
+  }
+
+  dataBinding {
+    enabled = true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_7
+  }
+}
+
+sonarqube {
+  properties {
+    property "sonar.projectName", ""
+    property "sonar.projectKey", ""
+
+    property "sonar.sourceEncoding", "UTF-8"
+    property "sonar.sources", "."
+    property "sonar.exclusions", "build/**,**/*.png,**/*.so,src/androidTest/**,src/test/**,src/mock/**,src/prod/**"
+
+    property "sonar.import_unknown_files", true
+
+    property "sonar.android.lint.report", "./build/outputs/lint-results.xml"
+  }
+}
+
+retrolambda {
+  javaVersion JavaVersion.VERSION_1_7
+  defaultMethods false
+  incremental true
 }
 
 
-task copyResDirectoryToClasses(type: Copy){
-    from "${projectDir}/src/test/res"
-    into "${buildDir}/intermediates/classes/test/debug/res"
+task copyResDirectoryToClasses(type: Copy) {
+  from "${projectDir}/src/test/res"
+  into "${buildDir}/intermediates/classes/test/debug/res"
 }
 
-protobuf {
-    // Configure the protoc executable
-    protoc {
-        // Download from repositories
-        artifact = 'com.google.protobuf:protoc:3.0.0'
-    }
-    plugins {
-        javalite {
-            // The codegen for lite comes as a separate artifact
-            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
-            generatedFilesBaseDir = "generated-proto"
-        }
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.plugins {
-                javalite {}
-            }
-        }
-    }
-    generatedFilesBaseDir = "$projectDir/src/main/protogen"
-}
 crashlytics {
-    enableNdk true
-    androidNdkOut 'build/intermediates/transforms/mergeJniLibs/release/folders/2000/1f/main/lib'
-    androidNdkLibsOut 'build/intermediates/transforms/stripDebugSymbol/release/folders/2000/1f/main/lib' //path for my jni libraries
+  enableNdk true
+  androidNdkOut 'build/intermediates/transforms/mergeJniLibs/release/folders/2000/1f/main/lib'
+  androidNdkLibsOut 'build/intermediates/transforms/stripDebugSymbol/release/folders/2000/1f/main/lib' //path for jni libraries
 }
 
 
@@ -175,83 +150,92 @@ task appRelease(dependsOn: [':app:assembleRelease'])
 
 
 dependencies {
-    compile fileTree(include: 'environment3.jar', dir: 'libs')
 
-    //AARs precompiled and added as maven dependencies
-    compile('com.skobbler.ngx:skmaps-osc:1.0.3')
-    compile('com.facebook.network.connectionclass:connectivity-osc:1.0.0')
-    compile('com.telenav.ffmpeg:ffmpeg:1.0.4')
-    compile('uk.co.senab.photoview:photoview-osc:1.0.0')
-    compile('com.telenav.streetview.scalablevideoview:scalablevideoview-osc:1.0.0')
-    compile('com.android.volley:volley-osc:1.0.1')
-    compile('org.greenrobot.eventbus:eventbus-osc:1.0.0')
-    compile('com.matthewtamlin.dotindicator:dotindicator-osc:1.0.0')
+  def moduleDependencies = rootProject.ext.moduleDependecies
+  def appDependencies = rootProject.ext.appDependencies
+  def appTestDependencies = rootProject.ext.appTestDependencies
+  def developmentDependencies = rootProject.ext.developmentDependencies
 
-    //MODULES for development
-//    compile project(':eventbus')
-//    compile project(':photoview')
-//    compile project(':volley')
-//    compile project(':connectivity')
-//    compile project(':scalablevideoview')
-//    compile project(':ffmpeg')
-//    compile project(':dotindicator')
+  compile fileTree(include: 'environment3.jar', dir: 'libs')
 
-    compile "com.android.support.test.espresso:espresso-idling-resource:$rootProject.espressoVersion"
-    compile "com.android.support:support-v4:$rootProject.supportVersion"
-    compile "com.android.support:appcompat-v7:$rootProject.supportVersion"
-    compile "com.android.support:design:$rootProject.supportVersion"
-    compile "com.android.support:recyclerview-v7:$rootProject.supportVersion"
-    compile "com.android.support:cardview-v7:$rootProject.supportVersion"
-    compile "com.android.support:percent:$rootProject.supportVersion"
-    compile 'com.android.support:multidex:1.0.2'
-    compile "com.android.support:customtabs:$rootProject.supportVersion"
-    compile "com.android.support:animated-vector-drawable:$rootProject.supportVersion"
-    compile "com.android.support:support-annotations:$rootProject.supportVersion"
-    compile "com.google.android.gms:play-services-location:$rootProject.playServicesVersion"
-    compile "com.google.android.gms:play-services-auth:$rootProject.playServicesVersion"
-    compile "com.google.firebase:firebase-messaging:$rootProject.playServicesVersion"
-    compile "com.google.firebase:firebase-auth:$rootProject.playServicesVersion"
-    compile 'com.google.api-client:google-api-client-android:1.22.0'
-    compile 'com.google.protobuf:protobuf-lite:3.0.0'
-    compile 'com.facebook.android:facebook-android-sdk:4.19.0'
-    compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.pnikosis:materialish-progress:1.7'
-    compile 'com.github.paolorotolo:appintro:4.1.0'
-    compile 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
-    compile('org.apache.httpcomponents:httpmime:4.3') { exclude module: "httpclient" }
-    compile('oauth.signpost:signpost-commonshttp4:1.2.1.2') { exclude module: "httpcore" exclude module: "commons-codec" }
-    compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') { transitive = true }
-    compile('com.crashlytics.sdk.android:crashlytics-ndk:1.1.6@aar') { transitive = true }
+  //AARs
+  compile moduleDependencies.skmaps
+  compile moduleDependencies.connectionProbe
+  compile moduleDependencies.ffmpeg
+  compile moduleDependencies.photoView
+  compile moduleDependencies.videoView
+  compile moduleDependencies.volley
+  compile moduleDependencies.eventbus
+  compile moduleDependencies.dotindicator
 
-    // Dependencies for local unit tests
-    testCompile files('libs/powermock-mockito-1.6.6-full.jar')
-    testCompile "org.robolectric:robolectric:3.3.2"
-    testCompile "junit:junit:$rootProject.ext.junitVersion"
-    testCompile "org.mockito:mockito-all:$rootProject.ext.mockitoVersion"
-    testCompile "org.hamcrest:hamcrest-all:$rootProject.ext.hamcrestVersion"
+  //MODULES for development
+//  compile project(':eventbus')
+//  compile project(':photoview')
+//  compile project(':volley')
+//  compile project(':connectivity')
+//  compile project(':scalablevideoview')
+//  compile project(':ffmpeg')
+//  compile project(':dotindicator')
 
-    // Android Testing Support Library's runner and rules
-    androidTestCompile "com.android.support.test:runner:$rootProject.ext.runnerVersion"
-    androidTestCompile "com.android.support.test:rules:$rootProject.ext.runnerVersion"
+  compile appDependencies.supportv4
+  compile appDependencies.appcompatv7
+  compile appDependencies.design
+  compile appDependencies.recyclerView
+  compile appDependencies.cardView
+  compile appDependencies.percent
+  compile appDependencies.multidex
+  compile appDependencies.customtabs
+  compile appDependencies.vectorDrawables
+  compile appDependencies.supportAnnotations
+  compile appDependencies.gmsLocation
+  compile appDependencies.gmsAuth
+  compile appDependencies.firebaseMessaging
+  compile appDependencies.firebaseAuth
+  compile appDependencies.googleApi
+  compile appDependencies.facebookApi
+  compile appDependencies.glide
+  compile appDependencies.materialishProgress
+  compile appDependencies.appIntro
+  compile appDependencies.apacheHttpClient
+  compile appDependencies.apacheHttpMime
+  compile appDependencies.signpost
+  compile appDependencies.crashlytics
+  compile appDependencies.crashlyticsNdk
 
-    // Dependencies for Android unit tests
-    androidTestCompile 'com.android.support:multidex:1.0.2'
-    androidTestCompile "junit:junit:$rootProject.ext.junitVersion"
-    androidTestCompile "org.mockito:mockito-core:$rootProject.ext.mockitoVersion"
-    androidTestCompile 'com.google.dexmaker:dexmaker:1.2'
-    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
+  // Dependencies for development
+  debugCompile developmentDependencies.leakCanary
+  releaseCompile developmentDependencies.leakCanaryNoOp
 
-    // Espresso UI Testing
-    androidTestCompile "com.android.support.test.espresso:espresso-core:$rootProject.espressoVersion"
-    androidTestCompile "com.android.support.test.espresso:espresso-contrib:$rootProject.espressoVersion"
-    androidTestCompile "com.android.support.test.espresso:espresso-intents:$rootProject.espressoVersion"
+  // Dependencies for local unit tests
+  testCompile appTestDependencies.powermock
+  testCompile appTestDependencies.powermockJUnit
+  testCompile appTestDependencies.robolectric
+  testCompile appTestDependencies.junit
+  testCompile appTestDependencies.mockito
+  testCompile appTestDependencies.hamcrest
 
-    // Resolve conflicts between main and test APK:
-    androidTestCompile "com.android.support:support-annotations:$rootProject.supportVersion"
-    androidTestCompile "com.android.support:support-v4:$rootProject.supportVersion"
-    androidTestCompile "com.android.support:recyclerview-v7:$rootProject.supportVersion"
-    androidTestCompile "com.android.support:appcompat-v7:$rootProject.supportVersion"
-    androidTestCompile "com.android.support:design:$rootProject.supportVersion"
+  // Android Testing Support Library's runner and rules
+  androidTestCompile appTestDependencies.runner
+  androidTestCompile appTestDependencies.rules
+
+  // Dependencies for Android unit tests
+  androidTestCompile appDependencies.multidex
+  androidTestCompile appTestDependencies.junit
+  androidTestCompile appTestDependencies.mockito
+  androidTestCompile appTestDependencies.dexmaker
+  androidTestCompile appTestDependencies.dexmakerMockito
+
+  // Espresso UI Testing
+  androidTestCompile appTestDependencies.espresso
+  androidTestCompile appTestDependencies.espressoContrib
+  androidTestCompile appTestDependencies.espressoIntents
+
+  // Resolve conflicts between main and test APK:
+  androidTestCompile appDependencies.supportAnnotations
+  androidTestCompile appDependencies.supportv4
+  androidTestCompile appDependencies.recyclerView
+  androidTestCompile appDependencies.appcompatv7
+  androidTestCompile appDependencies.design
 }
 
 apply plugin: 'com.google.gms.google-services'

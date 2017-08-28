@@ -9,17 +9,17 @@ import com.telenav.osv.event.OSVStickyEvent;
 
 public class LocationEvent extends OSVStickyEvent {
 
-    public final Location location;
+  public final Location location;
 
-    public boolean shouldCenter;
+  public boolean shouldCenter;
 
-    public LocationEvent(Location location, boolean shouldCenter) {
-        this.location = location;
-        this.shouldCenter = shouldCenter;
-    }
+  public LocationEvent(Location location, boolean shouldCenter) {
+    this.location = location;
+    this.shouldCenter = shouldCenter;
+  }
 
-    @Override
-    public Class getStickyClass() {
-        return LocationEvent.class;
-    }
+  @Override
+  public Class getStickyClass() {
+    return LocationEvent.class;
+  }
 }

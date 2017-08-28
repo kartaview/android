@@ -1,14 +1,8 @@
 package com.telenav.osv.ui.fragment;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -56,255 +50,504 @@ import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 import com.telenav.streetview.scalablevideoview.ScalableVideoView;
 import io.fabric.sdk.android.Fabric;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class TrackPreviewFragment extends DisplayFragment implements View.OnClickListener, PlaybackManager.PlaybackListener {
 
-    public static final String TAG = "TrackPreviewFragment";
+  public static final String TAG = "TrackPreviewFragment";
 
-    private PlaybackManager mPlayer;
+  private PlaybackManager mPlayer;
 
-    private OSVActivity activity;
+  private OSVActivity activity;
 
-    private boolean mOnline;
+  private boolean mOnline;
 
-    private ImageView mPlayButton;
+  private ImageView mPlayButton;
 
-    private Sequence mSequence;
+  private Sequence mSequence;
 
-    private ImageView mDeleteButton;
+  private ImageView mDeleteButton;
 
-    private Handler mHandler = new Handler(Looper.getMainLooper());
+  private Handler mHandler = new Handler(Looper.getMainLooper());
 
-    private boolean mMaximized = false;
+  private boolean mMaximized = false;
 
-    private TextView mCurrentImageText;
+  private TextView mCurrentImageText;
 
-    private boolean shouldHideDelete = false;
+  private boolean shouldHideDelete = false;
 
-    private FrameLayout mFrameHolder;
+  private FrameLayout mFrameHolder;
 
-    private boolean mPrepared;
+  private boolean mPrepared;
 
-    private TextView mPointsText;
+  private TextView mPointsText;
 
-    private RevealRelativeLayout mScoreLayout;
+  private RevealRelativeLayout mScoreLayout;
 
-    private boolean mScoreVisible = false;
+  private boolean mScoreVisible = false;
 
-    private ImageView mPointsBackground;
+  private ImageView mPointsBackground;
 
-    private SeekBar mSeekBar;
+  private SeekBar mSeekBar;
 
-    private ImageView mMaximizeButton;
+  private ImageView mMaximizeButton;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setSharedElementEnterTransition(new ScaleFragmentTransition());
-        setSharedElementReturnTransition(new ScaleFragmentTransition());
+  private SpannableString getSpannable(String first, String second) {
+    SpannableString spannable = new SpannableString(first + second);
+    spannable.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default_light)), 0, first.length(), 0);
+    spannable.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default_light_faded)), first.length(),
+                      second.length() + first.length(), 0);
+    return spannable;
+  }
+
+  @Override
+  public void setSource(Object extra) {
+    mPlayer = (PlaybackManager) extra;
+    mSequence = mPlayer.getSequence();
+    mOnline = mPlayer.isSafe();
+    hideDelete(mSequence instanceof NearbySequence);
+  }
+
+  private void toggleMaximize() {
+    //        ViewCompat.setTransitionName(mPlayer.getSurface(), activity.getString(R.string.transition_name_fullscreen_preview));
+    ////        Bitmap bitmap = ((GlideBitmapDrawable)((ImageView)((ScrollDisabledViewPager)mPlayer.getSurface()).getChildAt(0))
+    /// .getDrawable()).getBitmap();
+    //        mPlayer.pause();
+    //        activity.openScreen(ScreenComposer.SCREEN_PREVIEW_FULLSCREEN, mSequence);
+    //        mFrameHolder.post(new Runnable() {
+    //            @Override
+    //            public void run() {
+    //                if (mPlayer != null) {
+    //                    mPlayer.onSizeChanged();
+    //                }
+    //            }
+    //        });
+
+    if (mMaximized) {
+      mMaximized = false;
+      mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_maximize));
+      mDeleteButton.setVisibility(View.VISIBLE);
+      if (mPointsBackground != null) {
+        mPointsBackground.setVisibility(View.VISIBLE);
+      }
+      if (mPointsText != null) {
+        mPointsText.setVisibility(View.VISIBLE);
+      }
+      EventBus.post(new FullscreenEvent(false));
+    } else {
+      mMaximized = true;
+      mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_minimize));
+      mDeleteButton.setVisibility(View.GONE);
+      if (mPointsBackground != null) {
+        mPointsBackground.setVisibility(View.GONE);
+      }
+      if (mPointsText != null) {
+        mPointsText.setVisibility(View.GONE);
+      }
+      EventBus.post(new FullscreenEvent(true));
     }
+    mFrameHolder.post(() -> {
+      if (mPlayer != null) {
+        mPlayer.onSizeChanged();
+      }
+    });
+  }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_track_details, null);
-        activity = (OSVActivity) getActivity();
-        mFrameHolder = view.findViewById(R.id.image_holder);
-        mSeekBar = view.findViewById(R.id.seek_bar_for_preview);
-        mSeekBar.setProgress(0);
-        if (!mPrepared) {
-            activity.enableProgressBar(true);
-        }
-        if (mPlayer != null) {
-            mPlayer.setSeekBar(mSeekBar);
-        }
-        ImageView mPreviousButton = view.findViewById(R.id.previous_button);
-        ImageView mFastBackwardButton = view.findViewById(R.id.fast_backward_button);
-        mPlayButton = view.findViewById(R.id.play_button);
-        ImageView mFastForwardButton = view.findViewById(R.id.fast_forward_button);
-        ImageView mNextButton = view.findViewById(R.id.next_button);
-        mDeleteButton = view.findViewById(R.id.delete_button);
-        mMaximizeButton = view.findViewById(R.id.maximize_button);
-        mPointsText = view.findViewById(R.id.points_text);
-        mPointsBackground = view.findViewById(R.id.points_background);
-        TextView mTotalPointsText = view.findViewById(R.id.total_points_text);
-        mScoreLayout = view.findViewById(R.id.score_reveal_layout);
-        RecyclerView mPointsDetails = view.findViewById(R.id.points_details);
-        ImageView mScoreClose = view.findViewById(R.id.score_close);
+  public boolean isOnline() {
+    return mSequence != null && mSequence.isOnline();
+  }
 
-        mCurrentImageText = view.findViewById(R.id.current_image_text);
-        mCurrentImageText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable(R.drawable.vector_camera_gray), null, null, null);
-        TextView mImageDateText = view.findViewById(R.id.image_date_text);
-        if (mSequence == null) {
-            activity.onBackPressed();
-            return view;
-        }
-        mCurrentImageText.setText(getSpannable("0", "/0 IMG"));
-        mCurrentImageText.setText(getSpannable("0", "/" + mSequence.getFrameCount() + " IMG"));
+  private void deleteOnlineTrack() {
+    activity.enableProgressBar(true);
+    activity.getUserDataManager().deleteSequence(mSequence.getId(), new NetworkResponseDataListener<ApiResponse>() {
 
-        if (mSequence.getDate() != null) {
-            String date = "";
-            try {
-                date = Utils.niceDateFormat.format(mSequence.getDate());
-            } catch (Exception e) {
-                Log.d(TAG, "onPrepared: " + e.getLocalizedMessage());
-            }
-            String[] parts = date.split("\\| ");
-            if (parts.length > 1) {
-                mImageDateText.setText(getSpannable(parts[0], parts[1]));
-            }
-        }
-        if (mSequence.getScore() > 0 && activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
-            ArrayList<ScoreHistory> array = new ArrayList<>(mSequence.getScoreHistories().values());
-            Iterator<ScoreHistory> iter = array.iterator();
-            while (iter.hasNext()) {
-                ScoreHistory sch = iter.next();
-                if (sch.coverage == -1) {
-                    iter.remove();
-                }
-            }
-            @SuppressLint("UseSparseArrays") HashMap<Integer, ScoreItem> res = new HashMap<>();
-            for (ScoreHistory hist : array) {
-                ScoreItem normal = new ScoreItem(Utils.getValueOnSegment(hist.coverage), hist.photoCount, false);
-                ScoreItem obd = new ScoreItem(Utils.getValueOnSegment(hist.coverage) * 2, hist.obdPhotoCount, true);
-                if (normal.photoCount > 0) {
-                    if (res.containsKey(normal.value)) {
-                        res.get(normal.value).photoCount += normal.photoCount;
-                        res.get(normal.value).detectedSigns += normal.detectedSigns;
-                    } else {
-                        res.put(normal.value, normal);
-                    }
-                }
-                if (obd.photoCount > 0) {
-                    if (res.containsKey(obd.value)) {
-                        res.get(obd.value).photoCount += obd.photoCount;
-                        res.get(obd.value).detectedSigns += obd.detectedSigns;
-                    } else {
-                        res.put(obd.value, obd);
-                    }
-                }
-            }
-            ArrayList<ScoreItem> scores = new ArrayList<>(res.values());
-            Collections.sort(scores, new Comparator<ScoreItem>() {
-                @Override
-                public int compare(ScoreItem rhs, ScoreItem lhs) {
-                    return rhs.value - lhs.value;
-                }
-            });
-            mPointsDetails.setLayoutManager(new LinearLayoutManager(activity));
-            mPointsDetails.setAdapter(new ScoreHistoryAdapter(scores, activity));
-            String first;
-            if (mSequence.getScore() > 10000) {
-                first = mSequence.getScore() / 1000 + "K\n";
-            } else {
-                first = mSequence.getScore() + "\n";
-            }
-            String second = "pts";
-            SpannableString styledString = new SpannableString(first + second);
-            styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, first.length(), 0);
-            styledString.setSpan(new StyleSpan(Typeface.NORMAL), first.length(), second.length() + first.length(), 0);
-            styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
-            styledString.setSpan(new AbsoluteSizeSpan(12, true), first.length(), second.length() + first.length(), 0);
-            mTotalPointsText.setText("Total Points: " + mSequence.getScore());
-            mPointsText.setText(styledString);
-            mPointsText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mPlayer != null) {
-                        mPlayer.pause();
-                    }
-                    mScoreVisible = true;
-                    float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
-                    mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)), 500);
-                }
-            });
-            mScoreClose.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mScoreVisible = false;
-                    float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
-                    mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)), 500);
-                }
-            });
+      @Override
+      public void requestFailed(int status, ApiResponse details) {
+        activity.showSnackBar(R.string.something_wrong_try_again, Snackbar.LENGTH_SHORT);
+      }
+
+      @Override
+      public void requestFinished(int status, final ApiResponse details) {
+        activity.runOnUiThread(() -> {
+          activity.enableProgressBar(false);
+          if (mScoreLayout != null && mScoreVisible) {
+            mScoreVisible = false;
+            mScoreLayout.reveal();
+          }
+          activity.onBackPressed();
+          EventBus.post(new SequencesChangedEvent(true));
+          mHandler.postDelayed(() -> activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT), 250);
+        });
+      }
+    });
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  private void deleteLocalTrack(LocalSequence mSequence) {
+    if (mSequence != null) {
+      final int sequenceId = mSequence.getId();
+      activity.enableProgressBar(true);
+      LocalSequence.deleteSequence(mSequence.getId());
+      if (mSequence.getFolder().exists()) {
+        mSequence.getFolder().delete();
+      }
+      activity.enableProgressBar(false);
+      mHandler.postDelayed(() -> {
+        activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
+        if (mPlayer instanceof SafePlaybackManager) {
+          if (mScoreLayout != null && mScoreVisible) {
+            mScoreVisible = false;
+            mScoreLayout.reveal();
+          }
+          activity.onBackPressed();
+          EventBus.postSticky(new SequencesChangedEvent(false, sequenceId));
         } else {
-            mPointsBackground.setVisibility(View.GONE);
-            mPointsText.setVisibility(View.GONE);
-            mPointsBackground = null;
-            mPointsText = null;
-            mScoreLayout = null;
+          EventBus.post(new SequencesChangedEvent(false, sequenceId));
+          activity.finish();
         }
-
-        mPreviousButton.setOnClickListener(this);
-        mFastBackwardButton.setOnClickListener(this);
-        mPlayButton.setOnClickListener(this);
-        mFastForwardButton.setOnClickListener(this);
-        mNextButton.setOnClickListener(this);
-        mDeleteButton.setOnClickListener(this);
-        mMaximizeButton.setOnClickListener(this);
-
-        if (activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
-            mMaximizeButton.setVisibility(View.GONE);
-        }
-
-        if (shouldHideDelete) {
-            mDeleteButton.setVisibility(View.GONE);
-        } else {
-            mDeleteButton.setVisibility(View.VISIBLE);
-        }
-        return view;
+      }, 250);
     }
+  }
 
-    @Override
-    public void onStart() {
-        super.onStart();
+  @Override
+  public void onPlaying() {
+    if (mPlayButton != null) {
+      mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_pause));
     }
+  }
 
-    @Override
-    public void onStop() {
-        super.onStop();
+  @Override
+  public void onPaused() {
+    if (mPlayButton != null) {
+      mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_play));
     }
+  }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+  @Override
+  public void onStopped() {
+    if (mPlayButton != null) {
+      mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_play));
+    }
+  }
+
+  @Override
+  public void onPrepared() {
+    mPrepared = true;
+    activity.enableProgressBar(false);
+  }
+
+  @Override
+  public void onProgressChanged(int index) {
+    if (mPlayer != null) {
+      if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
+        mScoreVisible = false;
+        float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+        mScoreLayout.reveal(
+            new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)),
+            500);
+      }
+      if (mCurrentImageText != null) {
+        mCurrentImageText.setText(getSpannable("" + index, "/" + mPlayer.getLength() + " IMG"));
+      }
+    }
+  }
+
+  @Override
+  public void onExit() {
+
+  }
+
+  @Override
+  public void onClick(View v) {
+    if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
+      mScoreVisible = false;
+      mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + Utils.dpToPx(activity, 9))),
+                                    (int) (mPointsText.getWidth() / 2 + Utils.dpToPx(activity, 7))), 500);
+    }
+    switch (v.getId()) {
+      case R.id.previous_button:
         if (mPlayer != null) {
-            if (mPlayer.isPlaying()) {
-                onPlaying();
-            } else {
-                onPaused();
-            }
+          mPlayer.previous();
         }
-        if (mFrameHolder != null) {
-            mFrameHolder.removeAllViews();
-            if (!mOnline) {
-                ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
-                mSurfaceView.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-                mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
-                mFrameHolder.addView(mSurfaceView);
-                if (mPlayer != null) {
-                    mPlayer.setSurface(mSurfaceView);
-                }
-            } else {
-                ScrollDisabledViewPager mPager = new ScrollDisabledViewPager(activity);
+        break;
+      case R.id.fast_backward_button:
+        if (mPlayer != null) {
+          mPlayer.fastBackward();
+        }
+        break;
+      case R.id.play_button:
+        if (mPlayer != null) {
+          if (mPlayer.isPlaying()) {
+            mPlayer.pause();
+          } else {
+            mPlayer.play();
+          }
+        }
+        break;
+      case R.id.fast_forward_button:
+        if (mPlayer != null) {
+          mPlayer.fastForward();
+        }
+        break;
+      case R.id.next_button:
+        if (mPlayer != null) {
+          mPlayer.next();
+        }
+        break;
+      case R.id.delete_button:
+        if (mPlayer != null) {
+          if (mPlayer.isPlaying()) {
+            mPlayer.pause();
+          }
+          final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
+          if (mSequence.isOnline()) {
+            builder.setMessage(activity.getString(R.string.delete_online_track));
+          } else {
+            builder.setMessage(activity.getString(R.string.delete_local_track));
+          }
+          builder.setTitle(activity.getString(R.string.delete_track_title)).setNegativeButton(R.string.no, (dialog, which) -> {
 
-                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-                int fiveDp = (int) Utils.dpToPx(activity, 5);
-                lp.bottomMargin = -fiveDp;
-                lp.topMargin = -fiveDp;
-                lp.leftMargin = -fiveDp;
-                lp.rightMargin = -fiveDp;
-                mPager.setLayoutParams(lp);
-                mFrameHolder.addView(mPager);
-                if (mPlayer != null) {
-                    mPlayer.setSurface(mPager);
-                }
+          }).setPositiveButton(R.string.yes, (dialog, which) -> {
+            if (mSequence.isOnline()) {
+              deleteOnlineTrack();
+            } else {
+              deleteLocalTrack((LocalSequence) mSequence);
             }
+          }).create().show();
         }
-        if (Fabric.isInitialized() && mPlayer != null) {
-            Crashlytics.setString(Log.PLAYBACK, mPlayer.isSafe() ? "safe" : "local-mp4");
+        break;
+      case R.id.maximize_button:
+        if (mPrepared) {
+          toggleMaximize();
         }
-        if (mPointsBackground != null) {
-            mPointsBackground.animate().scaleXBy(0.3f).scaleYBy(0.3f).setDuration(300).setListener(new Animator.AnimatorListener() {
+        break;
+    }
+  }
+
+  @Override
+  public void onAttach(Context context) {
+    super.onAttach(context);
+    activity = (OSVActivity) context;
+    if (mPlayer != null) {
+      mPlayer.addPlaybackListener(this);
+    }
+    activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+  }
+
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setSharedElementEnterTransition(new ScaleFragmentTransition());
+    setSharedElementReturnTransition(new ScaleFragmentTransition());
+  }
+
+  @Nullable
+  @Override
+  public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    View view = inflater.inflate(R.layout.fragment_track_details, null);
+    activity = (OSVActivity) getActivity();
+    mFrameHolder = view.findViewById(R.id.image_holder);
+    mSeekBar = view.findViewById(R.id.seek_bar_for_preview);
+    mSeekBar.setProgress(0);
+    if (!mPrepared) {
+      activity.enableProgressBar(true);
+    }
+    if (mPlayer != null) {
+      mPlayer.setSeekBar(mSeekBar);
+    }
+    ImageView mPreviousButton = view.findViewById(R.id.previous_button);
+    ImageView mFastBackwardButton = view.findViewById(R.id.fast_backward_button);
+    mPlayButton = view.findViewById(R.id.play_button);
+    ImageView mFastForwardButton = view.findViewById(R.id.fast_forward_button);
+    ImageView mNextButton = view.findViewById(R.id.next_button);
+    mDeleteButton = view.findViewById(R.id.delete_button);
+    mMaximizeButton = view.findViewById(R.id.maximize_button);
+    mPointsText = view.findViewById(R.id.points_text);
+    mPointsBackground = view.findViewById(R.id.points_background);
+    TextView mTotalPointsText = view.findViewById(R.id.total_points_text);
+    mScoreLayout = view.findViewById(R.id.score_reveal_layout);
+    RecyclerView mPointsDetails = view.findViewById(R.id.points_details);
+    ImageView mScoreClose = view.findViewById(R.id.score_close);
+
+    mCurrentImageText = view.findViewById(R.id.current_image_text);
+    mCurrentImageText
+        .setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable(R.drawable.vector_camera_gray), null, null, null);
+    TextView mImageDateText = view.findViewById(R.id.image_date_text);
+    if (mSequence == null) {
+      activity.onBackPressed();
+      return view;
+    }
+    mCurrentImageText.setText(getSpannable("0", "/0 IMG"));
+    mCurrentImageText.setText(getSpannable("0", "/" + mSequence.getFrameCount() + " IMG"));
+
+    if (mSequence.getDate() != null) {
+      String date = "";
+      try {
+        date = Utils.niceDateFormat.format(mSequence.getDate());
+      } catch (Exception e) {
+        Log.d(TAG, "onPrepared: " + e.getLocalizedMessage());
+      }
+      String[] parts = date.split("\\| ");
+      if (parts.length > 1) {
+        mImageDateText.setText(getSpannable(parts[0], parts[1]));
+      }
+    }
+    if (mSequence.getScore() > 0 && activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
+      ArrayList<ScoreHistory> array = new ArrayList<>(mSequence.getScoreHistories().values());
+      Iterator<ScoreHistory> iter = array.iterator();
+      while (iter.hasNext()) {
+        ScoreHistory sch = iter.next();
+        if (sch.coverage == -1) {
+          iter.remove();
+        }
+      }
+      @SuppressLint("UseSparseArrays") HashMap<Integer, ScoreItem> res = new HashMap<>();
+      for (ScoreHistory hist : array) {
+        ScoreItem normal = new ScoreItem(Utils.getValueOnSegment(hist.coverage), hist.photoCount, false);
+        ScoreItem obd = new ScoreItem(Utils.getValueOnSegment(hist.coverage) * 2, hist.obdPhotoCount, true);
+        if (normal.photoCount > 0) {
+          if (res.containsKey(normal.value)) {
+            res.get(normal.value).photoCount += normal.photoCount;
+            res.get(normal.value).detectedSigns += normal.detectedSigns;
+          } else {
+            res.put(normal.value, normal);
+          }
+        }
+        if (obd.photoCount > 0) {
+          if (res.containsKey(obd.value)) {
+            res.get(obd.value).photoCount += obd.photoCount;
+            res.get(obd.value).detectedSigns += obd.detectedSigns;
+          } else {
+            res.put(obd.value, obd);
+          }
+        }
+      }
+      ArrayList<ScoreItem> scores = new ArrayList<>(res.values());
+      Collections.sort(scores, (rhs, lhs) -> rhs.value - lhs.value);
+      mPointsDetails.setLayoutManager(new LinearLayoutManager(activity));
+      mPointsDetails.setAdapter(new ScoreHistoryAdapter(scores, activity));
+      String first;
+      if (mSequence.getScore() > 10000) {
+        first = mSequence.getScore() / 1000 + "K\n";
+      } else {
+        first = mSequence.getScore() + "\n";
+      }
+      String second = "pts";
+      SpannableString styledString = new SpannableString(first + second);
+      styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, first.length(), 0);
+      styledString.setSpan(new StyleSpan(Typeface.NORMAL), first.length(), second.length() + first.length(), 0);
+      styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
+      styledString.setSpan(new AbsoluteSizeSpan(12, true), first.length(), second.length() + first.length(), 0);
+      mTotalPointsText.setText("Total Points: " + mSequence.getScore());
+      mPointsText.setText(styledString);
+      mPointsText.setOnClickListener(v -> {
+        if (mPlayer != null) {
+          mPlayer.pause();
+        }
+        mScoreVisible = true;
+        float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+        mScoreLayout
+            .reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)),
+                              (int) (mPointsText.getWidth() / 2 + tenDp)), 500);
+      });
+      mScoreClose.setOnClickListener(v -> {
+        mScoreVisible = false;
+        float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+        mScoreLayout
+            .reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)),
+                              (int) (mPointsText.getWidth() / 2 + tenDp)), 500);
+      });
+    } else {
+      mPointsBackground.setVisibility(View.GONE);
+      mPointsText.setVisibility(View.GONE);
+      mPointsBackground = null;
+      mPointsText = null;
+      mScoreLayout = null;
+    }
+
+    mPreviousButton.setOnClickListener(this);
+    mFastBackwardButton.setOnClickListener(this);
+    mPlayButton.setOnClickListener(this);
+    mFastForwardButton.setOnClickListener(this);
+    mNextButton.setOnClickListener(this);
+    mDeleteButton.setOnClickListener(this);
+    mMaximizeButton.setOnClickListener(this);
+
+    if (activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
+      mMaximizeButton.setVisibility(View.GONE);
+    }
+
+    if (shouldHideDelete) {
+      mDeleteButton.setVisibility(View.GONE);
+    } else {
+      mDeleteButton.setVisibility(View.VISIBLE);
+    }
+    return view;
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    if (mPlayer != null) {
+      if (mPlayer.isPlaying()) {
+        onPlaying();
+      } else {
+        onPaused();
+      }
+    }
+    if (mFrameHolder != null) {
+      mFrameHolder.removeAllViews();
+      if (!mOnline) {
+        ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
+        mSurfaceView
+            .setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
+        mFrameHolder.addView(mSurfaceView);
+        if (mPlayer != null) {
+          mPlayer.setSurface(mSurfaceView);
+        }
+      } else {
+        ScrollDisabledViewPager mPager = new ScrollDisabledViewPager(activity);
+
+        FrameLayout.LayoutParams lp =
+            new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        int fiveDp = (int) Utils.dpToPx(activity, 5);
+        lp.bottomMargin = -fiveDp;
+        lp.topMargin = -fiveDp;
+        lp.leftMargin = -fiveDp;
+        lp.rightMargin = -fiveDp;
+        mPager.setLayoutParams(lp);
+        mFrameHolder.addView(mPager);
+        if (mPlayer != null) {
+          mPlayer.setSurface(mPager);
+        }
+      }
+    }
+    if (Fabric.isInitialized() && mPlayer != null) {
+      Crashlytics.setString(Log.PLAYBACK, mPlayer.isSafe() ? "safe" : "local-mp4");
+    }
+    if (mPointsBackground != null) {
+      mPointsBackground.animate().scaleXBy(0.3f).scaleYBy(0.3f).setDuration(300).setListener(new Animator.AnimatorListener() {
+
+        @Override
+        public void onAnimationStart(Animator animation) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+          mPointsBackground.clearAnimation();
+          mPointsBackground.animate().scaleXBy(-0.3f).scaleYBy(-0.3f).setDuration(500).setInterpolator(new BounceInterpolator())
+              .setListener(new Animator.AnimatorListener() {
+
                 @Override
                 public void onAnimationStart(Animator animation) {
 
@@ -312,31 +555,7 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mPointsBackground.clearAnimation();
-                    mPointsBackground.animate().scaleXBy(-0.3f).scaleYBy(-0.3f).setDuration(500).setInterpolator(new BounceInterpolator()).setListener(new Animator
-                            .AnimatorListener() {
-
-
-                        @Override
-                        public void onAnimationStart(Animator animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            mPointsBackground.clearAnimation();
-                        }
-
-                        @Override
-                        public void onAnimationCancel(Animator animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animator animation) {
-
-                        }
-                    }).start();
+                  mPointsBackground.clearAnimation();
                 }
 
                 @Override
@@ -348,361 +567,115 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
                 public void onAnimationRepeat(Animator animation) {
 
                 }
-            }).start();
-        }
-    }
-
-    @Override
-    public void onPause() {
-//        if (mPlayer != null){
-//            mPlayer.pause();
-//        }
-        if (Fabric.isInitialized()) {
-            Crashlytics.setString(Log.PLAYBACK, "none");
-        }
-        super.onPause();
-    }
-
-    private SpannableString getSpannable(String first, String second) {
-        SpannableString spannable = new SpannableString(first + second);
-        spannable.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default_light)), 0, first.length(), 0);
-        spannable.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.text_colour_default_light_faded)), first.length(), second.length() + first.length(), 0);
-        return spannable;
-    }
-
-    @Override
-    public void setSource(Object extra) {
-        mPlayer = (PlaybackManager) extra;
-        mSequence = mPlayer.getSequence();
-        mOnline = mPlayer.isSafe();
-        hideDelete(mSequence instanceof NearbySequence);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
-            mScoreVisible = false;
-            mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + Utils.dpToPx(activity, 9))), (int) (mPointsText.getWidth() / 2 + Utils
-                    .dpToPx(activity, 7))), 500);
-        }
-        switch (v.getId()) {
-            case R.id.previous_button:
-                if (mPlayer != null) {
-                    mPlayer.previous();
-                }
-                break;
-            case R.id.fast_backward_button:
-                if (mPlayer != null) {
-                    mPlayer.fastBackward();
-                }
-                break;
-            case R.id.play_button:
-                if (mPlayer != null) {
-                    if (mPlayer.isPlaying()) {
-                        mPlayer.pause();
-                    } else {
-                        mPlayer.play();
-                    }
-                }
-                break;
-            case R.id.fast_forward_button:
-                if (mPlayer != null) {
-                    mPlayer.fastForward();
-                }
-                break;
-            case R.id.next_button:
-                if (mPlayer != null) {
-                    mPlayer.next();
-                }
-                break;
-            case R.id.delete_button:
-                if (mPlayer != null) {
-                    if (mPlayer.isPlaying()) {
-                        mPlayer.pause();
-                    }
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
-                    if (mSequence.isOnline()) {
-                        builder.setMessage(activity.getString(R.string.delete_online_track));
-                    } else {
-                        builder.setMessage(activity.getString(R.string.delete_local_track));
-                    }
-                    builder.setTitle(activity.getString(R.string.delete_track_title)).setNegativeButton(R.string.no,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                }
-                            }).setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (mSequence.isOnline()) {
-                                deleteOnlineTrack();
-                            } else {
-                                deleteLocalTrack((LocalSequence) mSequence);
-                            }
-                        }
-                    }).create().show();
-                }
-                break;
-            case R.id.maximize_button:
-                if (mPrepared) {
-                    toggleMaximize();
-                }
-                break;
-        }
-    }
-
-    private void toggleMaximize() {
-//        ViewCompat.setTransitionName(mPlayer.getSurface(), activity.getString(R.string.transition_name_fullscreen_preview));
-////        Bitmap bitmap = ((GlideBitmapDrawable)((ImageView)((ScrollDisabledViewPager)mPlayer.getSurface()).getChildAt(0)).getDrawable()).getBitmap();
-//        mPlayer.pause();
-//        activity.openScreen(ScreenComposer.SCREEN_PREVIEW_FULLSCREEN, mSequence);
-//        mFrameHolder.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (mPlayer != null) {
-//                    mPlayer.onSizeChanged();
-//                }
-//            }
-//        });
-
-        if (mMaximized) {
-            mMaximized = false;
-            mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_maximize));
-            mDeleteButton.setVisibility(View.VISIBLE);
-            if (mPointsBackground != null) {
-                mPointsBackground.setVisibility(View.VISIBLE);
-            }
-            if (mPointsText != null) {
-                mPointsText.setVisibility(View.VISIBLE);
-            }
-            EventBus.post(new FullscreenEvent(false));
-        } else {
-            mMaximized = true;
-            mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_minimize));
-            mDeleteButton.setVisibility(View.GONE);
-            if (mPointsBackground != null) {
-                mPointsBackground.setVisibility(View.GONE);
-            }
-            if (mPointsText != null) {
-                mPointsText.setVisibility(View.GONE);
-            }
-            EventBus.post(new FullscreenEvent(true));
-        }
-        mFrameHolder.post(new Runnable() {
-            @Override
-            public void run() {
-                if (mPlayer != null) {
-                    mPlayer.onSizeChanged();
-                }
-            }
-        });
-    }
-
-    public boolean isOnline() {
-        return mSequence != null && mSequence.isOnline();
-    }
-
-
-    private void deleteOnlineTrack() {
-        activity.enableProgressBar(true);
-        activity.getUserDataManager().deleteSequence(mSequence.getId(), new NetworkResponseDataListener<ApiResponse>() {
-            @Override
-            public void requestFailed(int status, ApiResponse details) {
-                activity.showSnackBar(R.string.something_wrong_try_again, Snackbar.LENGTH_SHORT);
-            }
-
-            @Override
-            public void requestFinished(int status, final ApiResponse details) {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        activity.enableProgressBar(false);
-                        if (mScoreLayout != null && mScoreVisible) {
-                            mScoreVisible = false;
-                            mScoreLayout.reveal();
-                        }
-                        activity.onBackPressed();
-                        EventBus.post(new SequencesChangedEvent(true));
-                        mHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
-                            }
-                        }, 250);
-                    }
-                });
-            }
-        });
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void deleteLocalTrack(LocalSequence mSequence) {
-        if (mSequence != null) {
-            final int sequenceId = mSequence.getId();
-            activity.enableProgressBar(true);
-            LocalSequence.deleteSequence(mSequence.getId());
-            if (mSequence.getFolder().exists()) {
-                mSequence.getFolder().delete();
-            }
-            activity.enableProgressBar(false);
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
-                    if (mPlayer instanceof SafePlaybackManager) {
-                        if (mScoreLayout != null && mScoreVisible) {
-                            mScoreVisible = false;
-                            mScoreLayout.reveal();
-                        }
-                        activity.onBackPressed();
-                        EventBus.postSticky(new SequencesChangedEvent(false, sequenceId));
-                    } else {
-                        EventBus.post(new SequencesChangedEvent(false, sequenceId));
-                        activity.finish();
-                    }
-                }
-            }, 250);
-        }
-    }
-
-
-    @Override
-    public void onPlaying() {
-        if (mPlayButton != null) {
-            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_pause));
-        }
-    }
-
-    @Override
-    public void onPaused() {
-        if (mPlayButton != null) {
-            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_play));
-        }
-    }
-
-    @Override
-    public void onStopped() {
-        if (mPlayButton != null) {
-            mPlayButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_play));
+              }).start();
         }
 
-    }
+        @Override
+        public void onAnimationCancel(Animator animation) {
 
-
-    @Override
-    public void onPrepared() {
-        mPrepared = true;
-        activity.enableProgressBar(false);
-    }
-
-    @Override
-    public void onProgressChanged(int index) {
-        if (mPlayer != null) {
-            if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
-                mScoreVisible = false;
-                float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
-                mScoreLayout.reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 +
-                        tenDp)), 500);
-            }
-            if (mCurrentImageText != null) {
-                mCurrentImageText.setText(getSpannable("" + index, "/" + mPlayer.getLength() + " IMG"));
-            }
         }
-    }
 
-    @Override
-    public void onExit() {
+        @Override
+        public void onAnimationRepeat(Animator animation) {
 
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        activity = (OSVActivity) context;
-        if (mPlayer != null) {
-            mPlayer.addPlaybackListener(this);
         }
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+      }).start();
     }
+  }
 
-    @Override
-    public void onDetach() {
-        if (mPlayer != null) {
-            mPlayer.stop();
-            mPlayer.destroy();
-            mPlayer.removePlaybackListener(this);
+  @Override
+  public void onPause() {
+    //        if (mPlayer != null){
+    //            mPlayer.pause();
+    //        }
+    if (Fabric.isInitialized()) {
+      Crashlytics.setString(Log.PLAYBACK, "none");
+    }
+    super.onPause();
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if (mPlayer != null) {
+      mPlayer.stop();
+      mPlayer.destroy();
+      mPlayer = null;
+    }
+    if (activity != null) {
+      if (!activity.getApp().isMainProcess()) {
+        activity.finish();
+        android.os.Process.killProcess(android.os.Process.myPid());
+      }
+    }
+  }
+
+  @Override
+  public void onDetach() {
+    if (mPlayer != null) {
+      mPlayer.stop();
+      mPlayer.destroy();
+      mPlayer.removePlaybackListener(this);
+    }
+    activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    super.onDetach();
+  }
+
+  public void hideDelete(boolean hide) {
+    shouldHideDelete = hide;
+    if (mDeleteButton != null) {
+      if (shouldHideDelete) {
+        mDeleteButton.setVisibility(View.GONE);
+      } else {
+        mDeleteButton.setVisibility(View.VISIBLE);
+      }
+    }
+  }
+
+  @Override
+  public boolean onBackPressed() {
+    activity.enableProgressBar(false);
+    if (mScoreLayout != null && mScoreVisible && !fromNearby()) {
+      mScoreVisible = false;
+      mScoreLayout.reveal();
+      return true;
+    } else {
+      if (mPlayer != null) {
+        mPlayer.stop();
+        mPlayer.destroy();
+        mPlayer = null;
+      }
+      if (activity != null) {
+        if (!activity.getApp().isMainProcess()) {
+          activity.finish();
+          android.os.Process.killProcess(android.os.Process.myPid());
         }
-        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        super.onDetach();
+      }
+      return false;
     }
+  }
 
-    public void hideDelete(boolean hide) {
-        shouldHideDelete = hide;
-        if (mDeleteButton != null) {
-            if (shouldHideDelete) {
-                mDeleteButton.setVisibility(View.GONE);
-            } else {
-                mDeleteButton.setVisibility(View.VISIBLE);
-            }
-        }
-    }
+  @Override
+  public View getSharedElement() {
+    return mPlayer == null ? null : mPlayer.getSurface();
+  }
 
-    @Override
-    public boolean onBackPressed() {
-        activity.enableProgressBar(false);
-        if (mScoreLayout != null && mScoreVisible && !fromNearby()) {
-            mScoreVisible = false;
-            mScoreLayout.reveal();
-            return true;
-        } else {
-            if (mPlayer != null) {
-                mPlayer.stop();
-                mPlayer.destroy();
-                mPlayer = null;
-            }
-            if (activity != null) {
-                if (!activity.getApp().isMainProcess()) {
-                    activity.finish();
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                }
-            }
-            return false;
-        }
-    }
+  @Override
+  public String getSharedElementTransitionName() {
+    return activity == null ? "" : activity.getString(R.string.transition_name_fullscreen_preview);
+  }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mPlayer != null) {
-            mPlayer.stop();
-            mPlayer.destroy();
-            mPlayer = null;
-        }
-        if (activity != null) {
-            if (!activity.getApp().isMainProcess()) {
-                activity.finish();
-                android.os.Process.killProcess(android.os.Process.myPid());
-            }
-        }
-    }
-
-    private boolean fromNearby() {
-        return mSequence instanceof NearbySequence;
-    }
-
-    @Override
-    public View getSharedElement() {
-        return mPlayer == null ? null : mPlayer.getSurface();
-    }
-
-    @Override
-    public String getSharedElementTransitionName() {
-        return activity == null ? "" : activity.getString(R.string.transition_name_fullscreen_preview);
-    }
+  private boolean fromNearby() {
+    return mSequence instanceof NearbySequence;
+  }
 }

@@ -7,4 +7,5 @@ import com.telenav.osv.event.OSVEvent;
  */
 
 public class CameraResetCommand extends OSVEvent {
+
 }

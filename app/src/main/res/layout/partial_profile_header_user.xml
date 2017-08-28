@@ -1,67 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical">
-
-    <LinearLayout
-        android:id="@+id/user_info_row"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:baselineAligned="false"
-        android:layout_gravity="center_horizontal"
-        android:orientation="horizontal"
-        android:weightSum="3">
-
-        <TextView
-            android:id="@+id/header_images_text_view"
-            style="@style/profileHeaderInfoLight"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:lines="2"
-            android:lineSpacingExtra="5dp"
-            android:text="@string/account_images_label" />
-
-        <TextView
-            android:id="@+id/header_distance_text_view"
-            style="@style/profileHeaderInfoLight"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:lines="2"
-            android:lineSpacingExtra="5dp"
-            android:text="@string/account_distance_label" />
-
-        <TextView
-            android:id="@+id/header_obd_text_view"
-            style="@style/profileHeaderInfoLight"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:lines="2"
-            android:lineSpacingExtra="5dp"
-            android:text="@string/account_obd_label" />
-
-    </LinearLayout>
-
+    android:orientation="vertical"
+    >
+  <LinearLayout
+      android:id="@+id/user_info_row"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="50dp"
+      android:baselineAligned="false"
+      android:layout_gravity="center_horizontal"
+      android:orientation="horizontal"
+      android:weightSum="3"
+      >
     <TextView
-        android:id="@+id/header_uploaded_tracks_text_view"
-        android:layout_width="match_parent"
+        android:id="@+id/header_images_text_view"
+        style="@style/profileHeaderInfoLight"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:fontFamily="sans-serif"
-        android:paddingBottom="10dp"
-        android:paddingLeft="@dimen/sequence_list_item_margin_side"
-        android:paddingRight="@dimen/sequence_list_item_margin_side"
-        android:paddingTop="50dp"
-        tools:text="Uploaded tracks - 0"
-        android:textColor="@color/profile_header_info_tracks_text_color"
-        android:textSize="17sp"
-        android:textStyle="normal" />
-
+        android:layout_weight="1"
+        android:gravity="center"
+        android:lines="2"
+        android:lineSpacingExtra="5dp"
+        android:text="@string/account_images_label"
+        />
+    <TextView
+        android:id="@+id/header_distance_text_view"
+        style="@style/profileHeaderInfoLight"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:lines="2"
+        android:lineSpacingExtra="5dp"
+        android:text="@string/account_distance_label"
+        />
+    <TextView
+        android:id="@+id/header_obd_text_view"
+        style="@style/profileHeaderInfoLight"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:lines="2"
+        android:lineSpacingExtra="5dp"
+        android:text="@string/account_obd_label"
+        />
+  </LinearLayout>
+  <TextView
+      android:id="@+id/header_uploaded_tracks_text_view"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:fontFamily="sans-serif"
+      android:paddingBottom="10dp"
+      android:paddingLeft="@dimen/sequence_list_item_margin_side"
+      android:paddingRight="@dimen/sequence_list_item_margin_side"
+      android:paddingTop="50dp"
+      tools:text="Uploaded tracks - 0"
+      android:textColor="@color/profile_header_info_tracks_text_color"
+      android:textSize="17sp"
+      android:textStyle="normal"
+      />
 </LinearLayout>

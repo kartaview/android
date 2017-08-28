@@ -1,93 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- navigation panels-->
-    <color name="darker_grey">#303030</color>
-    <color name="grey">#c0c0c0</color>
-    <color name="black">#000000</color>
-    <color name="white">#ffffff</color>
-    <color name="leaderboard_grey">#f7f7f9</color>
-    <color name="leaderboard_text_grey">#1b1c1f</color>
-    <color name="score_background_blue">#019ED3</color>
-    <color name="score_background_light_blue">#74C6E3</color>
-    <color name="score_background_gray">#B7BAC5</color>
-    <color name="score_background_light_gray">#D4D5DB</color>
-    <color name="score_background_yellow">#E7A100</color>sadasd
-    <color name="score_background_light_yellow">#f2d080</color>
-
-    <!-- light blue-->
-
-    <!--grey-->
-    <color name="md_grey_200">#EEEEEE</color>
-    <color name="md_grey_300">#E0E0E0</color>
-    <color name="md_grey_400">#BDBDBD</color>
-    <color name="md_grey_600">#757575</color>
-    <color name="md_grey_700">#616161</color>
-    <color name="md_grey_900">#212121</color>
-
-    <!--material light-->
-    <color name="primary_dark_material_dark_1">#212121</color>
-    <color name="accent_material_dark_1">#bd10e0</color>
-    <color name="background_material_dark_1">#212121</color>
-    <color name="background_material_light_1">#f0f1f2</color>
-    <color name="text_colour_default">#FFFFFFFF</color>
-    <color name="text_colour_default_light">#4d4d4d</color>
-    <color name="text_colour_secondary_light">#B3303030</color>
-    <color name="transparent">#00000000</color>
-    <color name="list_separator">#EDEDED</color>
-    <color name="white_transparent">#B8ffffff</color>
-
-    <!-- walkthrough color codes-->
-    <color name="walkthrought_1">#009DD5</color>
-    <color name="walkthrought_2">#00AC5D</color>
-    <color name="walkthrought_3">#E8A300</color>
-
-    <!-- action bar colors -->
-    <color name="action_bar_blue">#019ed3</color>
-    <color name="status_bar_blue_darker">#017ea9</color>
-    <color name="dark_grey_action_bar">#1B1C1F</color>
-    <color name="signature_waiting_upload">#B7BAC5</color>
-
-
-    <color name="hint_blue">#039ed3</color>
-    <color name="hint_purple">#bc12e0</color>
-    <color name="hint_green">#20aa63</color>
-    <color name="hint_yellow">#e6a100</color>
-    <color name="hint_red">#e9204c</color>
-    <color name="gray_text_color">#6E707B</color>
-    <color name="leaderboard_green">#1daa63</color>
-    <color name="leaderboard_green_darker">#16834d</color>
-    <color name="gray_summary_background">#1b1c1f</color>
-    <color name="gray_summary_primary_text">#b7bac5</color>
-    <color name="gray_summary_secondary_text">#6e707b</color>
-
-    <color name="facebook_blue">#3b5998</color>
-    <color name="google_red">#dd4b39</color>
-    <color name="osm_grey">#b2b2b2</color>
-
-    <color name="issue_report_text_gray">#bbbbbb</color>
-    <color name="issue_report_blue">#29b6f6</color>
-    <color name="profile_header_gray">#f7f7f7</color>
-
-    <color name="profile_dark_gray">#4d4d4d</color>
-    <color name="profile_text_light_gray">#afafaf</color>
-    <color name="sequence_card_text_color_dark_grey">#4d4d4d</color>
-    <color name="profile_info_text_dark">#4d4d4d</color>
-    <color name="profile_info_text_light">#afafaf</color>
-    <color name="profile_header_info_text_gray">#b8dbee</color>
-    <color name="profile_list_header_info_text_light">#6e707b</color>
-    <color name="profile_list_header_info_text_dark">#4d4d4d</color>
-    <color name="profile_header_info_text_white">#ffffff</color>
-    <color name="sequence_card_status_text_color_green">#1daa63</color>
-    <color name="sequence_card_status_text_color_blue">#019ed3</color>
-    <color name="sequence_card_status_text_color_red">#e9214c</color>
-    <color name="sequence_card_text_color_secondary_grey">#6e707b</color>
-    <color name="profile_header_blue_text">#019ed3</color>
-    <color name="profile_header_info_tracks_text_color">#4d4d4d</color>
-    <color name="track_preview_separator_gray">#e1e1e1</color>
-    <color name="text_colour_default_light_faded">#6e707b</color>
-    <color name="profile_progress_badge_color">#6554c0</color>
-    <color name="ripple_gray_light">#dde1e1e1</color>
-    <color name="payment_divider_color">#e1e1e1</color>
-
-
+  <!-- navigation panels-->
+  <color name="darker_grey">#303030</color>
+  <color name="grey">#c0c0c0</color>
+  <color name="black">#000000</color>
+  <color name="white">#ffffff</color>
+  <color name="leaderboard_grey">#f7f7f9</color>
+  <color name="leaderboard_text_grey">#1b1c1f</color>
+  <color name="score_background_blue">#019ED3</color>
+  <color name="score_background_light_blue">#74C6E3</color>
+  <color name="score_background_gray">#B7BAC5</color>
+  <color name="score_background_light_gray">#D4D5DB</color>
+  <color name="score_background_yellow">#E7A100</color>sadasd
+  <color name="score_background_light_yellow">#f2d080</color>
+  <!-- light blue-->
+  <!--grey-->
+  <color name="md_grey_200">#EEEEEE</color>
+  <color name="md_grey_300">#E0E0E0</color>
+  <color name="md_grey_400">#BDBDBD</color>
+  <color name="md_grey_600">#757575</color>
+  <color name="md_grey_700">#616161</color>
+  <color name="md_grey_900">#212121</color>
+  <!--material light-->
+  <color name="primary_dark_material_dark_1">#212121</color>
+  <color name="accent_material_dark_1">#bd10e0</color>
+  <color name="background_material_dark_1">#212121</color>
+  <color name="background_material_light_1">#f0f1f2</color>
+  <color name="text_colour_default">#FFFFFFFF</color>
+  <color name="text_colour_default_light">#4d4d4d</color>
+  <color name="text_colour_secondary_light">#B3303030</color>
+  <color name="transparent">#00000000</color>
+  <color name="list_separator">#EDEDED</color>
+  <color name="white_transparent">#B8ffffff</color>
+  <!-- walkthrough color codes-->
+  <color name="walkthrought_1">#009DD5</color>
+  <color name="walkthrought_2">#00AC5D</color>
+  <color name="walkthrought_3">#E8A300</color>
+  <!-- action bar colors -->
+  <color name="action_bar_blue">#019ed3</color>
+  <color name="status_bar_blue_darker">#017ea9</color>
+  <color name="dark_grey_action_bar">#1B1C1F</color>
+  <color name="signature_waiting_upload">#B7BAC5</color>
+  <color name="hint_blue">#039ed3</color>
+  <color name="hint_purple">#bc12e0</color>
+  <color name="hint_green">#20aa63</color>
+  <color name="hint_yellow">#e6a100</color>
+  <color name="hint_red">#e9204c</color>
+  <color name="gray_text_color">#6E707B</color>
+  <color name="leaderboard_green">#1daa63</color>
+  <color name="leaderboard_green_darker">#16834d</color>
+  <color name="gray_summary_background">#1b1c1f</color>
+  <color name="gray_summary_primary_text">#b7bac5</color>
+  <color name="gray_summary_secondary_text">#6e707b</color>
+  <color name="facebook_blue">#3b5998</color>
+  <color name="google_red">#dd4b39</color>
+  <color name="osm_grey">#b2b2b2</color>
+  <color name="issue_report_text_gray">#bbbbbb</color>
+  <color name="issue_report_blue">#29b6f6</color>
+  <color name="profile_dark_gray">#4d4d4d</color>
+  <color name="profile_text_light_gray">#afafaf</color>
+  <color name="sequence_card_text_color_dark_grey">#4d4d4d</color>
+  <color name="profile_info_text_dark">#4d4d4d</color>
+  <color name="profile_info_text_light">#afafaf</color>
+  <color name="profile_header_info_text_gray">#b8dbee</color>
+  <color name="profile_list_header_info_text_light">#6e707b</color>
+  <color name="profile_list_header_info_text_dark">#4d4d4d</color>
+  <color name="profile_header_info_text_white">#ffffff</color>
+  <color name="sequence_card_status_text_color_green">#1daa63</color>
+  <color name="sequence_card_status_text_color_blue">#019ed3</color>
+  <color name="sequence_card_status_text_color_red">#e9214c</color>
+  <color name="sequence_card_text_color_secondary_grey">#6e707b</color>
+  <color name="profile_header_blue_text">#019ed3</color>
+  <color name="profile_header_info_tracks_text_color">#4d4d4d</color>
+  <color name="text_colour_default_light_faded">#6e707b</color>
+  <color name="profile_progress_badge_color">#6554c0</color>
+  <color name="ripple_gray_light">#dde1e1e1</color>
+  <color name="payment_divider_color">#e1e1e1</color>
 </resources>

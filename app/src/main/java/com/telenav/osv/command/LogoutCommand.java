@@ -7,8 +7,9 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 
 public class LogoutCommand extends OSVStickyEvent {
-    @Override
-    public Class getStickyClass() {
-        return LogoutCommand.class;
-    }
+
+  @Override
+  public Class getStickyClass() {
+    return LogoutCommand.class;
+  }
 }

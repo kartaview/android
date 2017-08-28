@@ -1,0 +1,211 @@
+allprojects {
+  buildscript {
+    repositories {
+      jcenter()
+      maven {
+        url 'https://maven.fabric.io/public'
+      }
+      maven {
+        url "https://maven.google.com"
+      }
+      maven {
+        url "http://share.skobbler.com/android/maven/"
+      }
+      maven {
+        url "https://maven.google.com"
+      }
+    }
+    dependencies {
+      classpath 'com.android.tools.build:gradle:2.3.3'
+      classpath 'com.android.tools.build:gradle-experimental:0.9.3'
+      classpath 'com.google.gms:google-services:3.0.0'
+      classpath 'io.fabric.tools:gradle:1.23.0'
+      classpath 'me.tatarka:gradle-retrolambda:3.7.0'
+      classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5"
+    }
+  }
+
+  repositories {
+    jcenter()
+    maven {
+      url 'https://maven.fabric.io/public'
+    }
+    maven {
+      url "https://maven.google.com"
+    }
+    maven {
+      url "http://share.skobbler.com/android/maven/"
+    }
+    maven {
+      url "https://maven.google.com"
+    }
+  }
+
+  ext {
+    config = [
+    appId : 'com.telenav.streetview',
+    appVersionCode : 83,
+    appVersionName : "2.1.3",
+    testInstrumentationRunner : "android.support.test.runner.AndroidJUnitRunner",
+    testAppId : 'com.telenav.streetview.test',
+    androidBuildToolsVersion : "26.0.1",
+    androidMinSdkVersion : 16,
+    androidTargetSdkVersion : 25,
+    androidCompileSdkVersion : 26,
+    //Modules
+    skmapsVersionCode : 7,
+    skmapsVersion : '1.0.7',
+    connectionProbeVersionCode : 1,
+    connectionProbeVersion : '1.0.0',
+    ffmpegVersionCode : 4,
+    ffmpegVersion : '1.0.4',
+    photoViewVersionCode : 1,
+    photoViewVersion : '1.0.0',
+    videoViewVersionCode : 1,
+    videoViewVersion : '1.0.0',
+    sphericalVersionCode : 1,
+    sphericalVersion : '1.0.0',
+    volleyVersionCode : 2,
+    volleyVersion : '1.0.1',
+    eventbusVersionCode : 1,
+    eventbusVersion : '1.0.0',
+    dotindicatorVersionCode : 1,
+    dotindicatorVersion : '1.0.0',
+    ]
+
+    // Sdk and tools
+    supportVersion = '26.0.1'
+    playServicesVersion = '11.2.0'
+
+    //Libraries
+    daggerVersion = '2.11'
+    rxJavaVersion = '2.1.3'
+    rxBindingVersion = '2.0.0'
+    rxAndroidVersion = '2.0.1'
+    autoDisposeVersion = '0.2.0'
+    javaxAnnotationVersion = '1.0'
+    javaxInjectVersion = '1'
+    gsonVersion = '2.3'
+    guavaVersion = '18.0'
+    okHttpVersion = '2.5.0'
+    signpostVersion = '1.2.1.2'
+    apacheHttpClientVersion = '4.3.5.1'
+    apacheHttpMimeVersion = '4.3'
+    materialishProgressVersion = '1.7'
+    androidAnnotationsVersion = supportVersion
+    retrofitVersion = '2.3.0'
+    firebaseVersion = playServicesVersion
+    googleApiVersion = "1.22.0"
+    facebookApiVersion = "4.19.0"
+    butterknifeVersion = '8.7.0'
+    glideVersion = '3.7.0'
+    glideTransformationsVersion = '2.0.2'
+    appIntroVersion = '4.1.0'
+
+
+
+
+    //Testing
+    robolectricVersion = '3.3.2'
+    jUnitVersion = '4.12'
+    assertJVersion = '1.7.1'
+    mockitoVersion = '1.10.19'
+    dexmakerVersion = '1.2'
+    espressoVersion = '3.0.0'
+    testingSupportLibVersion = '0.1'
+    powermockVersion = '1.7.1'
+    hamcrestVersion = '1.3'
+    runnerVersion = '1.0.0'
+    rulesVersion = '1.0.0'
+    multidexVersion = '1.0.2'
+
+    //Development
+    leakCanaryVersion = '1.5.1'
+    stethoVersion = '1.5.0'
+    crashliticsVersion = '2.6.8'
+    crashliticsNdkVersion = '1.1.6'
+    stethoOkhttpVersion = '1.5.0'
+    okHttpLoggingInterceptorVersion = '3.8.0'
+
+    moduleDependecies = [skmaps           : "com.skobbler.ngx:skmaps-osc:${config.skmapsVersion}",
+                         connectionProbe  : "com.facebook.network.connectionclass:connectivity-osc:${config.connectionProbeVersion}",
+                         ffmpeg           : "com.telenav.ffmpeg:ffmpeg:${config.ffmpegVersion}",
+                         photoView        : "uk.co.senab.photoview:photoview-osc:${config.photoViewVersion}",
+                         videoView        : "com.telenav.streetview.scalablevideoview:scalablevideoview-osc:${config.videoViewVersion}",
+                         volley           : "com.android.volley:volley-osc:${config.volleyVersion}",
+                         eventbus         : "org.greenrobot.eventbus:eventbus-osc:${config.eventbusVersion}",
+                         dotindicator     : "com.matthewtamlin.dotindicator:dotindicator-osc:${config.dotindicatorVersion}",
+    ]
+
+    appDependencies = [         daggerCompiler          : "com.google.dagger:dagger-compiler:${daggerVersion}",
+                                dagger                  : "com.google.dagger:dagger:${daggerVersion}",
+                                design                  : "com.android.support:design:${supportVersion}",
+                                supportv4               : "com.android.support:support-v4:${supportVersion}",
+                                appcompatv7               : "com.android.support:appcompat-v7:${supportVersion}",
+                                recyclerView            : "com.android.support:recyclerview-v7:${supportVersion}",
+                                cardView                : "com.android.support:cardview-v7:${supportVersion}",
+                                percent                 : "com.android.support:percent:${supportVersion}",
+                                multidex                : "com.android.support:multidex:${multidexVersion}",
+                                customtabs              : "com.android.support:customtabs:${supportVersion}",
+                                vectorDrawables         : "com.android.support:animated-vector-drawable:${supportVersion}",
+                                rxJava                  : "io.reactivex.rxjava2:rxjava:${rxJavaVersion}",
+                                rxBinding               : "com.jakewharton.rxbinding2:rxbinding:${rxBindingVersion}",
+                                rxBindingSupport        : "com.jakewharton.rxbinding2:rxbinding-support-v4:${rxBindingVersion}",
+                                rxBindingAppcompat      : "com.jakewharton.rxbinding2:rxbinding-appcompat-v7:${rxBindingVersion}",
+                                rxBindingDesign         : "com.jakewharton.rxbinding2:rxbinding-design:${rxBindingVersion}",
+                                rxBindingRecyclerView   : "com.jakewharton.rxbinding2:rxbinding-recyclerview-v7:${rxBindingVersion}",
+                                rxBindingLeanback       : "com.jakewharton.rxbinding2:rxbinding-leanback-v17:${rxBindingVersion}",
+                                rxAndroid               : "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}",
+                                autoDispose             : "com.uber.autodispose:autodispose-android:${autoDisposeVersion}",
+                                apacheHttpClient        : "org.apache.httpcomponents:httpclient-android:${apacheHttpClientVersion}",
+                                apacheHttpMime          : "org.apache.httpcomponents:httpmime:${apacheHttpMimeVersion}",
+                                signpost                : "oauth.signpost:signpost-commonshttp4:${signpostVersion}",
+                                retrofit                : "com.squareup.retrofit2:retrofit:${retrofitVersion}",
+                                retrofitGson            : "com.squareup.retrofit2:converter-gson:${retrofitVersion}",
+                                retrofitRx              : "com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}",
+                                googleApi               : "com.google.api-client:google-api-client-android:${googleApiVersion}",
+                                facebookApi             : "com.facebook.android:facebook-android-sdk:${facebookApiVersion}",
+                                firebase                : "com.google.firebase:firebase-core:${firebaseVersion}",
+                                firebaseMessaging       : "com.google.firebase:firebase-messaging:${firebaseVersion}",
+                                firebaseAuth            : "com.google.firebase:firebase-auth:${firebaseVersion}",
+                                firebaseCrash           : "com.google.firebase:firebase-crash:${firebaseVersion}",
+                                butterknife             : "com.jakewharton:butterknife:${butterknifeVersion}",
+                                butterknifeCompiler     : "com.jakewharton:butterknife-compiler:${butterknifeVersion}",
+                                glide                   : "com.github.bumptech.glide:glide:${glideVersion}",
+                                glideTransformations    : "jp.wasabeef:glide-transformations:${glideTransformationsVersion}",
+                                appIntro                : "com.github.paolorotolo:appintro:${appIntroVersion}",
+                                materialishProgress     : "com.pnikosis:materialish-progress:${materialishProgressVersion}",
+                                supportAnnotations      : "com.android.support:support-annotations:${supportVersion}",
+                                javaxAnnotation         : "javax.annotation:jsr250-api:${javaxAnnotationVersion}",
+                                gmsLocation             : "com.google.android.gms:play-services-location:${playServicesVersion}",
+                                gmsAuth                 : "com.google.android.gms:play-services-auth:${playServicesVersion}",
+                                crashlytics             : "com.crashlytics.sdk.android:crashlytics:${crashliticsVersion}",
+                                crashlyticsNdk          : "com.crashlytics.sdk.android:crashlytics-ndk:${crashliticsNdkVersion}",
+    ]
+
+    appTestDependencies = [         mockito          : "org.mockito:mockito-all:${mockitoVersion}",
+                                    powermock        : "org.powermock:powermock-api-mockito:${powermockVersion}",
+                                    powermockJUnit   : "org.powermock:powermock-module-junit4:${powermockVersion}",
+                                    runner           : "com.android.support.test:runner:${runnerVersion}",
+                                    rules            : "com.android.support.test:rules:${rulesVersion}",
+                                    hamcrest         : "org.hamcrest:hamcrest-all:${hamcrestVersion}",
+                                    dexmaker         : "com.google.dexmaker:dexmaker:${dexmakerVersion}",
+                                    dexmakerMockito  : "com.google.dexmaker:dexmaker-mockito:${dexmakerVersion}",
+                                    espresso         : "com.android.support.test.espresso:espresso-core:${espressoVersion}",
+                                    espressoContrib  : "com.android.support.test.espresso:espresso-contrib:${espressoVersion}",
+                                    espressoIntents  : "com.android.support.test.espresso:espresso-intents:${espressoVersion}",
+                                    espressoIdling   : "com.android.support.test.espresso:espresso-idling-resource:${espressoVersion}",
+                                    testingSupportLib: "com.android.support.test:testing-support-lib:${testingSupportLibVersion}",
+                                    junit            : "junit:junit:${jUnitVersion}",
+                                    robolectric      : "org.robolectric:robolectric:${robolectricVersion}",
+                                    assertj          : "org.assertj:assertj-core:${assertJVersion}",
+    ]
+
+    developmentDependencies = [leakCanary              : "com.squareup.leakcanary:leakcanary-android:${leakCanaryVersion}",
+                               leakCanaryNoOp          : "com.squareup.leakcanary:leakcanary-android-no-op:${leakCanaryVersion}",
+                               stetho                  : "com.facebook.stetho:stetho:${stethoVersion}",
+                               stethoOkHttp            : "com.facebook.stetho:stetho-okhttp3:${stethoOkhttpVersion}",
+                               okHttpLoggingInterceptor: "com.squareup.okhttp3:logging-interceptor:${okHttpLoggingInterceptorVersion}",
+    ]
+  }
+}

@@ -5,18 +5,18 @@ package com.telenav.osv.item;
  */
 public class ScoreItem {
 
-    public int value;
+  public int value;
 
-    public int photoCount;
+  public int photoCount;
 
-    public boolean obd;
+  public boolean obd;
 
-    public int detectedSigns;
+  public int detectedSigns;
 
-    public ScoreItem(int value, int photoCount, boolean obd) {
-        this.value = value;
-        this.photoCount = photoCount;
-        this.obd = obd;
-        this.detectedSigns = 0;
-    }
+  public ScoreItem(int value, int photoCount, boolean obd) {
+    this.value = value;
+    this.photoCount = photoCount;
+    this.obd = obd;
+    this.detectedSigns = 0;
+  }
 }

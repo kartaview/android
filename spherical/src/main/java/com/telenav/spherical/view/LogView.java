@@ -10,32 +10,34 @@ import android.widget.TextView;
  */
 public class LogView extends ScrollView {
 
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    private TextView textView;
+  private TextView textView;
 
-    /**
-     * Constructor
-     * @param context Context
-     * @param attrs Argument for resource
-     */
-    public LogView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+  /**
+   * Constructor
+   *
+   * @param context Context
+   * @param attrs Argument for resource
+   */
+  public LogView(Context context, AttributeSet attrs) {
+    super(context, attrs);
 
-        setFillViewport(true);
-        textView = new TextView(context);
-        textView.setBackgroundResource(android.R.color.darker_gray);
-        textView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        this.addView(textView);
-    }
+    setFillViewport(true);
+    textView = new TextView(context);
+    textView.setBackgroundResource(android.R.color.darker_gray);
+    textView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+    this.addView(textView);
+  }
 
-    /**
-     * Log output request method
-     * @param newLine Output log
-     */
-    public void append(CharSequence newLine) {
-        textView.append(newLine);
-        textView.append(LINE_SEPARATOR);
-        fullScroll(FOCUS_DOWN);
-    }
+  /**
+   * Log output request method
+   *
+   * @param newLine Output log
+   */
+  public void append(CharSequence newLine) {
+    textView.append(newLine);
+    textView.append(LINE_SEPARATOR);
+    fullScroll(FOCUS_DOWN);
+  }
 }

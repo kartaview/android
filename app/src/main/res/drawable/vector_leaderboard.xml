@@ -4,27 +4,30 @@
     android:width="24dp"
     android:height="24dp"
     android:viewportHeight="24"
-    android:viewportWidth="24">
-
-    <path
-        android:name="Fill-1"
-        android:fillColor="#B7BAC5"
-        android:fillType="evenOdd"
-        android:pathData="M2,20.9557 L7.92593,20.9557 L7.92593,13.5182 L2,13.5182 Z"
-        android:strokeWidth="1"
-        tools:targetApi="n" />
-    <path
-        android:name="Fill-2"
-        android:fillColor="#B7BAC5"
-        android:fillType="evenOdd"
-        android:pathData="M9.00333,20.9557 L14.9293,20.9557 L14.9293,4 L9.00333,4 Z"
-        android:strokeWidth="1"
-        tools:targetApi="n" />
-    <path
-        android:name="Fill-3"
-        android:fillColor="#B7BAC5"
-        android:fillType="evenOdd"
-        android:pathData="M16.0067,20.9557 L21.9326,20.9557 L21.9326,9.22112 L16.0067,9.22112 Z"
-        android:strokeWidth="1"
-        tools:targetApi="n" />
+    android:viewportWidth="24"
+    >
+  <path
+      android:name="Fill-1"
+      android:fillColor="#B7BAC5"
+      android:fillType="evenOdd"
+      android:pathData="M2,20.9557 L7.92593,20.9557 L7.92593,13.5182 L2,13.5182 Z"
+      android:strokeWidth="1"
+      tools:targetApi="n"
+      />
+  <path
+      android:name="Fill-2"
+      android:fillColor="#B7BAC5"
+      android:fillType="evenOdd"
+      android:pathData="M9.00333,20.9557 L14.9293,20.9557 L14.9293,4 L9.00333,4 Z"
+      android:strokeWidth="1"
+      tools:targetApi="n"
+      />
+  <path
+      android:name="Fill-3"
+      android:fillColor="#B7BAC5"
+      android:fillType="evenOdd"
+      android:pathData="M16.0067,20.9557 L21.9326,20.9557 L21.9326,9.22112 L16.0067,9.22112 Z"
+      android:strokeWidth="1"
+      tools:targetApi="n"
+      />
 </vector>

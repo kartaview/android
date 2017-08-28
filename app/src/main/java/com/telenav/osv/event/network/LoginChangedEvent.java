@@ -8,17 +8,17 @@ import com.telenav.osv.item.AccountData;
  */
 public class LoginChangedEvent extends OSVStickyEvent {
 
-    public final boolean logged;
+  public final boolean logged;
 
-    public final AccountData accountData;
+  public final AccountData accountData;
 
-    public LoginChangedEvent(boolean logged, AccountData userInfo) {
-        this.logged = logged;
-        this.accountData = userInfo;
-    }
+  public LoginChangedEvent(boolean logged, AccountData userInfo) {
+    this.logged = logged;
+    this.accountData = userInfo;
+  }
 
-    @Override
-    public Class getStickyClass() {
-        return LoginChangedEvent.class;
-    }
+  @Override
+  public Class getStickyClass() {
+    return LoginChangedEvent.class;
+  }
 }

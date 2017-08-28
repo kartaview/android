@@ -4,21 +4,23 @@
     android:width="24dp"
     android:height="24dp"
     android:viewportHeight="24"
-    android:viewportWidth="24">
-
+    android:viewportWidth="24"
+    >
+  <group
+      android:name="Icons"
+      android:translateX="-224.000000"
+      android:translateY="-129.000000"
+      >
     <group
-            android:name="Icons"
-            android:translateX="-224.000000"
-            android:translateY="-129.000000">
-        <group
-                android:name="size_darkBG"
-                android:translateX="224.000000"
-                android:translateY="129.000000">
-            <path
-                android:name="Shape"
-                android:fillColor="#FFFFFF"
-                android:fillType="evenOdd"
-                android:pathData="M12.7,5 L12.7,7.12631579 C15.073,7.47017544 16.9,9.50526316 16.9,11.9824561
+        android:name="size_darkBG"
+        android:translateX="224.000000"
+        android:translateY="129.000000"
+        >
+      <path
+          android:name="Shape"
+          android:fillColor="#FFFFFF"
+          android:fillType="evenOdd"
+          android:pathData="M12.7,5 L12.7,7.12631579 C15.073,7.47017544 16.9,9.50526316 16.9,11.9824561
 C16.9,12.6140351 16.774,13.2105263 16.564,13.7649123 L18.384,14.8385965
 C18.776,13.9684211 19,13 19,11.9824561 C19,8.34736842 16.235,5.35087719 12.7,5
 L12.7,5 Z M12,16.8947368 C9.291,16.8947368 7.1,14.6982456 7.1,11.9824561
@@ -26,9 +28,10 @@ C7.1,9.50526316 8.927,7.47017544 11.3,7.12631579 L11.3,5 C7.758,5.35087719
 5,8.34035088 5,11.9824561 C5,15.8561404 8.129,19 11.993,19 C14.31,19
 16.361,17.8701754 17.635,16.1298246 L15.815,15.0561404 C14.919,16.1789474
 13.547,16.8947368 12,16.8947368 L12,16.8947368 Z"
-                android:strokeWidth="1"
-                tools:ignore="InvalidVectorPath"
-                tools:targetApi="n" />
-        </group>
+          android:strokeWidth="1"
+          tools:ignore="InvalidVectorPath"
+          tools:targetApi="n"
+          />
     </group>
+  </group>
 </vector>

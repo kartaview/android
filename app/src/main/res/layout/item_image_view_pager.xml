@@ -6,4 +6,4 @@
     android:adjustViewBounds="true"
     android:contentDescription="@string/descr_image"
     android:scaleType="fitCenter"
-    android:src="@drawable/custom_image_loading_background" />
+    />

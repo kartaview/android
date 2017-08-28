@@ -8,5 +8,5 @@ import com.telenav.osv.item.network.OsmProfileData;
  */
 public interface OsmAuthDataListener extends NetworkResponseDataListener<AuthData> {
 
-    void requestFinished(int status, OsmProfileData osmProfileData);
+  void requestFinished(int status, OsmProfileData osmProfileData);
 }

@@ -7,4 +7,5 @@ import com.telenav.osv.event.OSVEvent;
  */
 
 abstract class RequestEvent extends OSVEvent {
+
 }

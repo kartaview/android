@@ -9,22 +9,22 @@ import com.telenav.osv.item.SpeedData;
  */
 public class IdleShutterLogic extends ShutterLogic {
 
-    public IdleShutterLogic() {
-        setFunctional(true);
-    }
+  public IdleShutterLogic() {
+    setFunctional(true);
+  }
 
-    @Override
-    public void onLocationChanged(Location reference, Location location) {
+  @Override
+  public void onLocationChanged(Location reference, Location location) {
 
-    }
+  }
 
-    @Override
-    public void onSpeedChanged(SpeedData speedData) {
+  @Override
+  public void onSpeedChanged(SpeedData speedData) {
 
-    }
+  }
 
-    @Override
-    int getPriority() {
-        return PRIORITY_IDLE;
-    }
+  @Override
+  int getPriority() {
+    return PRIORITY_IDLE;
+  }
 }

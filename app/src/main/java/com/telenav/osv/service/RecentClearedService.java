@@ -14,34 +14,34 @@ import com.telenav.osv.utils.Log;
  */
 public class RecentClearedService extends Service {
 
-    private static final String TAG = "RecentClearedService";
+  private static final String TAG = "RecentClearedService";
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    Log.d(TAG, "onStartCommand: Service Started");
+    return START_NOT_STICKY;
+  }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand: Service Started");
-        return START_NOT_STICKY;
-    }
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    Log.d(TAG, "onDestroy:");
+  }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy:");
-    }
+  @Override
+  public IBinder onBind(Intent intent) {
+    return null;
+  }
 
-    public void onTaskRemoved(Intent rootIntent) {
-        Log.e(TAG, "onTaskRemoved:");
-        //Code here
-        Recorder recorder = ((OSVApplication) getApplication()).getRecorder();
-        if (recorder != null && recorder.isRecording()) {
-            recorder.stopRecording(true);
-            ((OSVApplication) getApplication()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_CRASHED, false);
-            ((OSVApplication) getApplication()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_SHOW_CLEAR_RECENTS_WARNING, true);
-        }
-        stopSelf();
+  public void onTaskRemoved(Intent rootIntent) {
+    Log.e(TAG, "onTaskRemoved:");
+    //Code here
+    Recorder recorder = ((OSVApplication) getApplication()).getRecorder();
+    if (recorder != null && recorder.isRecording()) {
+      recorder.stopRecording(true);
+      ((OSVApplication) getApplication()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_CRASHED, false);
+      ((OSVApplication) getApplication()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_SHOW_CLEAR_RECENTS_WARNING, true);
     }
+    stopSelf();
+  }
 }

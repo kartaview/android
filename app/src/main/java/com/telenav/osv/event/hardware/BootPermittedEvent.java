@@ -8,17 +8,16 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 public class BootPermittedEvent extends OSVStickyEvent {
 
-    public final static String TAG = "BootPermissionEvent";
+  public final static String TAG = "BootPermissionEvent";
 
-    public boolean enabled;
+  public boolean enabled;
 
+  public BootPermittedEvent(boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    public BootPermittedEvent(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @Override
-    public Class getStickyClass() {
-        return BootPermittedEvent.class;
-    }
+  @Override
+  public Class getStickyClass() {
+    return BootPermittedEvent.class;
+  }
 }

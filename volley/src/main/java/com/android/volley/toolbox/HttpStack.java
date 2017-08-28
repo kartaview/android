@@ -16,27 +16,28 @@
 
 package com.android.volley.toolbox;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import java.io.IOException;
 import java.util.Map;
 import org.apache.http.HttpResponse;
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
 
 /**
  * An HTTP stack abstraction.
  */
 public interface HttpStack {
-    /**
-     * Performs an HTTP request with the given parameters.
-     * <p/>
-     * <p>A GET request is sent if request.getPostBody() == null. A POST request is sent otherwise,
-     * and the Content-Type header is set to request.getPostBodyContentType().</p>
-     * @param request the request to perform
-     * @param additionalHeaders additional headers to be sent together with
-     * {@link Request#getHeaders()}
-     * @return the HTTP response
-     */
-    HttpResponse performRequest(Request<?> request, Map<String, String> additionalHeaders)
-            throws IOException, AuthFailureError;
 
+  /**
+   * Performs an HTTP request with the given parameters.
+   * <p/>
+   * <p>A GET request is sent if request.getPostBody() == null. A POST request is sent otherwise,
+   * and the Content-Type header is set to request.getPostBodyContentType().</p>
+   *
+   * @param request the request to perform
+   * @param additionalHeaders additional headers to be sent together with
+   * {@link Request#getHeaders()}
+   *
+   * @return the HTTP response
+   */
+  HttpResponse performRequest(Request<?> request, Map<String, String> additionalHeaders) throws IOException, AuthFailureError;
 }

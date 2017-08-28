@@ -19,12 +19,11 @@ import android.view.MotionEvent;
 
 public interface GestureDetector {
 
-    boolean onTouchEvent(MotionEvent ev);
+  boolean onTouchEvent(MotionEvent ev);
 
-    boolean isScaling();
+  boolean isScaling();
 
-    boolean isDragging();
+  boolean isDragging();
 
-    void setOnGestureListener(OnGestureListener listener);
-
+  void setOnGestureListener(OnGestureListener listener);
 }

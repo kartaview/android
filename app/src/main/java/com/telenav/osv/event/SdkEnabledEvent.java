@@ -6,16 +6,16 @@ package com.telenav.osv.event;
 
 public class SdkEnabledEvent extends OSVStickyEvent {
 
-    public final static String TAG = "SdkEnabledEvent";
+  public final static String TAG = "SdkEnabledEvent";
 
-    public final boolean enabled;
+  public final boolean enabled;
 
-    public SdkEnabledEvent(boolean enabled) {
-        this.enabled = enabled;
-    }
+  public SdkEnabledEvent(boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    @Override
-    public Class getStickyClass() {
-        return SdkEnabledEvent.class;
-    }
+  @Override
+  public Class getStickyClass() {
+    return SdkEnabledEvent.class;
+  }
 }

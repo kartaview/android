@@ -9,8 +9,9 @@ import com.telenav.osv.http.LeaderboardRequest;
  */
 
 public class LeaderboardRequestFilter implements RequestQueue.RequestFilter {
-    @Override
-    public boolean apply(Request<?> request) {
-        return request instanceof LeaderboardRequest;
-    }
+
+  @Override
+  public boolean apply(Request<?> request) {
+    return request instanceof LeaderboardRequest;
+  }
 }

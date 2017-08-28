@@ -2,17 +2,18 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
-    android:orientation="horizontal">
-
-    <TextView
-        android:id="@+id/rank_text"
-        style="@style/textStyle"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:layout_margin="10dp"
-        android:fontFamily="sans-serif"
-        android:gravity="center"
-        android:text="No internet connection."
-        android:textColor="@color/leaderboard_text_grey" />
+    android:orientation="horizontal"
+    >
+  <TextView
+      android:id="@+id/rank_text"
+      style="@style/textStyle"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_gravity="start"
+      android:layout_margin="10dp"
+      android:fontFamily="sans-serif"
+      android:gravity="center"
+      android:text="@string/no_internet_connection"
+      android:textColor="@color/leaderboard_text_grey"
+      />
 </FrameLayout>

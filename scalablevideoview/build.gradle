@@ -1,26 +1,28 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+  def globalConfiguration = rootProject.ext.config
 
-    defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
-    }
+  compileSdkVersion globalConfiguration.androidCompileSdkVersion
+  buildToolsVersion globalConfiguration.androidBuildToolsVersion
+
+  defaultConfig {
+    minSdkVersion globalConfiguration.androidMinSdkVersion
+    targetSdkVersion globalConfiguration.androidTargetSdkVersion
+    versionCode globalConfiguration.videoViewVersionCode
+    versionName globalConfiguration.videoViewVersion
+  }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:25.3.1'
+  def appDependencies = rootProject.ext.appDependencies
+  compile appDependencies.appcompatv7
 }
 
 ext {
-    PUBLISH_GROUP_ID = 'com.telenav.streetview.scalablevideoview'
-    PUBLISH_ARTIFACT_ID = 'scalablevideoview-osc'
-    PUBLISH_VERSION = '1.0.0'
+  PUBLISH_GROUP_ID = 'com.telenav.streetview.scalablevideoview'
+  PUBLISH_ARTIFACT_ID = 'scalablevideoview-osc'
+  PUBLISH_VERSION = rootProject.ext.config.videoViewVersion
 }
 
 apply from: 'buildRelease.gradle'

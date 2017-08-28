@@ -8,7 +8,7 @@ import android.bluetooth.BluetoothDevice;
  */
 public interface OnDeviceSelectedListener {
 
-    void onDeviceSelected(String address);
+  void onDeviceSelected(String address);
 
-    void onDeviceSelected(BluetoothDevice device);
+  void onDeviceSelected(BluetoothDevice device);
 }

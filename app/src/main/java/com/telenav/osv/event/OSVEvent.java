@@ -5,4 +5,5 @@ package com.telenav.osv.event;
  */
 
 public abstract class OSVEvent {
+
 }

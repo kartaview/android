@@ -4,63 +4,64 @@ package com.telenav.osv.item.network;
  * Created by kalmanb on 8/3/17.
  */
 public class AuthData extends ApiResponse {
-    private String mAccessToken = "";
 
-    private String mId = "";
+  private String mAccessToken = "";
 
-    private String mUsername = "";
+  private String mId = "";
 
-    private String mDisplayName = "";
+  private String mUsername = "";
 
-    private int mUserType = 0;
+  private String mDisplayName = "";
 
-    private String mLoginType;
+  private int mUserType = 0;
 
-    public String getAccessToken() {
-        return mAccessToken;
-    }
+  private String mLoginType;
 
-    public void setAccessToken(String accessToken) {
-        this.mAccessToken = accessToken;
-    }
+  public String getAccessToken() {
+    return mAccessToken;
+  }
 
-    public String getId() {
-        return mId;
-    }
+  public void setAccessToken(String accessToken) {
+    this.mAccessToken = accessToken;
+  }
 
-    public void setId(String id) {
-        this.mId = id;
-    }
+  public String getId() {
+    return mId;
+  }
 
-    public String getUsername() {
-        return mUsername;
-    }
+  public void setId(String id) {
+    this.mId = id;
+  }
 
-    public void setUsername(String username) {
-        this.mUsername = username;
-    }
+  public String getUsername() {
+    return mUsername;
+  }
 
-    public String getDisplayName() {
-        return mDisplayName;
-    }
+  public void setUsername(String username) {
+    this.mUsername = username;
+  }
 
-    public void setDisplayName(String displayName) {
-        this.mDisplayName = displayName;
-    }
+  public String getDisplayName() {
+    return mDisplayName;
+  }
 
-    public int getUserType() {
-        return mUserType;
-    }
+  public void setDisplayName(String displayName) {
+    this.mDisplayName = displayName;
+  }
 
-    public void setUserType(int userType) {
-        this.mUserType = userType;
-    }
+  public int getUserType() {
+    return mUserType;
+  }
 
-    public String getLoginType() {
-        return mLoginType;
-    }
+  public void setUserType(int userType) {
+    this.mUserType = userType;
+  }
 
-    public void setLoginType(String loginType) {
-        this.mLoginType = loginType;
-    }
+  public String getLoginType() {
+    return mLoginType;
+  }
+
+  public void setLoginType(String loginType) {
+    this.mLoginType = loginType;
+  }
 }

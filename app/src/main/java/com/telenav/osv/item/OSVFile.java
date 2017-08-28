@@ -11,91 +11,92 @@ import java.util.List;
  * Created by Kalman on 1/13/16.
  */
 public class OSVFile extends File {
-    private static final String TAG = "OSVFile";
 
-    public OSVFile(File dir, String name) {
-        super(dir, name);
+  private static final String TAG = "OSVFile";
+
+  public OSVFile(File dir, String name) {
+    super(dir, name);
+  }
+
+  public OSVFile(String path) {
+    super(path);
+  }
+
+  public OSVFile(String dirPath, String name) {
+    super(dirPath, name);
+  }
+
+  public OSVFile(URI uri) {
+    super(uri);
+  }
+
+  /**
+   * Converts a String[] containing filenames to a File[].
+   * Note that the filenames must not contain slashes.
+   * This method is to remove duplication in the implementation
+   * of File.list's overloads.
+   */
+  private OSVFile[] filenamesToFiles(String[] filenames) {
+    if (filenames == null) {
+      return new OSVFile[0];
     }
-
-    public OSVFile(String path) {
-        super(path);
+    int count = filenames.length;
+    OSVFile[] result = new OSVFile[count];
+    for (int i = 0; i < count; ++i) {
+      result[i] = new OSVFile(this, filenames[i]);
     }
+    return result;
+  }
 
-    public OSVFile(String dirPath, String name) {
-        super(dirPath, name);
+  @Override
+  public OSVFile getParentFile() {
+    File parent = super.getParentFile();
+    if (parent == null) {
+      parent = new File(getParent(), getName());
     }
+    return new OSVFile(parent.getParent(), parent.getName());
+  }
 
-    public OSVFile(URI uri) {
-        super(uri);
-    }
+  @Override
+  public boolean exists() {
+    return super.exists();
+  }
 
-    @Override
-    public OSVFile[] listFiles() {
-        return filenamesToFiles(list());
-    }
-
-    /**
-     * Converts a String[] containing filenames to a File[].
-     * Note that the filenames must not contain slashes.
-     * This method is to remove duplication in the implementation
-     * of File.list's overloads.
-     */
-    private OSVFile[] filenamesToFiles(String[] filenames) {
-        if (filenames == null) {
-            return new OSVFile[0];
+  @Override
+  public boolean delete() {
+    if (isDirectory()) {
+      String[] children = list();
+      if (children != null) {
+        for (String child : children) {
+          new OSVFile(this, child).delete();
         }
-        int count = filenames.length;
-        OSVFile[] result = new OSVFile[count];
-        for (int i = 0; i < count; ++i) {
-            result[i] = new OSVFile(this, filenames[i]);
-        }
-        return result;
+      }
     }
+    return super.delete();
+  }
 
-    @Override
-    public OSVFile[] listFiles(FilenameFilter filter) {
-        return filenamesToFiles(list(filter));
-    }
+  @Override
+  public OSVFile[] listFiles() {
+    return filenamesToFiles(list());
+  }
 
-    @Override
-    public OSVFile[] listFiles(FileFilter filter) {
-        OSVFile[] files = listFiles();
-        if (filter == null || files == null) {
-            return files;
-        }
-        List<OSVFile> result = new ArrayList<>(files.length);
-        for (OSVFile file : files) {
-            if (filter.accept(file)) {
-                result.add(file);
-            }
-        }
-        return result.toArray(new OSVFile[result.size()]);
-    }
+  @Override
+  public OSVFile[] listFiles(FilenameFilter filter) {
+    return filenamesToFiles(list(filter));
+  }
 
-    @Override
-    public OSVFile getParentFile() {
-        File parent = super.getParentFile();
-        if (parent == null) {
-            parent = new File(getParent(), getName());
-        }
-        return new OSVFile(parent.getParent(), parent.getName());
+  @Override
+  public OSVFile[] listFiles(FileFilter filter) {
+    OSVFile[] files = listFiles();
+    if (filter == null || files == null) {
+      return files;
     }
-
-    @Override
-    public boolean delete() {
-        if (isDirectory()) {
-            String[] children = list();
-            if (children != null) {
-                for (String child : children) {
-                    new OSVFile(this, child).delete();
-                }
-            }
-        }
-        return super.delete();
+    List<OSVFile> result = new ArrayList<>(files.length);
+    for (OSVFile file : files) {
+      if (filter.accept(file)) {
+        result.add(file);
+      }
     }
-
-    @Override
-    public boolean exists() {
-        return super.exists();
-    }
+    return result.toArray(new OSVFile[result.size()]);
+  }
 }

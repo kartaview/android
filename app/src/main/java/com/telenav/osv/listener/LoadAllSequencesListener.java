@@ -1,16 +1,16 @@
 package com.telenav.osv.listener;
 
-
-import java.util.List;
 import com.telenav.osv.item.Polyline;
+import java.util.List;
 
 /**
  * Created by Kalman on 11/18/15.
  */
 public interface LoadAllSequencesListener {
-    void onRequestFinished(List<Polyline> segments);
 
-    void onRequestFailed();
+  void onRequestFinished(List<Polyline> segments);
 
-    void onRequestSuccess();
+  void onRequestFailed();
+
+  void onRequestSuccess();
 }

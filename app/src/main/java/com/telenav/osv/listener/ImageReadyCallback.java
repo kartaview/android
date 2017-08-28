@@ -7,5 +7,6 @@ import android.location.Location;
  * Created by Kalman on 24/04/2017.
  */
 public interface ImageReadyCallback {
-    void onPictureTaken(final byte[] jpegData, long timestamp, int sequenceId, String folderPath, Location location);
+
+  void onPictureTaken(final byte[] jpegData, long timestamp, int sequenceId, String folderPath, Location location);
 }

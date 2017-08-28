@@ -8,20 +8,20 @@ import com.telenav.osv.event.OSVStickyEvent;
 
 public class ObdStatusEvent extends OSVStickyEvent {
 
-    public static final int TYPE_DISCONNECTED = 0;
+  public static final int TYPE_DISCONNECTED = 0;
 
-    public static final int TYPE_CONNECTED = 1;
+  public static final int TYPE_CONNECTED = 1;
 
-    public static final int TYPE_CONNECTING = 2;
+  public static final int TYPE_CONNECTING = 2;
 
-    public final int type;
+  public final int type;
 
-    public ObdStatusEvent(int type) {
-        this.type = type;
-    }
+  public ObdStatusEvent(int type) {
+    this.type = type;
+  }
 
-    @Override
-    public Class getStickyClass() {
-        return ObdStatusEvent.class;
-    }
+  @Override
+  public Class getStickyClass() {
+    return ObdStatusEvent.class;
+  }
 }

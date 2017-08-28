@@ -9,9 +9,9 @@ import com.telenav.osv.item.SpeedData;
 
 public class ObdSpeedEvent extends OSVEvent {
 
-    public final SpeedData data;
+  public final SpeedData data;
 
-    public ObdSpeedEvent(SpeedData data) {
-        this.data = data;
-    }
+  public ObdSpeedEvent(SpeedData data) {
+    this.data = data;
+  }
 }

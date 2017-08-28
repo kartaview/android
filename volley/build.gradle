@@ -15,42 +15,50 @@
 //     project(':volley').buildFileName = 'rules.gradle'
 
 buildscript {
-    repositories {
-        jcenter()
-    }
+  repositories {
+    jcenter()
+  }
 }
 
 apply plugin: 'com.android.library'
 
 repositories {
-    jcenter()
+  jcenter()
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion = '25.0.2'
-    buildTypes {
-        release {
-            debuggable false
-        }
-        debug {
-            debuggable true
-        }
-    }
-    configurations {
-        compile.exclude group:'org.apache.commons'
-        compile.exclude module:'commons'
-    }
+  def globalConfiguration = rootProject.ext.config
 
+  compileSdkVersion globalConfiguration.androidCompileSdkVersion
+  buildToolsVersion globalConfiguration.androidBuildToolsVersion
+
+  defaultConfig {
+    minSdkVersion globalConfiguration.androidMinSdkVersion
+    targetSdkVersion globalConfiguration.androidTargetSdkVersion
+    versionCode globalConfiguration.volleyVersionCode
+    versionName globalConfiguration.volleyVersion
+  }
+  buildTypes {
+    release {
+      debuggable false
+    }
+    debug {
+      debuggable true
+    }
+  }
+  configurations {
+    compile.exclude group: 'org.apache.commons'
+    compile.exclude module: 'commons'
+  }
 }
 dependencies {
-    compile files('src/main/libs/org.apache.http.legacy.jar')
+  compile files('src/main/libs/org.apache.http.legacy.jar')
 }
 
 ext {
-    PUBLISH_GROUP_ID = 'com.android.volley'
-    PUBLISH_ARTIFACT_ID = 'volley-osc'
-    PUBLISH_VERSION = '1.0.1'
+  PUBLISH_GROUP_ID = 'com.android.volley'
+  PUBLISH_ARTIFACT_ID = 'volley-osc'
+  PUBLISH_VERSION = rootProject.ext.config.volleyVersion
 }
 
 apply from: 'buildRelease.gradle'

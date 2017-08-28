@@ -4,22 +4,19 @@
     android:layout_height="500dp"
     android:layout_gravity="center"
     android:minHeight="400dp"
-    android:minWidth="320dp">
-
-
-    <WebView
-        android:id="@+id/web_oauth"
-        android:layout_width="match_parent"
-        android:layout_height="500dp">
-
-    </WebView>
-
-    <ProgressBar
-        android:id="@+id/progressbar"
-        android:layout_width="65dp"
-        android:layout_height="65dp"
-        android:layout_centerInParent="true"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
+    android:minWidth="320dp"
+    >
+  <WebView
+      android:id="@+id/web_oauth"
+      android:layout_width="match_parent"
+      android:layout_height="500dp"
+      />
+  <ProgressBar
+      android:id="@+id/progressbar"
+      android:layout_width="65dp"
+      android:layout_height="65dp"
+      android:layout_centerInParent="true"
+      android:visibility="gone"
+      tools:visibility="visible"
+      />
 </RelativeLayout>

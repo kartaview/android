@@ -6,130 +6,121 @@ package com.telenav.osv.item.network;
  */
 public class DriverData extends ApiResponse {
 
-    private double totalAcceptedDistance;
+  private double totalAcceptedDistance;
 
-    private double totalRejectedDistance;
+  private double totalRejectedDistance;
 
-    private double totalObdDistance;
+  private double totalObdDistance;
 
-    private double totalPhotos;
+  private double totalPhotos;
 
-    private double totalTracks;
+  private double totalTracks;
 
-    private String displayName;
+  private String displayName;
 
-    private String currency;
+  private String currency;
 
-    private double currentAcceptedDistance;
+  private double currentAcceptedDistance;
 
-    private double currentPayRate;
+  private double currentPayRate;
 
-    private double currentPaymentValue;
+  private double currentPaymentValue;
 
-    private double totalPaidValue;
+  private double totalPaidValue;
 
-    public double getTotalPaidValue() {
-        return totalPaidValue;
-    }
+  public double getTotalPaidValue() {
+    return totalPaidValue;
+  }
 
-    public void setTotalPaidValue(double totalValue) {
-        this.totalPaidValue = totalValue;
-    }
+  public void setTotalPaidValue(double totalValue) {
+    this.totalPaidValue = totalValue;
+  }
 
-    public String getDisplayName() {
-        return displayName;
-    }
+  public String getDisplayName() {
+    return displayName;
+  }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
 
-    public String getCurrency() {
-        return currency;
-    }
+  public String getCurrency() {
+    return currency;
+  }
 
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
+  public void setCurrency(String currency) {
+    this.currency = currency;
+  }
 
-    public double getCurrentPayRate() {
-        return currentPayRate;
-    }
+  public double getCurrentPayRate() {
+    return currentPayRate;
+  }
 
-    public void setCurrentPayRate(double currentPayRate) {
-        this.currentPayRate = currentPayRate;
-    }
+  public void setCurrentPayRate(double currentPayRate) {
+    this.currentPayRate = currentPayRate;
+  }
 
-    public double getCurrentPaymentValue() {
-        return currentPaymentValue;
-    }
+  public double getCurrentPaymentValue() {
+    return currentPaymentValue;
+  }
 
-    public void setCurrentPaymentValue(double currentPaymentValue) {
-        this.currentPaymentValue = currentPaymentValue;
-    }
+  public void setCurrentPaymentValue(double currentPaymentValue) {
+    this.currentPaymentValue = currentPaymentValue;
+  }
 
-    public double getTotalAcceptedDistance() {
-        return totalAcceptedDistance;
-    }
+  public double getTotalAcceptedDistance() {
+    return totalAcceptedDistance;
+  }
 
-    public void setTotalAcceptedDistance(double totalAcceptedDistance) {
-        this.totalAcceptedDistance = totalAcceptedDistance;
-    }
+  public void setTotalAcceptedDistance(double totalAcceptedDistance) {
+    this.totalAcceptedDistance = totalAcceptedDistance;
+  }
 
-    public double getTotalRejectedDistance() {
-        return totalRejectedDistance;
-    }
+  public double getTotalRejectedDistance() {
+    return totalRejectedDistance;
+  }
 
-    public void setTotalRejectedDistance(double totalRejectedDistance) {
-        this.totalRejectedDistance = totalRejectedDistance;
-    }
+  public void setTotalRejectedDistance(double totalRejectedDistance) {
+    this.totalRejectedDistance = totalRejectedDistance;
+  }
 
-    public double getTotalObdDistance() {
-        return totalObdDistance;
-    }
+  public double getTotalObdDistance() {
+    return totalObdDistance;
+  }
 
-    public void setTotalObdDistance(double totalObdDistance) {
-        this.totalObdDistance = totalObdDistance;
-    }
+  public void setTotalObdDistance(double totalObdDistance) {
+    this.totalObdDistance = totalObdDistance;
+  }
 
-    public double getTotalPhotos() {
-        return totalPhotos;
-    }
+  public double getTotalPhotos() {
+    return totalPhotos;
+  }
 
-    public void setTotalPhotos(double totalPhotos) {
-        this.totalPhotos = totalPhotos;
-    }
+  public void setTotalPhotos(double totalPhotos) {
+    this.totalPhotos = totalPhotos;
+  }
 
-    public double getTotalTracks() {
-        return totalTracks;
-    }
+  public double getTotalTracks() {
+    return totalTracks;
+  }
 
-    public void setTotalTracks(double totalTracks) {
-        this.totalTracks = totalTracks;
-    }
+  public void setTotalTracks(double totalTracks) {
+    this.totalTracks = totalTracks;
+  }
 
-    public double getCurrentAcceptedDistance() {
-        return currentAcceptedDistance;
-    }
+  public double getCurrentAcceptedDistance() {
+    return currentAcceptedDistance;
+  }
 
-    public void setCurrentAcceptedDistance(double currentAcceptedDistance) {
-        this.currentAcceptedDistance = currentAcceptedDistance;
-    }
+  public void setCurrentAcceptedDistance(double currentAcceptedDistance) {
+    this.currentAcceptedDistance = currentAcceptedDistance;
+  }
 
-    @Override
-    public String toString() {
-        return "DriverData{" +
-                "totalAcceptedDistance=" + totalAcceptedDistance +
-                ", totalRejectedDistance=" + totalRejectedDistance +
-                ", totalObdDistance=" + totalObdDistance +
-                ", totalPhotos=" + totalPhotos +
-                ", totalTracks=" + totalTracks +
-                ", displayName='" + displayName + '\'' +
-                ", currency='" + currency + '\'' +
-                ", currentAcceptedDistance=" + currentAcceptedDistance +
-                ", currentPayRate=" + currentPayRate +
-                ", currentPaymentValue=" + currentPaymentValue +
-                ", totalPaidValue=" + totalPaidValue +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "DriverData{" + "totalAcceptedDistance=" + totalAcceptedDistance + ", totalRejectedDistance=" + totalRejectedDistance +
+        ", totalObdDistance=" + totalObdDistance + ", totalPhotos=" + totalPhotos + ", totalTracks=" + totalTracks + ", displayName='" +
+        displayName + '\'' + ", currency='" + currency + '\'' + ", currentAcceptedDistance=" + currentAcceptedDistance +
+        ", currentPayRate=" + currentPayRate + ", currentPaymentValue=" + currentPaymentValue + ", totalPaidValue=" + totalPaidValue + '}';
+  }
 }

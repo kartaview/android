@@ -5,5 +5,4 @@ package com.telenav.osv.http;
  */
 public class HttpCodes {
 
-
 }

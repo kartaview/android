@@ -11,27 +11,31 @@ import com.telenav.osv.R;
  */
 public abstract class OSVFragment extends Fragment {
 
-    public void cancelAction(){
+  public void cancelAction() {
 
-    }
+  }
 
-    public boolean onBackPressed(){
-        return false;
-    }
+  public boolean onBackPressed() {
+    return false;
+  }
 
-    public View getSharedElement(){
-        return null;
-    }
+  public View getSharedElement() {
+    return null;
+  }
 
-    public String getSharedElementTransitionName(){
-        return null;
-    }
+  public String getSharedElementTransitionName() {
+    return null;
+  }
 
-    public @AnimatorRes @AnimRes int getEnterAnimation(){
-        return R.anim.slide_up_add;
-    }
+  public @AnimatorRes
+  @AnimRes
+  int getEnterAnimation() {
+    return R.anim.slide_up_add;
+  }
 
-    public @AnimatorRes @AnimRes int getExitAnimation(){
-        return R.anim.slide_down_remove;
-    }
+  public @AnimatorRes
+  @AnimRes
+  int getExitAnimation() {
+    return R.anim.slide_down_remove;
+  }
 }

@@ -7,17 +7,17 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 public class CameraInfoEvent extends OSVStickyEvent {
 
-    public int previewWidth = 0;
+  public int previewWidth = 0;
 
-    public int previewHeight = 0;
+  public int previewHeight = 0;
 
-    public CameraInfoEvent(int previewWidth, int previewHeight) {
-        this.previewWidth = previewWidth;
-        this.previewHeight = previewHeight;
-    }
+  public CameraInfoEvent(int previewWidth, int previewHeight) {
+    this.previewWidth = previewWidth;
+    this.previewHeight = previewHeight;
+  }
 
-    @Override
-    public Class getStickyClass() {
-        return CameraInfoEvent.class;
-    }
+  @Override
+  public Class getStickyClass() {
+    return CameraInfoEvent.class;
+  }
 }

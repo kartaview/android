@@ -1,13 +1,12 @@
 package com.telenav.osv.http;
 
-
+import com.android.volley.AuthFailureError;
+import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import com.android.volley.AuthFailureError;
-import com.android.volley.toolbox.StringRequest;
-import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -15,51 +14,50 @@ import com.telenav.osv.listener.network.GenericResponseListener;
 @SuppressWarnings("HardCodedStringLiteral")
 public class DeleteSequenceRequest extends StringRequest {
 
-    private static final String PARAM_SEQUENCE_ID = "sequenceId";
+  private static final String PARAM_SEQUENCE_ID = "sequenceId";
 
-    private static final String PARAM_TOKEN = "access_token";
+  private static final String PARAM_TOKEN = "access_token";
 
-    private final GenericResponseListener mListener;
+  private final GenericResponseListener mListener;
 
-    private final int mSequenceId;
+  private final int mSequenceId;
 
-    private final String mToken;
+  private final String mToken;
 
-    protected Map<String, String> headers;
+  protected Map<String, String> headers;
 
-    private MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
+  private MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
 
-    public DeleteSequenceRequest(String url, GenericResponseListener listener, int sequenceId, String token) {
-        super(Method.POST, url, listener, listener);
-        mToken = token;
-        mSequenceId = sequenceId;
-        mListener = listener;
+  public DeleteSequenceRequest(String url, GenericResponseListener listener, int sequenceId, String token) {
+    super(Method.POST, url, listener, listener);
+    mToken = token;
+    mSequenceId = sequenceId;
+    mListener = listener;
+  }
+
+  @Override
+  public Map<String, String> getHeaders() throws AuthFailureError {
+    Map<String, String> headers = super.getHeaders();
+
+    if (headers == null || headers.equals(Collections.emptyMap())) {
+      headers = new HashMap<>();
     }
 
-    @Override
-    public Map<String, String> getHeaders() throws AuthFailureError {
-        Map<String, String> headers = super.getHeaders();
+    headers.put("Accept", "application/json");
 
-        if (headers == null
-                || headers.equals(Collections.emptyMap())) {
-            headers = new HashMap<>();
-        }
+    return headers;
+  }
 
-        headers.put("Accept", "application/json");
+  @Override
+  protected Map<String, String> getParams() {
+    Map<String, String> params = new HashMap<>();
+    params.put(PARAM_SEQUENCE_ID, mSequenceId + "");
+    params.put(PARAM_TOKEN, mToken);
+    return params;
+  }
 
-        return headers;
-    }
-
-    @Override
-    protected Map<String, String> getParams() {
-        Map<String, String> params = new HashMap<>();
-        params.put(PARAM_SEQUENCE_ID, mSequenceId + "");
-        params.put(PARAM_TOKEN, mToken);
-        return params;
-    }
-
-    @Override
-    protected void deliverResponse(String response) {
-        mListener.onResponse(response);
-    }
+  @Override
+  protected void deliverResponse(String response) {
+    mListener.onResponse(response);
+  }
 }
