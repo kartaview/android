@@ -3,7 +3,6 @@ package com.telenav.osv.manager.playback;
 import android.view.View;
 import android.widget.SeekBar;
 import com.skobbler.ngx.SKCoordinate;
-import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.item.Sequence;
 import java.util.ArrayList;
 
@@ -11,57 +10,51 @@ import java.util.ArrayList;
  * abstract playback manager
  * Created by Kalman on 27/07/16.
  */
-public abstract class PlaybackManager {
+public interface PlaybackManager {
 
-  public static PlaybackManager get(OSVActivity activity, Sequence sequence) {
-    if (!sequence.isOnline()) {
-      return sequence.isSafe() ? new SafePlaybackManager(activity, sequence) : new LocalPlaybackManager(activity, sequence);
-    } else {
-      return new OnlinePlaybackManager(activity, sequence);
-    }
-  }
+  void setSource(Sequence sequence);
 
-  public abstract View getSurface();
+  View getSurface();
 
-  public abstract void setSurface(View surface);
+  void setSurface(View surface);
 
-  public abstract void prepare();
+  void prepare();
 
-  public abstract void next();
+  void next();
 
-  public abstract void previous();
+  void previous();
 
-  public abstract void play();
+  void play();
 
-  public abstract void pause();
+  void pause();
 
-  public abstract void stop();
+  void stop();
 
-  public abstract void fastForward();
+  void fastForward();
 
-  public abstract void fastBackward();
+  void fastBackward();
 
-  public abstract boolean isPlaying();
+  boolean isPlaying();
 
-  public abstract void setSeekBar(SeekBar seekBar);
+  void setSeekBar(SeekBar seekBar);
 
-  public abstract int getLength();
+  int getLength();
 
-  public abstract void destroy();
+  void destroy();
 
-  public abstract void addPlaybackListener(PlaybackListener playbackListener);
+  void addPlaybackListener(PlaybackListener playbackListener);
 
-  public abstract void removePlaybackListener(PlaybackListener playbackListener);
+  void removePlaybackListener(PlaybackListener playbackListener);
 
-  public abstract boolean isSafe();
+  boolean isSafe();
 
-  public abstract Sequence getSequence();
+  Sequence getSequence();
 
-  public abstract ArrayList<SKCoordinate> getTrack();
+  ArrayList<SKCoordinate> getTrack();
 
-  public abstract void onSizeChanged();
+  void onSizeChanged();
 
-  public interface PlaybackListener {
+  interface PlaybackListener {
 
     void onPlaying();
 
@@ -69,7 +62,9 @@ public abstract class PlaybackManager {
 
     void onStopped();
 
-    void onPrepared();
+    void onPreparing();
+
+    void onPrepared(boolean success);
 
     void onProgressChanged(int index);
 

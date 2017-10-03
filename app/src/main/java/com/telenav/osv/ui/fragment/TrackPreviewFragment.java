@@ -29,7 +29,8 @@ import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.data.Preferences;
+import com.telenav.osv.di.PlaybackModule;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.FullscreenEvent;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
@@ -40,8 +41,9 @@ import com.telenav.osv.item.ScoreItem;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.item.network.ApiResponse;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
+import com.telenav.osv.manager.network.UserDataManager;
+import com.telenav.osv.manager.playback.JpegPlaybackManager;
 import com.telenav.osv.manager.playback.PlaybackManager;
-import com.telenav.osv.manager.playback.SafePlaybackManager;
 import com.telenav.osv.ui.custom.RevealRelativeLayout;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
 import com.telenav.osv.ui.fragment.transition.ScaleFragmentTransition;
@@ -49,15 +51,37 @@ import com.telenav.osv.ui.list.ScoreHistoryAdapter;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 import com.telenav.streetview.scalablevideoview.ScalableVideoView;
+import dagger.Lazy;
 import io.fabric.sdk.android.Fabric;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import javax.inject.Inject;
+import javax.inject.Named;
 
-public class TrackPreviewFragment extends DisplayFragment implements View.OnClickListener, PlaybackManager.PlaybackListener {
+public class TrackPreviewFragment extends OSVFragment
+    implements Displayable<Sequence>, View.OnClickListener, PlaybackManager.PlaybackListener {
 
   public static final String TAG = "TrackPreviewFragment";
+
+  @Inject
+  @Named(PlaybackModule.SCOPE_JPEG_ONLINE)
+  Lazy<PlaybackManager> mOnlinePlayerInjector;
+
+  @Inject
+  @Named(PlaybackModule.SCOPE_JPEG_LOCAL)
+  Lazy<PlaybackManager> mLocalPlayerInjector;
+
+  @Inject
+  @Named(PlaybackModule.SCOPE_MP4_LOCAL)
+  Lazy<PlaybackManager> mLocalMp4PlayerInjector;
+
+  @Inject
+  UserDataManager mUserDataManager;
+
+  @Inject
+  Preferences appPrefs;
 
   private PlaybackManager mPlayer;
 
@@ -91,9 +115,11 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
   private ImageView mPointsBackground;
 
-  private SeekBar mSeekBar;
-
   private ImageView mMaximizeButton;
+
+  private PlaybackManager.PlaybackListener listener;
+
+  private boolean mSafe;
 
   private SpannableString getSpannable(String first, String second) {
     SpannableString spannable = new SpannableString(first + second);
@@ -104,28 +130,14 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
   }
 
   @Override
-  public void setSource(Object extra) {
-    mPlayer = (PlaybackManager) extra;
-    mSequence = mPlayer.getSequence();
-    mOnline = mPlayer.isSafe();
+  public void setDisplayData(Sequence extra) {
+    mSequence = extra;
+    mOnline = mSequence.isOnline();
+    mSafe = mSequence.isSafe();
     hideDelete(mSequence instanceof NearbySequence);
   }
 
   private void toggleMaximize() {
-    //        ViewCompat.setTransitionName(mPlayer.getSurface(), activity.getString(R.string.transition_name_fullscreen_preview));
-    ////        Bitmap bitmap = ((GlideBitmapDrawable)((ImageView)((ScrollDisabledViewPager)mPlayer.getSurface()).getChildAt(0))
-    /// .getDrawable()).getBitmap();
-    //        mPlayer.pause();
-    //        activity.openScreen(ScreenComposer.SCREEN_PREVIEW_FULLSCREEN, mSequence);
-    //        mFrameHolder.post(new Runnable() {
-    //            @Override
-    //            public void run() {
-    //                if (mPlayer != null) {
-    //                    mPlayer.onSizeChanged();
-    //                }
-    //            }
-    //        });
-
     if (mMaximized) {
       mMaximized = false;
       mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_maximize));
@@ -149,11 +161,7 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
       }
       EventBus.post(new FullscreenEvent(true));
     }
-    mFrameHolder.post(() -> {
-      if (mPlayer != null) {
-        mPlayer.onSizeChanged();
-      }
-    });
+    mFrameHolder.post(() -> mPlayer.onSizeChanged());
   }
 
   public boolean isOnline() {
@@ -162,7 +170,7 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
   private void deleteOnlineTrack() {
     activity.enableProgressBar(true);
-    activity.getUserDataManager().deleteSequence(mSequence.getId(), new NetworkResponseDataListener<ApiResponse>() {
+    mUserDataManager.deleteSequence(mSequence.getId(), new NetworkResponseDataListener<ApiResponse>() {
 
       @Override
       public void requestFailed(int status, ApiResponse details) {
@@ -197,7 +205,7 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
       activity.enableProgressBar(false);
       mHandler.postDelayed(() -> {
         activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
-        if (mPlayer instanceof SafePlaybackManager) {
+        if (mPlayer instanceof JpegPlaybackManager && !mSequence.isOnline()) {
           if (mScoreLayout != null && mScoreVisible) {
             mScoreVisible = false;
             mScoreLayout.reveal();
@@ -234,30 +242,33 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
   }
 
   @Override
-  public void onPrepared() {
+  public void onPreparing() {
+    activity.enableProgressBar(true);
+  }
+
+  @Override
+  public void onPrepared(boolean success) {
     mPrepared = true;
     activity.enableProgressBar(false);
   }
 
   @Override
   public void onProgressChanged(int index) {
-    if (mPlayer != null) {
-      if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
-        mScoreVisible = false;
-        float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
-        mScoreLayout.reveal(
-            new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)),
-            500);
-      }
-      if (mCurrentImageText != null) {
-        mCurrentImageText.setText(getSpannable("" + index, "/" + mPlayer.getLength() + " IMG"));
-      }
+    if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
+      mScoreVisible = false;
+      float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+      mScoreLayout.reveal(
+          new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)),
+          500);
+    }
+    if (mCurrentImageText != null) {
+      mCurrentImageText.setText(getSpannable(String.valueOf(index), "/" + mPlayer.getLength() + " IMG"));
     }
   }
 
   @Override
   public void onExit() {
-
+    //nothing
   }
 
   @Override
@@ -269,60 +280,46 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
     }
     switch (v.getId()) {
       case R.id.previous_button:
-        if (mPlayer != null) {
-          mPlayer.previous();
-        }
+        mPlayer.previous();
         break;
       case R.id.fast_backward_button:
-        if (mPlayer != null) {
-          mPlayer.fastBackward();
-        }
+        mPlayer.fastBackward();
         break;
       case R.id.play_button:
-        if (mPlayer != null) {
-          if (mPlayer.isPlaying()) {
-            mPlayer.pause();
-          } else {
-            mPlayer.play();
-          }
+        if (mPlayer.isPlaying()) {
+          mPlayer.pause();
+        } else {
+          mPlayer.play();
         }
         break;
       case R.id.fast_forward_button:
-        if (mPlayer != null) {
-          mPlayer.fastForward();
-        }
+        mPlayer.fastForward();
         break;
       case R.id.next_button:
-        if (mPlayer != null) {
-          mPlayer.next();
-        }
+        mPlayer.next();
         break;
       case R.id.delete_button:
-        if (mPlayer != null) {
-          if (mPlayer.isPlaying()) {
-            mPlayer.pause();
-          }
-          final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
-          if (mSequence.isOnline()) {
-            builder.setMessage(activity.getString(R.string.delete_online_track));
-          } else {
-            builder.setMessage(activity.getString(R.string.delete_local_track));
-          }
-          builder.setTitle(activity.getString(R.string.delete_track_title)).setNegativeButton(R.string.no, (dialog, which) -> {
-
-          }).setPositiveButton(R.string.yes, (dialog, which) -> {
-            if (mSequence.isOnline()) {
-              deleteOnlineTrack();
-            } else {
-              deleteLocalTrack((LocalSequence) mSequence);
-            }
-          }).create().show();
+        if (mPlayer.isPlaying()) {
+          mPlayer.pause();
         }
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
+        if (mSequence.isOnline()) {
+          builder.setMessage(activity.getString(R.string.delete_online_track));
+        } else {
+          builder.setMessage(activity.getString(R.string.delete_local_track));
+        }
+        builder.setTitle(activity.getString(R.string.delete_track_title)).setNegativeButton(R.string.no, (dialog, which) -> {
+
+        }).setPositiveButton(R.string.yes, (dialog, which) -> {
+          if (mSequence.isOnline()) {
+            deleteOnlineTrack();
+          } else {
+            deleteLocalTrack((LocalSequence) mSequence);
+          }
+        }).create().show();
         break;
       case R.id.maximize_button:
-        if (mPrepared) {
-          toggleMaximize();
-        }
+        toggleMaximize();
         break;
     }
   }
@@ -331,9 +328,6 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
   public void onAttach(Context context) {
     super.onAttach(context);
     activity = (OSVActivity) context;
-    if (mPlayer != null) {
-      mPlayer.addPlaybackListener(this);
-    }
     activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
   }
 
@@ -342,6 +336,18 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
     super.onCreate(savedInstanceState);
     setSharedElementEnterTransition(new ScaleFragmentTransition());
     setSharedElementReturnTransition(new ScaleFragmentTransition());
+    if (mSafe) {
+      if (mOnline) {
+        mPlayer = mOnlinePlayerInjector.get();
+      } else {
+        mPlayer = mLocalPlayerInjector.get();
+      }
+    } else {
+      mPlayer = mLocalMp4PlayerInjector.get();
+    }
+    mPlayer.addPlaybackListener(this);
+    mPlayer.addPlaybackListener(listener);
+    mPlayer.setSource(mSequence);
   }
 
   @Nullable
@@ -350,14 +356,12 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
     View view = inflater.inflate(R.layout.fragment_track_details, null);
     activity = (OSVActivity) getActivity();
     mFrameHolder = view.findViewById(R.id.image_holder);
-    mSeekBar = view.findViewById(R.id.seek_bar_for_preview);
+    SeekBar mSeekBar = view.findViewById(R.id.seek_bar_for_preview);
     mSeekBar.setProgress(0);
     if (!mPrepared) {
       activity.enableProgressBar(true);
     }
-    if (mPlayer != null) {
-      mPlayer.setSeekBar(mSeekBar);
-    }
+    mPlayer.setSeekBar(mSeekBar);
     ImageView mPreviousButton = view.findViewById(R.id.previous_button);
     ImageView mFastBackwardButton = view.findViewById(R.id.fast_backward_button);
     mPlayButton = view.findViewById(R.id.play_button);
@@ -395,7 +399,7 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
         mImageDateText.setText(getSpannable(parts[0], parts[1]));
       }
     }
-    if (mSequence.getScore() > 0 && activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
+    if (mSequence.getScore() > 0 && appPrefs.isGamificationEnabled()) {
       ArrayList<ScoreHistory> array = new ArrayList<>(mSequence.getScoreHistories().values());
       Iterator<ScoreHistory> iter = array.iterator();
       while (iter.hasNext()) {
@@ -441,12 +445,10 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
       styledString.setSpan(new StyleSpan(Typeface.NORMAL), first.length(), second.length() + first.length(), 0);
       styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
       styledString.setSpan(new AbsoluteSizeSpan(12, true), first.length(), second.length() + first.length(), 0);
-      mTotalPointsText.setText("Total Points: " + mSequence.getScore());
+      mTotalPointsText.setText(getString(R.string.partial_total_points_label) + " " + mSequence.getScore());
       mPointsText.setText(styledString);
       mPointsText.setOnClickListener(v -> {
-        if (mPlayer != null) {
-          mPlayer.pause();
-        }
+        mPlayer.pause();
         mScoreVisible = true;
         float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
         mScoreLayout
@@ -476,7 +478,7 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
     mDeleteButton.setOnClickListener(this);
     mMaximizeButton.setOnClickListener(this);
 
-    if (activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
+    if (!appPrefs.isMapEnabled()) {
       mMaximizeButton.setVisibility(View.GONE);
     }
 
@@ -489,32 +491,17 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
   }
 
   @Override
-  public void onStart() {
-    super.onStart();
-  }
-
-  @Override
   public void onResume() {
     super.onResume();
-    if (mPlayer != null) {
-      if (mPlayer.isPlaying()) {
-        onPlaying();
-      } else {
-        onPaused();
-      }
+    if (mPlayer.isPlaying()) {
+      onPlaying();
+    } else {
+      onPaused();
     }
     if (mFrameHolder != null) {
       mFrameHolder.removeAllViews();
-      if (!mOnline) {
-        ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
-        mSurfaceView
-            .setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
-        mFrameHolder.addView(mSurfaceView);
-        if (mPlayer != null) {
-          mPlayer.setSurface(mSurfaceView);
-        }
-      } else {
+      if (mSafe) {
+        //online or local jpeg
         ScrollDisabledViewPager mPager = new ScrollDisabledViewPager(activity);
 
         FrameLayout.LayoutParams lp =
@@ -526,9 +513,15 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
         lp.rightMargin = -fiveDp;
         mPager.setLayoutParams(lp);
         mFrameHolder.addView(mPager);
-        if (mPlayer != null) {
-          mPlayer.setSurface(mPager);
-        }
+        mPlayer.setSurface(mPager);
+      } else {
+        //else local mp4
+        ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
+        mSurfaceView
+            .setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
+        mFrameHolder.addView(mSurfaceView);
+        mPlayer.setSurface(mSurfaceView);
       }
     }
     if (Fabric.isInitialized() && mPlayer != null) {
@@ -539,7 +532,7 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
         @Override
         public void onAnimationStart(Animator animation) {
-
+          //nothing
         }
 
         @Override
@@ -550,6 +543,7 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
                 @Override
                 public void onAnimationStart(Animator animation) {
+                  //nothing
 
                 }
 
@@ -560,11 +554,13 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
                 @Override
                 public void onAnimationCancel(Animator animation) {
+                  //nothing
 
                 }
 
                 @Override
                 public void onAnimationRepeat(Animator animation) {
+                  //nothing
 
                 }
               }).start();
@@ -572,11 +568,13 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
         @Override
         public void onAnimationCancel(Animator animation) {
+          //nothing
 
         }
 
         @Override
         public void onAnimationRepeat(Animator animation) {
+          //nothing
 
         }
       }).start();
@@ -585,9 +583,6 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
   @Override
   public void onPause() {
-    //        if (mPlayer != null){
-    //            mPlayer.pause();
-    //        }
     if (Fabric.isInitialized()) {
       Crashlytics.setString(Log.PLAYBACK, "none");
     }
@@ -595,23 +590,12 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
   }
 
   @Override
-  public void onStop() {
-    super.onStop();
-  }
-
-  @Override
-  public void onDestroyView() {
-    super.onDestroyView();
-  }
-
-  @Override
   public void onDestroy() {
     super.onDestroy();
-    if (mPlayer != null) {
-      mPlayer.stop();
-      mPlayer.destroy();
-      mPlayer = null;
-    }
+    mPlayer.stop();
+    mPlayer.destroy();
+    mPlayer.removePlaybackListener(this);
+    mPlayer = null;
     if (activity != null) {
       if (!activity.getApp().isMainProcess()) {
         activity.finish();
@@ -622,11 +606,6 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
   @Override
   public void onDetach() {
-    if (mPlayer != null) {
-      mPlayer.stop();
-      mPlayer.destroy();
-      mPlayer.removePlaybackListener(this);
-    }
     activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     super.onDetach();
   }
@@ -650,11 +629,6 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
       mScoreLayout.reveal();
       return true;
     } else {
-      if (mPlayer != null) {
-        mPlayer.stop();
-        mPlayer.destroy();
-        mPlayer = null;
-      }
       if (activity != null) {
         if (!activity.getApp().isMainProcess()) {
           activity.finish();
@@ -677,5 +651,9 @@ public class TrackPreviewFragment extends DisplayFragment implements View.OnClic
 
   private boolean fromNearby() {
     return mSequence instanceof NearbySequence;
+  }
+
+  public void setListener(PlaybackManager.PlaybackListener listener) {
+    this.listener = listener;
   }
 }

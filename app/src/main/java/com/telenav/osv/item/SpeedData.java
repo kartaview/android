@@ -1,9 +1,9 @@
 package com.telenav.osv.item;
 
 /**
+ * Model class for holding obd speed reading
  * Created by Kalman on 15/11/2016.
  */
-
 public class SpeedData {
 
   private String errorCode = "";

@@ -8,14 +8,14 @@ import com.telenav.osv.event.hardware.gps.AccuracyEvent;
 import com.telenav.osv.utils.Log;
 
 /**
- * Component handling quality changes in the gps location
+ * Component handling quality changes in the gps location, besides accuracy, it checks for 5s timeout
  * Created by Kalman on 15/05/2017.
  */
-class LocationQualityChecker {
+public class LocationQualityChecker {
 
   private static final String TAG = "LocationQualityChecker";
 
-  private final LocationManager.LocationEventListener mListener;
+  private LocationManager.LocationEventListener mListener;
 
   private int mCurrentAccuracyType = -1;
 
@@ -23,13 +23,18 @@ class LocationQualityChecker {
 
   private Runnable mTimeoutRunnable;
 
-  LocationQualityChecker(LocationManager.LocationEventListener listener) {
-    mListener = listener;
+  public LocationQualityChecker() {
     mTimeoutRunnable = () -> {
-      mListener.onLocationTimedOut();
+      if (mListener != null) {
+        mListener.onLocationTimedOut();
+      }
       Log.d(TAG, "mTimeoutRunnable: no location received for 5 seconds");
       onAccuracyChanged(1000);
     };
+  }
+
+  public void setListener(LocationManager.LocationEventListener listener) {
+    this.mListener = listener;
   }
 
   private void onAccuracyChanged(float accuracy) {
@@ -39,7 +44,9 @@ class LocationQualityChecker {
       mCurrentAccuracyType = accuracyType;
       EventBus.postSticky(new AccuracyEvent(accuracyType));
     }
-    mListener.onGpsAccuracyChanged(mCurrentAccuracyType);
+    if (mListener != null) {
+      mListener.onGpsAccuracyChanged(mCurrentAccuracyType);
+    }
   }
 
   private int getAccuracyType(float accuracy) {
@@ -54,7 +61,9 @@ class LocationQualityChecker {
 
   public void onLocationChanged(Location location, boolean shouldCenter) {
     onAccuracyChanged(location.getAccuracy());
-    mListener.onLocationChanged(location, shouldCenter);
+    if (mListener != null) {
+      mListener.onLocationChanged(location, shouldCenter);
+    }
     //timeout detector
     Log.d(TAG, "onLocationChanged: ACC = " + location.getAccuracy());
     mTimerHandler.removeCallbacks(mTimeoutRunnable);

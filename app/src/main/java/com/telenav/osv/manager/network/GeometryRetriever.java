@@ -8,8 +8,7 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.telenav.osv.event.EventBus;
+import com.telenav.osv.data.AccountPreferences;
 import com.telenav.osv.http.ListTracksRequest;
 import com.telenav.osv.http.NearbyRequest;
 import com.telenav.osv.http.requestFilters.NearbyRequestFilter;
@@ -21,7 +20,9 @@ import com.telenav.osv.manager.network.parser.GeometryParser;
 import com.telenav.osv.manager.network.parser.HttpResponseParser;
 import com.telenav.osv.manager.network.parser.NearbyTracksParser;
 import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Utils;
+import javax.inject.Inject;
+
+import static com.telenav.osv.data.Preferences.URL_ENV;
 
 /**
  * *
@@ -54,20 +55,18 @@ public class GeometryRetriever extends NetworkManager implements Response.ErrorL
 
   private HttpResponseParser mHttpResponseParser = new HttpResponseParser();
 
-  public GeometryRetriever(Context context) {
-    super(context);
+  @Inject
+  public GeometryRetriever(Context context, AccountPreferences prefs) {
+    super(context, prefs);
     HandlerThread handlerThread = new HandlerThread("Tracks", Process.THREAD_PRIORITY_BACKGROUND);
     handlerThread.start();
     mTracksHandler = new Handler(handlerThread.getLooper());
     this.mQueue = newRequestQueue(mContext, 4);
-    setEnvironment();
-    EventBus.register(this);
-    VolleyLog.DEBUG = Utils.isDebugEnabled(mContext);
+
   }
 
   @Override
-  protected void setEnvironment() {
-    super.setEnvironment();
+  protected void setupUrls() {
     URL_LIST_TRACKS = URL_LIST_TRACKS.replace("&&", URL_ENV[mCurrentServer]);
     URL_NEARBY_TRACKS = URL_NEARBY_TRACKS.replace("&&", URL_ENV[mCurrentServer]);
     Log.d(TAG, "setEnvironment: " + URL_ENV[mCurrentServer]);

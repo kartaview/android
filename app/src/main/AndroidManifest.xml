@@ -52,9 +52,9 @@
       android:icon="@drawable/ic_launcher"
       android:label="@string/app_name"
       android:largeHeap="true"
-      android:process="@string/main_process_name"
       android:theme="@style/AppTheme"
       android:fullBackupContent="false"
+      android:process="@string/main_process_name"
       >
     <meta-data
         android:name="com.skobbler.ngx.API_KEY"
@@ -95,6 +95,7 @@
     <activity
         android:name=".activity.WalkthroughActivity"
         android:label="Intro"
+        android:theme="@style/AppTheme.NoSplash"
         android:screenOrientation="portrait"
         />
     <activity
@@ -127,28 +128,6 @@
         android:exported="true"
         android:permission="android.permission.BIND_JOB_SERVICE"
         />
-
-    <receiver android:name=".service.ConnectivityBroadcastReceiver">
-      <intent-filter>
-        <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-        <action android:name="android.intent.action.BATTERY_CHANGED"/>
-      </intent-filter>
-    </receiver>
-
-    <service
-        android:name=".service.UploadHandlerService"
-        android:icon="@drawable/ic_launcher"
-        android:label="OSV uploading service"
-        android:stopWithTask="false"
-        />
-    <service
-        android:name=".service.MessagingService"
-        android:permission="android.permission.INTERNET"
-        >
-      <intent-filter>
-        <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-      </intent-filter>
-    </service>
     <service
         android:name=".service.FirebaseService"
         android:permission="android.permission.INTERNET"
@@ -161,11 +140,7 @@
         android:name=".service.RecentClearedService"
         android:exported="false"
         android:stopWithTask="false"
-        >
-      <intent-filter>
-        <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
-      </intent-filter>
-    </service>
+        />
 
         <meta-data
             android:name="io.fabric.ApiKey"
@@ -183,6 +158,7 @@
         android:hardwareAccelerated="true"
         android:launchMode="singleInstance"
         android:multiprocess="false"
+        android:theme="@style/AppTheme.NoSplash"
         android:noHistory="true"
         android:process="@string/playback_process_name"
         android:screenOrientation="fullSensor"

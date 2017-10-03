@@ -23,7 +23,7 @@ import org.greenrobot.eventbus.ThreadMode;
  */
 public abstract class CameraManager {
 
-  public final static String TAG = "CameraManager";
+  public static final String TAG = "CameraManager";
 
   final OrientationEventListener mOrientationListener;
 
@@ -34,22 +34,6 @@ public abstract class CameraManager {
   CameraManager(Context context) {
     mContext = context;
     mOrientationListener = new OrientationListener(context);
-  }
-
-  public static CameraManager get(Context context) {
-    CameraManager manager;
-    //        if (isNewApiCompatible() && ((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference
-    // (PreferenceTypes.K_USE_CAMERA_API_NEW)) {
-    //            manager = new Camera2Manager(context);
-    //        } else {
-    manager = new CameraManagerOld(context);
-    //        }
-    EventBus.register(manager);
-    return manager;
-  }
-
-  private static boolean isNewApiCompatible() {
-    return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP;
   }
 
   public abstract void takeSnapshot(final ShutterCallback shutterCallback, final ImageReadyCallback jpeg, final long timestamp,
@@ -63,7 +47,6 @@ public abstract class CameraManager {
 
   public void focusOnTouch(int x, int y) {
     float top, left, right, bottom;
-    boolean isLeftMinus = false, isTopMinus = false, isRightOver = false, isBottomOver = false;
 
     x = x * 2 - 1000;
     y = y * 2 - 1000;
@@ -80,8 +63,6 @@ public abstract class CameraManager {
 
     Rect cameraFocusRect = new Rect((int) (left + hOffset), (int) (top + vOffset), (int) (right + hOffset), (int) (bottom + vOffset));
     Log.d(TAG, "focusOnTouch: " + cameraFocusRect);
-    //        Log.d(TAG, "focusOnTouch: surfaceWidth=" + surfaceWidth + ", surfaceHeight=" + surfaceHeight + ", radius=" + radius + ",
-    // x=" + x + ", y=" + y);
     focus(cameraFocusRect);
   }
 

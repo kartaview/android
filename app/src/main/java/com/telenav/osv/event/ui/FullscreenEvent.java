@@ -6,7 +6,7 @@ import com.telenav.osv.event.OSVEvent;
 
 public class FullscreenEvent extends OSVEvent {
 
-  public final static String TAG = "FullscreenEvent";
+  public static final String TAG = "FullscreenEvent";
 
   public final boolean fullscreen;
 

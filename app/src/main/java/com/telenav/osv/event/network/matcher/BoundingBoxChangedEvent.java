@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class BoundingBoxChangedEvent extends OSVEvent {
 
-  public final static String TAG = "BoundingBoxChangedEvent";
+  public static final String TAG = "BoundingBoxChangedEvent";
 
   public Polyline lastBB;
 

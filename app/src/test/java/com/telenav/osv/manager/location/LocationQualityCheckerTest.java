@@ -38,7 +38,8 @@ public class LocationQualityCheckerTest {
     Location loc5 = new Location(loc);
     loc5.setAccuracy(60);
     final long mLastPosTime = System.currentTimeMillis();
-    LocationQualityChecker checker = new LocationQualityChecker(new LocationManager.LocationEventListener() {
+    LocationQualityChecker checker = new LocationQualityChecker();
+    checker.setListener(new LocationManager.LocationEventListener() {
 
       @Override
       public void onLocationChanged(Location location, boolean shouldCenter) {

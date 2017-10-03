@@ -1,6 +1,5 @@
 package com.telenav.osv.ui.fragment;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.transition.TransitionInflater;
@@ -11,35 +10,36 @@ import android.widget.FrameLayout;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.activity.OSVActivity;
+import com.telenav.osv.di.PlaybackModule;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.manager.playback.PlaybackManager;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * fullscreen preview fragment
  * Created by kalmanb on 8/9/17.
  */
-public class FullscreenFragment extends DisplayFragment {
+public class FullscreenFragment extends OSVFragment implements Displayable<Sequence> {
 
   public static final String TAG = "FullscreenFragment";
 
-  private PlaybackManager playbackManager;
+  @Inject
+  @Named(PlaybackModule.SCOPE_JPEG_ONLINE)
+  PlaybackManager playbackManager;
 
   private FrameLayout mFrameHolder;
 
   private OSVActivity activity;
-
-  //    private PhotoView mImageView;
 
   private Sequence mSequence;
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-      setSharedElementEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(R.transition.fullscreentransition));
-      setSharedElementReturnTransition(TransitionInflater.from(getActivity()).inflateTransition(R.transition.fullscreentransition));
-    }
+    setSharedElementEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(R.transition.fullscreentransition));
+    setSharedElementReturnTransition(TransitionInflater.from(getActivity()).inflateTransition(R.transition.fullscreentransition));
   }
 
   @Nullable
@@ -47,35 +47,15 @@ public class FullscreenFragment extends DisplayFragment {
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_fullscreen_preview, null);
     activity = (MainActivity) getActivity();
-    this.playbackManager = PlaybackManager.get(activity, mSequence);
-    //        mImageView = (PhotoView) inflater.inflate(R.layout.item_image_view_pager, null);
+    this.playbackManager.setSource(mSequence);
     mFrameHolder = view.findViewById(R.id.image_holder);
-    //        mFrameHolder.addView(mImageView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
-    // .MATCH_PARENT));
-    //        Bitmap bitmap = ((GlideBitmapDrawable)((ImageView)((ScrollDisabledViewPager)playbackManager.getSurface()).getChildAt(0))
-    // .getDrawable()).getBitmap();
-    //        mImageView.setImageBitmap(bitmap);
     return view;
   }
 
   @Override
   public void onResume() {
     super.onResume();
-    //        mImageView = (PhotoView) activity.getLayoutInflater().inflate(R.layout.item_image_view_pager, null);
-    //        mFrameHolder.addView(mImageView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
-    // .MATCH_PARENT));
-    //        Bitmap bitmap = ((GlideBitmapDrawable)((ImageView)((ScrollDisabledViewPager)playbackManager.getSurface()).getChildAt(0))
-    // .getDrawable()).getBitmap();
-    //        mImageView.setImageBitmap(bitmap);
-    //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-    //            setSharedElementEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(R.transition
-    // .fullscreentransition));
-    //            setSharedElementReturnTransition(TransitionInflater.from(getActivity()).inflateTransition(R.transition
-    // .fullscreentransition));
-    //        }
-
     ScrollDisabledViewPager mPager = new ScrollDisabledViewPager(activity);
-
     FrameLayout.LayoutParams lp =
         new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
     mPager.setLayoutParams(lp);
@@ -114,7 +94,7 @@ public class FullscreenFragment extends DisplayFragment {
   }
 
   @Override
-  public void setSource(Object extra) {
-    this.mSequence = (Sequence) extra;
+  public void setDisplayData(Sequence extra) {
+    this.mSequence = extra;
   }
 }

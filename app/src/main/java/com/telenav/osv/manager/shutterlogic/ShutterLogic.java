@@ -1,7 +1,6 @@
 package com.telenav.osv.manager.shutterlogic;
 
 import android.location.Location;
-import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.gps.SpeedCategoryEvent;
 import com.telenav.osv.item.SpeedData;
 import com.telenav.osv.listener.ShutterListener;
@@ -41,7 +40,6 @@ public abstract class ShutterLogic {
 
   void recalculateSpeedCategory(float speed) {
     mSpeed = speed;
-    //        Log.d(TAG, "recalculateSpeedCategory: speed: " + (int) mSpeed);
     SpeedCategoryEvent.SpeedCategory newCategory = SpeedCategoryEvent.SpeedCategory.SPEED_STATIONARY;
     if (mSpeed <= 1) {
       newCategory = SpeedCategoryEvent.SpeedCategory.SPEED_STATIONARY;
@@ -61,7 +59,6 @@ public abstract class ShutterLogic {
     if (newCategory != mSpeedCategory) {
       Log.d(TAG, "recalculateSpeedCategory: speed category changed " + newCategory);
       mSpeedCategory = newCategory;
-      EventBus.postSticky(new SpeedCategoryEvent(mSpeed, mSpeedCategory));
     }
   }
 

@@ -22,11 +22,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.activity.OSVActivity;
+import com.telenav.osv.application.ValueFormatter;
+import com.telenav.osv.data.Preferences;
 import com.telenav.osv.item.Payment;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.ui.ScreenComposer;
+import com.telenav.osv.ui.Navigator;
 import com.telenav.osv.ui.custom.ProgressImageView;
 import com.telenav.osv.ui.list.PaymentAdapter;
 import com.telenav.osv.ui.list.SequenceAdapter;
@@ -36,14 +37,15 @@ import com.telenav.osv.utils.Utils;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.inject.Inject;
 
 /**
  * fragment holding the ui for the user's data
  * Created by adrianbostan on 11/07/16.
  */
-public abstract class ProfileFragment extends DisplayFragment implements AppBarLayout.OnOffsetChangedListener {
+public abstract class ProfileFragment extends OSVFragment implements AppBarLayout.OnOffsetChangedListener {
 
-  public final static String TAG = "ProfileFragment";
+  public static final String TAG = "ProfileFragment";
 
   /**
    * preference name
@@ -60,13 +62,13 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
 
   public static final String K_XP_TARGET = "xpTarget";
 
-  public static final String K_TOTAL_DISTANCE = "totalDistance";
+  public static final String K_TOTAL_DISTANCE = "totalDistance2";
 
-  public static final String K_OBD_DISTANCE = "obdDistance";
+  public static final String K_OBD_DISTANCE = "obdDistance2";
 
-  public static final String K_TOTAL_PHOTOS = "totalPhotos";
+  public static final String K_TOTAL_PHOTOS = "totalPhotos2";
 
-  public static final String K_TOTAL_TRACKS = "totalTracks";
+  public static final String K_TOTAL_TRACKS = "totalTracks2";
 
   public static final String K_DRIVER_CURRENT_ACCEPTED_DISTANCE = "currentAcceptedDistance";
 
@@ -94,7 +96,7 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
 
   protected boolean mIsAvatarShown = true;
 
-  protected MainActivity activity;
+  protected OSVActivity activity;
 
   protected RecyclerView mSequencesRecyclerView;
 
@@ -120,8 +122,6 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
 
   protected GridLayoutManager mLandscapeLayoutManager;
 
-  protected ApplicationPreferences appPrefs;
-
   protected ProgressImageView mProfileImage;
 
   protected int mMaxScrollSize;
@@ -133,6 +133,12 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
   protected AppBarLayout appBar;
 
   protected TabLayout mTabLayout;
+
+  @Inject
+  Preferences appPrefs;
+
+  @Inject
+  ValueFormatter valueFormatter;
 
   ArrayList<Payment> mPaymentsList = new ArrayList<>();
 
@@ -150,7 +156,7 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
         activity.runOnUiThread(() -> {
           if (mSwipeRefreshLayout != null) {
             mSwipeRefreshLayout.setRefreshing(false);
-            if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MY_PROFILE) {
+            if (activity.getCurrentScreen() == Navigator.SCREEN_MY_PROFILE) {
               activity.showSnackBar(R.string.something_wrong_try_again, Snackbar.LENGTH_LONG);
             }
           }
@@ -174,7 +180,7 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
       if (activity != null) {
         activity.runOnUiThread(() -> {
           if (mSwipeRefreshLayout != null) {
-            if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MY_PROFILE) {
+            if (activity.getCurrentScreen() == Navigator.SCREEN_MY_PROFILE) {
               activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
             }
           }
@@ -193,12 +199,14 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
 
   private LinearLayout mHeaderContentHolder;
 
+  private Navigator navigator;
+
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_profile, null);
 
     activity = (MainActivity) getActivity();
-    appPrefs = activity.getApp().getAppPrefs();
+    navigator = activity;
     mPortraitLayoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
     mLandscapeLayoutManager = new GridLayoutManager(activity, 2);
     mLandscapeLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -222,9 +230,7 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
     Drawable upArrow = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_back_white, null);
     toolbar.setNavigationIcon(upArrow);
     toolbar.setNavigationOnClickListener(v -> activity.onBackPressed());
-    mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity, !(this instanceof NearbyFragment));
-    mOnlineSequencesAdapter.enablePoints(appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true));
-    mOnlineSequencesAdapter.enableDriverStats(false);
+    mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity, navigator, valueFormatter, !(this instanceof NearbyFragment));
     setupViews(activity.isPortrait());
     return view;
   }
@@ -380,9 +386,9 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
 
   protected abstract void loadMoreResults();
 
-  @Override
-  public void setSource(Object extra) {
-    //no source for default profile fragment
-  }
+  //@Override
+  //public void setDisplayData(Sequence extra) {
+  //  //no source for default profile fragment
+  //}
 }
 

@@ -2,12 +2,15 @@ package com.telenav.osv.ui.rules;
 
 import android.support.test.rule.ActivityTestRule;
 import com.telenav.osv.activity.SplashActivity;
+import com.telenav.osv.utils.Log;
 
 /**
  * Created by Kalman on 03/04/2017.
  */
 
 public class SplashActivityTestRule extends ActivityTestRule<SplashActivity> {
+
+  private static final String TAG = "SplashActivityTestRule";
 
   public SplashActivityTestRule(Class<SplashActivity> activityClass) {
     super(activityClass);
@@ -31,7 +34,7 @@ public class SplashActivityTestRule extends ActivityTestRule<SplashActivity> {
     try {
       Thread.sleep(5000);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(e));
     }
     super.afterActivityLaunched();
   }

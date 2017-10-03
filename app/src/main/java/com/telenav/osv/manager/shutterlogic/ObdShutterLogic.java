@@ -46,7 +46,7 @@ public class ObdShutterLogic extends ShutterLogic {
 
   private void checkDistance(SpeedData speedData) {
     float distanceCovered;
-    if (averageSpeed == -1) {
+    if (averageSpeed < 0) {
       averageSpeed = speedData.getSpeed();
       referenceTime = speedData.getTimestamp();
       return;

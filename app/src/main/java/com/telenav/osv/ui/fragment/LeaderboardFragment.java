@@ -23,11 +23,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.application.ValueFormatter;
+import com.telenav.osv.data.Preferences;
 import com.telenav.osv.item.LeaderboardData;
 import com.telenav.osv.item.network.UserCollection;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
-import com.telenav.osv.ui.ScreenComposer;
+import com.telenav.osv.manager.network.UserDataManager;
+import com.telenav.osv.ui.Navigator;
 import com.telenav.osv.ui.custom.CenterLayoutManager;
 import com.telenav.osv.ui.list.LeaderboardAdapter;
 import com.telenav.osv.utils.BackgroundThreadPool;
@@ -39,6 +41,7 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.inject.Inject;
 
 /**
  * Fragmnent holding the ui for the leaderboard screen
@@ -46,7 +49,16 @@ import java.util.TimerTask;
  */
 public class LeaderboardFragment extends OSVFragment {
 
-  public final static String TAG = "LeaderboardFragment";
+  public static final String TAG = "LeaderboardFragment";
+
+  @Inject
+  UserDataManager mUserDataManager;
+
+  @Inject
+  Preferences appPrefs;
+
+  @Inject
+  ValueFormatter valueFormatter;
 
   private MainActivity activity;
 
@@ -116,7 +128,7 @@ public class LeaderboardFragment extends OSVFragment {
               if (activity != null) {
                 activity.runOnUiThread(() -> {
                   if (mSwipeRefreshLayout != null) {
-                    if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MY_PROFILE) {
+                    if (activity.getCurrentScreen() == Navigator.SCREEN_MY_PROFILE) {
                       activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
                     }
                   }
@@ -156,7 +168,7 @@ public class LeaderboardFragment extends OSVFragment {
     HandlerThread thread = new HandlerThread("leaderboardLoader", Process.THREAD_PRIORITY_LOWEST);
     thread.start();
     mBackgroundHandler = new Handler(thread.getLooper());
-    savedUsername = activity.getApp().getAppPrefs().getStringPreference(PreferenceTypes.K_USER_NAME);
+    savedUsername = appPrefs.getUserName();
 
     mTabLayout = view.findViewById(R.id.tab_layout);
     refreshRegionTab();
@@ -203,7 +215,7 @@ public class LeaderboardFragment extends OSVFragment {
       }
     });
 
-    mLeaderboardAdapter = new LeaderboardAdapter(mUserList, activity);
+    mLeaderboardAdapter = new LeaderboardAdapter(mUserList, activity, valueFormatter);
     mRecyclerView.setAdapter(mLeaderboardAdapter);
     mRecyclerView.setLayoutManager(new CenterLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
     mSwipeRefreshLayout = view.findViewById(R.id.leaderboard_swipe_refresh_layout);
@@ -230,16 +242,16 @@ public class LeaderboardFragment extends OSVFragment {
         tv.setGravity(Gravity.CENTER);
         switch (position) {
           case 0:
-            tv.setText("All Time");
+            tv.setText(R.string.leaderboard_all_time_label);
             break;
           case 1:
-            tv.setText("This Month");
+            tv.setText(R.string.leaderboard_this_month_label);
             break;
           case 2:
-            tv.setText("This Week");
+            tv.setText(R.string.leaderboard_this_week_label);
             break;
           case 3:
-            tv.setText("This Day");
+            tv.setText(R.string.leaderboard_this_day_label);
             break;
         }
         tv.setTextColor(activity.getResources().getColor(R.color.leaderboard_text_grey));
@@ -279,6 +291,7 @@ public class LeaderboardFragment extends OSVFragment {
     try {
       mBackgroundHandler.getLooper().getThread().interrupt();
     } catch (Exception ignored) {
+      Log.d(TAG, Log.getStackTraceString(ignored));
     }
     super.onDestroyView();
   }
@@ -317,11 +330,11 @@ public class LeaderboardFragment extends OSVFragment {
       }
       Log.d(TAG, "requestLeaderboardData: date " + date);
       mUserPosition = 0;
-      activity.getUserDataManager().getLeaderboardData(new NetworkResponseDataListener<UserCollection>() {
+      mUserDataManager.getLeaderboardData(new NetworkResponseDataListener<UserCollection>() {
 
         @Override
         public void requestFailed(int status, UserCollection details) {
-          activity.showSnackBar("No Internet connection detected.", Snackbar.LENGTH_LONG);
+          activity.showSnackBar(R.string.no_internet_connection_detected, Snackbar.LENGTH_LONG);
           Log.d(TAG, "requestLeaderboardData: " + details);
           stopRefreshing();
         }

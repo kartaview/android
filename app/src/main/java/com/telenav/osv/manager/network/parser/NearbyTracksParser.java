@@ -78,7 +78,7 @@ public class NearbyTracksParser extends ApiResponseParser<TrackCollection> {
           }
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       }
     }
     return collectionData;

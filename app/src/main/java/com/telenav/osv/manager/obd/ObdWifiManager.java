@@ -1,5 +1,6 @@
 package com.telenav.osv.manager.obd;
 
+import android.arch.lifecycle.MutableLiveData;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -58,51 +59,49 @@ class ObdWifiManager extends ObdManager {
         try {
           Thread.sleep(500);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          Log.d(TAG, Log.getStackTraceString(e));
         }
         fastInit();
         try {
           Thread.sleep(500);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          Log.d(TAG, Log.getStackTraceString(e));
         }
         reset();
         try {
           Thread.sleep(500);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          Log.d(TAG, Log.getStackTraceString(e));
         }
         setAuto();
         try {
           Thread.sleep(500);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          Log.d(TAG, Log.getStackTraceString(e));
         }
         describe();
         try {
           Thread.sleep(500);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          Log.d(TAG, Log.getStackTraceString(e));
         }
         mConnecting = false;
         sConnected = true;
-        if (mConnectionListener != null) {
-          mConnectionListener.onObdConnected();
-        }
+        mConnectionListener.onObdConnected();
         if (mConnectTask != null) {
+          Log.d(TAG, "run: cancelling connect task");
           mConnectTask.cancel(true);
         }
         mThreadPoolExecutor.remove(mConnectRunnable);
         startRunnable();
         return;
       } catch (IOException e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
         sConnected = false;
-        if (mConnectionListener != null) {
-          mConnectionListener.onObdDisconnected();
-        }
+        mConnectionListener.onObdDisconnected();
       }
       mConnecting = false;
+      mThreadPoolExecutor.remove(mConnectRunnable);
     }
   };
 
@@ -111,25 +110,28 @@ class ObdWifiManager extends ObdManager {
     try {
       speed = getSpeed();
     } catch (SocketException se) {
-      se.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(se));
       try {
         Thread.sleep(800);
       } catch (InterruptedException ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
       }
       reconnect();
     } catch (InterruptedException ie) {
       reset();
-      ie.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(ie));
       try {
         Thread.sleep(800);
       } catch (InterruptedException ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
       }
       reconnect();
     } catch (Exception xe) {
-      xe.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(xe));
       try {
         Thread.sleep(800);
       } catch (InterruptedException ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
       }
       reconnect();
     }
@@ -143,15 +145,15 @@ class ObdWifiManager extends ObdManager {
       if (intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
         if (NetworkUtils.isWifiInternetAvailable(mContext) && isWifiObd()) {
           connect();
-        } else if (isConnected()) {
+        } else if (sConnected) {
           disconnect();
         }
       }
     }
   };
 
-  ObdWifiManager(Context context, ConnectionListener listener) {
-    super(context, listener);
+  ObdWifiManager(Context context, MutableLiveData<Integer> obdStatusLive, ConnectionListener listener) {
+    super(context, obdStatusLive, listener);
   }
 
   void connect() {

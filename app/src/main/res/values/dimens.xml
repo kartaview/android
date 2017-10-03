@@ -3,6 +3,7 @@
   <dimen name="action_bar_size">56dp</dimen>
   <dimen name="onebox_list_divider_height">1dp</dimen>
   <dimen name="text_size_default">20sp</dimen>
+  <dimen name="text_size_hidden">-5sp</dimen>
   <dimen name="tap_to_focus_view">60dp</dimen>
   <dimen name="text_size_profile_title_expanded">20sp</dimen>
   <dimen name="text_size_profile_title_collapsed">20sp</dimen>
@@ -26,4 +27,8 @@
   <dimen name="profile_driver_header_title_margin_bottom">168dp</dimen>
   <dimen name="text_size_profile_header_info_small">12sp</dimen>
   <dimen name="text_size_profile_header_info_large">17sp</dimen>
+  <dimen name="hidden_view_height">0dp</dimen>
+  <dimen name="settings_row_padding">20dp</dimen>
+  <dimen name="settings_row_padding_hidden">0dp</dimen>
+  <dimen name="divider_height">1dp</dimen>
 </resources>

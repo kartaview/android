@@ -2,6 +2,7 @@ package com.telenav.osv.manager.obd;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.arch.lifecycle.MutableLiveData;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -41,7 +42,7 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
 
   private static final String VEHICLE_DATA_TYPE_SPEED = "SPEED";
 
-  private final static String TAG = ObdBleManager.class.getSimpleName();
+  private static final String TAG = ObdBleManager.class.getSimpleName();
 
   /**
    * bluetooth connection thread instance
@@ -136,8 +137,8 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
     }
   };
 
-  ObdBleManager(Context context, ConnectionListener listener) {
-    super(context, listener);
+  ObdBleManager(Context context, MutableLiveData<Integer> obdStatusLive, ConnectionListener listener) {
+    super(context, obdStatusLive, listener);
   }
 
   /**
@@ -258,11 +259,6 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
 
   @Override
   public boolean isFunctional(OSVActivity activity) {
-
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-      activity.showSnackBar(activity.getString(R.string.ble_android_not_supported), Snackbar.LENGTH_LONG);
-      return false;
-    }
 
     // Use this check to determine whether BLE is supported on the device. Then
     // you can selectively disable BLE-related features.

@@ -1,10 +1,11 @@
 package com.telenav.osv.manager;
 
+import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.SurfaceTexture;
 import android.location.Location;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -17,11 +18,11 @@ import com.skobbler.ngx.positioner.SKPosition;
 import com.skobbler.ngx.positioner.SKPositionerManager;
 import com.telenav.ffmpeg.FFMPEG;
 import com.telenav.osv.R;
-import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.command.GpsCommand;
 import com.telenav.osv.command.PhotoCommand;
+import com.telenav.osv.command.UploadCancelCommand;
+import com.telenav.osv.data.Preferences;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.camera.CameraShutterEvent;
@@ -31,7 +32,6 @@ import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.hardware.gps.LocationEvent;
 import com.telenav.osv.event.hardware.gps.TrackChangedEvent;
 import com.telenav.osv.event.hardware.obd.ObdSpeedEvent;
-import com.telenav.osv.event.hardware.obd.ObdStatusEvent;
 import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.SensorData;
@@ -43,34 +43,39 @@ import com.telenav.osv.manager.capture.CameraManager;
 import com.telenav.osv.manager.location.LocationManager;
 import com.telenav.osv.manager.location.ScoreManager;
 import com.telenav.osv.manager.location.SensorManager;
-import com.telenav.osv.manager.network.UploadManager;
 import com.telenav.osv.manager.obd.ObdManager;
 import com.telenav.osv.manager.shutterlogic.AutoShutterLogic;
 import com.telenav.osv.manager.shutterlogic.GpsShutterLogic;
 import com.telenav.osv.manager.shutterlogic.IdleShutterLogic;
 import com.telenav.osv.manager.shutterlogic.ObdShutterLogic;
 import com.telenav.osv.manager.shutterlogic.ShutterLogic;
+import com.telenav.osv.service.UploadJobService;
 import com.telenav.osv.utils.ComputingDistance;
 import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Size;
 import com.telenav.osv.utils.Utils;
 import io.fabric.sdk.android.Fabric;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.greenrobot.eventbus.NoSubscriberEvent;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import static com.telenav.osv.manager.obd.ObdManager.TYPE_BLE;
+import static com.telenav.osv.manager.obd.ObdManager.TYPE_BT;
+import static com.telenav.osv.manager.obd.ObdManager.TYPE_WIFI;
 
 /**
  * Component which handles recording related functionalities
  * Created by Kalman on 04/07/16.
  */
+@Singleton
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class Recorder implements ObdManager.ConnectionListener, LocationManager.LocationEventListener, ShutterListener, ShutterCallback {
 
@@ -79,8 +84,6 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
   private static final int MIN_FREE_SPACE = 500;
 
   private final Context mContext;
-
-  private final LocationManager mLocationManager;
 
   private final ArrayList<SKCoordinate> mCurrentTrack = new ArrayList<>();
 
@@ -92,11 +95,15 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
 
   private final ShutterLogic mIdleLogic = new IdleShutterLogic();
 
-  private final ApplicationPreferences appPrefs;
-
   private final CameraManager mCameraManager;
 
   private final Object shutterSynObject = new Object();
+
+  private final SequenceDB sequenceDB;
+
+  private LocationManager mLocationManager;
+
+  private Preferences appPrefs;
 
   private ShutterLogic mCurrentLogic = mIdleLogic;
 
@@ -122,8 +129,6 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
 
   private boolean recording;
 
-  private UploadManager mUploadManager;
-
   private SensorManager mSensorManager;
 
   private int mOrientation = 0;
@@ -138,41 +143,41 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
 
   private boolean mSafe;
 
-  private ImageReadyCallback mJpegPictureCallback = new ImageReadyCallback() {
-
-    @Override
-    public void onPictureTaken(final byte[] jpegData, long timestamp, int sequenceId, String folderPath, Location location) {
-      mHandler.removeCallbacks(mIdleRunnable);
-      if (!recording) {
-        mCameraIdle = true;
-        return;
-      }
-      final boolean mSafeF = mSafe;
-      final int mOrientationF = mOrientation;
+  private ImageReadyCallback mJpegPictureCallback = (jpegData, timestamp, sequenceId, folderPath, location) -> {
+    mHandler.removeCallbacks(mIdleRunnable);
+    if (!recording) {
       mCameraIdle = true;
-
-      saveFrame(mSafeF, jpegData, sequenceId, folderPath, location, mOrientationF, timestamp);
+      return;
     }
+    final boolean mSafeF = mSafe;
+    final int mOrientationF = mOrientation;
+    mCameraIdle = true;
+
+    saveFrame(mSafeF, jpegData, sequenceId, folderPath, location, mOrientationF, timestamp);
   };
 
-  public Recorder(OSVApplication app) {
+  @Inject
+  public Recorder(Context app, SequenceDB db, Preferences prefs, CameraManager cameraManager, LocationManager locationManager,
+                  SensorManager sensorManager,
+                  ScoreManager scoreManager) {
     mContext = app;
+    sequenceDB = db;
+    appPrefs = prefs;
     int coreNum = 1;
     BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<>();
     mThreadPoolExec = new ThreadPoolExecutor(coreNum, coreNum, 7, TimeUnit.SECONDS, workQueue,
                                              new ThreadFactoryBuilder().setDaemon(false).setNameFormat("Recorder-pool-%d")
                                                  .setPriority(Thread.MAX_PRIORITY).build());
-    mCameraManager = CameraManager.get(app);
-    mUploadManager = ((OSVApplication) mContext).getUploadManager();
-    mSensorManager = new SensorManager(mContext);
-    appPrefs = app.getAppPrefs();
-    mScoreManager = new ScoreManager(app, appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true));
-    mLocationManager = LocationManager.get(app, this);
+    mCameraManager = cameraManager;
+    mSensorManager = sensorManager;
+    mScoreManager = scoreManager;
+    mLocationManager = locationManager;
+    mLocationManager.setListener(this);
     mLocationManager.connect();
-    int obdType = appPrefs.getIntPreference(PreferenceTypes.K_OBD_TYPE);
-    createObdManager(obdType);
+    appPrefs.getObdTypeLive().observeForever(this::createObdManager);
     EventBus.register(this);
-    mMapEnabled = !appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED);
+    appPrefs.getGamificationEnabledLive().observe(ProcessLifecycleOwner.get(), value -> mScoreManager.setEnabled(value == null || value));
+    appPrefs.getMapEnabledLive().observe(ProcessLifecycleOwner.get(), value -> mMapEnabled = value == null || value);
     logicPrioritiesChanged();
   }
 
@@ -190,7 +195,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
     if (mMapEnabled) {
       offerNewTrackPosition(mActualLocation);
     }
-    if (mScoreManager != null && appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
+    if (mScoreManager != null && mScoreManager.isEnabled()) {
       mScoreManager.onLocationChanged(mActualLocation);
     }
     mCurrentLogic.onLocationChanged(mPreviousLocation, mActualLocation);
@@ -217,7 +222,6 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
 
   @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
   public void onRecordingStateChanged(RecordingEvent event) {
-    mMapEnabled = !appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED);
     if (event.started) {
       mReceivedQualityPosition = false;
       mAutoLogic.stop();
@@ -230,7 +234,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
           mCurrentTrack.add(position.getCoordinate());
         }
       }
-      if (mActualLocation != null && appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
+      if (mActualLocation != null && mScoreManager.isEnabled()) {
         mScoreManager.onLocationChanged(mActualLocation);
       }
     } else {
@@ -283,7 +287,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
 
       if (mSequence != null && !mSequence.hasObd()) {
         mSequence.setHasObd(true);
-        SequenceDB.instance.setOBDForSequence(mSequence.getId(), true);
+        sequenceDB.setOBDForSequence(mSequence.getId(), true);
       }
     } catch (NumberFormatException e) {
       Log.w(TAG, "onSpeedObtained: " + Log.getStackTraceString(e));
@@ -295,7 +299,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
     mObdLogic.setFunctional(true);
     logicPrioritiesChanged();
     mOBDManager.startRunnable();
-    EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_CONNECTED));
+    mScoreManager.setObdConnected(true);
   }
 
   @Override
@@ -303,12 +307,12 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
     mObdLogic.setFunctional(false);
     logicPrioritiesChanged();
     mOBDManager.stopRunnable();
-    EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_DISCONNECTED));
+    mScoreManager.setObdConnected(false);
   }
 
   @Override
   public void onObdConnecting() {
-    EventBus.postSticky(new ObdStatusEvent(ObdStatusEvent.TYPE_CONNECTING));
+    mScoreManager.setObdConnected(false);
   }
 
   @Override
@@ -334,28 +338,24 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
     return mOBDManager;
   }
 
-  public void createObdManager(int type) {
+  private void createObdManager(int type) {
     if (mOBDManager != null) {
       mOBDManager.unregisterReceiver();
       EventBus.unregister(mOBDManager);
       mOBDManager.removeConnectionListener();
       mOBDManager.destroy();
     }
+    MutableLiveData<Integer> obdStatusLive = appPrefs.getObdStatusLive();
     switch (type) {
-      case PreferenceTypes.V_OBD_BLE:
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-          mOBDManager = ObdManager.get(mContext, ObdManager.TYPE_BLE, this);
-        } else {
-          appPrefs.saveIntPreference(PreferenceTypes.K_OBD_TYPE, PreferenceTypes.V_OBD_BT);
-          mOBDManager = ObdManager.get(mContext, ObdManager.TYPE_BT, this);
-        }
+      case TYPE_BLE:
+        mOBDManager = ObdManager.get(mContext, obdStatusLive, TYPE_BLE, this);
         break;
-      case PreferenceTypes.V_OBD_BT:
-        mOBDManager = ObdManager.get(mContext, ObdManager.TYPE_BT, this);
+      case TYPE_BT:
+        mOBDManager = ObdManager.get(mContext, obdStatusLive, TYPE_BT, this);
         break;
-      case PreferenceTypes.V_OBD_WIFI:
+      case TYPE_WIFI:
       default:
-        mOBDManager = ObdManager.get(mContext, ObdManager.TYPE_WIFI, this);
+        mOBDManager = ObdManager.get(mContext, obdStatusLive, TYPE_WIFI, this);
         break;
     }
     EventBus.register(mOBDManager);
@@ -379,7 +379,9 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
           double dist = ComputingDistance
               .distanceBetween(mPreviousLocation.getLongitude(), mPreviousLocation.getLatitude(), mActualLocation.getLongitude(),
                                mActualLocation.getLatitude());
-          takeSnapshot(mActualLocation, dist);
+          Log.d(TAG, "onPhotoCommand: dist = " + dist);
+          Log.d(TAG, "onPhotoCommand: prev = " + mPreviousLocation + " current = " + mActualLocation);
+          takeSnapshot(dist);
         } catch (Exception e) {
           Log.d(TAG, "takePhoto: " + Log.getStackTraceString(e));
         }
@@ -393,7 +395,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
 
   @Subscribe(threadMode = ThreadMode.BACKGROUND)
   public void noSubscriber(NoSubscriberEvent event) {
-
+    //this method receives these events so, but it should be ignored
   }
 
   private void onImageSaved(boolean success, LocalSequence sequence, Location location) {
@@ -405,7 +407,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
   }
 
   @Override
-  public void takeSnapshot(float distance) {
+  public void takeSnapshot(double distance) {
     if (isRecording() && mActualLocation != null && mActualLocation.getLatitude() != 0 && mActualLocation.getLongitude() != 0) {
       takeSnapshot(mActualLocation, distance);
       mPreviousLocation = mActualLocation;
@@ -413,16 +415,14 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
   }
 
   public void startRecording() {
-    if (mUploadManager != null && mUploadManager.isUploading()) {
-      mThreadPoolExec.execute(() -> mUploadManager.cancelUploadTasks());
-    }
+    mThreadPoolExec.execute(() -> EventBus.post(new UploadCancelCommand()));
     mThreadPoolExec.execute(() -> {
 
       mCameraIdle = true;
       recording = true;
-      mSafe = appPrefs.getBooleanPreference(PreferenceTypes.K_SAFE_MODE_ENABLED, false);
-      mSequence = SequenceDB.instance.createNewSequence(mContext, -1, -1, false //no 360 cam yet
-          , appPrefs.getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE), OSVApplication.VERSION_NAME, false, mSafe);
+      mSafe = appPrefs.isSafeMode();
+      mSequence = sequenceDB.createNewSequence(mContext,
+                                               appPrefs.isUsingExternalStorage(), OSVApplication.VERSION_NAME, false, mSafe);
       if (mSequence == null) {
         mHandler.post(() -> Toast.makeText(mContext, R.string.filesystem_error_message, Toast.LENGTH_LONG).show());
         recording = false;
@@ -437,8 +437,8 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
       if (!mSafe) {
         try {
           ffmpeg = new FFMPEG(() -> {
-            int value = appPrefs.getIntPreference(PreferenceTypes.K_FFMPEG_CRASH_COUNTER);
-            appPrefs.saveIntPreference(PreferenceTypes.K_FFMPEG_CRASH_COUNTER, value + 1);
+            int value = appPrefs.getFfmpegCrashCounter();
+            appPrefs.setFfmpegCrashCounter(value + 1);
             Log.d(TAG, "onError: FFMPEG crashed, counter is at " + (value + 1));
           });
         } catch (ExceptionInInitializerError e) {
@@ -460,6 +460,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
         try {
           ret = ffmpeg.initial(mSequence.getFolder().getPath() + "/");
         } catch (Exception ignored) {
+          Log.d(TAG, Log.getStackTraceString(ignored));
         }
         if (ret != 0) {
           Log.e(TAG, "startRecording: could not create video file");
@@ -507,8 +508,8 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
     final LocalSequence finalSequence = mSequence;
     EventBus.clear(RecordingEvent.class);
     Runnable runnable = () -> {
-      if (mSequence != null && SequenceDB.instance.getNumberOfFrames(mSequence.getId()) <= 0) {
-        SequenceDB.instance.deleteRecords(mSequence.getId());
+      if (mSequence != null && sequenceDB.getNumberOfFrames(mSequence.getId()) <= 0) {
+        sequenceDB.deleteRecords(mSequence.getId());
         if (mSequence.getFolder() != null) {
           mSequence.getFolder().delete();
         }
@@ -517,10 +518,10 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
         mIndex = 0;
       }
       if (finalSequence != null) {
-        SequenceDB.instance.updateSequenceFrameCount(finalSequence.getId());
+        sequenceDB.updateSequenceFrameCount(finalSequence.getId());
         finalSequence.refreshStats();
         if (Fabric.isInitialized()) {
-          int userType = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
+          int userType = appPrefs.getUserType();
           if (Fabric.isInitialized()) {
             try {
               Answers.getInstance().logCustom(new CustomEvent("Recorded track").putCustomAttribute("images", finalSequence.getFrameCount())
@@ -528,6 +529,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
                                                   .putCustomAttribute("userType", userType)
                                                   .putCustomAttribute("length", finalSequence.getDistance()));
             } catch (Exception ignored) {
+              Log.d(TAG, Log.getStackTraceString(ignored));
             }
           }
         }
@@ -540,14 +542,14 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
         }
       }
 
-      if (!appPrefs.getBooleanPreference(PreferenceTypes.K_FOCUS_MODE_STATIC)) {
+      if (!appPrefs.isStaticFocus()) {
         mCameraManager.unlockFocus();
       }
       if (finalSequence == null) {
         EventBus.post(new RecordingEvent(null, false));
         return;
       }
-      if (SequenceDB.instance.getNumberOfFrames(finalSequence.getId()) <= 0) {
+      if (sequenceDB.getNumberOfFrames(finalSequence.getId()) <= 0) {
         LocalSequence.deleteSequence(finalSequence.getId());
         if (finalSequence.getFolder() != null) {
           finalSequence.getFolder().delete();
@@ -561,7 +563,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
         Crashlytics.setBool(Log.RECORD_STATUS, false);
       }
       EventBus.post(new RecordingEvent(finalSequence, false));
-      UploadManager.scheduleAutoUpload(mContext);
+      UploadJobService.scheduleAutoUpload(mContext, appPrefs);
     };
     if (synchronously) {
       runnable.run();
@@ -601,7 +603,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
       mSequence.setTotalLength(mSequence.getTotalLength() + dist);
       if (mIndex == 0) {
         mSequence.setLocation(new SKCoordinate(location.getLatitude(), location.getLongitude()));
-        SequenceDB.instance.updateSequenceLocation(mSequence.getId(), location.getLatitude(), location.getLongitude());
+        sequenceDB.updateSequenceLocation(mSequence.getId(), location.getLatitude(), location.getLongitude());
       }
       mOrientation = (int) Math.toDegrees(SensorManager.mHeadingValues[0]);
       long timestamp = System.currentTimeMillis();
@@ -613,19 +615,16 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
                          final int orientation, final long timestamp) {
     Log.d(TAG, "saveFrame: posting frame data to handler");
 
-    if (mUploadManager != null && mUploadManager.isUploading()) {
-      mThreadPoolExec.execute(() -> mUploadManager.cancelUploadTasks());
-    }
+    mThreadPoolExec.execute(() -> EventBus.post(new UploadCancelCommand()));
     mThreadPoolExec.execute(() -> {
-      int available = (int) Utils.getAvailableSpace(mContext);
+      int available = (int) Utils.getAvailableSpace(mContext, appPrefs);
       Log.d(TAG, "saveFrame: entered data handler");
       if (available <= MIN_FREE_SPACE) {
         mHandler.post(() -> {
           boolean needToRestart = false;
           try {
             if (Utils.checkSDCard(mContext)) {
-              appPrefs.saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE,
-                                             !appPrefs.getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE));
+              appPrefs.setUsingExternalStorage(!appPrefs.isUsingExternalStorage());
               needToRestart = true;
               Toast.makeText(mContext, R.string.reached_current_storage_limit_message, Toast.LENGTH_LONG).show();
             } else {
@@ -652,7 +651,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
         if (folderPath != null) {
           path = folderPath + "/" + mIndex + ".jpg";
         } else {
-          String folder = Utils.generateOSVFolder(mContext).getPath() + "/SEQ_" + sequenceId;
+          String folder = Utils.generateOSVFolder(mContext, appPrefs).getPath() + "/SEQ_" + sequenceId;
           path = folder + "/" + mIndex + ".jpg";
           if (mSequence == null) {
             mSequence = new LocalSequence(new OSVFile(folder));
@@ -670,7 +669,7 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
           Log.v(TAG, "Saved JPEG data : " + jpg.getName() + ", size: " + ((float) jpg.length()) / 1024f / 1024f + " mb");
 
           try {
-            SequenceDB.instance
+            sequenceDB
                 .insertPhoto(sequenceId, -1, mIndex, jpg.getPath(), location.getLatitude(), location.getLongitude(), location.getAccuracy(),
                              orientation);
 
@@ -695,9 +694,6 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
         Log.d(TAG, "saveFrame: encoding done in " + (System.currentTimeMillis() - time) +
             " ms ,  video file " + ret[0] + " and frame " + ret[1]);
         if (ret[0] < 0 || ret[1] < 0) {
-          //                    synchronized (shutterSynObject) {
-          //                        mIndex--;
-          //                    }
           onImageSaved(false, mSequence, location);
           if (ret[0] < 0) {
             mHandler.post(() -> Toast.makeText(mContext, R.string.encoding_error_message, Toast.LENGTH_SHORT).show());
@@ -711,14 +707,14 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
         SensorManager.logSensorData(new SensorData(mIndex, mVideoIndexF, timestamp));
         SensorManager.flushToDisk();
         try {
-          SequenceDB.instance.insertVideoIfNotAdded(sequenceId, mVideoIndexF, folderPath + "/" + mVideoIndexF + ".mp4");
+          sequenceDB.insertVideoIfNotAdded(sequenceId, mVideoIndexF, folderPath + "/" + mVideoIndexF + ".mp4");
         } catch (Exception ignored) {
+          Log.d(TAG, Log.getStackTraceString(ignored));
         }
 
         try {
-          SequenceDB.instance
-              .insertPhoto(sequenceId, mVideoIndexF, mIndex, folderPath + "/" + mVideoIndexF + ".mp4", location.getLatitude(),
-                           location.getLongitude(), location.getAccuracy(), orientation);
+          sequenceDB.insertPhoto(sequenceId, mVideoIndexF, mIndex, folderPath + "/" + mVideoIndexF + ".mp4", location.getLatitude(),
+                                 location.getLongitude(), location.getAccuracy(), orientation);
           synchronized (shutterSynObject) {
             mIndex++;
           }
@@ -737,10 +733,6 @@ public class Recorder implements ObdManager.ConnectionListener, LocationManager.
       mSequence.setFrameCount(mSequence.getFrameCount() + 1);
       onImageSaved(true, mSequence, location);
     });
-  }
-
-  public List<Size> getSupportedPicturesSizes() {
-    return mCameraManager.getSupportedPictureSizes();
   }
 
   public void forceCloseCamera() {

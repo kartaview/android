@@ -1,6 +1,7 @@
 package com.telenav.osv.manager.network.encoder;
 
 import com.telenav.osv.item.ScoreHistory;
+import com.telenav.osv.utils.Log;
 import java.util.HashMap;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,6 +11,8 @@ import org.json.JSONObject;
  * Created by kalmanb on 8/3/17.
  */
 public class ScoreJsonEncoder {
+
+  private static final String TAG = "ScoreJsonEncoder";
 
   public static String encode(HashMap<Integer, ScoreHistory> histories) {
 
@@ -22,7 +25,7 @@ public class ScoreJsonEncoder {
         obj.put("obdPhoto", "" + history.obdPhotoCount);
         obj.put("detectedSigns", "" + history.detectedSigns);
       } catch (JSONException e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       }
       array.put(obj);
     }

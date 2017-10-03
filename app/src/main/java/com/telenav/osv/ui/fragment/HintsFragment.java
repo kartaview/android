@@ -8,8 +8,8 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.matthewtamlin.dotindicator.DotIndicator;
 import com.telenav.osv.R;
@@ -108,7 +108,7 @@ public class HintsFragment extends OSVFragment {
     /**
      * The fragments used in the pager
      */
-    ArrayList<FrameLayout> views = new ArrayList<>();
+    ArrayList<LinearLayout> views = new ArrayList<>();
 
     ArrayList<Integer> colors = new ArrayList<>();
 
@@ -147,15 +147,13 @@ public class HintsFragment extends OSVFragment {
 
     void populate(boolean portrait) {
       views.clear();
-      //            long seed = System.nanoTime();
-      //            Collections.shuffle(hints, new Random(seed));
       TextView viewTitleHint;
       TextView viewHintDescription;
-      FrameLayout frameLayout;
-      FrameLayout landscape = null;
+      LinearLayout layout;
+      LinearLayout landscape = null;
       int numberOfItems;
       if (portrait) {
-        landscape = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
+        landscape = (LinearLayout) mInflater.inflate(R.layout.item_hint_text, null);
         landscape.setBackgroundColor(activity.getResources().getColor(colors.get((views.size() + 1) % colors.size())));
         viewTitleHint = landscape.findViewById(R.id.title_hint_text_vertical);
         viewTitleHint.setText(R.string.hint_landscape_label);
@@ -170,13 +168,13 @@ public class HintsFragment extends OSVFragment {
         if (i == 1 && landscape != null) {
           views.add(landscape);
         }
-        frameLayout = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
-        frameLayout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
-        viewTitleHint = frameLayout.findViewById(R.id.title_hint_text_vertical);
-        viewHintDescription = frameLayout.findViewById(R.id.hint_text_vertical);
+        layout = (LinearLayout) mInflater.inflate(R.layout.item_hint_text, null);
+        layout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
+        viewTitleHint = layout.findViewById(R.id.title_hint_text_vertical);
+        viewHintDescription = layout.findViewById(R.id.hint_text_vertical);
         viewTitleHint.setText(hint[0]);
         viewHintDescription.setText(hint[1]);
-        views.add(frameLayout);
+        views.add(layout);
         i++;
       }
       hintIndicator.setNumberOfItems(numberOfItems);

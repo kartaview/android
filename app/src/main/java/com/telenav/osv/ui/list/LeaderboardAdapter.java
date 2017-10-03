@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.application.ValueFormatter;
 import com.telenav.osv.item.LeaderboardData;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
@@ -32,6 +33,8 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
   private static final String TAG = "LeaderboardAdapter";
 
+  private final ValueFormatter valueFormatter;
+
   private List<LeaderboardData> mUserList;
 
   private MainActivity activity;
@@ -42,10 +45,11 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
   private int lastPosition = 0;
 
-  public LeaderboardAdapter(List<LeaderboardData> results, MainActivity activity) {
+  public LeaderboardAdapter(List<LeaderboardData> results, MainActivity activity, ValueFormatter valueFormatter) {
     mUserList = results;
     this.activity = activity;
     mInternetAvailable = Utils.isInternetAvailable(this.activity);
+    this.valueFormatter = valueFormatter;
   }
 
   public void setOnline(boolean online) {
@@ -82,7 +86,7 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         final LeaderboardData leaderboardData = mUserList.get(Math.min(position - 1, mUserList.size() - 1));
         userHolder.nameText.setText(leaderboardData.getName());
         userHolder.rankText.setText("" + leaderboardData.getRank());
-        userHolder.pointsText.setText(Utils.formatNumber(leaderboardData.getPoints()));
+        userHolder.pointsText.setText(valueFormatter.formatNumber(leaderboardData.getPoints()));
         if (mUserPosition == position) {
           userHolder.itemView.setBackgroundColor(activity.getResources().getColor(R.color.leaderboard_green));
           userHolder.nameText.setTextColor(Color.WHITE);
@@ -98,7 +102,7 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
       }
       holder.itemView.setBackgroundColor(activity.getResources().getColor(position % 2 == 0 ? R.color.leaderboard_grey : R.color.white));
     } catch (Exception e) {
-      e.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(e));
     }
 
     setAnimation(holder.itemView, position);

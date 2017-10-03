@@ -6,5 +6,5 @@ package com.telenav.osv.listener;
  */
 public interface ShutterListener {
 
-  void takeSnapshot(float distance);
+  void takeSnapshot(double distance);
 }

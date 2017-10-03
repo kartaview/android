@@ -1,7 +1,6 @@
 package com.telenav.osv.ui.fragment;
 
 import android.app.Dialog;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,33 +13,32 @@ import android.view.ViewGroup;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import com.telenav.osv.R;
-import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.data.Preferences;
+import com.telenav.osv.di.Injectable;
+import javax.inject.Inject;
+
+import static com.telenav.osv.manager.obd.ObdManager.TYPE_BLE;
+import static com.telenav.osv.manager.obd.ObdManager.TYPE_BT;
+import static com.telenav.osv.manager.obd.ObdManager.TYPE_WIFI;
 
 /**
+ * obd type selection dialog
  * Created by Kalman on 21/06/16.
  */
+public class OBDDialogFragment extends DialogFragment implements View.OnClickListener, Injectable {
 
-public class OBDDialogFragment extends DialogFragment implements View.OnClickListener {
+  public static final String TAG = OBDDialogFragment.class.getSimpleName();
 
-  public final static String TAG = OBDDialogFragment.class.getSimpleName();
+  /**
+   * shared preferences
+   */
+  @Inject
+  Preferences preferences;
 
   /**
    * the view of the fragment
    */
   private View root;
-
-  /**
-   * shared preferences
-   */
-  private ApplicationPreferences preferences;
-
-  private MainActivity mActivity;
-
-  private RadioGroup mRadioGroup;
-
-  private TextView okTextView;
 
   private int obdSelected = -1;
 
@@ -59,8 +57,6 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     root = inflater.inflate(R.layout.fragment_obd_list, container, false);
-    mActivity = (MainActivity) getActivity();
-    preferences = mActivity.getApp().getAppPrefs();
 
     return root;
   }
@@ -68,7 +64,7 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    okTextView = view.findViewById(R.id.ok_button_selection_obd);
+    TextView okTextView = view.findViewById(R.id.ok_button_selection_obd);
     okTextView.setOnClickListener(this);
     okTextView.setVisibility(View.VISIBLE);
     initViews();
@@ -78,21 +74,18 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
    * Initialize the view from the fragment
    */
   private void initViews() {
-    mRadioGroup = root.findViewById(R.id.obd_radio_group);
-    int type = preferences.getIntPreference(PreferenceTypes.K_OBD_TYPE);
+    RadioGroup mRadioGroup = root.findViewById(R.id.obd_radio_group);
+    int type = preferences.getObdType();
     switch (type) {
-      case PreferenceTypes.V_OBD_WIFI:
+      case TYPE_WIFI:
         mRadioGroup.check(R.id.obd_radio_wifi);
         break;
-      case PreferenceTypes.V_OBD_BLE:
+      case TYPE_BLE:
         mRadioGroup.check(R.id.obd_radio_ble);
         break;
-      case PreferenceTypes.V_OBD_BT:
+      case TYPE_BT:
         mRadioGroup.check(R.id.obd_radio_bt);
         break;
-    }
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-      mRadioGroup.findViewById(R.id.obd_radio_ble).setVisibility(View.GONE);
     }
     mRadioGroup.setOnCheckedChangeListener((group, checkedId) -> obdSelected = checkedId);
   }
@@ -102,13 +95,13 @@ public class OBDDialogFragment extends DialogFragment implements View.OnClickLis
     if (obdSelected != -1) {
       switch (obdSelected) {
         case R.id.obd_radio_wifi:
-          typeSelectedListener.onTypeSelected(PreferenceTypes.V_OBD_WIFI);
+          typeSelectedListener.onTypeSelected(TYPE_WIFI);
           break;
         case R.id.obd_radio_ble:
-          typeSelectedListener.onTypeSelected(PreferenceTypes.V_OBD_BLE);
+          typeSelectedListener.onTypeSelected(TYPE_BLE);
           break;
         case R.id.obd_radio_bt:
-          typeSelectedListener.onTypeSelected(PreferenceTypes.V_OBD_BT);
+          typeSelectedListener.onTypeSelected(TYPE_BT);
           break;
       }
     }

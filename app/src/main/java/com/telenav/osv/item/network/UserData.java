@@ -6,6 +6,18 @@ package com.telenav.osv.item.network;
  */
 public class UserData extends ApiResponse {
 
+  public static final int TYPE_UNKNOWN = -1;
+
+  public static final int TYPE_CONTRIBUTOR = 0;
+
+  public static final int TYPE_QA = 1;
+
+  public static final int TYPE_DEDICATED = 2;
+
+  public static final int TYPE_BYOD = 3;
+
+  public static final int TYPE_BAU = 4;
+
   private String userId;
 
   private String userName;
@@ -41,6 +53,12 @@ public class UserData extends ApiResponse {
   private int regionRank;
 
   private String displayName;
+
+  public static boolean isDriver(int type) {
+    return type == TYPE_BYOD ||
+        type == TYPE_BAU ||
+        type == TYPE_DEDICATED;
+  }
 
   public String getUserId() {
     return userId;
@@ -98,7 +116,7 @@ public class UserData extends ApiResponse {
     this.totalDistance = totalDistance;
   }
 
-  public double getObdDistance() {
+  public double getTotalObdDistance() {
     return obdDistance;
   }
 

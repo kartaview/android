@@ -114,25 +114,6 @@
       android:orientation="vertical"
       android:tag="bottom|start"
       >
-    <TextView
-        android:id="@+id/debug_speed_text"
-        style="@style/textStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="0 km/h"
-        android:textColor="@color/accent_material_dark_1"
-        android:visibility="gone"
-        />
-    <TextView
-        android:id="@+id/debug_distance_text"
-        style="@style/textStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        tools:text="0 m"
-        android:textColor="@color/accent_material_dark_1"
-        android:visibility="gone"
-        />
   </LinearLayout>
   <ImageView
       android:layout_width="90dp"

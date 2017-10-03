@@ -5,11 +5,12 @@ import android.support.annotation.AnimatorRes;
 import android.support.v4.app.Fragment;
 import android.view.View;
 import com.telenav.osv.R;
+import com.telenav.osv.di.Injectable;
 
 /**
  * Created by kalmanb on 8/9/17.
  */
-public abstract class OSVFragment extends Fragment {
+public abstract class OSVFragment extends Fragment implements Injectable {
 
   public void cancelAction() {
 

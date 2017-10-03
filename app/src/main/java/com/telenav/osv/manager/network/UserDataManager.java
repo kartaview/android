@@ -1,15 +1,13 @@
 package com.telenav.osv.manager.network;
 
+import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.SharedPreferences;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
 import com.telenav.osv.R;
-import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.event.EventBus;
-import com.telenav.osv.event.network.LoginChangedEvent;
+import com.telenav.osv.data.ProfilePreferences;
 import com.telenav.osv.http.DeleteSequenceRequest;
 import com.telenav.osv.http.DriverProfileRequest;
 import com.telenav.osv.http.LeaderboardRequest;
@@ -26,6 +24,8 @@ import com.telenav.osv.item.network.PhotoCollection;
 import com.telenav.osv.item.network.TrackCollection;
 import com.telenav.osv.item.network.UserCollection;
 import com.telenav.osv.item.network.UserData;
+import com.telenav.osv.item.view.profile.DriverProfileData;
+import com.telenav.osv.item.view.profile.StatisticsData;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.listener.network.OsvRequestResponseListener;
 import com.telenav.osv.manager.network.parser.DriverDataParser;
@@ -38,9 +38,9 @@ import com.telenav.osv.manager.network.parser.TrackCollectionParser;
 import com.telenav.osv.manager.network.parser.UserDataParser;
 import com.telenav.osv.ui.fragment.ProfileFragment;
 import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Utils;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import javax.inject.Inject;
+
+import static com.telenav.osv.data.Preferences.URL_ENV;
 
 /**
  * *
@@ -48,18 +48,6 @@ import org.greenrobot.eventbus.ThreadMode;
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class UserDataManager extends NetworkManager implements Response.ErrorListener {
-
-  public static final String SERVER_STATUS_UPLOADING = "NEW";
-
-  public static final String SERVER_STATUS_UPLOADED = "UPLOAD_FINISHED";
-
-  public static final String SERVER_STATUS_PROCESSED = "PROCESSING_FINISHED";
-
-  public static final String SERVER_STATUS_APPROVED = "APPROVED";
-
-  public static final String SERVER_STATUS_REJECTED = "REJECTED";
-
-  public static final String SERVER_STATUS_TBD = "TBD";
 
   private static final String TAG = "UserDataManager";
 
@@ -118,6 +106,12 @@ public class UserDataManager extends NetworkManager implements Response.ErrorLis
    */
   private static String URL_LEADERBOARD = "http://" + "&&" + "gm-leaderboard";
 
+  private final MutableLiveData<DriverProfileData> mDriverProfileData;
+
+  private final MutableLiveData<StatisticsData> mDriverStatsData;
+
+  private final ProfilePreferences profilePrefs;
+
   private UserDataParser mUserDataParser = new UserDataParser();
 
   private DriverDataParser mDriverDataParser = new DriverDataParser();
@@ -134,16 +128,17 @@ public class UserDataManager extends NetworkManager implements Response.ErrorLis
 
   private HttpResponseParser mHttpResponseParser = new HttpResponseParser();
 
-  public UserDataManager(Context context) {
-    super(context);
-    setEnvironment();
-    EventBus.register(this);
-    VolleyLog.DEBUG = Utils.isDebugEnabled(mContext);
+  @Inject
+  public UserDataManager(Context context, ProfilePreferences prefs, MutableLiveData<DriverProfileData> driverData,
+                         MutableLiveData<StatisticsData> statsData) {
+    super(context, prefs);
+    this.profilePrefs = prefs;
+    this.mDriverProfileData = driverData;
+    this.mDriverStatsData = statsData;
   }
 
   @Override
-  protected void setEnvironment() {
-    super.setEnvironment();
+  protected void setupUrls() {
     URL_DELETE_SEQUENCE = URL_DELETE_SEQUENCE.replace("&&", URL_ENV[mCurrentServer]);
     URL_LIST_MY_SEQUENCES = URL_LIST_MY_SEQUENCES.replace("&&", URL_ENV[mCurrentServer]);
     URL_LIST_PHOTOS = URL_LIST_PHOTOS.replace("&&", URL_ENV[mCurrentServer]);
@@ -306,15 +301,13 @@ public class UserDataManager extends NetworkManager implements Response.ErrorLis
     try {
       Log.e(TAG, "onErrorResponse" + new String(error.networkResponse.data));
     } catch (Exception e) {
-      e.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(e));
     }
   }
 
   public void getUserProfileDetails(final NetworkResponseDataListener<UserData> listener) {
-    String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-    String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
-
-    if ("".equals(userName) || "".equals(token)) {
+    String userName = appPrefs.getUserName();
+    if (!appPrefs.isLoggedIn()) {
       listener.requestFinished(NetworkResponseDataListener.HTTP_UNAUTHORIZED,
                                mUserDataParser.parse(new VolleyError(mContext.getString(R.string.not_logged_in))));
       return;
@@ -325,7 +318,7 @@ public class UserDataManager extends NetworkManager implements Response.ErrorLis
           @Override
           public void onSuccess(final int status, final UserData userData) {
             runInBackground(() -> {
-              appPrefs.saveIntPreference(PreferenceTypes.K_USER_TYPE, userData.getUserType());
+              appPrefs.setUserType(userData.getUserType());
 
               SharedPreferences prefs = mContext.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
               SharedPreferences.Editor prefsEditor = prefs.edit();
@@ -334,10 +327,10 @@ public class UserDataManager extends NetworkManager implements Response.ErrorLis
               prefsEditor.putInt(ProfileFragment.K_LEVEL, userData.getLevel());
               prefsEditor.putInt(ProfileFragment.K_XP_PROGRESS, userData.getLevelProgress());
               prefsEditor.putInt(ProfileFragment.K_XP_TARGET, userData.getLevelTarget());
-              prefsEditor.putString(ProfileFragment.K_TOTAL_PHOTOS, Utils.formatNumber(userData.getTotalPhotos()));
-              prefsEditor.putString(ProfileFragment.K_TOTAL_TRACKS, Utils.formatNumber(userData.getTotalTracks()));
-              prefsEditor.putString(ProfileFragment.K_TOTAL_DISTANCE, "" + userData.getTotalDistance());
-              prefsEditor.putString(ProfileFragment.K_OBD_DISTANCE, "" + userData.getObdDistance());
+              prefsEditor.putInt(ProfileFragment.K_TOTAL_PHOTOS, (int) userData.getTotalPhotos());
+              prefsEditor.putInt(ProfileFragment.K_TOTAL_TRACKS, (int) userData.getTotalTracks());
+              prefsEditor.putFloat(ProfileFragment.K_TOTAL_DISTANCE, (float) userData.getTotalDistance());
+              prefsEditor.putFloat(ProfileFragment.K_OBD_DISTANCE, (float) userData.getTotalObdDistance());
               prefsEditor.apply();
               listener.requestFinished(status, userData);
               Log.d(TAG, "getUserProfileDetails: success");
@@ -357,64 +350,103 @@ public class UserDataManager extends NetworkManager implements Response.ErrorLis
   }
 
   public void getDriverProfileDetails(final NetworkResponseDataListener<DriverData> listener) {
-    String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-    String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
-
-    if ("".equals(userName) || "".equals(token)) {
-      listener.requestFinished(NetworkResponseDataListener.HTTP_UNAUTHORIZED,
-                               mDriverDataParser.parse(new VolleyError(mContext.getString(R.string.not_logged_in))));
+    if (!appPrefs.isLoggedIn()) {
+      if (listener != null) {
+        listener.requestFinished(NetworkResponseDataListener.HTTP_UNAUTHORIZED,
+                                 mDriverDataParser.parse(new VolleyError(mContext.getString(R.string.not_logged_in))));
+      }
       return;
     }
-    DriverProfileRequest profileRequest = new DriverProfileRequest(URL_DRIVER_PROFILE_DETAILS,
-                                                                   new OsvRequestResponseListener<DriverDataParser, DriverData>(
-                                                                       mDriverDataParser) {
+    DriverProfileRequest profileRequest =
+        new DriverProfileRequest(
+            URL_DRIVER_PROFILE_DETAILS,
+            new OsvRequestResponseListener<DriverDataParser, DriverData>(
+                mDriverDataParser) {
 
-                                                                     @Override
-                                                                     public void onSuccess(final int status, final DriverData driverData) {
-                                                                       runInBackground(() -> {
-                                                                         SharedPreferences prefs = mContext
-                                                                             .getSharedPreferences(ProfileFragment.PREFS_NAME,
-                                                                                                   Context.MODE_PRIVATE);
-                                                                         SharedPreferences.Editor prefsEditor = prefs.edit();
-                                                                         prefsEditor
-                                                                             .putFloat(ProfileFragment.K_DRIVER_CURRENT_ACCEPTED_DISTANCE,
-                                                                                       (float) driverData.getCurrentAcceptedDistance());
-                                                                         prefsEditor.putFloat(ProfileFragment.K_DRIVER_CURRENT_PAYRATE,
-                                                                                              (float) driverData.getCurrentPayRate());
-                                                                         prefsEditor.putFloat(ProfileFragment.K_DRIVER_CURRENT_VALUE,
-                                                                                              (float) driverData.getCurrentPaymentValue());
-                                                                         prefsEditor
-                                                                             .putFloat(ProfileFragment.K_DRIVER_TOTAL_ACCEPTED_DISTANCE,
-                                                                                       (float) driverData.getTotalAcceptedDistance());
-                                                                         prefsEditor
-                                                                             .putFloat(ProfileFragment.K_DRIVER_TOTAL_REJECTED_DISTANCE,
-                                                                                       (float) driverData.getTotalRejectedDistance());
-                                                                         prefsEditor.putFloat(ProfileFragment.K_DRIVER_TOTAL_OBD_DISTANCE,
-                                                                                              (float) driverData.getTotalObdDistance());
-                                                                         prefsEditor.putFloat(ProfileFragment.K_DRIVER_TRACKS_COUNT,
-                                                                                              (float) driverData.getTotalTracks());
-                                                                         prefsEditor.putFloat(ProfileFragment.K_DRIVER_PHOTOS_COUNT,
-                                                                                              (float) driverData.getTotalPhotos());
-                                                                         prefsEditor.putFloat(ProfileFragment.K_DRIVER_TOTAL_VALUE,
-                                                                                              (float) driverData.getTotalPaidValue());
-                                                                         prefsEditor.putString(ProfileFragment.K_DRIVER_CURRENCY,
-                                                                                               driverData.getCurrency());
-                                                                         prefsEditor.apply();
-                                                                         listener.requestFinished(status, driverData);
-                                                                         Log.d(TAG, "getDriverProfileDetails: success");
-                                                                       });
-                                                                     }
+              @Override
+              public void onSuccess(final int status, final DriverData driverData) {
+                runInBackground(() -> {
+                  cacheToLegacyPrefs(driverData);//todo to be removed in new impl
+                  listener.requestFinished(status, driverData);
 
-                                                                     @Override
-                                                                     public void onFailure(final int status, final DriverData driverData) {
-                                                                       runInBackground(() -> {
-                                                                         listener.requestFailed(status, driverData);
-                                                                         Log.d(TAG, "getDriverProfileDetails: success");
-                                                                       });
-                                                                     }
-                                                                   }, token);
+                  //todo code below only used in new profile fragment impl.
+                  DriverProfileData driverProfileData = mDriverProfileData.getValue();
+                  if (driverProfileData == null) {
+                    driverProfileData = new DriverProfileData();
+                  }
+                  driverProfileData.setCurrency(driverData.getCurrency());
+                  driverProfileData.setCurrentAccepted(driverData.getCurrentAcceptedDistance());
+                  driverProfileData.setValue(driverData.getCurrentPaymentValue());
+                  driverProfileData.setRate(driverData.getCurrentPayRate());
+                  driverProfileData.setPaymentValue(driverData.getTotalPaidValue());
+                  driverProfileData.setName(appPrefs.getUserDisplayName());
+                  driverProfileData.setPhotoUrl(appPrefs.getUserPhotoUrl());
+                  driverProfileData.setUsername(appPrefs.getUserName());
+                  mDriverProfileData.postValue(driverProfileData);
+
+                  StatisticsData driverStatsData = mDriverStatsData.getValue();
+                  if (driverStatsData == null) {
+                    driverStatsData = new StatisticsData();
+                  }
+                  driverStatsData.setAcceptedDistance(driverData.getTotalAcceptedDistance());
+                  driverStatsData.setRejectedDistance(driverData.getTotalRejectedDistance());
+                  driverStatsData.setObdDistance(driverData.getTotalObdDistance());
+                  driverStatsData.setTotalPhotos((int) driverData.getTotalPhotos());
+                  driverStatsData.setTotalTracks((int) driverData.getTotalTracks());
+                  mDriverStatsData.postValue(driverStatsData);
+
+                  //cache to new preferences impl.
+                  profilePrefs.setDistance(driverStatsData.getDistance());
+                  profilePrefs.setAcceptedDistance(driverStatsData.getAcceptedDistance());
+                  profilePrefs.setRejectedDistance(driverStatsData.getRejectedDistance());
+                  profilePrefs.setObdDistance(driverStatsData.getObdDistance());
+                  profilePrefs.setPhotosCount(driverStatsData.getTotalPhotos());
+                  profilePrefs.setTracksCount(driverStatsData.getTotalTracks());
+                  Log.d(TAG, "getDriverProfileDetails: success");
+                });
+              }
+
+              @Override
+              public void onFailure(final int status, final DriverData driverData) {
+                runInBackground(() -> {
+                  listener.requestFailed(status, driverData);
+                  Log.d(TAG, "getDriverProfileDetails: success");
+                });
+              }
+            }, getAccessToken());
     profileRequest.setShouldCache(false);
     mQueue.add(profileRequest);
+  }
+
+  private void cacheToLegacyPrefs(DriverData driverData) {
+    SharedPreferences prefs = mContext
+        .getSharedPreferences(ProfileFragment.PREFS_NAME,
+                              Context.MODE_PRIVATE);
+    SharedPreferences.Editor prefsEditor = prefs.edit();
+    prefsEditor
+        .putFloat(ProfileFragment.K_DRIVER_CURRENT_ACCEPTED_DISTANCE,
+                  (float) driverData.getCurrentAcceptedDistance());
+    prefsEditor.putFloat(ProfileFragment.K_DRIVER_CURRENT_PAYRATE,
+                         (float) driverData.getCurrentPayRate());
+    prefsEditor.putFloat(ProfileFragment.K_DRIVER_CURRENT_VALUE,
+                         (float) driverData.getCurrentPaymentValue());
+    prefsEditor
+        .putFloat(ProfileFragment.K_DRIVER_TOTAL_ACCEPTED_DISTANCE,
+                  (float) driverData.getTotalAcceptedDistance());
+    prefsEditor
+        .putFloat(ProfileFragment.K_DRIVER_TOTAL_REJECTED_DISTANCE,
+                  (float) driverData.getTotalRejectedDistance());
+    prefsEditor.putFloat(ProfileFragment.K_DRIVER_TOTAL_OBD_DISTANCE,
+                         (float) driverData.getTotalObdDistance());
+    prefsEditor.putFloat(ProfileFragment.K_DRIVER_TRACKS_COUNT,
+                         (float) driverData.getTotalTracks());
+    prefsEditor.putFloat(ProfileFragment.K_DRIVER_PHOTOS_COUNT,
+                         (float) driverData.getTotalPhotos());
+    prefsEditor.putFloat(ProfileFragment.K_DRIVER_TOTAL_VALUE,
+                         (float) driverData.getTotalPaidValue());
+    prefsEditor.putString(ProfileFragment.K_DRIVER_CURRENCY,
+                          driverData.getCurrency());
+    prefsEditor.apply();
   }
 
   public void getLeaderboardData(final NetworkResponseDataListener<UserCollection> listener, String date, String countryCode) {
@@ -479,10 +511,5 @@ public class UserDataManager extends NetworkManager implements Response.ErrorLis
     Log.d(TAG, "cancelListTasks: cancelled map list tasks and listSegments");
     ListRequestFilter listFilter = new ListRequestFilter();
     mQueue.cancelAll(listFilter);
-  }
-
-  @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
-  public void onLoginChanged(LoginChangedEvent event) {
-    mAccessToken = null;
   }
 }

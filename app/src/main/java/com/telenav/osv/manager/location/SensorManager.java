@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.zip.GZIPOutputStream;
+import javax.inject.Inject;
 
 @SuppressWarnings({"MissingPermission", "ResultOfMethodCallIgnored"})
 public class SensorManager implements SensorEventListener, LocationListener {
@@ -58,6 +59,7 @@ public class SensorManager implements SensorEventListener, LocationListener {
 
   private OSVFile mLogFile;
 
+  @Inject
   public SensorManager(Context context) {
     // get sensorManager and initialise sensor listeners
     mSensorManager = (android.hardware.SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -84,13 +86,13 @@ public class SensorManager implements SensorEventListener, LocationListener {
           result = new StringBuilder();
         }
       }
-      //        Log.d(TAG, "flushToDisk: flushing " + size);
       if (result.length() > 0) {
         appendLog(result.toString());
       }
       try {
         mOutputStream.flush();
       } catch (Exception ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
       }
     });
   }
@@ -99,6 +101,7 @@ public class SensorManager implements SensorEventListener, LocationListener {
     try {
       mOutputStream.write(string.getBytes());
     } catch (IOException ignored) {
+      Log.d(TAG, Log.getStackTraceString(ignored));
     } catch (Exception e) {
       Log.w(TAG, "compress: " + Log.getStackTraceString(e));
     }
@@ -122,10 +125,11 @@ public class SensorManager implements SensorEventListener, LocationListener {
           try {
             mOutputStream.flush();
           } catch (IllegalStateException ignored) {
+            Log.d(TAG, Log.getStackTraceString(ignored));
           }
           mOutputStream.close();
         } catch (IOException e) {
-          e.printStackTrace();
+          Log.d(TAG, Log.getStackTraceString(e));
         }
       }
       zipLog();
@@ -137,10 +141,14 @@ public class SensorManager implements SensorEventListener, LocationListener {
       OSVFile zipFile = new OSVFile(sSequence, "track.txt.gz");
       OSVFile txtFile = new OSVFile(sSequence, "track.txt");
       if (txtFile.exists()) {
+
+        FileInputStream is = null;
+        FileOutputStream os = null;
+        GZIPOutputStream zip = null;
         try {
-          FileInputStream is = new FileInputStream(txtFile);
-          FileOutputStream os = new FileOutputStream(zipFile);
-          GZIPOutputStream zip = new GZIPOutputStream(os);
+          is = new FileInputStream(txtFile);
+          os = new FileOutputStream(zipFile);
+          zip = new GZIPOutputStream(os);
 
           byte[] buffer = new byte[1024];
           int len;
@@ -156,6 +164,28 @@ public class SensorManager implements SensorEventListener, LocationListener {
           }
         } catch (IOException e) {
           Log.w(TAG, "zipLog: " + Log.getStackTraceString(e));
+        } finally {
+          if (is != null) {
+            try {
+              is.close();
+            } catch (IOException e) {
+              Log.d(TAG, "zipLog: " + Log.getStackTraceString(e));
+            }
+          }
+          if (os != null) {
+            try {
+              os.close();
+            } catch (IOException e) {
+              Log.d(TAG, "zipLog: " + Log.getStackTraceString(e));
+            }
+          }
+          if (zip != null) {
+            try {
+              zip.close();
+            } catch (IOException e) {
+              Log.d(TAG, "zipLog: " + Log.getStackTraceString(e));
+            }
+          }
         }
       }
     }
@@ -166,6 +196,7 @@ public class SensorManager implements SensorEventListener, LocationListener {
     try {
       mLocationService.removeUpdates(this);
     } catch (SecurityException ignored) {
+      Log.d(TAG, Log.getStackTraceString(ignored));
     }
     flushToDisk();
     finishLog();
@@ -194,7 +225,7 @@ public class SensorManager implements SensorEventListener, LocationListener {
       try {
         mOutputStream = new FileOutputStream(mLogFile, true);
       } catch (Exception e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       }
       appendLog(Build.MANUFACTURER + " " + Build.MODEL + ";" + Build.VERSION.RELEASE + ";" + SENSOR_FORMAT_VERSION + ";" +
                     OSVApplication.VERSION_NAME + ";" + (safe ? "photo" : "video") + LINE_SEPARATOR);
@@ -210,11 +241,8 @@ public class SensorManager implements SensorEventListener, LocationListener {
     //        int READING_RATE = android.hardware.SensorManager.SENSOR_DELAY_FASTEST;
     boolean accelerometer = mSensorManager
         .registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), READING_RATE, mBackgroundHandler);
-    boolean gyroscope = false;
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-      gyroscope = mSensorManager
-          .registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR), READING_RATE, mBackgroundHandler);
-    }
+    boolean gyroscope = mSensorManager
+        .registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR), READING_RATE, mBackgroundHandler);
     boolean magnetometer = mSensorManager
         .registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), READING_RATE, mBackgroundHandler);
     boolean pressure =
@@ -231,8 +259,6 @@ public class SensorManager implements SensorEventListener, LocationListener {
   public synchronized void onSensorChanged(SensorEvent event) {
     switch (event.sensor.getType()) {
       case Sensor.TYPE_LINEAR_ACCELERATION:
-        //                Log.d(TAG, "onSensorChanged: accelerometer " + event.values[0] + "     " + event.values[1] + "     " + event
-        // .values[2]);
         logSensorData(new SensorData(SensorData.ACCELEROMETER, event.values, event.timestamp));
         mGravity = event.values;
         break;
@@ -240,11 +266,9 @@ public class SensorManager implements SensorEventListener, LocationListener {
         android.hardware.SensorManager.getRotationMatrixFromVector(mRotationMatrixS, event.values);
         android.hardware.SensorManager.getOrientation(mRotationMatrixS, mOrientationS);
         logSensorData(new SensorData(SensorData.ROTATION, mOrientationS, event.timestamp));
-        //                Log.d(TAG, "onSensorChanged: gyroscope  yaw = " + (-mOrientationS[0]) + "  pitch = " + (-mOrientationS[1]) + "
-        // roll = " + mOrientationS[2]);
+
         break;
       case Sensor.TYPE_MAGNETIC_FIELD:
-        //                Log.d(TAG, "onSensorChanged: magnetometer");
         float[] mGeomagnetic = event.values;
         if (mGravity != null && mGeomagnetic != null) {
           boolean success = android.hardware.SensorManager.getRotationMatrix(mHeadingMatrix, null, mGravity, mGeomagnetic);
@@ -257,20 +281,14 @@ public class SensorManager implements SensorEventListener, LocationListener {
             mHeadingValues[1] = (float) Math.toDegrees(mHeadingValues[1]);
             mHeadingValues[2] = (float) Math.toDegrees(mHeadingValues[2]);
             mHeadingValues[0] = mHeadingValues[0] >= 0 ? mHeadingValues[0] : mHeadingValues[0] + 360;
-            //                        Log.d(TAG, "onSensorChanged: heading azimuth                                    " + (int)
-            // mHeadingValues[0]);
-            //                        Log.d(TAG, "onSensorChanged: heading pitch                      " + (int) mHeadingValues[1]);
-            //                        Log.d(TAG, "onSensorChanged: heading roll    " + (int) mHeadingValues[2]);
-            logSensorData(new SensorData(SensorData.COMPASS, mHeadingValues, event.timestamp));// System.currentTimeMillis()));
+            logSensorData(new SensorData(SensorData.COMPASS, mHeadingValues, event.timestamp));
           }
         }
         break;
       case Sensor.TYPE_PRESSURE:
-        //                Log.d(TAG, "onSensorChanged: pressure " + event.values[0]);
         logSensorData(new SensorData(event.values[0], event.timestamp));
         break;
       case Sensor.TYPE_GRAVITY:
-        //                Log.d(TAG, "onSensorChanged: gravity " + event.values[0] + "     " + event.values[1] + "     " + event.values[2]);
         logSensorData(new SensorData(SensorData.GRAVITY, event.values, event.timestamp));
         break;
     }

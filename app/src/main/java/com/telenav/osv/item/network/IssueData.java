@@ -5,6 +5,9 @@ package com.telenav.osv.item.network;
  */
 public class IssueData extends ApiResponse {
 
+  /**
+   * like sequence id, only for issues
+   */
   private int onlineID;
 
   public int getOnlineID() {

@@ -1,6 +1,7 @@
 .gradle
 .idea
 .DS_Store
+Jenkinsfile
 /build/
 /app/build/
 /bluetoothobd/build/
@@ -10,9 +11,6 @@
 /eventbus/build/
 /ffmpeg/build/
 /volley/build/
-/gradle/
-/gradle/wrapper/
-/gradle/wrapper/*
 /eventbus-test/build/
 /photoview/build/
 /gradle/
@@ -33,3 +31,4 @@ ffmpeg/src/main/jniLibs/x86/include/
 ffmpeg/src/main/jniLibs/x86/bin/
 app/src/main/protogen/
 *.apk
+local.properties

@@ -1,14 +1,12 @@
 package com.telenav.osv.manager.location;
 
+import android.app.Application;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.command.GpsCommand;
+import com.telenav.osv.data.MapPreferences;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -26,7 +24,7 @@ public abstract class LocationManager implements LocationListener, com.google.an
 
   final Context mContext;
 
-  final ApplicationPreferences appPrefs;
+  final MapPreferences appPrefs;
 
   private final LocationQualityChecker mLocationQualityChecker;
 
@@ -34,28 +32,14 @@ public abstract class LocationManager implements LocationListener, com.google.an
 
   private boolean singlePositionRequested;
 
-  LocationManager(Context context, LocationEventListener listener) {
+  LocationManager(Application context, MapPreferences prefs, LocationQualityChecker qualityChecker) {
     mContext = context;
-    appPrefs = ((OSVApplication) context.getApplicationContext()).getAppPrefs();
-    mLocationQualityChecker = new LocationQualityChecker(listener);
+    appPrefs = prefs;
+    mLocationQualityChecker = qualityChecker;
   }
 
-  public static LocationManager get(OSVApplication osvApplication, LocationEventListener listener) {
-    if (isGooglePlaySevices(osvApplication)) {
-      return new GoogleLocationManager(osvApplication, listener);
-    }
-    return new AndroidLocationManager(osvApplication, listener);
-  }
-
-  @SuppressWarnings("deprecation")
-  private static boolean isGooglePlaySevices(final OSVApplication app) {
-    final int googlePlayServicesCheck = GooglePlayServicesUtil.isGooglePlayServicesAvailable(app);
-    switch (googlePlayServicesCheck) {
-      case ConnectionResult.SUCCESS:
-      case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
-        return true;
-    }
-    return false;
+  public void setListener(LocationEventListener listener) {
+    mLocationQualityChecker.setListener(listener);
   }
 
   public abstract void connect();

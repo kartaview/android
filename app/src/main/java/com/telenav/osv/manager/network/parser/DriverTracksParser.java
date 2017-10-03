@@ -67,11 +67,14 @@ public class DriverTracksParser extends ApiResponseParser<TrackCollection> {
             }
           }
           String partialAddress = "";
+          String address = "";
           try {
-            String address = item.getString("address");
+            address = item.getString("address");
             String[] list = address.split(", ");
             partialAddress = list[0] + ", " + list[2];
           } catch (Exception ignored) {
+            Log.d(TAG, ignored.getLocalizedMessage());
+            partialAddress = address;
           }
           String thumbLink = UserDataManager.URL_DOWNLOAD_PHOTO + item.getString("thumb_name");
           double distanceNum = 0;
@@ -80,6 +83,7 @@ public class DriverTracksParser extends ApiResponseParser<TrackCollection> {
               distanceNum = Double.parseDouble(distance);
             }
           } catch (NumberFormatException ignored) {
+            Log.d(TAG, Log.getStackTraceString(ignored));
           }
           DriverOnlineSequence seq =
               new DriverOnlineSequence(id, date, Integer.valueOf(imgNum), partialAddress, thumbLink, obd, platform, platformVersion,
@@ -90,7 +94,7 @@ public class DriverTracksParser extends ApiResponseParser<TrackCollection> {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(e));
     }
     return collectionData;
   }

@@ -1,6 +1,7 @@
 package com.telenav.osv.manager.network.parser;
 
 import com.telenav.osv.item.network.OsmProfileData;
+import com.telenav.osv.utils.Log;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
@@ -14,6 +15,8 @@ import org.w3c.dom.NodeList;
  * Created by kalmanb on 8/3/17.
  */
 public class OsmProfileDataParser {
+
+  private static final String TAG = "OsmProfileDataParser";
 
   public OsmProfileData parse(String xml) {
     OsmProfileData profileData = new OsmProfileData();
@@ -36,7 +39,7 @@ public class OsmProfileDataParser {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(e));
     }
 
     return profileData;

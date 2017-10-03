@@ -7,8 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
@@ -24,11 +22,9 @@ import com.telenav.osv.utils.Utils;
 @SuppressWarnings("SuspiciousNameCombination")
 public class ScoreView extends View {
 
-  public final static String TAG = "ScoreView";
+  private static final int FONT_SIZE_SMALL = 12;
 
-  private final static int FONT_SIZE_SMALL = 12;
-
-  private final static int FONT_SIZE_LARGE = 18;
+  private static final int FONT_SIZE_LARGE = 18;
 
   private static final int STATE_HIDDEN = 1;
 
@@ -134,7 +130,6 @@ public class ScoreView extends View {
   }
 
   @SuppressWarnings("unused")
-  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   public ScoreView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
     super(context, attrs, defStyleAttr, defStyleRes);
     initialize();
@@ -191,14 +186,11 @@ public class ScoreView extends View {
     int textWidth = measureTexts();
     switch (state) {
       case STATE_DOT:
-        //                Log.d(TAG, "getWidthForState: DOT");
         return (int) Utils.dpToPx(getContext(), 48);
       case STATE_EXTENDED:
-        //                Log.d(TAG, "getWidthForState: EXTENDED");
         return textWidth;
-      default:
       case STATE_HIDDEN:
-        //                Log.d(TAG, "getWidthForState: HIDDEN");
+      default:
         return 0;
     }
   }
@@ -208,8 +200,8 @@ public class ScoreView extends View {
       case STATE_DOT:
       case STATE_EXTENDED:
         return (int) Utils.dpToPx(getContext(), 48);
-      default:
       case STATE_HIDDEN:
+      default:
         return 0;
     }
   }
@@ -243,7 +235,6 @@ public class ScoreView extends View {
 
   public void setObdConnected(boolean connected) {
     if (mObdConnected != connected) {
-      //            Log.d(TAG, "setObdConnected: " + connected);
       mObdConnected = connected;
       invalidate();
       onEvent();
@@ -252,7 +243,6 @@ public class ScoreView extends View {
 
   public void setActive(boolean active) {
     if (mActive != active) {
-      //            Log.d(TAG, "setActive: " + active);
       this.mActive = active;
       onEvent();
       invalidate();
@@ -260,7 +250,6 @@ public class ScoreView extends View {
   }
 
   private void onEvent() {
-    //        Log.d(TAG, "onEvent: ");
     if (mCoverageAvailable || mHadCoverage) {
       if (mActive) {
         transitionToState(mState, STATE_EXTENDED);
@@ -319,8 +308,8 @@ public class ScoreView extends View {
   }
 
   private int measureTexts() {
-    mMultiplierText = "" + ((mObdConnected ? 2 : 1) * mMultiplier);
-    mPointsText = mPoints + "";
+    mMultiplierText = String.valueOf((mObdConnected ? 2 : 1) * mMultiplier);
+    mPointsText = String.valueOf(mPoints);
 
     Rect xBounds = new Rect();
     mPaintTextSmall.getTextBounds(mMultiplierPrefix, 0, mMultiplierPrefix.length(), xBounds);
@@ -353,18 +342,15 @@ public class ScoreView extends View {
     mSuffixX = (int) (cursor + ptsBounds.width() / 2f);
 
     cursor = (int) (cursor + ptsBounds.width() + oneDip * 10);
-    //        Log.d(TAG, "measureTexts: width is " + cursor);
     return cursor;
   }
 
   //    ===========================================================================================================================
 
   private void extendAnimation(final Runnable runnable) {
-    //        Log.d(TAG, "extendAnimation: ");
     ResizeAnimation extend =
         new ResizeAnimation(this, getWidthForState(STATE_DOT), getHeightForState(STATE_DOT), getWidthForState(STATE_EXTENDED),
                             getHeightForState(STATE_EXTENDED));
-    //        extend.setFillAfter(true);
     extend.setAnimationListener(new AnimationListener() {
 
       @Override
@@ -380,12 +366,10 @@ public class ScoreView extends View {
   }
 
   private void retractAnimation(final Runnable endAction) {
-    //        Log.d(TAG, "retractAnimation: ");
 
     ResizeAnimation retract =
         new ResizeAnimation(this, getWidthForState(STATE_EXTENDED), getHeightForState(STATE_EXTENDED), getWidthForState(STATE_DOT),
                             getHeightForState(STATE_DOT));
-    //        retract.setFillAfter(true);
     retract.setAnimationListener(new AnimationListener() {
 
       @Override
@@ -401,10 +385,8 @@ public class ScoreView extends View {
   }
 
   private void appearAnimation(final Runnable endAction) {
-    //        Log.d(TAG, "appearAnimation: to " + mHeight + "x" + mHeight);
     ResizeAnimation animation = new ResizeAnimation(this, 0, 0, getWidthForState(STATE_DOT), getHeightForState(STATE_DOT));
     animation.setDuration(300);
-    //        animation.setFillAfter(true);
     animation.setAnimationListener(new AnimationListener() {
 
       @Override
@@ -422,18 +404,17 @@ public class ScoreView extends View {
   protected void onDraw(Canvas canvas) {
     int width = (int) mWidth;
     int height = (int) mHeight;
-    //        Log.d(TAG, "onDraw: width = " + width + ", height = " + height);
     mOutlineWidth = height / 14.666f;
     mPaintLargeOutline.setStrokeWidth(mOutlineWidth);
     mPaintDotOutline.setStrokeWidth(mOutlineWidth);
     float left = 0;
     float top = 0;
-    float radius = height / 2;
+    float radius = height / 2f;
 
-    float center_y = height / 2;
-    leftArc.set(left, center_y - radius, left + 2 * radius, center_y + radius);
+    float centerY = height / 2f;
+    leftArc.set(left, centerY - radius, left + 2 * radius, centerY + radius);
     rectangle.set(left + radius, top, (float) width - radius, (float) height);
-    rightArc.set((float) width - 2 * radius, center_y - radius, (float) width, center_y + radius);
+    rightArc.set((float) width - 2 * radius, centerY - radius, (float) width, centerY + radius);
 
     canvas.drawRect(rectangle, mPaintLarge);
     canvas.drawArc(rightArc, 270, 180, false, mPaintLarge);
@@ -477,30 +458,24 @@ public class ScoreView extends View {
 
     //Measure Width
     if (widthMode == MeasureSpec.EXACTLY) {
-      //            Log.d(TAG, "onMeasure: width exactly " + widthSize);
       //Must be this size
       width = widthSize;
     } else if (widthMode == MeasureSpec.AT_MOST) {
-      //            Log.d(TAG, "onMeasure: width at most");
       //Can't be bigger than...
       width = Math.min(desiredWidth, widthSize);
     } else {
-      //            Log.d(TAG, "onMeasure: width unspecified");
       //Be whatever you want
       width = desiredWidth;
     }
 
     //Measure Height
     if (heightMode == MeasureSpec.EXACTLY) {
-      //            Log.d(TAG, "onMeasure: height exactly " + heightSize);
       //Must be this size
       height = heightSize;
     } else if (heightMode == MeasureSpec.AT_MOST) {
-      //            Log.d(TAG, "onMeasure: height at most");
       //Can't be bigger than...
       height = Math.min(desiredHeight, heightSize);
     } else {
-      //            Log.d(TAG, "onMeasure: height unspecified");
       //Be whatever you want
       height = desiredHeight;
     }

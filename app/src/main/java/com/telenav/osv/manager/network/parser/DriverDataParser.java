@@ -1,7 +1,7 @@
 package com.telenav.osv.manager.network.parser;
 
 import com.telenav.osv.item.network.DriverData;
-import java.util.Currency;
+import com.telenav.osv.utils.Log;
 import org.json.JSONObject;
 
 /**
@@ -9,6 +9,8 @@ import org.json.JSONObject;
  * Created by kalmanb on 8/1/17.
  */
 public class DriverDataParser extends ApiResponseParser<DriverData> {
+
+  private static final String TAG = "DriverDataParser";
 
   @Override
   public DriverData getHolder() {
@@ -35,10 +37,6 @@ public class DriverDataParser extends ApiResponseParser<DriverData> {
         name = osv.getString("full_name");
         driverData.setDisplayName(name);
         currency = osv.getString("currency");
-        try {
-          currency = Currency.getInstance(currency).getSymbol();
-        } catch (IllegalArgumentException ignored) {
-        }
         driverData.setCurrency(currency);
         totalAccepted = osv.getDouble("total_accepted_distance");
         driverData.setTotalAcceptedDistance(totalAccepted);
@@ -59,7 +57,7 @@ public class DriverDataParser extends ApiResponseParser<DriverData> {
         totalValue = osv.getDouble("total_paid");
         driverData.setTotalPaidValue(totalValue);
       } catch (Exception e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       }
     }
     return driverData;

@@ -1,6 +1,5 @@
 package com.telenav.osv.manager.location;
 
-import android.content.Context;
 import android.location.Location;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.command.BroadcastSegmentsCommand;
@@ -9,12 +8,11 @@ import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.network.matcher.MatchedSegmentEvent;
 import com.telenav.osv.event.network.matcher.ScoreChangedEvent;
-import com.telenav.osv.event.ui.GamificationSettingEvent;
 import com.telenav.osv.item.Segment;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.manager.obd.ObdManager;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
+import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -28,6 +26,8 @@ public class ScoreManager implements PositionMatcher.SegmentsListener {
 
   private final PositionMatcher mPositionMatcher;
 
+  private final SequenceDB mSequenceDB;
+
   private float mPoints;
 
   private Sequence mSequence;
@@ -36,10 +36,26 @@ public class ScoreManager implements PositionMatcher.SegmentsListener {
 
   private boolean mMatchLocations = true;
 
-  public ScoreManager(Context context, boolean enabled) {
-    mEnabled = enabled;
-    mPositionMatcher = new PositionMatcher(context, this);
+  private boolean obdConnected;
+
+  @Inject
+  public ScoreManager(PositionMatcher matcher, SequenceDB db) {
+    mPositionMatcher = matcher;
+    mSequenceDB = db;
+    mPositionMatcher.setListener(this);
     EventBus.register(this);
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.mEnabled = enabled;
+  }
+
+  public boolean isEnabled() {
+    return mEnabled;
+  }
+
+  public void setObdConnected(boolean obdConnected) {
+    this.obdConnected = obdConnected;
   }
 
   public void onPictureTaken(Location location) {
@@ -51,23 +67,23 @@ public class ScoreManager implements PositionMatcher.SegmentsListener {
   }
 
   private void updateScore(Segment matchedSegment, boolean incrementScore) {
-    final boolean obd = ObdManager.isConnected();
+    final boolean obd = obdConnected;
     final int coverage = matchedSegment == null ? -1 : matchedSegment.getPolyline().coverage;
     int cappedCoverage = Math.min(coverage, 10);
     final int seqId = mSequence != null ? mSequence.getId() : -1;
     int segmentValue = Utils.getValueOnSegment(cappedCoverage);
     if (incrementScore && mSequence != null) {
       if (coverage >= 0) {
-        Log.d(TAG, "onPictureTaken: seqId = " + mSequence.getId() + " matched segment " + matchedSegment.getPolyline().getIdentifier() +
+        Log.d(TAG, "onPictureTaken: seqId = " + mSequence.getId() + " matched segment " + matchedSegment +
             " coverage" + " " + coverage + " obd : " + obd);
-        SequenceDB.instance.insertScore(seqId, obd, cappedCoverage);
+        mSequenceDB.insertScore(seqId, obd, cappedCoverage);
         mPoints = mPoints + ((obd ? 2 : 1) * segmentValue);
         mSequence.setScore((int) mPoints);
         Log.d(TAG, "onPictureTaken: score changed called 1");
       } else {
         Log.d(TAG, "onPictureTaken: seqId = " + mSequence.getId() + " matched segment " +
             (matchedSegment == null ? 0 : matchedSegment.getPolyline().getIdentifier()) + " coverage" + " " + coverage + " obd : " + obd);
-        SequenceDB.instance.insertScore(seqId, obd, cappedCoverage);
+        mSequenceDB.insertScore(seqId, obd, cappedCoverage);
         Log.d(TAG, "onPictureTaken: score changed called 2 no coverage");
       }
     }
@@ -86,11 +102,6 @@ public class ScoreManager implements PositionMatcher.SegmentsListener {
       mPoints = 0;
       mMatchLocations = true;
     }
-  }
-
-  @Subscribe(threadMode = ThreadMode.BACKGROUND)
-  public void onGamificationEnabled(GamificationSettingEvent event) {
-    this.mEnabled = event.enabled;
   }
 
   public void onLocationChanged(Location location) {

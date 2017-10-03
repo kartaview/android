@@ -19,17 +19,22 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.StringSignature;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
 import com.telenav.osv.item.network.DriverData;
 import com.telenav.osv.item.network.PaymentCollection;
 import com.telenav.osv.item.network.TrackCollection;
+import com.telenav.osv.item.view.profile.DriverProfileData;
+import com.telenav.osv.item.view.tracklist.StatsData;
+import com.telenav.osv.item.view.tracklist.StatsDataFactory;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
+import com.telenav.osv.manager.network.UserDataManager;
 import com.telenav.osv.ui.list.PaymentAdapter;
 import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
+import java.util.Currency;
+import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 
 /**
@@ -38,11 +43,14 @@ import org.greenrobot.eventbus.Subscribe;
  */
 public class ByodProfileFragment extends ProfileFragment implements TabLayout.OnTabSelectedListener {
 
-  public final static String TAG = "ByodProfileFragment";
+  public static final String TAG = "ByodProfileFragment";
 
   private static final int DATA_SOURCE_TRACKS = 0;
 
   private static final int DATA_SOURCE_PAYMENTS = 1;
+
+  @Inject
+  UserDataManager mUserDataManager;
 
   private View mInfoView;
 
@@ -106,9 +114,10 @@ public class ByodProfileFragment extends ProfileFragment implements TabLayout.On
 
         }
       });
-      mPaymentAdapter = new PaymentAdapter(mPaymentsList, activity);
+      mPaymentAdapter = new PaymentAdapter(mPaymentsList, activity, valueFormatter);
     }
     mOnlineSequencesAdapter.enableDriverStats(true);
+    mOnlineSequencesAdapter.showValue(true);
     displayCachedStats();
     return view;
   }
@@ -133,11 +142,11 @@ public class ByodProfileFragment extends ProfileFragment implements TabLayout.On
 
   @Override
   protected void requestDetails() {
-    activity.getUserDataManager().getDriverProfileDetails(new NetworkResponseDataListener<DriverData>() {
+    mUserDataManager.getDriverProfileDetails(new NetworkResponseDataListener<DriverData>() {
 
       @Override
       public void requestFailed(int status, DriverData details) {
-        activity.showSnackBar("No Internet connection detected.", Snackbar.LENGTH_LONG);
+        activity.showSnackBar(getString(R.string.no_internet_connection_detected), Snackbar.LENGTH_LONG);
         Log.d(TAG, "requestDriverDetails: " + details);
       }
 
@@ -146,20 +155,22 @@ public class ByodProfileFragment extends ProfileFragment implements TabLayout.On
         Log.d(TAG, "requestDriverDetails: " + " status - > " + status + " result - > " + driverData);
         if (driverData != null) {
           mHandler.post(() -> {
-            String name = driverData.getDisplayName();
-            String username = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-            String photoUrl = appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL);
-            String currency = driverData.getCurrency();
-            final String[] acceptedDistance = Utils.formatDistanceFromKiloMeters(activity, driverData.getTotalAcceptedDistance());
-            final String[] rejectedDistance = Utils.formatDistanceFromKiloMeters(activity, driverData.getTotalRejectedDistance());
-            final String[] obdDistance = Utils.formatDistanceFromKiloMeters(activity, driverData.getTotalObdDistance());
-            String totalPhotos = Utils.formatNumber(driverData.getTotalPhotos());
-            String totalTracks = Utils.formatNumber(driverData.getTotalTracks());
-            final String[] currentAccepted = Utils.formatDistanceFromKiloMeters(activity, driverData.getCurrentAcceptedDistance());
-            String value = currency + Utils.formatMoney(driverData.getCurrentPaymentValue());
-            String rate = Utils.formatMoney(driverData.getCurrentPayRate()) + " " + currency + "/km";
-            fillUserInformation(name, username, photoUrl, currentAccepted, rate, value, acceptedDistance, rejectedDistance, obdDistance,
-                                totalPhotos, totalTracks, driverData.getTotalPaidValue(), currency);
+            DriverProfileData profileData = new DriverProfileData();
+            profileData.setName(driverData.getDisplayName());
+            profileData.setUsername(appPrefs.getUserName());
+            profileData.setPhotoUrl(appPrefs.getUserPhotoUrl());
+            profileData.setCurrency(driverData.getCurrency());
+            profileData.setCurrentAccepted(driverData.getCurrentAcceptedDistance());
+            profileData.setValue(driverData.getCurrentPaymentValue());
+            profileData.setRate(driverData.getCurrentPayRate());
+            profileData.setPaymentValue(driverData.getTotalPaidValue());
+            StatsData stats = StatsDataFactory.create(activity, valueFormatter
+                , driverData.getTotalAcceptedDistance()
+                , driverData.getTotalRejectedDistance()
+                , driverData.getTotalObdDistance()
+                , (int) driverData.getTotalTracks()
+                , (int) driverData.getTotalPhotos());
+            fillUserInformation(profileData, stats);
           });
         }
       }
@@ -168,35 +179,35 @@ public class ByodProfileFragment extends ProfileFragment implements TabLayout.On
 
   protected void displayCachedStats() {
 
-    final String name = appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME);
-    final String username = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-    final String photoUrl = appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL);
-    SharedPreferences prefs = activity.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
-    final String currency = prefs.getString(ProfileFragment.K_DRIVER_CURRENCY, "$");
-    final String[] currentAccepted =
-        Utils.formatDistanceFromKiloMeters(activity, prefs.getFloat(ProfileFragment.K_DRIVER_CURRENT_ACCEPTED_DISTANCE, 0));
-    final String rate = Utils.formatMoney(prefs.getFloat(ProfileFragment.K_DRIVER_CURRENT_PAYRATE, 0)) + " " + currency + "/km";
-    final String value = currency + Utils.formatMoney(prefs.getFloat(ProfileFragment.K_DRIVER_CURRENT_VALUE, 0));
-    final double totalValue = prefs.getFloat(ProfileFragment.K_DRIVER_TOTAL_VALUE, 0);
-    final String[] accepted =
-        Utils.formatDistanceFromKiloMeters(activity, prefs.getFloat(ProfileFragment.K_DRIVER_TOTAL_ACCEPTED_DISTANCE, 0));
-    final String[] rejected =
-        Utils.formatDistanceFromKiloMeters(activity, prefs.getFloat(ProfileFragment.K_DRIVER_TOTAL_REJECTED_DISTANCE, 0));
-    final String[] obdDistance =
-        Utils.formatDistanceFromKiloMeters(activity, prefs.getFloat(ProfileFragment.K_DRIVER_TOTAL_OBD_DISTANCE, 0));
-    final String tracks = Utils.formatNumber(prefs.getFloat(ProfileFragment.K_DRIVER_TRACKS_COUNT, 0));
-    final String photos = Utils.formatNumber(prefs.getFloat(ProfileFragment.K_DRIVER_PHOTOS_COUNT, 0));
-
     mHandler.post(
-        () -> fillUserInformation(name, username, photoUrl, currentAccepted, rate, value, accepted, rejected, obdDistance, photos, tracks,
-                                  totalValue, currency));
+        () -> {
+          DriverProfileData profileData = new DriverProfileData();
+          profileData.setName(appPrefs.getUserDisplayName());
+          profileData.setUsername(appPrefs.getUserName());
+          profileData.setPhotoUrl(appPrefs.getUserPhotoUrl());
+
+          SharedPreferences prefs = activity.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
+          profileData.setCurrency(prefs.getString(ProfileFragment.K_DRIVER_CURRENCY, "USD"));
+          profileData.setCurrentAccepted(prefs.getFloat(ProfileFragment.K_DRIVER_CURRENT_ACCEPTED_DISTANCE, 0));
+          profileData.setRate(prefs.getFloat(ProfileFragment.K_DRIVER_CURRENT_PAYRATE, 0));
+          profileData.setValue(prefs.getFloat(ProfileFragment.K_DRIVER_CURRENT_VALUE, 0));
+          profileData.setPaymentValue(prefs.getFloat(ProfileFragment.K_DRIVER_TOTAL_VALUE, 0));
+
+          StatsData stats = StatsDataFactory.create(activity, valueFormatter
+              , prefs.getFloat(ProfileFragment.K_DRIVER_TOTAL_ACCEPTED_DISTANCE, 0)
+              , prefs.getFloat(ProfileFragment.K_DRIVER_TOTAL_REJECTED_DISTANCE, 0)
+              , prefs.getFloat(ProfileFragment.K_DRIVER_TOTAL_OBD_DISTANCE, 0)
+              , (int) prefs.getFloat(ProfileFragment.K_DRIVER_TRACKS_COUNT, 0)
+              , (int) prefs.getFloat(ProfileFragment.K_DRIVER_PHOTOS_COUNT, 0));
+          fillUserInformation(profileData, stats);
+        });
   }
 
   protected void loadMoreResults() {
     Log.d(TAG, "loadMoreResults: ");
     BackgroundThreadPool.post(() -> {
       if (mCurrentDataSource == DATA_SOURCE_PAYMENTS) {
-        activity.getUserDataManager().listDriverPayments(new NetworkResponseDataListener<PaymentCollection>() {
+        mUserDataManager.listDriverPayments(new NetworkResponseDataListener<PaymentCollection>() {
 
           @Override
           public void requestFailed(int status, PaymentCollection details) {
@@ -218,7 +229,7 @@ public class ByodProfileFragment extends ProfileFragment implements TabLayout.On
                   mPaymentMaxNumberOfResults = collectionData.getTotalFilteredItems();
                   mPaymentsList.addAll(collectionData.getPaymentList());
                 } catch (Exception e) {
-                  e.printStackTrace();
+                  Log.d(TAG, Log.getStackTraceString(e));
                 }
               }
               mLoading = false;
@@ -235,7 +246,7 @@ public class ByodProfileFragment extends ProfileFragment implements TabLayout.On
           }
         }, mPaymentCurrentPageToList, NUMBER_OF_ITEMS_PER_PAGE);
       } else if (mCurrentDataSource == DATA_SOURCE_TRACKS) {
-        activity.getUserDataManager().listDriverSequences(new NetworkResponseDataListener<TrackCollection>() {
+        mUserDataManager.listDriverSequences(new NetworkResponseDataListener<TrackCollection>() {
 
           @Override
           public void requestFailed(int status, TrackCollection details) {
@@ -258,7 +269,7 @@ public class ByodProfileFragment extends ProfileFragment implements TabLayout.On
                   mMaxNumberOfResults = collectionData.getTotalFilteredItems();
                   mOnlineSequences.addAll(collectionData.getTrackList());
                 } catch (Exception e) {
-                  e.printStackTrace();
+                  Log.d(TAG, Log.getStackTraceString(e));
                 }
               }
               mLoading = false;
@@ -290,24 +301,34 @@ public class ByodProfileFragment extends ProfileFragment implements TabLayout.On
     super.onStop();
   }
 
-  private void fillUserInformation(String name, String username, String photoUrl, String[] currentAccepted, String rate, String value,
-                                   String[] acceptedDistance, String[] rejectedDistance, String[] obdDistance, String totalPhotos,
-                                   String totalTracks, double paymentValue, String currency) {
-    collapsingToolbar.setTitle(name);
-    if (!"".equals(photoUrl)) {
-      Glide.with(activity).load(photoUrl).centerCrop().dontAnimate().diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false)
-          .signature(new StringSignature("profile " + username + "-" + photoUrl)).priority(Priority.IMMEDIATE)
+  private void fillUserInformation(DriverProfileData profileData, StatsData stats) {
+    collapsingToolbar.setTitle(profileData.getName());
+    if (!"".equals(profileData.getPhotoUrl())) {
+      Glide.with(activity).load(profileData.getPhotoUrl())
+          .centerCrop()
+          .dontAnimate()
+          .diskCacheStrategy(DiskCacheStrategy.ALL)
+          .skipMemoryCache(false)
+          .signature(new StringSignature("profile " + profileData.getUsername() + "-" + profileData.getPhotoUrl()))
+          .priority(Priority.IMMEDIATE)
           .placeholder(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
           .error(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
-          .listener(MainActivity.mGlideRequestListener).into(mProfileImage);
+          .listener(MainActivity.mGlideRequestListener)
+          .into(mProfileImage);
     }
     mProfileImage.setInstantProgress(0.01f);
+    String[] currentAccepted = valueFormatter.formatDistanceFromKiloMeters(profileData.getCurrentAccepted());
     mDistanceTextView.setText(currentAccepted[0] + " " + currentAccepted[1]);
-    mValueTextView.setText(value);
-    mRateTextView.setText(rate);
-    //        appBar.setExpanded(true, true);
-    mOnlineSequencesAdapter.refreshDetails(acceptedDistance, rejectedDistance, obdDistance, totalPhotos, totalTracks);
-    mPaymentAdapter.setTotalPayment(paymentValue, currency);
+    mValueTextView.setText(valueFormatter.formatMoney(profileData.getValue()));
+    String currency = profileData.getCurrency();
+    try {
+      currency = Currency.getInstance(currency).getSymbol();
+    } catch (IllegalArgumentException ignored) {
+      Log.d(TAG, Log.getStackTraceString(ignored));
+    }
+    mRateTextView.setText(valueFormatter.formatMoney(profileData.getRate()) + " " + currency + getString(R.string.partial_rate_km_label));
+    mOnlineSequencesAdapter.refreshDetails(stats);
+    mPaymentAdapter.setTotalPayment(profileData.getPaymentValue(), profileData.getCurrency());
   }
 
   @Subscribe

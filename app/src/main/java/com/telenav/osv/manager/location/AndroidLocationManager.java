@@ -1,18 +1,19 @@
 package com.telenav.osv.manager.location;
 
-import android.content.Context;
+import android.app.Application;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.data.MapPreferences;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.utils.Log;
+import javax.inject.Inject;
 
 /**
  * internal android location manager
  * Created by Kalman on 07/09/16.
  */
-class AndroidLocationManager extends LocationManager implements LocationListener, LocationDataProvider.LocationDataListener {
+public class AndroidLocationManager extends LocationManager implements LocationListener, LocationDataProvider.LocationDataListener {
 
   private static final String TAG = "AndroidLocationManager";
 
@@ -22,8 +23,9 @@ class AndroidLocationManager extends LocationManager implements LocationListener
 
   private LocationDataProvider mLocationProvider;
 
-  AndroidLocationManager(Context context, LocationEventListener listener) {
-    super(context, listener);
+  @Inject
+  public AndroidLocationManager(Application context, MapPreferences prefs, LocationQualityChecker qualityChecker) {
+    super(context, prefs, qualityChecker);
   }
 
   /**
@@ -31,15 +33,14 @@ class AndroidLocationManager extends LocationManager implements LocationListener
    */
   public void connect() {
     EventBus.register(this);
-    mLocationProvider = new LocationDataProvider(mContext, true, true, 0, 0);
+    mLocationProvider = new LocationDataProvider(mContext, appPrefs, true, true, 0, 0);
     onConnected();
   }
 
   public void disconnect() {
     Log.d(TAG, "disconnect: disconnecting location api");
     if (mActualLocation != null) {
-      appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) mActualLocation.getLatitude());
-      appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LON, (float) mActualLocation.getLongitude());
+      appPrefs.saveLastLocation(mActualLocation);
     }
     mLocationProvider.stopLocationUpdates();
     mLocationProvider = null;
@@ -64,8 +65,7 @@ class AndroidLocationManager extends LocationManager implements LocationListener
   void stopLocationUpdates() {
     Log.d(TAG, "stopLocationUpdates: successfull: " + (mLocationProvider != null && mConnected));
     if (mActualLocation != null) {
-      appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) mActualLocation.getLatitude());
-      appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LON, (float) mActualLocation.getLongitude());
+      appPrefs.saveLastLocation(mActualLocation);
     }
     if (mLocationProvider != null && mConnected) {
       mLocationProvider.stopLocationUpdates();
@@ -74,17 +74,17 @@ class AndroidLocationManager extends LocationManager implements LocationListener
 
   @Override
   public void onStatusChanged(String s, int i, Bundle bundle) {
-
+    //no action
   }
 
   @Override
   public void onProviderEnabled(String s) {
-
+    //no action
   }
 
   @Override
   public void onProviderDisabled(String s) {
-
+    //no action
   }
 
   private void onConnected() {
@@ -102,36 +102,10 @@ class AndroidLocationManager extends LocationManager implements LocationListener
     } catch (SecurityException e) {
       mConnected = false;
       Log.w(TAG, "onConnected: error " + e);
-      //            connect();
     } catch (Exception e) {
       mConnected = false;
       Log.w(TAG, "onConnected: error " + e);
       connect();
     }
   }
-
-  //    public boolean isLocationEnabled() {
-  //        boolean locationServiceBoolean = false;
-  //        android.location.LocationManager locationManager = (android.location.LocationManager) mContext.getSystemService(Context
-  // .LOCATION_SERVICE);
-  //        boolean gpsIsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
-  //        boolean networkIsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
-  //
-  //        if (networkIsEnabled && gpsIsEnabled) {
-  //            locationServiceBoolean = true;
-  //
-  //        } else if (!networkIsEnabled && gpsIsEnabled) {
-  //            locationServiceBoolean = true;
-  //
-  //        } else if (networkIsEnabled) {
-  //            locationServiceBoolean = true;
-  //        }
-  //        return locationServiceBoolean;
-  //    }
-
-  //    public boolean isGPSEnabled() {
-  //        android.location.LocationManager locationManager = (android.location.LocationManager) mContext.getSystemService(Context
-  // .LOCATION_SERVICE);
-  //        return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
-  //    }
 }

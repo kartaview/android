@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class SegmentsReceivedEvent extends OSVStickyEvent {
 
-  public final static String TAG = "SegmentsReceivedEvent";
+  public static final String TAG = "SegmentsReceivedEvent";
 
   public final List<Polyline> all;
 

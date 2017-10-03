@@ -10,7 +10,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
+import com.telenav.osv.utils.Log;
 import java.util.UUID;
 
 /**
@@ -29,7 +29,7 @@ public class OBDCommunication {
    */
   private static final UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
 
-  private final static String TAG = OBDCommunication.class.getSimpleName();
+  private static final String TAG = OBDCommunication.class.getSimpleName();
 
   /**
    * client characteristic

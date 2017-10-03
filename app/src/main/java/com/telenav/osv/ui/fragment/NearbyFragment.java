@@ -13,9 +13,9 @@ import com.telenav.osv.item.network.TrackCollection;
  * Fragment displaying nearby recordings
  * Created by adrianbostan on 11/07/16.
  */
-public class NearbyFragment extends SimpleProfileFragment {
+public class NearbyFragment extends SimpleProfileFragment implements Displayable<TrackCollection> {
 
-  public final static String TAG = "NearbyFragment";
+  public static final String TAG = "NearbyFragment";
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,9 +57,9 @@ public class NearbyFragment extends SimpleProfileFragment {
   }
 
   @Override
-  public void setSource(Object collection) {
+  public void setDisplayData(TrackCollection collection) {
     mOnlineSequences.clear();
-    mOnlineSequences.addAll(((TrackCollection) collection).getTrackList());
+    mOnlineSequences.addAll(collection.getTrackList());
     mLoading = false;
 
     mHandler.post(() -> {

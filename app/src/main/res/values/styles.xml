@@ -3,24 +3,35 @@
   <!-- Application theme -->
   <style name="AppTheme"
       parent="Theme.AppCompat.NoActionBar">
-    <item name="android:windowAnimationStyle">@null</item>
-    <item name="android:windowBackground">@drawable/splash_background_no_drawable</item>
     <item name="android:dialogTheme">@style/DialogTheme</item>
-    <item name="colorPrimary">@color/darker_grey</item>
-    <item name="colorPrimaryDark">@color/darker_grey</item>
-    <item name="colorAccent">@color/accent_material_dark_1</item>
+    <item name="android:windowBackground">@drawable/splash_background_drawable</item>
+    <item name="android:windowContentTransitions">false</item>
+    <item name="colorControlHighlight">@color/ripple_gray_light</item>
+    <item name="android:windowAllowEnterTransitionOverlap">true</item>
+    <item name="android:windowAllowReturnTransitionOverlap">true</item>
+    <item name="android:windowSharedElementEnterTransition">@android:transition/fade</item>
+    <item name="android:windowSharedElementExitTransition">@android:transition/fade</item>
     <item name="android:windowActionBar">false</item>
+    <item name="android:windowAnimationStyle">@null</item>
+    <item name="colorAccent">@color/accent_material_dark_1</item>
     <item name="actionModeStyle">@style/ActionMode</item>
+  </style>
+
+  <style name="AppTheme.NoSplash"
+      parent="AppTheme">
+    <item name="android:windowBackground">@drawable/splash_background_no_drawable</item>
   </style>
 
   <style name="AppTheme.Light"
       parent="Theme.AppCompat.Light.NoActionBar">
     <item name="android:dialogTheme">@style/DialogTheme</item>
-    <item name="android:windowAnimationStyle">@null</item>
-    <item name="colorPrimary">@color/darker_grey</item>
-    <item name="colorPrimaryDark">@color/darker_grey</item>
-    <item name="colorAccent">@color/accent_material_dark_1</item>
+    <item name="android:windowContentTransitions">false</item>
+    <item name="android:windowAllowEnterTransitionOverlap">true</item>
+    <item name="android:windowAllowReturnTransitionOverlap">true</item>
+    <item name="android:windowSharedElementEnterTransition">@android:transition/fade</item>
+    <item name="android:windowSharedElementExitTransition">@android:transition/fade</item>
     <item name="android:windowActionBar">false</item>
+    <item name="colorAccent">@color/accent_material_dark_1</item>
     <item name="actionModeStyle">@style/ActionMode</item>
   </style>
 
@@ -41,7 +52,7 @@
       parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
     <item name="android:textColor">@color/darker_grey</item>
   </style>
-  <!-- Base theme applied no matter what API -->
+
   <style name="ActionMode"
       parent="@style/Widget.AppCompat.ActionMode">
     <item name="background">@color/background_material_dark_1</item>
@@ -69,10 +80,21 @@
   </style>
 
   <style name="AppCompatAlertDialogStyleDark"
-      parent="Theme.AppCompat.DayNight.Dialog.Alert">
+      parent="Theme.AppCompat.Dialog.Alert">
     <item name="colorAccent">@color/accent_material_dark_1</item>
     <item name="android:textColorPrimary">@color/text_colour_default_light</item>
     <item name="android:background">@color/white</item>
+  </style>
+
+  <style name="textStyle"
+      parent="Theme.AppCompat.Light.NoActionBar">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">56dp</item>
+    <item name="android:gravity">center_vertical</item>
+    <item name="android:textColor">@color/text_colour_default</item>
+    <item name="android:textSize">@dimen/text_size_default</item>
+    <item name="android:fontFamily">sans-serif-light</item>
+    <item name="android:ellipsize">end</item>
   </style>
 
   <style name="textStyle.Light"
@@ -86,19 +108,8 @@
     <item name="android:ellipsize">end</item>
   </style>
 
-  <style name="textStyle"
-      parent="Theme.AppCompat.Light.NoActionBar">
-    <item name="android:layout_width">match_parent</item>
-    <item name="android:layout_height">@dimen/action_bar_size</item>
-    <item name="android:gravity">center_vertical</item>
-    <item name="android:textColor">@color/text_colour_default</item>
-    <item name="android:textSize">@dimen/text_size_default</item>
-    <item name="android:fontFamily">sans-serif-light</item>
-    <item name="android:ellipsize">end</item>
-  </style>
-
   <style name="toolbarButtonStyle">
-    <item name="android:background">@null</item><!--todo make custom_ripple on pre lollipop -->
+    <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
   </style>
 
   <style name="DialogTheme"
@@ -111,9 +122,20 @@
     <item name="android:fontFamily">sans-serif-light</item>
     <item name="android:textColor">@android:color/black</item>
     <item name="android:textColorHint">@color/issue_report_text_gray</item>
+    <item name="android:colorAccent">@color/issue_report_blue</item>
+    <item name="android:textCursorDrawable">@color/issue_report_blue</item>
+    <item name="android:backgroundTint">@color/issue_report_blue</item>
     <item name="colorAccent">@color/issue_report_blue</item>
+    <item name="android:colorControlNormal">@color/background_material_dark_1</item>
     <item name="colorControlNormal">@color/background_material_dark_1</item>
+    <item name="android:colorControlActivated">@color/issue_report_blue</item>
     <item name="colorControlActivated">@color/issue_report_blue</item>
+  </style>
+
+  <style name="PreviewButton"
+      parent="Widget.AppCompat.Button">
+    <item name="android:textColor">@color/white</item>
+    <item name="colorButtonNormal">@color/white</item>
   </style>
 
   <style name="textStyle.actionBarTitleExpanded"
@@ -153,12 +175,6 @@
     <item name="android:textColor">@color/profile_info_text_dark</item>
     <item name="android:textStyle">normal</item>
     <item name="android:fontFamily">sans-serif-medium</item>
-  </style>
-
-  <style name="PreviewButton"
-      parent="Widget.AppCompat.Button">
-    <item name="android:textColor">@color/white</item>
-    <item name="colorButtonNormal">@color/white</item>
   </style>
 
   <style name="textStyle.profileInfoTextSmall"

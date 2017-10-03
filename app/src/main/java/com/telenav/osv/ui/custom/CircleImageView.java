@@ -35,11 +35,12 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.util.AttributeSet;
 import com.telenav.osv.R;
+import com.telenav.osv.utils.Log;
 
 @SuppressWarnings("unused")
 public class CircleImageView extends android.support.v7.widget.AppCompatImageView {
 
-  public final static String TAG = "CircleImageView";
+  public static final String TAG = "CircleImageView";
 
   private static final ScaleType SCALE_TYPE = ScaleType.CENTER_CROP;
 
@@ -359,7 +360,7 @@ public class CircleImageView extends android.support.v7.widget.AppCompatImageVie
       drawable.draw(canvas);
       return bitmap;
     } catch (Exception e) {
-      e.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(e));
       return null;
     }
   }

@@ -1,7 +1,6 @@
 package com.telenav.osv.ui.fragment;
 
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,6 +17,8 @@ import com.facebook.network.connectionclass.ConnectionQuality;
 import com.pnikosis.materialishprogress.ProgressWheel;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.command.UploadCancelCommand;
+import com.telenav.osv.command.UploadPauseCommand;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.network.upload.UploadBandwidthEvent;
 import com.telenav.osv.event.network.upload.UploadCancelledEvent;
@@ -26,7 +27,7 @@ import com.telenav.osv.event.network.upload.UploadPausedEvent;
 import com.telenav.osv.event.network.upload.UploadProgressEvent;
 import com.telenav.osv.event.network.upload.UploadStartedEvent;
 import com.telenav.osv.manager.network.UploadManager;
-import com.telenav.osv.ui.ScreenComposer;
+import com.telenav.osv.ui.Navigator;
 import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
@@ -51,8 +52,6 @@ public class UploadProgressFragment extends OSVFragment {
 
   private TextView percentText;
 
-  //    private LinearLayout closeButton;
-
   private ProgressWheel progressbar;
 
   private LinearLayout cancelAllButton;
@@ -73,8 +72,6 @@ public class UploadProgressFragment extends OSVFragment {
 
   private LinearLayout mUploadLinearLayout;
 
-  private UploadManager mUploadManager;
-
   private long mUploadedSize = 0;
 
   private RelativeLayout progressLayout;
@@ -86,10 +83,7 @@ public class UploadProgressFragment extends OSVFragment {
     Log.d(TAG, "onCreateView: newly creating views");
     activity = (MainActivity) getActivity();
     init(activity);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
-    mUploadManager = activity.getApp().getUploadManager();
+    activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     return view;
   }
 
@@ -155,7 +149,7 @@ public class UploadProgressFragment extends OSVFragment {
 
   @Override
   public void onDestroyView() {
-    if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+    if (activity != null) {
       activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
     super.onDestroyView();
@@ -177,25 +171,13 @@ public class UploadProgressFragment extends OSVFragment {
   }
 
   private void setupButtons() {
-    if (pauseButton != null && pauseText != null && cancelAllButton != null) {
-      if (!mUploadManager.isPaused()) {
-        pauseButton.setOnClickListener(activity.pauseOnClickListener);
-        pauseText.setText(R.string.pause_caps_label);
-        pauseText
-            .setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable(R.drawable.ic_uploading_pause_gray), null, null,
-                                                     null);
-      } else {
-        pauseButton.setOnClickListener(activity.resumeOnClickListener);
-        pauseText.setText(R.string.continue_caps_label);
-        pauseText
-            .setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.ic_uploading_resume_gray)), null, null,
-                                                     null);
-      }
-      cancelAllButton.setOnClickListener(activity.actionCancelListener);
+    if (pauseButton != null && cancelAllButton != null) {
+      pauseButton.setOnClickListener(v -> EventBus.post(new UploadPauseCommand()));
+      cancelAllButton.setOnClickListener(v -> EventBus.post(new UploadCancelCommand()));
     }
   }
 
-  @Subscribe
+  @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
   public void onUploadStarted(UploadStartedEvent event) {
     Log.d(TAG, "onUploadStarted: totalSize = " + event.totalSize);
     mUploadedSize = 0;
@@ -205,13 +187,7 @@ public class UploadProgressFragment extends OSVFragment {
     updateStats(event.totalSize, event.totalSize);
     if (progressbar != null) {
       progressbar.setVisibility(View.VISIBLE);
-      //            progressbar.setProgress(0);
-      //            progressbar.setLinearProgress(false);
       progressbar.spin();
-      //            progressbar.spin();
-    }
-    if (pauseButton != null) {
-      pauseButton.setOnClickListener(activity.pauseOnClickListener);
     }
     if (pauseText != null) {
       pauseText.setText(R.string.pause_caps_label);
@@ -226,14 +202,12 @@ public class UploadProgressFragment extends OSVFragment {
       if (progressbar != null) {
         progressbar.setVisibility(View.VISIBLE);
         progressbar.setProgress(0);
-        //                    progressbar.setLinearProgress(false);
       }
       if (percentText != null) {
         percentText.setText("0");
       }
       if (activity != null) {
-        activity.unbindUploadService();
-        activity.openScreen(ScreenComposer.SCREEN_MAP);
+        activity.openScreen(Navigator.SCREEN_MAP);
       }
       mUploadedSize = 0;
     }, 1500);
@@ -244,8 +218,6 @@ public class UploadProgressFragment extends OSVFragment {
     if (progressbar != null) {
       progressbar.setVisibility(View.VISIBLE);
       progressbar.setProgress(100);
-      //                    progressbar.setLinearProgress(false);
-      //                    progressbar.stopSpinning();
     }
     if (percentText != null) {
       percentText.setText("100");
@@ -254,15 +226,12 @@ public class UploadProgressFragment extends OSVFragment {
       if (progressbar != null) {
         progressbar.setVisibility(View.VISIBLE);
         progressbar.setProgress(0);
-        //                    progressbar.setLinearProgress(false);
-        //                    progressbar.stopSpinning();
       }
       if (percentText != null) {
         percentText.setText("0");
       }
       if (activity != null) {
-        activity.unbindUploadService();
-        activity.openScreen(ScreenComposer.SCREEN_MAP);
+        activity.openScreen(Navigator.SCREEN_MAP);
       }
     }, 2500);
   }
@@ -273,57 +242,48 @@ public class UploadProgressFragment extends OSVFragment {
       event.total = 1;
     }
     if (progressbar != null) {
-      if (progressbar.isSpinning()) {
-        //                progressbar.stopSpinning();
-      }
       progressbar.setLinearProgress(true);
     } else {
       Log.w(TAG, "onProgressChanged: progressbar is null");
     }
-
-    if (mUploadManager != null && mUploadManager.isUploading()) {
-      updateStats(event.total, event.remaining);
-    }
+    updateStats(event.total, event.remaining);
   }
 
-  @Subscribe
+  @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
   public void onUploadPaused(UploadPausedEvent event) {
     if (event.paused) {
-      if (pauseButton != null) {
+      if (pauseText != null) {
         pauseText.setText(R.string.continue_caps_label);
-        pauseText
-            .setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.ic_uploading_resume_gray)), null, null,
-                                                     null);
-        pauseButton.setOnClickListener(activity.resumeOnClickListener);
+        pauseText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.ic_uploading_resume_gray)),
+                                                          null, null, null);
       }
-      onBandwidthStateChange(new UploadBandwidthEvent(ConnectionQuality.POOR, 0));
+      onBandwidthStateChange(new UploadBandwidthEvent(ConnectionQuality.POOR, 0, -1));
     } else {
-      if (pauseButton != null && pauseText != null) {
+      if (pauseText != null) {
         pauseText.setText(R.string.pause_caps_label);
-        pauseText
-            .setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.ic_uploading_pause_gray)), null, null,
-                                                     null);
-        pauseButton.setOnClickListener(activity.pauseOnClickListener);
+        pauseText.setCompoundDrawablesWithIntrinsicBounds(activity.getResources().getDrawable((R.drawable.ic_uploading_pause_gray)),
+                                                          null, null, null);
       }
     }
   }
 
-  @Subscribe
+  @Subscribe(threadMode = ThreadMode.MAIN)
   public void onBandwidthStateChange(UploadBandwidthEvent event) {
     if (event.bandwidthState != ConnectionQuality.UNKNOWN && event.bandwidth >= 0) {
       if (uploadSpeedText != null) {
         uploadSpeedText.setText(formatBandwidth(event.bandwidth));
       }
     }
-    if (System.currentTimeMillis() - lastUpdateTime >= 5000 && mUploadManager != null && mUploadManager.isUploading()) {
+    if (System.currentTimeMillis() - lastUpdateTime >= 5000) {
       lastUpdateTime = System.currentTimeMillis();
       final double bw = ConnectionClassManager.getInstance().getCurrentBandwidth();
       if (bw >= 0) {
         BackgroundThreadPool.post(() -> {
-          final long size = mUploadManager.getRemainingSizeValue();
+          final long size = event.remainingSizeValue;
           final double seconds = (size / 1024d / (bw / 8d));
           if (activity != null) {
             activity.runOnUiThread(() -> {
+              //todo remove static state of upload, replace with uploadScreen vm and uploadstate observable model object
               boolean isPaused = UploadManager.sUploadStatus == UploadManager.STATUS_PAUSED;
               if (timeText != null) {
                 timeText.setText(isPaused ? DecimalFormatSymbols.getInstance().getInfinity() : (formatETA(seconds)));
@@ -365,14 +325,13 @@ public class UploadProgressFragment extends OSVFragment {
       if (progress > oldProgress) {
         if (progress >= 0) {
           float progressf = ((float) progress / 100f);
-          //            Log.d(TAG, "updateStats: new progress is " + progressf);
           progressbar.setProgress(progressf);
         }
       }
       if (percentText != null) {
         int textValue = Integer.parseInt((String) percentText.getText());
         if (textValue <= progress) {
-          percentText.setText(progress + "");
+          percentText.setText(String.valueOf(progress));
         }
       }
     }
@@ -390,9 +349,9 @@ public class UploadProgressFragment extends OSVFragment {
       q = " h";
       int min = (int) (value % 60);
       value = value / 60;
-      res = "" + (int) value + q + " " + min + " m";
+      res = String.valueOf((int) value) + q + " " + min + " m";
     } else {
-      res = "" + (int) value + q;
+      res = String.valueOf((int) value) + q;
     }
     return res;
   }
@@ -408,7 +367,7 @@ public class UploadProgressFragment extends OSVFragment {
       value = value / 1024;
       res = "" + df2.format(value) + q;
     } else {
-      res = "" + (int) value + q;
+      res = String.valueOf((int) value) + q;
     }
     return res;
   }

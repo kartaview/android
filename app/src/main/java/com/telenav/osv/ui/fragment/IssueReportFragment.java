@@ -19,11 +19,13 @@ import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.command.SendReportCommand;
+import com.telenav.osv.data.Preferences;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.item.network.IssueData;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.manager.network.IssueReporter;
 import com.telenav.osv.utils.Log;
+import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -33,7 +35,13 @@ import org.greenrobot.eventbus.ThreadMode;
  */
 public class IssueReportFragment extends OSVFragment {
 
-  public final static String TAG = "IssueReportFragment";
+  public static final String TAG = "IssueReportFragment";
+
+  @Inject
+  Preferences prefs;
+
+  @Inject
+  IssueReporter mIssueReporter;
 
   private MainActivity activity;
 
@@ -43,14 +51,11 @@ public class IssueReportFragment extends OSVFragment {
 
   private TextView mExternalHint;
 
-  private IssueReporter mIssueReporter;
-
   @Nullable
   @Override
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
     activity = (MainActivity) getActivity();
     view = (ScrollView) inflater.inflate(R.layout.fragment_issue_report, null);
-    mIssueReporter = new IssueReporter(activity);
     return view;
   }
 
@@ -82,6 +87,13 @@ public class IssueReportFragment extends OSVFragment {
     closeKeyboard();
     EventBus.unregister(this);
     super.onPause();
+  }
+
+  @Override
+  public void onDestroyView() {
+    mIssueReporter.destroy();
+    mIssueReporter = null;
+    super.onDestroyView();
   }
 
   private void init() {
@@ -133,7 +145,7 @@ public class IssueReportFragment extends OSVFragment {
         public void requestFailed(int status, IssueData details) {
           activity.runOnUiThread(() -> {
             activity.enableProgressBar(false);
-            showDialog("Report could not be sent", "Please check your connection and retry.", null);
+            showDialog(getString(R.string.issue_report_error_title), getString(R.string.issue_report_error_message), null);
             mTextEdit.setEnabled(true);
           });
         }
@@ -142,7 +154,8 @@ public class IssueReportFragment extends OSVFragment {
         public void requestFinished(int status, IssueData details) {
           activity.runOnUiThread(() -> {
             activity.enableProgressBar(false);
-            showDialog("Problem reported successfully", "Thank you for letting us know.", () -> activity.onBackPressed());
+            showDialog(getString(R.string.issue_report_success_title), getString(R.string.issue_report_success_message),
+                       () -> activity.onBackPressed());
             mTextEdit.setEnabled(true);
             mTextEdit.setText("");
           });

@@ -1,5 +1,6 @@
 package com.telenav.osv.manager.capture;
 
+import android.arch.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
@@ -8,20 +9,16 @@ import android.hardware.Camera;
 import android.location.Location;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.view.Surface;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.command.CameraConfigChangedCommand;
+import com.telenav.osv.data.RecordingPreferences;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.camera.CameraInfoEvent;
 import com.telenav.osv.event.hardware.camera.CameraInitEvent;
 import com.telenav.osv.listener.ImageReadyCallback;
 import com.telenav.osv.listener.ShutterCallback;
-import com.telenav.osv.utils.CameraParamParser;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Size;
 import com.telenav.osv.utils.Utils;
@@ -29,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -37,10 +35,11 @@ import org.greenrobot.eventbus.ThreadMode;
  * It provides easy open/close and other interactions with camera
  * Created by Kalman on 10/7/2015.
  */
+@SuppressWarnings("deprecation")
 public class CameraManagerOld extends CameraManager
     implements Camera.ErrorCallback, Camera.AutoFocusCallback, Camera.AutoFocusMoveCallback {
 
-  private final static String TAG = "CameraManagerOld";
+  private static final String TAG = "CameraManagerOld";
 
   private static final int TEXTURE_ID = 26;
 
@@ -51,15 +50,15 @@ public class CameraManagerOld extends CameraManager
 
   private static final int FOCUS_MODE_DYNAMIC = 1;
 
-  private static boolean mIsFocusing = false;
-
   private final Object syncObject = new Object();
 
-  protected ApplicationPreferences appPrefs;
+  protected RecordingPreferences appPrefs;
 
-  private int previewWidth;
+  private boolean mIsFocusing = false;
 
-  private int previewHeight;
+  private Size resolution;
+
+  private Size previewResolution;
 
   private Context mContext;
 
@@ -80,8 +79,6 @@ public class CameraManagerOld extends CameraManager
   private Camera.Size sixteen = null;
 
   private Camera.Size twelve = null;
-
-  //    private SignDetectedListener mSignDetectedListener;
 
   private Camera.Size eight = null;
 
@@ -105,7 +102,8 @@ public class CameraManagerOld extends CameraManager
 
   private int mFocusMode = FOCUS_MODE_DYNAMIC;
 
-  CameraManagerOld(Context context) {
+  @Inject
+  public CameraManagerOld(Context context, RecordingPreferences prefs) {
     super(context);
     Log.d(TAG, "CameraManager: Created camera manager");
     mContext = context;
@@ -113,7 +111,7 @@ public class CameraManagerOld extends CameraManager
     mIsPreviewStarted = false;
     // Try to open the camera
 
-    appPrefs = new ApplicationPreferences(mContext);
+    appPrefs = prefs;
     HandlerThread mOpenThread = new HandlerThread("OpenCamera", Process.THREAD_PRIORITY_FOREGROUND);
     // Try to open the camera
     mOpenThread.start();
@@ -122,9 +120,9 @@ public class CameraManagerOld extends CameraManager
     // Try to open the camera
     mCameraThread.start();
     mCameraHandler = new Handler(mCameraThread.getLooper());
-    previewWidth = appPrefs.getIntPreference(PreferenceTypes.K_PREVIEW_WIDTH, 1600);
-    previewHeight = appPrefs.getIntPreference(PreferenceTypes.K_PREVIEW_HEIGHT, 1200);
-    EventBus.postSticky(new CameraInfoEvent(previewWidth, previewHeight));
+    previewResolution = appPrefs.getPreviewResolution();
+    appPrefs.getResolutionLive().observe(ProcessLifecycleOwner.get(), this::onResolutionChanged);
+    EventBus.postSticky(new CameraInfoEvent(previewResolution.width, previewResolution.height));
   }
 
   private void sendOrientation() {
@@ -157,10 +155,6 @@ public class CameraManagerOld extends CameraManager
    */
   private List<Camera.Size> getOptimalPictureSize(List<Camera.Size> supportedPictureSizes) {
     List<Camera.Size> relevantSizesList = new ArrayList<>();
-
-    //        for (Camera.Size size: supportedPictureSizes){
-    //            Log.d(TAG, "resolution: " + size.width + " x " + size.height);
-    //        }
     int fiveMpLimit = (1948 * 2596) + 20;
     int eightMpLimit = (3840 * 2160) + 20;
     int twelveMpLimit = (3024 * 4032) + 20;
@@ -198,6 +192,11 @@ public class CameraManagerOld extends CameraManager
     if (five != null) {
       relevantSizesList.add(five);
     }
+    ArrayList<Size> set = new ArrayList<>();
+    for (Camera.Size size : relevantSizesList) {
+      set.add(new Size(size));
+    }
+    appPrefs.setSupportedResolutions(set);
     return relevantSizesList;
   }
 
@@ -205,8 +204,9 @@ public class CameraManagerOld extends CameraManager
    * Set preferences based on the available picture sizes (8MP is the priority)
    */
   private void setSupportedPicturesSizesPreferences() {
-    if ((appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT) == 0) ||
-        (appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH) == 0)) {
+    com.telenav.osv.utils.Size res = appPrefs.getResolution();
+    if (res.width == 0 ||
+        res.height == 0) {
       Camera.Size sizesPreferences = null;
       if (eight != null) {
         sizesPreferences = eight;
@@ -218,8 +218,7 @@ public class CameraManagerOld extends CameraManager
         sizesPreferences = five;
       }
       if (sizesPreferences != null) {
-        appPrefs.saveIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH, sizesPreferences.width);
-        appPrefs.saveIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT, sizesPreferences.height);
+        appPrefs.setResolution(new Size(sizesPreferences.width, sizesPreferences.height));
       }
     }
   }
@@ -256,7 +255,7 @@ public class CameraManagerOld extends CameraManager
   }
 
   @Subscribe(threadMode = ThreadMode.BACKGROUND)
-  public void onCameraConfigChanged(CameraConfigChangedCommand command) {
+  public void onResolutionChanged(Size size) {
     forceCloseCamera();
     open();
     restartPreviewIfNeeded();
@@ -371,13 +370,7 @@ public class CameraManagerOld extends CameraManager
           mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
           mCamera.setErrorCallback(CameraManagerOld.this);
           Log.v(TAG, "Camera is open");
-          try {
-            if (Build.VERSION.SDK_INT >= 17) {
-              mCamera.enableShutterSound(false);
-            }
-          } catch (Exception e) {
-            Log.w(TAG, "open: enable shuttersound failed.");
-          }
+          mCamera.enableShutterSound(false);
           Camera.CameraInfo info = new Camera.CameraInfo();
           Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
           mCamera.setDisplayOrientation(info.orientation);
@@ -389,21 +382,19 @@ public class CameraManagerOld extends CameraManager
           mParameters.setPreviewFpsRange(fpsRange[0], fpsRange[1]);
           supportedPicturesSizes = getOptimalPictureSize(mParameters.getSupportedPictureSizes());
           setSupportedPicturesSizesPreferences();
-          Log.d(TAG, "saved resolutionWidth: " + appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH) + " resolutionHeight : " +
-              appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT));
+          resolution = appPrefs.getResolution();
+          Log.d(TAG, "saved resolution: " + resolution);
           mParameters
-              .setPictureSize(appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH),
-                              appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT));
+              .setPictureSize(resolution.width, resolution.height);
           Log.d(TAG, " Resolution of the image is: " + mParameters.getPictureSize().width + " x " + mParameters.getPictureSize().height);
           Camera.Size maxPreviewSize = getOptimalPreviewSize(mParameters.getSupportedPreviewSizes());
           if (maxPreviewSize != null) {
             mParameters.setPreviewSize(maxPreviewSize.width, maxPreviewSize.height);
           }
-          previewWidth = mParameters.getPreviewSize().width;
-          previewHeight = mParameters.getPreviewSize().height;
+          previewResolution.width = mParameters.getPreviewSize().width;
+          previewResolution.height = mParameters.getPreviewSize().height;
 
-          appPrefs.saveIntPreference(PreferenceTypes.K_PREVIEW_WIDTH, previewWidth);
-          appPrefs.saveIntPreference(PreferenceTypes.K_PREVIEW_HEIGHT, previewHeight);
+          appPrefs.setPreviewResolution(previewResolution);
           if (mParameters.getSupportedSceneModes() != null) {
             if (mParameters.getSupportedSceneModes().contains(Camera.Parameters.SCENE_MODE_AUTO)) {
               mSceneMode = Camera.Parameters.SCENE_MODE_AUTO;
@@ -423,7 +414,6 @@ public class CameraManagerOld extends CameraManager
           setAutoFocusMoveCallback(mParameters);
           setFocusMode();
           mCamera.setParameters(mParameters);
-          CameraParamParser.parse(mParameters.flatten());
         } catch (Exception e) {
           Log.e(TAG, "Error while opening camera: " + e.getMessage(), e);
           EventBus.postSticky(new CameraInitEvent(CameraInitEvent.TYPE_FAILED));
@@ -431,8 +421,8 @@ public class CameraManagerOld extends CameraManager
           mOpening = false;
           return;
         }
-        EventBus.postSticky(new CameraInfoEvent(previewWidth, previewHeight));
-        EventBus.postSticky(new CameraInitEvent(CameraInitEvent.TYPE_READY, previewWidth, previewHeight));
+        EventBus.postSticky(new CameraInfoEvent(previewResolution.width, previewResolution.height));
+        EventBus.postSticky(new CameraInitEvent(CameraInitEvent.TYPE_READY, previewResolution.width, previewResolution.height));
         if (mTexture != null) {
           setPreviewSurface(mTexture);
         }
@@ -467,16 +457,19 @@ public class CameraManagerOld extends CameraManager
 
   @Override
   public void setPreviewSurface(SurfaceTexture surfaceTexture) {
+    SurfaceTexture tex;
     if (surfaceTexture == null) {
-      surfaceTexture = createTexture();
+      tex = createTexture();
+    } else {
+      tex = surfaceTexture;
     }
     synchronized (syncObject) {
       try {
         if (mCamera != null) {
           try {
             safeStopPreview();
-            mCamera.setPreviewTexture(surfaceTexture);
-            mTexture = surfaceTexture;
+            mCamera.setPreviewTexture(tex);
+            mTexture = tex;
           } catch (IOException e) {
             Log.w(TAG, "setCameraPreviewSurface: " + e.getLocalizedMessage());
           }
@@ -498,14 +491,15 @@ public class CameraManagerOld extends CameraManager
 
       if (mParameters.getMaxNumFocusAreas() > 0) {
         mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        if (mParameters.getFocusAreas() != null) {
-          mParameters.getFocusAreas().clear();
+        try {
+          if (mParameters.getFocusAreas() != null) {
+            mParameters.getFocusAreas().clear();
+          }
+        } catch (NumberFormatException e) {
+          Log.d(TAG, "focus: " + e.getLocalizedMessage());
         }
         mParameters.setFocusAreas(focusList);
       }
-      //        if (mParameters.getMaxNumMeteringAreas() > 0) {
-      //            mParameters.setMeteringAreas(focusList);
-      //        }
       try {
         setParameters(mParameters);
         doAutofocus(this);
@@ -552,7 +546,6 @@ public class CameraManagerOld extends CameraManager
    * @param orientation The orientation, in degrees
    */
   protected void setOrientation(int orientation) {
-    //        orientation += 90;
     try {
       if (mOrientation == orientation) {
         return;
@@ -561,10 +554,7 @@ public class CameraManagerOld extends CameraManager
       // Rotate the pictures accordingly (display is kept at 90 degrees)
       Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
       Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
-      //        orientation = (360 - orientation + 45) / 90 * 90;
-      //        Log.d(TAG, "setOrientation: orientation after stuff: " + orientation);
       int rotation;
-      //        Log.d(TAG, "setOrientation: camerainfo orientation: " + info.orientation);
       if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
         rotation = (info.orientation - orientation + 360) % 360;
       } else {  // back-facing camera
@@ -577,7 +567,6 @@ public class CameraManagerOld extends CameraManager
           try {
             mParameters.setRotation(rotation);
             mCamera.setParameters(mParameters);
-            //                        mCamera.setDisplayOrientation(rotation);
             Log.d(TAG, "setOrientation: camera rotation set : info.orientation(" + info.orientation + ") + orientation(" + orientation +
                 ") %360 = " + rotation);
           } catch (Exception e) {
@@ -620,7 +609,6 @@ public class CameraManagerOld extends CameraManager
         }
       } catch (Exception e) {
         Log.w(TAG, "restartPreviewIfNeeded: " + Log.getStackTraceString(e));
-        //                    restartPreviewIfNeeded();
         return;
       }
 
@@ -657,15 +645,15 @@ public class CameraManagerOld extends CameraManager
     if (mParameters != null) {
       boolean supportsInfinity = mParameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_INFINITY);
       if (!supportsInfinity) {
-        appPrefs.saveBooleanPreference(PreferenceTypes.K_FOCUS_MODE_STATIC, false);
+        appPrefs.setStaticFocus(false);
       }
-      boolean useInfinityFocus = appPrefs.getBooleanPreference(PreferenceTypes.K_FOCUS_MODE_STATIC);
+      boolean useInfinityFocus = appPrefs.isStaticFocus();
       if (useInfinityFocus && supportsInfinity) {
         mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
         mFocusMode = FOCUS_MODE_STATIC;
       } else {
         mContinuousSupported = mParameters.getSupportedFocusModes()
-            .contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);// && !Build.MODEL.contains("SM-G900");
+            .contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         if (mContinuousSupported) {
           mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         } else {
@@ -684,9 +672,12 @@ public class CameraManagerOld extends CameraManager
   private void setAutoFocusMoveCallback(Camera.Parameters params) {
     if (mFocusMode == FOCUS_MODE_DYNAMIC) {
       List<String> focusModes = params.getSupportedFocusModes();
-      if (mCamera != null && focusModes != null &&
-          (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO) || focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE) ||
-               focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))) {
+      if (mCamera == null || focusModes == null) {
+        return;
+      }
+      if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)
+          || focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
+          || focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
         try {
           mCamera.setAutoFocusMoveCallback(this);
         } catch (RuntimeException e) {
@@ -695,30 +686,6 @@ public class CameraManagerOld extends CameraManager
       }
     }
   }
-
-  //    private void lockFocus(boolean lock) {
-  //        if (mFocusMode == FOCUS_MODE_DYNAMIC) {
-  //            Log.d(TAG, "lockFocus: " + lock);
-  //            focusRetryCount = 0;
-  ////        if (mIsLocked != lock) {
-  //            mIsLocked = lock;
-  //            if (lock) {
-  //                if (mParameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-  //                    mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-  //                }
-  //                setParameters(mParameters);
-  //            } else {
-  //                if (mParameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-  //                    mParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-  //                }
-  //                setParameters(mParameters);
-  //                if (mContinuousSupported) {
-  //                    setContinuousAfterFocusOk = true;
-  //                }
-  //            }
-  ////        }
-  //        }
-  //    }
 
   /**
    * Trigger the autofocus function of the device

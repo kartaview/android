@@ -49,7 +49,7 @@ public class ScrollDisabledViewPager extends ViewPager {
       try {
         return super.onInterceptTouchEvent(ev);
       } catch (Exception e) {
-        //                e.printStackTrace();
+        //                Log.d(TAG, Log.getStackTraceString(e));
         return false;
       }
     }

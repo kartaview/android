@@ -8,7 +8,7 @@ import com.telenav.osv.item.Sequence;
  */
 public interface UploadProgressListener extends ConnectionClassManager.ConnectionClassStateChangeListener {
 
-  void onUploadStarted(long totalSize, int remainingSequences);
+  void onUploadStarted(long totalSize, int remainingSequences, int numberOfSequences);
 
   void onUploadingMetadata();
 
@@ -30,5 +30,5 @@ public interface UploadProgressListener extends ConnectionClassManager.Connectio
 
   void onSequenceUploaded(Sequence sequence);
 
-  void onIndexingSequence(Sequence sequence, int remainingRecordings);
+  void onIndexingSequence(Sequence sequence, int remainingRecordings, int numberOfSequences);
 }

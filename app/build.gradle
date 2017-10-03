@@ -1,8 +1,23 @@
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
-apply plugin: 'me.tatarka.retrolambda'
-apply plugin: 'org.sonarqube'
+apply plugin: 'com.jakewharton.hugo'
 
+
+repositories {
+  jcenter()
+  maven {
+    url 'https://maven.fabric.io/public'
+  }
+  maven {
+    url "https://artefacts1.skobbler.net/android-maven/"//todo need to migrate maven artifacts here
+  }
+  maven {
+    url "http://share.skobbler.com/android/maven/"
+  }
+  maven {
+    url "https://maven.google.com"
+  }
+}
 
 android {
 
@@ -21,7 +36,7 @@ android {
     testInstrumentationRunner globalConfiguration.testInstrumentationRunner
     testApplicationId globalConfiguration.testAppId
     vectorDrawables.useSupportLibrary = true
-    multiDexEnabled = true
+    multiDexEnabled true
   }
   buildTypes {
     release {
@@ -29,8 +44,8 @@ android {
       jniDebuggable false
       minifyEnabled false
       shrinkResources false
-      //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-      //            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
+      //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      //testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
       ndk {
         abiFilters = []
         abiFilters.addAll(['armeabi', 'armeabi-v7a', 'x86'])
@@ -61,6 +76,12 @@ android {
     ignoreWarnings true
     quiet true
   }
+  testOptions {
+    unitTests.returnDefaultValues = true
+    unitTests.all {
+      ignoreFailures = true
+    }
+  }
   aaptOptions {
     useNewCruncher false
   }
@@ -80,11 +101,16 @@ android {
     exclude 'META-INF/CERT.RSA'
     exclude 'META-INF'
   }
+
+  flavorDimensions "default"
   productFlavors {
     mock {
+      dimension "default"
       applicationIdSuffix = ".mock"
     }
-    prod
+    prod {
+      dimension "default"
+    }
   }
 
   // Remove mockRelease as it's not needed.
@@ -106,31 +132,9 @@ android {
 
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_7
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 }
-
-sonarqube {
-  properties {
-    property "sonar.projectName", ""
-    property "sonar.projectKey", ""
-
-    property "sonar.sourceEncoding", "UTF-8"
-    property "sonar.sources", "."
-    property "sonar.exclusions", "build/**,**/*.png,**/*.so,src/androidTest/**,src/test/**,src/mock/**,src/prod/**"
-
-    property "sonar.import_unknown_files", true
-
-    property "sonar.android.lint.report", "./build/outputs/lint-results.xml"
-  }
-}
-
-retrolambda {
-  javaVersion JavaVersion.VERSION_1_7
-  defaultMethods false
-  incremental true
-}
-
 
 task copyResDirectoryToClasses(type: Copy) {
   from "${projectDir}/src/test/res"
@@ -145,28 +149,23 @@ crashlytics {
 
 
 
-task appDebug(dependsOn: [':app:assembleDebug'])
-task appRelease(dependsOn: [':app:assembleRelease'])
+task appDebug(dependsOn: [':app:assembleProdDebug'])
+task appRelease(dependsOn: [':app:assembleProdRelease'])
 
 
 dependencies {
-
-  def moduleDependencies = rootProject.ext.moduleDependecies
-  def appDependencies = rootProject.ext.appDependencies
-  def appTestDependencies = rootProject.ext.appTestDependencies
-  def developmentDependencies = rootProject.ext.developmentDependencies
-
-  compile fileTree(include: 'environment3.jar', dir: 'libs')
+  def config = rootProject.ext.config
+  def ext = rootProject.ext
 
   //AARs
-  compile moduleDependencies.skmaps
-  compile moduleDependencies.connectionProbe
-  compile moduleDependencies.ffmpeg
-  compile moduleDependencies.photoView
-  compile moduleDependencies.videoView
-  compile moduleDependencies.volley
-  compile moduleDependencies.eventbus
-  compile moduleDependencies.dotindicator
+  implementation "com.skobbler.ngx:skmaps-osc:${config.skmapsVersion}"
+  implementation "com.facebook.network.connectionclass:connectivity-osc:${config.connectionProbeVersion}"
+  implementation "com.telenav.ffmpeg:ffmpeg:${config.ffmpegVersion}"
+  implementation "uk.co.senab.photoview:photoview-osc:${config.photoViewVersion}"
+  implementation "com.telenav.streetview.scalablevideoview:scalablevideoview-osc:${config.videoViewVersion}"
+  implementation("com.android.volley:volley-osc:${config.volleyVersion}") { exclude module: 'httpclient' exclude module: 'entity' exclude module: 'httpcore' }
+  implementation "org.greenrobot.eventbus:eventbus-osc:${config.eventbusVersion}"
+  implementation "com.matthewtamlin.dotindicator:dotindicator-osc:${config.dotindicatorVersion}"
 
   //MODULES for development
 //  compile project(':eventbus')
@@ -177,65 +176,76 @@ dependencies {
 //  compile project(':ffmpeg')
 //  compile project(':dotindicator')
 
-  compile appDependencies.supportv4
-  compile appDependencies.appcompatv7
-  compile appDependencies.design
-  compile appDependencies.recyclerView
-  compile appDependencies.cardView
-  compile appDependencies.percent
-  compile appDependencies.multidex
-  compile appDependencies.customtabs
-  compile appDependencies.vectorDrawables
-  compile appDependencies.supportAnnotations
-  compile appDependencies.gmsLocation
-  compile appDependencies.gmsAuth
-  compile appDependencies.firebaseMessaging
-  compile appDependencies.firebaseAuth
-  compile appDependencies.googleApi
-  compile appDependencies.facebookApi
-  compile appDependencies.glide
-  compile appDependencies.materialishProgress
-  compile appDependencies.appIntro
-  compile appDependencies.apacheHttpClient
-  compile appDependencies.apacheHttpMime
-  compile appDependencies.signpost
-  compile appDependencies.crashlytics
-  compile appDependencies.crashlyticsNdk
+  implementation "com.android.support:support-v4:${ext.supportVersion}"
+  implementation "com.android.support:appcompat-v7:${ext.supportVersion}"
+  implementation "com.android.support:design:${ext.supportVersion}"
+  implementation "com.android.support:recyclerview-v7:${ext.supportVersion}"
+  implementation "me.tatarka.bindingcollectionadapter2:bindingcollectionadapter-recyclerview:${ext.bindingCollectionAdapterVersion}"
+  implementation "com.android.support:cardview-v7:${ext.supportVersion}"
+  implementation "com.android.support:percent:${ext.supportVersion}"
+  implementation "com.android.support:customtabs:${ext.supportVersion}"
+  implementation "com.android.support:support-annotations:${ext.supportVersion}"
+  implementation "com.google.android.gms:play-services-location:${ext.playServicesVersion}"
+  implementation "com.google.android.gms:play-services-auth:${ext.playServicesVersion}"
+  implementation "com.google.firebase:firebase-auth:${ext.firebaseVersion}"
+  implementation("com.google.api-client:google-api-client-android:${ext.googleApiVersion}") { exclude group: 'org.apache.httpcomponents' }
+  implementation "com.facebook.android:facebook-android-sdk:${ext.facebookApiVersion}"
+  implementation "com.github.bumptech.glide:glide:${ext.glideVersion}"
+  implementation "com.pnikosis:materialish-progress:${ext.materialishProgressVersion}"
+  implementation "com.github.paolorotolo:appintro:${ext.appIntroVersion}"
+
+  implementation "com.google.dagger:dagger:${ext.daggerVersion}"
+  implementation "com.google.dagger:dagger-android:${ext.daggerVersion}"
+  implementation "com.google.dagger:dagger-android-support:${ext.daggerVersion}"
+  annotationProcessor "com.google.dagger:dagger-compiler:${ext.daggerVersion}"
+  annotationProcessor "com.google.dagger:dagger-android-processor:${ext.daggerVersion}"
+  implementation "android.arch.lifecycle:runtime:${ext.lifecycleVersion}"
+  implementation "android.arch.lifecycle:extensions:${ext.lifecycleExtVersion}"//warning is wrong about new version: alpha9-1
+  annotationProcessor "android.arch.lifecycle:compiler:${ext.lifecycleExtVersion}"
+
+  implementation("org.apache.httpcomponents:httpclient-android:${ext.apacheHttpClientVersion}") { exclude module: 'httpclient' exclude module: 'entity' exclude module: 'httpcore' }
+  implementation("org.apache.httpcomponents:httpmime:${ext.apacheHttpMimeVersion}") { exclude module: 'httpclient' exclude module: 'entity' exclude module: 'httpcore' }
+  implementation("oauth.signpost:signpost-commonshttp4:${ext.signpostVersion}") { exclude module: "httpcore" exclude module: "commons-codec" exclude module: "httpclient" }
+  implementation "com.crashlytics.sdk.android:crashlytics:${ext.crashliticsVersion}"
+  implementation "com.crashlytics.sdk.android:crashlytics-ndk:${ext.crashliticsNdkVersion}"
+  implementation 'org.jetbrains:annotations:15.0'
 
   // Dependencies for development
-  debugCompile developmentDependencies.leakCanary
-  releaseCompile developmentDependencies.leakCanaryNoOp
+  debugImplementation "com.squareup.leakcanary:leakcanary-android:${ext.leakCanaryVersion}"
+  releaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:${ext.leakCanaryVersion}"
 
   // Dependencies for local unit tests
-  testCompile appTestDependencies.powermock
-  testCompile appTestDependencies.powermockJUnit
-  testCompile appTestDependencies.robolectric
-  testCompile appTestDependencies.junit
-  testCompile appTestDependencies.mockito
-  testCompile appTestDependencies.hamcrest
+  testImplementation "com.android.support:support-annotations:${ext.supportVersion}"
+  testImplementation "org.powermock:powermock-api-mockito:${ext.powermockVersion}"
+  testImplementation "org.powermock:powermock-module-junit4:${ext.powermockVersion}"
+  testImplementation "org.robolectric:robolectric:${ext.robolectricVersion}"
+  testImplementation "junit:junit:${ext.jUnitVersion}"
+  testImplementation "org.mockito:mockito-all:${ext.mockitoVersion}"
+  testImplementation "org.hamcrest:hamcrest-all:${ext.hamcrestVersion}"
+  testImplementation "android.arch.core:core-testing:${ext.lifecycleExtVersion}"
 
   // Android Testing Support Library's runner and rules
-  androidTestCompile appTestDependencies.runner
-  androidTestCompile appTestDependencies.rules
+  androidTestImplementation "com.android.support.test:runner:${ext.runnerVersion}"
+  androidTestImplementation "com.android.support.test:rules:${ext.rulesVersion}"
 
   // Dependencies for Android unit tests
-  androidTestCompile appDependencies.multidex
-  androidTestCompile appTestDependencies.junit
-  androidTestCompile appTestDependencies.mockito
-  androidTestCompile appTestDependencies.dexmaker
-  androidTestCompile appTestDependencies.dexmakerMockito
+  androidTestImplementation "junit:junit:${ext.jUnitVersion}"
+  androidTestImplementation "org.mockito:mockito-all:${ext.mockitoVersion}"
+  androidTestImplementation "com.google.dexmaker:dexmaker:${ext.dexmakerVersion}"
+  androidTestImplementation "com.google.dexmaker:dexmaker-mockito:${ext.dexmakerVersion}"
 
   // Espresso UI Testing
-  androidTestCompile appTestDependencies.espresso
-  androidTestCompile appTestDependencies.espressoContrib
-  androidTestCompile appTestDependencies.espressoIntents
+  androidTestImplementation "com.android.support.test.espresso:espresso-core:${ext.espressoVersion}"
+  androidTestImplementation "com.android.support.test.espresso:espresso-contrib:${ext.espressoVersion}"
+  androidTestImplementation "com.android.support.test.espresso:espresso-intents:${ext.espressoVersion}"
+  androidTestImplementation "com.android.support.test.espresso:espresso-idling-resource:${ext.espressoVersion}"
 
   // Resolve conflicts between main and test APK:
-  androidTestCompile appDependencies.supportAnnotations
-  androidTestCompile appDependencies.supportv4
-  androidTestCompile appDependencies.recyclerView
-  androidTestCompile appDependencies.appcompatv7
-  androidTestCompile appDependencies.design
+  androidTestImplementation "com.android.support:support-annotations:${ext.supportVersion}"
+  androidTestImplementation "com.android.support:support-v4:${ext.supportVersion}"
+  androidTestImplementation "com.android.support:recyclerview-v7:${ext.supportVersion}"
+  androidTestImplementation "com.android.support:appcompat-v7:${ext.supportVersion}"
+  androidTestImplementation "com.android.support:design:${ext.supportVersion}"
 }
 
 apply plugin: 'com.google.gms.google-services'

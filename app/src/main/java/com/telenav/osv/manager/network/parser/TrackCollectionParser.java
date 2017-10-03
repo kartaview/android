@@ -71,6 +71,7 @@ public class TrackCollectionParser extends ApiResponseParser<TrackCollection> {
             String[] list = address.split(", ");
             partialAddress = list[0] + ", " + list[2];
           } catch (Exception ignored) {
+            Log.d(TAG, Log.getStackTraceString(ignored));
           }
           String thumbLink = UserDataManager.URL_DOWNLOAD_PHOTO + item.getString("thumb_name");
           double distanceNum = 0;
@@ -79,6 +80,7 @@ public class TrackCollectionParser extends ApiResponseParser<TrackCollection> {
               distanceNum = Double.parseDouble(distance);
             }
           } catch (NumberFormatException ignored) {
+            Log.d(TAG, Log.getStackTraceString(ignored));
           }
           UserOnlineSequence seq =
               new UserOnlineSequence(id, date, Integer.valueOf(imgNum), partialAddress, thumbLink, obd, platform, platformVersion,
@@ -107,14 +109,14 @@ public class TrackCollectionParser extends ApiResponseParser<TrackCollection> {
             }
             seq.setScoreHistory(scoreHistory);
           } catch (Exception e) {
-            Log.d(TAG, "listSequences: " + Log.getStackTraceString(e));
+            Log.d(TAG, "listSequences: " + e.getLocalizedMessage());
           }
           seq.setScore(totalPoints);
           collection.getTrackList().add(seq);
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(e));
     }
     return collection;
   }

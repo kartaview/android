@@ -1,8 +1,5 @@
 package com.telenav.osv.manager.network;
 
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.wifi.WifiManager;
@@ -14,17 +11,15 @@ import android.widget.Toast;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.StringRequest;
 import com.crashlytics.android.Crashlytics;
 import com.facebook.network.connectionclass.ConnectionClassManager;
 import com.facebook.network.connectionclass.DeviceBandwidthSampler;
-import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.data.AccountPreferences;
+import com.telenav.osv.data.Preferences;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.event.EventBus;
-import com.telenav.osv.event.network.LoginChangedEvent;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
 import com.telenav.osv.http.PhotoRequest;
 import com.telenav.osv.http.SequenceFinishedRequest;
@@ -42,7 +37,6 @@ import com.telenav.osv.listener.network.OsvRequestResponseListener;
 import com.telenav.osv.manager.network.encoder.ScoreJsonEncoder;
 import com.telenav.osv.manager.network.parser.HttpResponseParser;
 import com.telenav.osv.manager.network.parser.SequenceDataParser;
-import com.telenav.osv.service.UploadJobService;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
 import com.telenav.osv.utils.Utils;
@@ -52,8 +46,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import javax.inject.Inject;
+
+import static com.telenav.osv.data.Preferences.URL_ENV;
 
 /**
  * *
@@ -96,6 +91,8 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
    */
   private final RequestQueue mSequenceQueue;
 
+  private final SequenceDB sequenceDB;
+
   /**
    * filter used for filtering only image upload requests
    */
@@ -118,8 +115,13 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
 
   private HttpResponseParser mHttpResponseParser = new HttpResponseParser();
 
-  public UploadManager(Context context) {
-    super(context);
+  private Preferences prefs;
+
+  @Inject
+  public UploadManager(Context context, SequenceDB db, Preferences preferences, AccountPreferences accountPreferences) {
+    super(context, accountPreferences);
+    this.prefs = preferences;
+    this.sequenceDB = db;
     HandlerThread handlerThread2 = new HandlerThread("PartialResponse", Process.THREAD_PRIORITY_BACKGROUND);
     handlerThread2.start();
     mHandlerThread = new HandlerThread("BackgroundUpload", Process.THREAD_PRIORITY_BACKGROUND);
@@ -130,35 +132,10 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
     this.mSequenceQueue = newRequestQueue(mContext, 1);
     mSequenceQueue.stop();
     this.videoUploaderQueue = new VideoUploaderQueue(mContext);
-    setEnvironment();
-    EventBus.register(this);
-    VolleyLog.DEBUG = Utils.isDebugEnabled(mContext);
   }
 
-  public static void cancelAutoUpload(Context context) {
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-      JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-      jobScheduler.cancel(UploadJobService.UPLOAD_JOB_ID);
-    }
-  }
-
-  public static void scheduleAutoUpload(Context context) {
-    try {
-      ApplicationPreferences appPrefs = ((OSVApplication) context.getApplicationContext()).getAppPrefs();
-      final boolean autoSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO, false);
-      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP && autoSet) {
-        JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        jobScheduler.cancel(UploadJobService.UPLOAD_JOB_ID);
-        JobInfo.Builder builder = new JobInfo.Builder(UploadJobService.UPLOAD_JOB_ID, new ComponentName(context, UploadJobService.class))
-            .setRequiredNetworkType(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED) ? JobInfo.NETWORK_TYPE_ANY :
-                                        JobInfo.NETWORK_TYPE_UNMETERED).setPersisted(true)
-            .setRequiresCharging(appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_CHARGING));
-        int result = jobScheduler.schedule(builder.build());
-        Log.d(TAG, "onCheckedChanged: scheduled upload task, result = " + result);
-      }
-    } catch (Exception e) {
-      Log.d(TAG, "scheduleAutoUpload: " + Log.getStackTraceString(e));
-    }
+  public static boolean isUploading() {
+    return sUploadStatus != STATUS_IDLE;
   }
 
   /**
@@ -174,7 +151,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
                            final NetworkResponseDataListener<ApiResponse> listener) {
     if (!video.exists()) {
       Log.w(TAG, "uploadVideo: file doesn't exist: " + video.getPath());
-      SequenceDB.instance.deleteVideo(video, sequence.getId(), sequenceIndex);
+      sequenceDB.deleteVideo(video, sequence.getId(), sequenceIndex);
       return;
     }
     final VideoRequest imageUploadReq =
@@ -186,7 +163,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
             runInBackground(() -> {
               Log.d(TAG, "uploadVideo: video uploaded successfully: " + onlineSequenceID + "/" + video.getName());
               sequence.setSize(sequence.getSize() - Utils.fileSize(video));
-              SequenceDB.instance.deleteVideo(video, sequence.getId(), sequenceIndex);
+              sequenceDB.deleteVideo(video, sequence.getId(), sequenceIndex);
               videoUploaderQueue.markDone(sequence);
               listener.requestFinished(status, apiResponse);
             });
@@ -198,12 +175,12 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
               Log.e(TAG, "uploadVideo: error uploading video: " + onlineSequenceID + "/" + video.getName() + ": " + apiResponse);
               if (apiResponse.getApiCode() == API_DUPLICATE_ENTRY) {
                 sequence.setSize(sequence.getSize() - Utils.fileSize(video));
-                SequenceDB.instance.deleteVideo(video, sequence.getId(), sequenceIndex);
+                sequenceDB.deleteVideo(video, sequence.getId(), sequenceIndex);
                 videoUploaderQueue.markDone(sequence);
                 listener.requestFinished(HTTP_OK, apiResponse);
               } else {
                 if (apiResponse.getApiCode() == API_ARGUMENT_OUT_OF_RANGE && videoUploaderQueue.uploadTaskQueue.size() > 0) {
-                  int nrRowsAffected = SequenceDB.instance.resetOnlineSequenceId(onlineSequenceID);
+                  int nrRowsAffected = sequenceDB.resetOnlineSequenceId(onlineSequenceID);
                   Log.d(TAG, "uploadVideo: rollback on sequence " + onlineSequenceID + ", nr of rows affected: " + nrRowsAffected);
                   final Handler handler = new Handler(Looper.getMainLooper());
                   handler.post(() -> {
@@ -237,7 +214,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
                            final double lat, final double lon, final int acc, final NetworkResponseDataListener<ApiResponse> listener) {
     if (!image.exists()) {
       Log.w(TAG, "uploadImage: file doesn't exist: " + image.getPath());
-      SequenceDB.instance.deletePhoto(image, sequence.getId(), sequenceIndex);
+      sequenceDB.deletePhoto(image, sequence.getId(), sequenceIndex);
       return;
     }
     final PhotoRequest imageUploadReq =
@@ -249,7 +226,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
             runInBackground(() -> {
               Log.d(TAG, "uploadImage: image uploaded successfully: " + onlineSequenceID + "/" + image.getName());
               sequence.setSize(sequence.getSize() - Utils.fileSize(image));
-              SequenceDB.instance.deletePhoto(image, sequence.getId(), sequenceIndex);
+              sequenceDB.deletePhoto(image, sequence.getId(), sequenceIndex);
               videoUploaderQueue.markDone(sequence);
               listener.requestFinished(status, apiResponse);
             });
@@ -264,12 +241,12 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
                 apiResponse.setHttpCode(HTTP_OK);
                 apiResponse.setApiCode(API_SUCCESS);
                 sequence.setSize(sequence.getSize() - Utils.fileSize(image));
-                SequenceDB.instance.deletePhoto(image, sequence.getId(), sequenceIndex);
+                sequenceDB.deletePhoto(image, sequence.getId(), sequenceIndex);
                 videoUploaderQueue.markDone(sequence);
                 listener.requestFinished(HTTP_OK, apiResponse);
               } else {
                 if (apiResponse.getApiCode() == API_ARGUMENT_OUT_OF_RANGE && videoUploaderQueue.uploadTaskQueue.size() > 0) {
-                  int nrRowsAffected = SequenceDB.instance.resetOnlineSequenceId(onlineSequenceID);
+                  int nrRowsAffected = sequenceDB.resetOnlineSequenceId(onlineSequenceID);
                   Log.d(TAG, "uploadImage: rollback on sequence " + onlineSequenceID + ", nr of rows affected: " + nrRowsAffected);
                   final Handler handler = new Handler(Looper.getMainLooper());
                   handler.post(() -> {
@@ -296,7 +273,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
    * @param sequence folder of the sequence
    */
   private void createSequence(final LocalSequence sequence) {
-    final int onlineId = SequenceDB.instance.getOnlineId(sequence.getId());
+    final int onlineId = sequenceDB.getOnlineId(sequence.getId());
     OSVFile metafile = new OSVFile(sequence.getFolder(), "track.txt.gz");
     if (!metafile.exists()) {
       metafile = new OSVFile(sequence.getFolder(), "track.txt");
@@ -304,7 +281,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
     final OSVFile finalMetafile = metafile;
     Log.d(TAG, "createSequence: creating sequence request");
     if (onlineId == -1) {
-      Cursor cursor = SequenceDB.instance.getFrames(sequence.getId());
+      Cursor cursor = sequenceDB.getFrames(sequence.getId());
       if (cursor != null && cursor.getCount() > 0) {
         String position = "" + cursor.getDouble(cursor.getColumnIndex(SequenceDB.FRAME_LAT)) + "," +
             cursor.getDouble(cursor.getColumnIndex(SequenceDB.FRAME_LON));
@@ -314,7 +291,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
               @Override
               public void onSuccess(final int status, final SequenceData sequenceData) {
                 runInBackground(() -> {
-                  int updatedRows = SequenceDB.instance.updateSequenceOnlineId(sequence.getId(), sequenceData.getOnlineID());
+                  int updatedRows = sequenceDB.updateSequenceOnlineId(sequence.getId(), sequenceData.getOnlineID());
                   if (updatedRows > 0) {
                     sequence.setOnlineId(sequenceData.getOnlineID());
                     if (finalMetafile.exists()) {
@@ -452,6 +429,81 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
   }
 
   /**
+   * cancells all upload request added
+   */
+  public void cancelUploadTasks() {
+    if (sUploadStatus != STATUS_IDLE) {
+      mCreateQueue.clear();
+      mSequenceQueue.stop();
+      videoUploaderQueue.mVideoUploadQueue.stop();
+      Log.d(TAG, "cancelUploadTasks: cancelled all upload tasks");
+      try {
+        mPartialResponseHandler.removeCallbacksAndMessages(null);
+        mPartialResponseHandler.getLooper().getThread().interrupt();
+      } catch (Exception ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
+      }
+      try {
+        mBackgroundHandler.removeCallbacksAndMessages(null);
+        mBackgroundHandler.getLooper().getThread().interrupt();
+      } catch (Exception ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
+      }
+      if (mHandlerThread != null) {
+        try {
+          mHandlerThread.quit();
+        } catch (Exception ignored) {
+          Log.d(TAG, Log.getStackTraceString(ignored));
+        }
+      }
+      mHandlerThread = new HandlerThread("BackgroundUpload", Process.THREAD_PRIORITY_BACKGROUND);
+      mHandlerThread.start();
+      mBackgroundHandler = new Handler(mHandlerThread.getLooper());
+      HandlerThread handlerThread2 = new HandlerThread("PartialResponse", Process.THREAD_PRIORITY_BACKGROUND);
+      handlerThread2.start();
+      mPartialResponseHandler = new Handler(handlerThread2.getLooper());
+      mSequenceQueue.cancelAll(new SequenceRequestFilter());
+      sUploadStatus = STATUS_IDLE;
+      uploadFilter = new UploadRequestFilter();
+      videoUploaderQueue.mVideoUploadQueue.cancelAll(uploadFilter);
+      videoUploaderQueue.uploadTaskQueue.clear();
+
+      if (videoUploaderQueue.progressListener != null) {
+        videoUploaderQueue.progressListener.onUploadCancelled(getTotalSizeValue(), getRemainingSizeValue());
+      }
+      sequenceDB.interruptUploading();
+      sequenceDB.fixStatuses();
+      if (NetworkUtils.isWifiOn(mContext) || mWifiLock != null) {
+        try {
+          if (mWifiLock != null) {
+            mWifiLock.release();
+            mWifiLock = null;
+          }
+        } catch (Exception ignored) {
+          Log.d(TAG, Log.getStackTraceString(ignored));
+        }
+      }
+    }
+  }
+
+  public void pauseUpload() {
+    videoUploaderQueue.pause();
+  }
+
+  public void resumeUpload() {
+    final boolean dataSet = prefs.isDataUploadEnabled();
+    if (isUploading()) {
+      if (isPaused()) {
+        if (NetworkUtils.isInternetAvailable(mContext)) {
+          if (dataSet || NetworkUtils.isWifiInternetAvailable(mContext)) {
+            videoUploaderQueue.resume();
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * uploads a sequence folder, containing images
    *
    * @param sequence the sequence folder
@@ -460,10 +512,10 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
    */
   private void uploadSequence(LocalSequence sequence, final int sequenceIdOnline, NetworkResponseDataListener<ApiResponse> listener) {
     if (videoUploaderQueue.progressListener != null) {
-      videoUploaderQueue.progressListener.onIndexingSequence(sequence, mCreateQueue.size());
+      videoUploaderQueue.progressListener.onIndexingSequence(sequence, mCreateQueue.size(), videoUploaderQueue.mSequences.size());
     }
     if (sequence.isSafe()) {
-      Cursor cursor = SequenceDB.instance.getFrames(sequence.getId());
+      Cursor cursor = sequenceDB.getFrames(sequence.getId());
       if (cursor != null && cursor.getCount() > 0) {
         while (!cursor.isAfterLast()) {
           if (Thread.interrupted()) {
@@ -490,7 +542,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
         cursor.close();
       }
     } else {
-      Cursor cursor = SequenceDB.instance.getVideos(sequence.getId());
+      Cursor cursor = sequenceDB.getVideos(sequence.getId());
       if (cursor != null && cursor.getCount() > 0) {
         while (!cursor.isAfterLast()) {
           if (Thread.interrupted()) {
@@ -533,78 +585,12 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
     videoUploaderQueue.commit();
   }
 
-  /**
-   * cancells all upload request added
-   */
-  public void cancelUploadTasks() {
-    if (sUploadStatus != STATUS_IDLE) {
-      mCreateQueue.clear();
-      mSequenceQueue.stop();
-      videoUploaderQueue.mVideoUploadQueue.stop();
-      Log.d(TAG, "cancelUploadTasks: cancelled all upload tasks");
-      try {
-        mPartialResponseHandler.removeCallbacksAndMessages(null);
-        mPartialResponseHandler.getLooper().getThread().interrupt();
-      } catch (Exception ignored) {
-      }
-      try {
-        mBackgroundHandler.removeCallbacksAndMessages(null);
-        mBackgroundHandler.getLooper().getThread().interrupt();
-      } catch (Exception ignored) {
-      }
-      if (mHandlerThread != null) {
-        try {
-          mHandlerThread.quit();
-        } catch (Exception ignored) {
-        }
-      }
-      mHandlerThread = new HandlerThread("BackgroundUpload", Process.THREAD_PRIORITY_BACKGROUND);
-      mHandlerThread.start();
-      mBackgroundHandler = new Handler(mHandlerThread.getLooper());
-      HandlerThread handlerThread2 = new HandlerThread("PartialResponse", Process.THREAD_PRIORITY_BACKGROUND);
-      handlerThread2.start();
-      mPartialResponseHandler = new Handler(handlerThread2.getLooper());
-      mSequenceQueue.cancelAll(new SequenceRequestFilter());
-      sUploadStatus = STATUS_IDLE;
-      uploadFilter = new UploadRequestFilter();
-      videoUploaderQueue.mVideoUploadQueue.cancelAll(uploadFilter);
-      videoUploaderQueue.uploadTaskQueue.clear();
-
-      if (videoUploaderQueue.progressListener != null) {
-        videoUploaderQueue.progressListener.onUploadCancelled(getTotalSizeValue(), getRemainingSizeValue());
-      }
-      SequenceDB.instance.interruptUploading();
-      SequenceDB.instance.fixStatuses();
-      if (NetworkUtils.isWifiOn(mContext) || mWifiLock != null) {
-        try {
-          if (mWifiLock != null) {
-            mWifiLock.release();
-            mWifiLock = null;
-          }
-        } catch (Exception ignored) {
-        }
-      }
-    }
-  }
-
-  public void pauseUpload() {
-    videoUploaderQueue.pause();
-  }
-
-  public void resumeUpload() {
-    final boolean dataSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED, false);
-    if (isUploading()) {
-      if (isPaused()) {
-        if (NetworkUtils.isInternetAvailable(mContext)) {
-          if (dataSet || NetworkUtils.isWifiInternetAvailable(mContext)) {
-            videoUploaderQueue.resume();
-          }
-        }
-      }
-    }
+  public void setUploadProgressListener(UploadProgressListener listener) {
+    videoUploaderQueue.setUploadProgressListener(listener);
   }
 
   public void uploadCache(final Collection<LocalSequence> sequences) {
+    Log.d(TAG, "uploadCache: " + sUploadStatus);
     if (sUploadStatus != STATUS_IDLE) {
       if (videoUploaderQueue.progressListener != null) {
         videoUploaderQueue.progressListener.onUploadCancelled(0, 0);
@@ -614,10 +600,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
     }
     sUploadStatus = STATUS_INDEXING;
     final List<LocalSequence> sequencesCopy = new ArrayList<>(sequences);
-    String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-    String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
-
-    if ("".equals(userName) || "".equals(token) || sequencesCopy.isEmpty()) {
+    if (!prefs.isLoggedIn() || sequencesCopy.isEmpty()) {
       if (videoUploaderQueue.progressListener != null) {
         videoUploaderQueue.progressListener.onUploadCancelled(0, 0);
       }
@@ -631,7 +614,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
         Iterator<LocalSequence> iter = sequencesCopy.iterator();
         while (iter.hasNext()) {
           LocalSequence seq = iter.next();
-          if (SequenceDB.instance.getNumberOfFrames(seq.getId()) <= 0) {
+          if (sequenceDB.getNumberOfFrames(seq.getId()) <= 0) {
             iter.remove();
           } else {
             seq.setStatus(LocalSequence.STATUS_INDEXING);
@@ -661,14 +644,6 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
     });
   }
 
-  public void setUploadProgressListener(UploadProgressListener listener) {
-    videoUploaderQueue.setUploadProgressListener(listener);
-  }
-
-  public boolean isUploading() {
-    return sUploadStatus != STATUS_IDLE;
-  }
-
   public boolean isPaused() {
     return sUploadStatus == STATUS_PAUSED;
   }
@@ -683,10 +658,6 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
       number = number + sequence.getSize();
     }
     return number;
-  }
-
-  public int getOriginalSequencesNumber() {
-    return videoUploaderQueue.mSequences.size();
   }
 
   private long getTotalSizeValue() {
@@ -704,11 +675,6 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
     videoUploaderQueue.mTotalSize = 0;
   }
 
-  @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
-  public void onLoginChanged(LoginChangedEvent event) {
-    mAccessToken = null;
-  }
-
   @Override
   void runInBackground(Runnable runnable) {
     if (mBackgroundHandler == null || mBackgroundHandler.getLooper() == null || !mBackgroundHandler.getLooper().getThread().isAlive()) {
@@ -721,8 +687,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
   }
 
   @Override
-  protected void setEnvironment() {
-    super.setEnvironment();
+  protected void setupUrls() {
     URL_SEQUENCE = URL_SEQUENCE.replace("&&", URL_ENV[mCurrentServer]);
     URL_VIDEO = URL_VIDEO.replace("&&", URL_ENV[mCurrentServer]);
     URL_PHOTO = URL_PHOTO.replace("&&", URL_ENV[mCurrentServer]);
@@ -786,7 +751,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
       boolean thereIsSafe = false;
       for (final LocalSequence sequence : sequences) {
         thereIsSafe = thereIsSafe || sequence.isSafe();
-        int number = (int) SequenceDB.instance.getNumberOfVideos(sequence.getId());
+        int number = (int) sequenceDB.getNumberOfVideos(sequence.getId());
         mTotalSize = mTotalSize + sequence.getOriginalSize();
         sequence.setVideoCount(number);
       }
@@ -801,7 +766,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
       Log.d(TAG, "initialize: mTotalSize = " + mTotalSize);
 
       if (sUploadStatus == STATUS_IDLE && progressListener != null) {
-        progressListener.onUploadStarted(mTotalSize, mSequences.size());
+        progressListener.onUploadStarted(mTotalSize, mSequences.size(), videoUploaderQueue.mSequences.size());
       }
     }
 
@@ -871,7 +836,7 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
       progressListener = listener;
       if (progressListener != null) {
         if (sUploadStatus != STATUS_IDLE) {
-          progressListener.onUploadStarted(getTotalSizeValue(), mCreateQueue.size());
+          progressListener.onUploadStarted(getTotalSizeValue(), mCreateQueue.size(), videoUploaderQueue.mSequences.size());
           progressListener.onProgressChanged(Math.max(getTotalSizeValue(), 1), getRemainingSizeValue());
         }
       }
@@ -895,12 +860,13 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
         pause();
         return;
       }
+      Log.d(TAG, "markDone: listener " + progressListener);
       if (progressListener != null) {
         progressListener.onImageUploaded(sequence);
       }
 
       try {
-        sequence.setFrameCount((int) SequenceDB.instance.getNumberOfFrames(sequence.getId()));
+        sequence.setFrameCount((int) sequenceDB.getNumberOfFrames(sequence.getId()));
       } catch (Exception e) {
         Log.d(TAG, "markDone: " + Log.getStackTraceString(e));
       }
@@ -946,9 +912,6 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
       long totalSize = getTotalSizeValue();
       final long remainingSize = getRemainingSizeValue();
       if (progressListener != null && sUploadStatus != STATUS_IDLE) {
-        //                final int progress = (int) (((totalSize - (remainingSize - totalSent)) * 100) / totalSize);
-        //                Log.d(TAG, "partialProgressChanged: totalSize: " + totalSize + ", remainingSize: " + remainingSize + ",
-        // totalSent: " + totalSent + ", percentage is " + progress);
         progressListener.onProgressChanged(Math.max(totalSize, 1), remainingSize - totalSent);
       }
     }
@@ -970,8 +933,9 @@ public class UploadManager extends NetworkManager implements NetworkResponseData
           }
         }
       } catch (Exception ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
       }
-      SequenceDB.instance.fixStatuses();
+      sequenceDB.fixStatuses();
       ((OSVApplication) mContext.getApplicationContext()).consistencyCheck();
     }
   }

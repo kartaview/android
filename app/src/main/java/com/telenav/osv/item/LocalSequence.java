@@ -160,10 +160,10 @@ public class LocalSequence extends Sequence {
     return totalSize;
   }
 
-  public static int checkDeletedSequences() {
+  public static int checkDeletedSequences(SequenceDB db) {
     if (sequences != null && sequences.size() > 0) {
       for (LocalSequence s : sequences.values()) {
-        if (!SequenceDB.instance.checkSequenceExists(s.mId)) {
+        if (!db.checkSequenceExists(s.mId)) {
           deleteSequence(s.mId);
         }
       }

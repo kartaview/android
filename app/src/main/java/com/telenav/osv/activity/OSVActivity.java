@@ -8,31 +8,32 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import com.telenav.osv.R;
-import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.manager.network.UploadManager;
-import com.telenav.osv.manager.network.UserDataManager;
+import com.telenav.osv.data.Preferences;
+import com.telenav.osv.di.Injectable;
+import com.telenav.osv.ui.Navigator;
 import com.telenav.osv.utils.Log;
 import java.util.ArrayList;
+import javax.inject.Inject;
 
 /**
  * Abstract activity used in the project
  * Created by Kalman on 26/09/16.
  */
-public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListener*/ {
+public abstract class OSVActivity extends AppCompatActivity implements Navigator, Injectable {
 
   private static final String TAG = "OSVActivity";
 
-  public UploadManager mUploadManager;
-
-  ApplicationPreferences appPrefs;
-
-  UserDataManager mUserDataManager;
+  @Inject
+  Preferences appPrefs;
 
   public abstract OSVApplication getApp();
 
-  public abstract int getCurrentScreen();
-
+  /**
+   * used when gps not enabled, no permission etc
+   *
+   * @param b
+   */
   public abstract void resolveLocationProblem(boolean b);
 
   public abstract void hideSnackBar();
@@ -59,11 +60,13 @@ public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListen
 
   public abstract boolean isPortrait();
 
+  public abstract void openScreen(int screenNearby, Object extra);
+
   public void openScreen(int screen) {
     openScreen(screen, null);
   }
 
-  public abstract void openScreen(int screenNearby, Object extra);
+  public abstract int getCurrentScreen();
 
   public boolean checkPermissionsForRecording() {
     Log.d(TAG, "checkPermissionsForRecording: ");
@@ -187,11 +190,14 @@ public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListen
     Log.d(TAG, "onTrimMemory: --------------------------- level " + levelRepr);
   }
 
-  public UserDataManager getUserDataManager() {
-    if (mUserDataManager == null) {
-      mUserDataManager = new UserDataManager(this);
-    }
-    return mUserDataManager;
+  @Override
+  protected void onStart() {
+    super.onStart();
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
   }
 
   public abstract boolean hasPosition();

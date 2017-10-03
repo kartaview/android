@@ -1,35 +1,21 @@
 package com.telenav.osv.item;
 
-import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.item.network.ApiResponse;
+import com.telenav.osv.item.network.UserData;
 
 /**
  * Holder class for user account info
  * Created by kalmanb on 7/5/17.
  */
-public class AccountData extends ApiResponse {
+@SuppressWarnings("unused")
+public class AccountData extends UserData {
 
-  public static final int ACCOUNT_TYPE_OSM = 0;
+  public static final int ACCOUNT_TYPE_NONE = 0;
 
-  public static final int ACCOUNT_TYPE_GOOGLE = 1;
+  public static final int ACCOUNT_TYPE_OSM = 1;
 
-  public static final int ACCOUNT_TYPE_FACEBOOK = 2;
+  public static final int ACCOUNT_TYPE_GOOGLE = 2;
 
-  private static final String KEY_USER_TYPE_DEDICATED = "DEDICATED";
-
-  private static final String KEY_USER_TYPE_BYOD = "BYOD";
-
-  private static final String KEY_USER_TYPE_BAU = "BAU";
-
-  private static final String KEY_USER_TYPE_USER = "user";
-
-  private static final String KEY_USER_TYPE_QA = "qa";
-
-  private static final String KEY_LOGIN_TYPE_GOOGLE = "GOOGLE";
-
-  private static final String KEY_LOGIN_TYPE_FACEBOOK = "FACEBOOK";
-
-  private static final String KEY_LOGIN_TYPE_OSM = "OSM";
+  public static final int ACCOUNT_TYPE_FACEBOOK = 3;
 
   private String id;
 
@@ -50,34 +36,6 @@ public class AccountData extends ApiResponse {
     this.profilePictureUrl = profilePictureUrl;
     this.userType = userType;
     this.accountType = accountType;
-  }
-
-  public static int getUserTypeForString(String type) {
-    switch (type) {
-      case KEY_USER_TYPE_DEDICATED:
-        return PreferenceTypes.USER_TYPE_DEDICATED;
-      case KEY_USER_TYPE_BYOD:
-        return PreferenceTypes.USER_TYPE_BYOD;
-      case KEY_USER_TYPE_BAU:
-        return PreferenceTypes.USER_TYPE_BAU;
-      default:
-      case KEY_USER_TYPE_USER:
-        return PreferenceTypes.USER_TYPE_CONTRIBUTOR;
-      case KEY_USER_TYPE_QA:
-        return PreferenceTypes.USER_TYPE_QA;
-    }
-  }
-
-  public static int getAccountTypeForString(String type) {
-    switch (type) {
-      default:
-      case KEY_LOGIN_TYPE_OSM:
-        return ACCOUNT_TYPE_OSM;
-      case KEY_LOGIN_TYPE_GOOGLE:
-        return ACCOUNT_TYPE_GOOGLE;
-      case KEY_LOGIN_TYPE_FACEBOOK:
-        return ACCOUNT_TYPE_FACEBOOK;
-    }
   }
 
   public String getId() {
@@ -104,20 +62,26 @@ public class AccountData extends ApiResponse {
     this.displayName = displayName;
   }
 
-  public String getProfilePictureUrl() {
-    return profilePictureUrl;
-  }
-
-  public void setProfilePictureUrl(String profilePictureUrl) {
-    this.profilePictureUrl = profilePictureUrl;
-  }
-
   public int getUserType() {
     return userType;
   }
 
   public void setUserType(int userType) {
     this.userType = userType;
+  }
+
+  @Override
+  public String toString() {
+    return "UserInfo{" + "id='" + id + '\'' + ", userName='" + userName + '\'' + ", displayName='" + displayName + '\'' +
+        ", profilePictureUrl='" + profilePictureUrl + '\'' + ", userType=" + userType + ", accountType=" + accountType + '}';
+  }
+
+  public String getProfilePictureUrl() {
+    return profilePictureUrl;
+  }
+
+  public void setProfilePictureUrl(String profilePictureUrl) {
+    this.profilePictureUrl = profilePictureUrl;
   }
 
   public int getAccountType() {
@@ -129,13 +93,7 @@ public class AccountData extends ApiResponse {
   }
 
   public boolean isDriver() {
-    return userType == PreferenceTypes.USER_TYPE_BYOD || userType == PreferenceTypes.USER_TYPE_DEDICATED ||
-        userType == PreferenceTypes.USER_TYPE_BAU;
-  }
-
-  @Override
-  public String toString() {
-    return "UserInfo{" + "id='" + id + '\'' + ", userName='" + userName + '\'' + ", displayName='" + displayName + '\'' +
-        ", profilePictureUrl='" + profilePictureUrl + '\'' + ", userType=" + userType + ", accountType=" + accountType + '}';
+    return userType == TYPE_BYOD || userType == TYPE_DEDICATED ||
+        userType == TYPE_BAU;
   }
 }

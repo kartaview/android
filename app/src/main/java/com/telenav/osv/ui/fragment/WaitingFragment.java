@@ -1,5 +1,6 @@
 package com.telenav.osv.ui.fragment;
 
+import android.app.job.JobScheduler;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -24,23 +25,30 @@ import com.skobbler.ngx.reversegeocode.SKReverseGeocoderManager;
 import com.skobbler.ngx.search.SKSearchResult;
 import com.skobbler.ngx.search.SKSearchResultParent;
 import com.telenav.osv.R;
+import com.telenav.osv.activity.LoginActivity;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.activity.PlayerActivity;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.application.ValueFormatter;
+import com.telenav.osv.data.Preferences;
+import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.network.upload.UploadCancelledEvent;
 import com.telenav.osv.event.network.upload.UploadFinishedEvent;
 import com.telenav.osv.event.network.upload.UploadStartedEvent;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
 import com.telenav.osv.item.LocalSequence;
-import com.telenav.osv.ui.ScreenComposer;
+import com.telenav.osv.service.UploadJobService;
+import com.telenav.osv.ui.Navigator;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.NetworkUtils;
 import com.telenav.osv.utils.Utils;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import static com.telenav.osv.ui.Navigator.SCREEN_UPLOAD_PROGRESS;
 
 /**
  * fragment displaying local tracks
@@ -48,15 +56,66 @@ import org.greenrobot.eventbus.ThreadMode;
  */
 public class WaitingFragment extends OSVFragment {
 
-  public final static String TAG = "WaitingFragment";
+  public static final String TAG = "WaitingFragment";
+
+  @Inject
+  Preferences appPrefs;
+
+  @Inject
+  ValueFormatter valueFormatter;
+
+  @Inject
+  SequenceDB db;
 
   private MainActivity activity;
+
+  public View.OnClickListener actionUploadAllListener = new View.OnClickListener() {
+
+    @Override
+    public void onClick(View v) {
+      if (!appPrefs.isLoggedIn()) {
+        activity.showSnackBar(R.string.login_to_upload_warning, Snackbar.LENGTH_LONG, getString(R.string.login_label), () -> {
+          if (Utils.isInternetAvailable(activity)) {
+            startActivity(new Intent(activity, LoginActivity.class));
+          } else {
+            activity.showSnackBar(R.string.check_internet_connection, Snackbar.LENGTH_LONG);
+          }
+        });
+
+        return;
+      }
+      if (!NetworkUtils.isInternetAvailable(activity)) {
+        activity.showSnackBar(R.string.no_internet_connection_label, Snackbar.LENGTH_SHORT);
+
+        return;
+      }
+      if (LocalSequence.getStaticSequences().values().isEmpty()) {
+        activity.showSnackBar(R.string.no_local_recordings_message, Snackbar.LENGTH_SHORT);
+        return;
+      }
+      if (!NetworkUtils.isWifiInternetAvailable(activity) &&
+          !appPrefs.isDataUploadEnabled()) {
+        activity.showSnackBar(R.string.no_wifi_label, Snackbar.LENGTH_SHORT);
+
+        return;
+      }
+
+      final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
+      builder.setMessage(getString(R.string.upload_all_warning)).setTitle(getString(R.string.upload_all_warning_title))
+          .setNegativeButton(R.string.cancel_label, (dialog, which) -> {
+
+          }).setPositiveButton(R.string.upload_all_label, (dialog, which) -> {
+        int result = UploadJobService.scheduleImmediateUpload(activity);
+        if (result == JobScheduler.RESULT_SUCCESS) {
+          activity.openScreen(SCREEN_UPLOAD_PROGRESS);
+        }
+      }).create().show();
+    }
+  };
 
   private Button uploadButton;
 
   private SequenceListAdapter localSequencesAdapter;
-
-  private ApplicationPreferences appPrefs;
 
   @Override
   public void onAttach(Context context) {
@@ -69,7 +128,6 @@ public class WaitingFragment extends OSVFragment {
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
     final View view = inflater.inflate(R.layout.fragment_waiting, null);
     activity = (MainActivity) getActivity();
-    appPrefs = activity.getApp().getAppPrefs();
     RecyclerView localRecyclerView = view.findViewById(R.id.local_list);
     final ConcurrentHashMap<Integer, LocalSequence> localSequences = LocalSequence.getStaticSequences();
     localSequencesAdapter = new SequenceListAdapter(activity, new ArrayList<>(localSequences.values()));
@@ -88,20 +146,19 @@ public class WaitingFragment extends OSVFragment {
           @Override
           public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
             //Remove swiped item from list and notify the RecyclerView
-            boolean doNotShow = appPrefs.getBooleanPreference(PreferenceTypes.K_SKIP_DELETE_DIALOG);
-            if (doNotShow) {
-              localSequencesAdapter.onDeleteItem(viewHolder);
-            } else {
+            if (appPrefs.shouldShowDeleteConfirmation()) {
               final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
               AlertDialog deleteDialog = builder.setTitle(R.string.delete_track_title).setMessage(R.string.delete_local_track)
                   .setPositiveButton(R.string.delete_label, (dialog, which) -> localSequencesAdapter.onDeleteItem(viewHolder))
                   .setNegativeButton(R.string.cancel_label, (dialog, which) -> {
                   }).setNeutralButton(R.string.delete_track_and_dont_remind_me, (dialogInterface, i) -> {
-                    appPrefs.saveBooleanPreference(PreferenceTypes.K_SKIP_DELETE_DIALOG, true);
+                    appPrefs.setShouldShowDeleteConfirmation(false);
                     localSequencesAdapter.onDeleteItem(viewHolder);
                   }).setOnDismissListener(dialogInterface -> localSequencesAdapter.notifyItemChanged(viewHolder.getAdapterPosition()))
                   .create();
               deleteDialog.show();
+            } else {
+              localSequencesAdapter.onDeleteItem(viewHolder);
             }
           }
         };
@@ -125,9 +182,9 @@ public class WaitingFragment extends OSVFragment {
   @Override
   public void onResume() {
     super.onResume();
-    int size = LocalSequence.checkDeletedSequences();
+    int size = LocalSequence.checkDeletedSequences(db);
     if (size <= 0 && activity != null) {
-      activity.openScreen(ScreenComposer.SCREEN_MAP);
+      activity.openScreen(Navigator.SCREEN_MAP);
       return;
     }
     if (localSequencesAdapter != null) {
@@ -151,7 +208,7 @@ public class WaitingFragment extends OSVFragment {
     Log.d(TAG, "setupUploadButton: ");
     if (uploadButton != null) {
       uploadButton.setText(R.string.upload_all_label);
-      uploadButton.setOnClickListener(activity.actionUploadAllListener);
+      uploadButton.setOnClickListener(actionUploadAllListener);
     }
   }
 
@@ -204,7 +261,7 @@ public class WaitingFragment extends OSVFragment {
   @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
   public void onUploadStarted(UploadStartedEvent event) {
     if (activity != null) {
-      activity.openScreen(ScreenComposer.SCREEN_UPLOAD_PROGRESS);
+      activity.openScreen(SCREEN_UPLOAD_PROGRESS);
     }
   }
 
@@ -299,7 +356,8 @@ public class WaitingFragment extends OSVFragment {
         int status = sequence.getStatus();
         if (status == LocalSequence.STATUS_NEW || status == LocalSequence.STATUS_INTERRUPTED) {
           if (!"".equals(
-              Utils.getExternalStoragePath(activity)) && sequence.getFolder().getPath().contains(Utils.getExternalStoragePath(activity))) {
+              Utils.getExternalStoragePath(activity, appPrefs))
+              && sequence.getFolder().getPath().contains(Utils.getExternalStoragePath(activity, appPrefs))) {
             sequence.setExternal(true);
           }
         }
@@ -311,7 +369,7 @@ public class WaitingFragment extends OSVFragment {
 
         String distanceText = "";
         if (sequence.getDistance() >= 0) {
-          String[] distance = Utils.formatDistanceFromMeters(activity, sequence.getDistance());
+          String[] distance = valueFormatter.formatDistanceFromMeters(sequence.getDistance());
           distanceText = distance[0] + distance[1];
         }
 
@@ -332,7 +390,7 @@ public class WaitingFragment extends OSVFragment {
             if (sequence.getStatus() == LocalSequence.STATUS_NEW) {
               if (Utils.checkSDCard(activity) || !sequence.isExternal()) {
                 if (sequence.isSafe()) {
-                  activity.openScreen(ScreenComposer.SCREEN_PREVIEW, sequence);
+                  activity.openScreen(Navigator.SCREEN_PREVIEW, sequence);
                 } else {
                   Intent intent = new Intent(activity, PlayerActivity.class);
                   intent.putExtra(PlayerActivity.EXTRA_SEQUENCE_ID, sequence.getFolder().getPath());
@@ -346,7 +404,7 @@ public class WaitingFragment extends OSVFragment {
         } else if (sequence.getStatus() == LocalSequence.STATUS_INTERRUPTED) {
           int color = activity.getResources().getColor(R.color.gray_summary_primary_text);
           holder.addressTitle.setTextColor(color);
-          holder.addressTitle.setText("Interrupted: " + holder.addressTitle.getText());
+          holder.addressTitle.setText(getString(R.string.partial_interrupted_track_label) + " " + holder.addressTitle.getText());
           holder.totalImages.setTextColor(color);
           Drawable orig = holder.totalImages.getCompoundDrawables()[0];
           Drawable drawable;
@@ -385,7 +443,7 @@ public class WaitingFragment extends OSVFragment {
       final LocalSequence sequence = data.get(Math.max(0, position));
       final int sequenceId = sequence.getId();
       data.remove(position);
-      activity.showSnackBar(R.string.recording_deleted, 1500, "Undo", () -> {
+      activity.showSnackBar(R.string.recording_deleted, 1500, getString(R.string.undo_label), () -> {
         mDeleteHandler.removeCallbacksAndMessages(null);
         data.add(position, sequence);
         notifyItemInserted(position);

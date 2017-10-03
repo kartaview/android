@@ -2,7 +2,6 @@ package com.telenav.osv.ui.fragment;
 
 import android.animation.Animator;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,6 +9,7 @@ import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.animation.BounceInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,29 +18,40 @@ import android.widget.TextView;
 import com.pnikosis.materialishprogress.ProgressWheel;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.application.ValueFormatter;
+import com.telenav.osv.data.Preferences;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.camera.ImageSavedEvent;
 import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.ui.RecordingVisibleEvent;
 import com.telenav.osv.event.ui.ShutterPressEvent;
 import com.telenav.osv.manager.Recorder;
-import com.telenav.osv.ui.ScreenComposer;
+import com.telenav.osv.ui.Navigator;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 import java.text.DecimalFormat;
+import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jetbrains.annotations.NonNls;
 
 /**
  * camera control buttons ui
  * Created by Kalman on 14/07/16.
  */
 
-public class CameraControlsFragment extends FunctionalFragment implements View.OnClickListener {
+public class CameraControlsFragment extends OSVFragment implements View.OnClickListener {
 
   public static final String TAG = "CameraControlsFragment";
+
+  @Inject
+  Preferences appPrefs;
+
+  @Inject
+  Recorder mRecorder;
+
+  @Inject
+  ValueFormatter valueFormatter;
 
   private View view;
 
@@ -66,13 +77,9 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
 
   private Handler mHandler = new Handler(Looper.getMainLooper());
 
-  private ApplicationPreferences appPrefs;
-
   private View mControlsView;
 
   private View mControlsViewH;
-
-  private Recorder mRecorder;
 
   private LinearLayout mHintLayout;
 
@@ -81,10 +88,10 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
   private View.OnClickListener shutterListener = v -> pressShutterButton(null);
 
   private static String[] formatSize(double value) {
-    String[] sizeText = new String[] {"0", " MB"};
+    @NonNls String[] sizeText = new String[] {"0", " MB"};
     if (value > 0) {
       double size = value / (double) 1024 / (double) 1024;
-      String type = " MB";
+      @NonNls String type = " MB";
       DecimalFormat df2 = new DecimalFormat("#.#");
       if (size > 1024) {
         size = (size / (double) 1024);
@@ -104,7 +111,8 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
     mControlsView = inflater.inflate(R.layout.partial_camera_controls, null);
     mControlsViewH = inflater.inflate(R.layout.partial_camera_controls_landscape, null);
 
-    appPrefs = activity.getApp().getAppPrefs();
+    //the scope of this fragment is activity scope (it is attached all the time just like preview and map)
+    // and we need to observe changes happening in lower scopes like settings fragment
     boolean portrait = activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
     initLayouts(portrait);
     return view;
@@ -114,11 +122,6 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
   public void onStart() {
     super.onStart();
     EventBus.register(this);
-  }
-
-  @Override
-  public void onResume() {
-    super.onResume();
   }
 
   @Override
@@ -132,30 +135,11 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
     Log.d(TAG, "onConfigurationChanged: ");
   }
 
-  @Override
-  public void onPause() {
-    super.onPause();
-  }
 
   @Override
   public void onStop() {
     EventBus.unregister(this);
     super.onStop();
-  }
-
-  @Override
-  public void onDestroyView() {
-    super.onDestroyView();
-  }
-
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-  }
-
-  @Override
-  public void onDetach() {
-    super.onDetach();
   }
 
   private void initLayouts(final boolean portrait) {
@@ -177,9 +161,9 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
     ((ViewGroup) view).removeAllViews();
     final boolean finalFinishing = finishing;
     view.post(() -> {
-      try {
-        ((ViewGroup) current.getParent()).removeAllViews();
-      } catch (Exception ignored) {
+      ViewParent viewGroup = current.getParent();
+      if (viewGroup != null) {
+        ((ViewGroup) viewGroup).removeAllViews();
       }
       ((ViewGroup) view).addView(current);
       // Setup shutter button
@@ -194,7 +178,7 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
       mSizeText = current.findViewById(R.id.size_recorder_images_value);
       mSizeUnitText = current.findViewById(R.id.size_recorder_images_text);
       mInfoButton = current.findViewById(R.id.info_button_layout);
-      mInfoButton.setOnClickListener(v -> activity.openScreen(ScreenComposer.SCREEN_RECORDING_HINTS));
+      mInfoButton.setOnClickListener(v -> activity.openScreen(Navigator.SCREEN_RECORDING_HINTS));
       mInfoButton.clearAnimation();
       mShutterButton = current.findViewById(R.id.btn_shutter);
       mShutterProgress = current.findViewById(R.id.shutter_progress);
@@ -209,10 +193,10 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
       if (mRecordingDetailsLayout != null && mCancelAndHomeText != null) {
         if (mRecorder != null && (mRecorder.isRecording() || finalFinishing)) {
           showDetails(portrait);
-          if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, false)) {
+          if (appPrefs.shouldShowBackgroundHint()) {
             final Snackbar snack = Snackbar.make(view, R.string.turn_off_screen_hint, Snackbar.LENGTH_INDEFINITE);
 
-            snack.setAction(R.string.got_it_label, v -> appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, true));
+            snack.setAction(R.string.got_it_label, v -> appPrefs.setShouldShowBackgroundHint(false));
             snack.show();
             mHandler.postDelayed(snack::dismiss, 5000);
           }
@@ -293,7 +277,7 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
 
       activity.runOnUiThread(() -> {
         if (mDistanceText != null && mDistanceUnitText != null && mSizeText != null && mPicturesText != null && mSizeUnitText != null) {
-          String[] dist = Utils.formatDistanceFromMeters(activity, distance);
+          String[] dist = valueFormatter.formatDistanceFromMeters(distance);
           String[] size = formatSize(spaceOccupied);
           mDistanceText.setText(dist[0]);
           mDistanceUnitText.setText(dist[1]);
@@ -302,9 +286,9 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
           mPicturesText.setText(imageCount + "");
         }
 
-        if (imageCount == 5 && !appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_TAP_TO_SHOOT, false)) {
+        if (imageCount == 5 && appPrefs.shouldShowTapToShoot()) {
           Snackbar snack = Snackbar.make(view, R.string.tap_to_shoot_hint, Snackbar.LENGTH_LONG);
-          snack.setAction(R.string.got_it_label, view -> appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_TAP_TO_SHOOT, true));
+          snack.setAction(R.string.got_it_label, view -> appPrefs.setShouldShowTapToShoot(false));
           snack.show();
         }
       });
@@ -329,7 +313,7 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
 
     switch (v.getId()) {
       case (R.id.cancel_text_camera_preview):
-        activity.openScreen(ScreenComposer.SCREEN_MAP);
+        activity.openScreen(Navigator.SCREEN_MAP);
         if (mRecorder != null && mRecorder.isRecording()) {
           mRecorder.stopRecording();
         }
@@ -356,10 +340,10 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
     boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
     if (event.started) {
       showDetails(portrait);
-      if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, false)) {
+      if (appPrefs.shouldShowBackgroundHint()) {
         final Snackbar snack = Snackbar.make(view, R.string.turn_off_screen_hint, Snackbar.LENGTH_INDEFINITE);
 
-        snack.setAction(R.string.got_it_label, v -> appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, true));
+        snack.setAction(R.string.got_it_label, v -> appPrefs.setShouldShowBackgroundHint(false));
         snack.show();
         mHandler.postDelayed(snack::dismiss, 5000);
       }
@@ -411,23 +395,10 @@ public class CameraControlsFragment extends FunctionalFragment implements View.O
   }
 
   private void started() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      mShutterButton.setImageDrawable(activity.getDrawable(R.drawable.vector_stop_recording));
-    } else {
-      mShutterButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_stop_recording));
-    }
+    mShutterButton.setImageDrawable(activity.getDrawable(R.drawable.vector_stop_recording));
   }
 
   private void stopped() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      mShutterButton.setImageDrawable(activity.getDrawable(R.drawable.vector_button_record_inactive_2));
-    } else {
-      mShutterButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_button_record_inactive_2));
-    }
-  }
-
-  @Override
-  public void setRecorder(Recorder recorder) {
-    this.mRecorder = recorder;
+    mShutterButton.setImageDrawable(activity.getDrawable(R.drawable.vector_button_record_inactive_2));
   }
 }

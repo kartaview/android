@@ -1,5 +1,6 @@
 package com.telenav.osv.manager.playback;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
@@ -9,7 +10,6 @@ import android.widget.SeekBar;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.ffmpeg.FFMPEGTrackPlayer;
-import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.Sequence;
@@ -28,15 +28,13 @@ import java.util.concurrent.TimeUnit;
  * Created by Kalman on 30/06/16.
  */
 
-public class LocalPlaybackManager extends PlaybackManager
-    implements FFMPEGTrackPlayer.OnSeekCompleteListener, FFMPEGTrackPlayer.OnBufferingUpdateListener,
+public class LocalPlaybackManager
+    implements PlaybackManager, FFMPEGTrackPlayer.OnSeekCompleteListener, FFMPEGTrackPlayer.OnBufferingUpdateListener,
     FFMPEGTrackPlayer.OnCompletionListener, FFMPEGTrackPlayer.OnErrorListener, FFMPEGTrackPlayer.OnInfoListener,
     FFMPEGTrackPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener, FFMPEGTrackPlayer.OnVideoSizeChangedListener,
     FFMPEGTrackPlayer.OnPlaybackListener {
 
   private static final String TAG = "LocalPlaybackManager";
-
-  private final OSVActivity activity;
 
   private final ThreadPoolExecutor mThreadPoolExec;
 
@@ -50,8 +48,6 @@ public class LocalPlaybackManager extends PlaybackManager
 
   private FFMPEGTrackPlayer mCurrentPlayer = null;
 
-  private int mTotalDuration;
-
   private boolean mPrepared = false;
 
   private boolean mTouching = false;
@@ -62,10 +58,10 @@ public class LocalPlaybackManager extends PlaybackManager
 
   private boolean mSeekComplete = true;
 
-  public LocalPlaybackManager(OSVActivity context, Sequence sequence) {
-    activity = context;
-    this.mSequence = sequence;
-    mTotalDuration = 0;
+  private SequenceDB mSequenceDB;
+
+  public LocalPlaybackManager(Context context, SequenceDB db) {
+    mSequenceDB = db;
     mCurrentPlayer = new FFMPEGTrackPlayer();
     mCurrentPlayer.setOnSeekCompleteListener(LocalPlaybackManager.this);
     mCurrentPlayer.setOnVideoSizeChangedListener(LocalPlaybackManager.this);
@@ -84,11 +80,18 @@ public class LocalPlaybackManager extends PlaybackManager
     mThreadPoolExec = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, workQueue,
                                              new ThreadFactoryBuilder().setDaemon(false).setNameFormat("PlaybackThreadPool")
                                                  .setPriority(Thread.NORM_PRIORITY).build());
+  }
+
+  @Override
+  public void setSource(Sequence sequence) {
+    mSequence = sequence;
     mThreadPoolExec.execute(() -> {
       videoFiles = new ArrayList<>();
-      activity.enableProgressBar(true);
+      for (PlaybackListener pl : mPlaybackListeners) {
+        pl.onPreparing();
+      }
       try {
-        Cursor records = SequenceDB.instance.getVideos(mSequence.getId());
+        Cursor records = mSequenceDB.getVideos(mSequence.getId());
         if (records != null && records.getCount() > 0) {
           while (!records.isAfterLast()) {
             try {
@@ -113,7 +116,9 @@ public class LocalPlaybackManager extends PlaybackManager
           }
           mCurrentPlayer.setDataSource(paths);
           mPrepared = true;
-          activity.enableProgressBar(false);
+          for (PlaybackListener pl : mPlaybackListeners) {
+            pl.onPrepared(true);
+          }
           if (mVideoView != null) {
             play();
           }
@@ -128,7 +133,6 @@ public class LocalPlaybackManager extends PlaybackManager
 
         Log.w(TAG, "displaySequence: " + e.getLocalizedMessage());
       }
-      activity.enableProgressBar(false);
     });
   }
 
@@ -216,6 +220,7 @@ public class LocalPlaybackManager extends PlaybackManager
         mThreadPoolExec.execute(() -> mCurrentPlayer.stop());
       }
     } catch (Exception ignored) {
+      Log.d(TAG, Log.getStackTraceString(ignored));
     }
   }
 
@@ -253,17 +258,14 @@ public class LocalPlaybackManager extends PlaybackManager
       mSeekBar.setOnSeekBarChangeListener(LocalPlaybackManager.this);
       mSeekBar.setMax(mTrack.size());
       for (PlaybackListener pl : mPlaybackListeners) {
-        pl.onPrepared();
+        pl.onPrepared(true);
       }
-      //                mSeekBar.setMax(mTotalDuration);
-      //                Log.d(TAG, "setSeekBar: total duration = " + mTotalDuration);
     });
   }
 
   @Override
   public int getLength() {
     return mTrack.size();
-    //        return mCurrentPlayer.getDuration();
   }
 
   @Override
@@ -300,7 +302,7 @@ public class LocalPlaybackManager extends PlaybackManager
 
   @Override
   public void removePlaybackListener(PlaybackListener playbackListener) {
-
+    mPlaybackListeners.remove(playbackListener);
   }
 
   @Override
@@ -341,15 +343,6 @@ public class LocalPlaybackManager extends PlaybackManager
   @Override
   public void onSeekComplete(final FFMPEGTrackPlayer mp) {
     mSeekComplete = true;
-    //        mThreadPoolExec.post(new Runnable() {
-    //            @Override
-    //            public void run() {
-    //                Log.d(TAG, "onSeekComplete: " + mp.getCurrentPosition());
-    //                if (mCurrentPlayer != null) {
-    //                    mCurrentPlayer.pause();
-    //                }
-    //            }
-    //        });
   }
 
   @Override
@@ -369,22 +362,6 @@ public class LocalPlaybackManager extends PlaybackManager
     for (PlaybackListener pl : mPlaybackListeners) {
       pl.onStopped();
     }
-    mThreadPoolExec.execute(() -> {
-      Log.d(TAG, "onCompletion: ");
-      //                    if (mSeekBar != null) {
-      //                        mSeekBar.setProgress(0);
-      //                    }
-      //                if (mp.getNextPlayer() != null){
-      //                    FFMPEGTrackPlayer player = mp.getNextPlayer();
-      //                    if (mp.isPlaying()) {
-      //                        player.setSurface(null);
-      //                        mp.reset();
-      //                        mp.stop();
-      //                    }
-      //                    player.setSurface(mVideoView);
-      //                    player.prepareAsync();
-      //                }
-    });
   }
 
   @Override
@@ -401,11 +378,10 @@ public class LocalPlaybackManager extends PlaybackManager
 
   @Override
   public void onPrepared(FFMPEGTrackPlayer mp) {
-    //        mp.pause();
     mCurrentPlayer = mp;
     mPrepared = true;
     for (PlaybackListener pl : mPlaybackListeners) {
-      pl.onPrepared();
+      pl.onPrepared(true);
     }
   }
 
@@ -432,11 +408,7 @@ public class LocalPlaybackManager extends PlaybackManager
       return;
     }
     mTouching = true;
-    //        if (isPlaying()) {
-    //            pause();
-    //        }
     Log.d(TAG, "onStartTrackingTouch: ");
-    //        mCurrentPlayer.start();
     if (mCurrentPlayer != null) {
       mCurrentPlayer.seeking(true);
     }

@@ -2,6 +2,7 @@ package com.telenav.osv.manager.network.parser;
 
 import com.telenav.osv.item.LeaderboardData;
 import com.telenav.osv.item.network.UserCollection;
+import com.telenav.osv.utils.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -35,7 +36,7 @@ public class LeaderboardParser extends ApiResponseParser<UserCollection> {
           collectionData.getUserList().add(new LeaderboardData(userName, countryCode, rank, points));
         }
       } catch (Exception e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       }
     }
     return collectionData;

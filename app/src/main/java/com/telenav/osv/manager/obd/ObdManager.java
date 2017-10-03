@@ -1,5 +1,6 @@
 package com.telenav.osv.manager.obd;
 
+import android.arch.lifecycle.MutableLiveData;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -23,6 +24,12 @@ public abstract class ObdManager {
 
   public static final int TYPE_BLE = 2;
 
+  public static final int STATE_DISCONNECTED = 0;
+
+  public static final int STATE_CONNECTING = 1;
+
+  public static final int STATE_CONNECTED = 2;
+
   /**
    * is the connection open
    */
@@ -30,32 +37,78 @@ public abstract class ObdManager {
 
   final Context mContext;
 
+  private final MutableLiveData<Integer> mObdStatus;
+
   ScheduledThreadPoolExecutor mThreadPoolExecutor;
 
-  ConnectionListener mConnectionListener;
+  private ConnectionListener mListener;
+
+  final ConnectionListener mConnectionListener = new ConnectionListener() {
+
+    @Override
+    public void onSpeedObtained(SpeedData speed) {
+      if (mListener != null) {
+        mListener.onSpeedObtained(speed);
+      }
+    }
+
+    @Override
+    public void onObdConnected() {
+      mObdStatus.postValue(STATE_CONNECTED);
+      if (mListener != null) {
+        mListener.onObdConnected();
+      }
+    }
+
+    @Override
+    public void onObdDisconnected() {
+      mObdStatus.postValue(STATE_DISCONNECTED);
+      if (mListener != null) {
+        mListener.onObdDisconnected();
+      }
+    }
+
+    @Override
+    public void onObdConnecting() {
+      mObdStatus.postValue(STATE_CONNECTING);
+      if (mListener != null) {
+        mListener.onObdConnecting();
+      }
+    }
+
+    @Override
+    public void onObdDataTimedOut() {
+      if (mListener != null) {
+        mListener.onObdDataTimedOut();
+      }
+    }
+  };
 
   private ObdQualityChecker mObdQualityChecker;
 
-  public ObdManager(Context context, ConnectionListener listener) {
+  public ObdManager(Context context, MutableLiveData<Integer> obdStatus, ConnectionListener listener) {
     mContext = context;
-    mConnectionListener = listener;
+    mListener = listener;
     mThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setDaemon(false).setNameFormat("OBDThreadPool")
         .setPriority(Thread.MAX_PRIORITY).build());
+    mThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+    mObdStatus = obdStatus;
   }
 
   public static boolean isConnected() {
     return sConnected;
   }
 
-  public static ObdManager get(Context context, int type, ConnectionListener listener) {
+  public static ObdManager get(Context context, MutableLiveData<Integer> obdStatusLive,
+                               int type, ConnectionListener listener) {
     switch (type) {
       case TYPE_BT:
-        return new ObdBtManager(context, listener);
+        return new ObdBtManager(context, obdStatusLive, listener);
       case TYPE_BLE:
-        return new ObdBleManager(context, listener);
+        return new ObdBleManager(context, obdStatusLive, listener);
       default:
       case TYPE_WIFI:
-        return new ObdWifiManager(context, listener);
+        return new ObdWifiManager(context, obdStatusLive, listener);
     }
   }
 
@@ -68,7 +121,7 @@ public abstract class ObdManager {
   public abstract void stopRunnable();
 
   public void removeConnectionListener() {
-    mConnectionListener = null;
+    mListener = null;
     if (mObdQualityChecker != null) {
       mObdQualityChecker.setListener(null);
     }
@@ -76,7 +129,7 @@ public abstract class ObdManager {
   }
 
   public void setConnectionListener(ConnectionListener listener) {
-    mConnectionListener = listener;
+    mListener = listener;
     if (mObdQualityChecker == null) {
       mObdQualityChecker = new ObdQualityChecker();
     }
@@ -110,8 +163,8 @@ public abstract class ObdManager {
     if (mObdQualityChecker != null) {
       mObdQualityChecker.onSpeedObtained(speedData);
     }
-    if (mConnectionListener != null) {
-      mConnectionListener.onSpeedObtained(speedData);
+    if (mListener != null) {
+      mListener.onSpeedObtained(speedData);
     }
   }
 

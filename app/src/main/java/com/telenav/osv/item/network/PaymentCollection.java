@@ -9,6 +9,9 @@ import java.util.ArrayList;
  */
 public class PaymentCollection extends ApiResponse {
 
+  /**
+   * total number of results
+   */
   private int totalFilteredItems;
 
   private ArrayList<Payment> paymentList = new ArrayList<>();

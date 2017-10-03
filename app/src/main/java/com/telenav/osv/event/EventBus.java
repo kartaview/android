@@ -26,6 +26,7 @@ public class EventBus {
       try {
         mBus.register(subscriber);
       } catch (Exception ignored) {
+        Log.d(TAG, ignored.getLocalizedMessage());
       }
     }
   }
@@ -36,6 +37,7 @@ public class EventBus {
       try {
         mBus.unregister(subscriber);
       } catch (Exception ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
       }
     }
   }

@@ -14,4 +14,15 @@ public class DriverOnlineSequence extends OnlineSequence {
     super(sequenceId, date, originalImageCount, address, thumbLink, obd, platform, platformVersion, appVersion, distance, value);
     this.mCurrency = currency;
   }
+
+  @Override
+  public boolean isUserTrack() {
+    return false;
+  }
+
+  @Override
+  public boolean hasValue() {
+    return getCurrency() != null && !"".equals(getCurrency()) &&
+        !getServerStatus().equals(SERVER_STATUS_REJECTED);
+  }
 }

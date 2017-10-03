@@ -13,27 +13,27 @@ public class Constants {
   /**
    * ble gatt discovered intent action
    */
-  public final static String ACTION_GATT_DISCOVERED = "com.bluetooth.le.ACTION_GATT_DISCOVERED";
+  public static final String ACTION_GATT_DISCOVERED = "com.bluetooth.le.ACTION_GATT_DISCOVERED";
 
   /**
    * ble gatt disconnected intent action
    */
-  public final static String ACTION_GATT_DISCONNECTED = "com.bluetooth.le.ACTION_GATT_DISCONNECTED";
+  public static final String ACTION_GATT_DISCONNECTED = "com.bluetooth.le.ACTION_GATT_DISCONNECTED";
 
   /**
    * ble gatt subscribed intent action
    */
-  public final static String ACTION_GATT_SUBSCRIBED = "com.bluetooth.le.ACTION_GATT_SUBSCRIBED";
+  public static final String ACTION_GATT_SUBSCRIBED = "com.bluetooth.le.ACTION_GATT_SUBSCRIBED";
 
   /**
    * ble gatt data available intent action
    */
-  public final static String ACTION_DATA_AVAILABLE = "com.bluetooth.le.ACTION_DATA_AVAILABLE";
+  public static final String ACTION_DATA_AVAILABLE = "com.bluetooth.le.ACTION_DATA_AVAILABLE";
 
   /**
    * ble gatt extra data
    */
-  public final static String EXTRA_DATA = "com.bluetooth.le.EXTRA_DATA";
+  public static final String EXTRA_DATA = "com.bluetooth.le.EXTRA_DATA";
 
   /**
    * background service baterry control state

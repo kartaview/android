@@ -13,7 +13,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import com.android.volley.DefaultRetryPolicy;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
@@ -40,14 +39,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.command.LogoutCommand;
+import com.telenav.osv.data.AccountPreferences;
+import com.telenav.osv.data.Preferences;
 import com.telenav.osv.event.EventBus;
-import com.telenav.osv.event.network.LoginChangedEvent;
-import com.telenav.osv.event.ui.GamificationSettingEvent;
-import com.telenav.osv.event.ui.UserTypeChangedEvent;
 import com.telenav.osv.http.AuthRequest;
 import com.telenav.osv.item.AccountData;
 import com.telenav.osv.item.network.ApiResponse;
@@ -68,6 +62,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.inject.Inject;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 import org.apache.http.HttpResponse;
@@ -76,8 +71,9 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+
+import static com.telenav.osv.data.Preferences.URL_ENV;
+import static com.telenav.osv.item.network.UserData.TYPE_UNKNOWN;
 
 /**
  * component responsible for logging in using several accounts
@@ -91,7 +87,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
   public static final String LOGIN_TYPE_FACEBOOK = "facebook";
 
-  private final static String TAG = "LoginManager";
+  private static final String TAG = "LoginManager";
 
   private static final int REQUEST_CODE_LOGIN_GOOGLE = 10001;
 
@@ -106,13 +102,13 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
   private static String URL_AUTH_FACEBOOK = "http://" + "&&" + "auth/facebook/client_auth";
 
-  private final OSVApplication mContext;
+  private final Context mContext;
 
   private final GoogleApiClient mGoogleApiClient;
 
   private final CallbackManager mFacebookCallbackManager;
 
-  private ApplicationPreferences appPrefs;
+  private Preferences prefs;
 
   private Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -120,12 +116,12 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
   private AuthDataParser mAuthDataParser = new AuthDataParser();
 
-  public LoginManager(final OSVApplication context) {
-    super(context);
+  @Inject
+  public LoginManager(Context context, Preferences preferences, AccountPreferences accountPreferences) {
+    super(context, accountPreferences);
+    this.prefs = preferences;
     this.mContext = context;
-    appPrefs = context.getAppPrefs();
     mAuth = FirebaseAuth.getInstance();
-    setEnvironment();
     GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().requestProfile()
         .requestIdToken(context.getString(R.string.google_client_id))
         .requestScopes(new Scope(Scopes.PROFILE), new Scope("https://www.googleapis.com/auth/contacts.readonly")).build();
@@ -142,21 +138,17 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
           imgLink = url.toString();
         }
         final String finalImgLink = imgLink;
-        appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, finalImgLink);
-        final String id = appPrefs.getStringPreference(PreferenceTypes.K_USER_ID);
-        final String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-        final String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
-        final String displayName = appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME);
-        final int type = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
-        final String loginType = appPrefs.getStringPreference(PreferenceTypes.K_LOGIN_TYPE);
+        appPrefs.setUserPhotoUrl(finalImgLink);
+        final String id = appPrefs.getUserId();
+        final String userName = appPrefs.getUserName();
+        final String displayName = appPrefs.getUserDisplayName();
+        final int type = appPrefs.getUserType();
+        final int loginType = appPrefs.getLoginType();
         mHandler.post(() -> {
-          if ("".equals(userName) || "".equals(token)) {
-            EventBus.postSticky(new LoginChangedEvent(false, null));
-            EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
+          if (!appPrefs.isLoggedIn()) {
+            logout();
           } else {
-            EventBus.postSticky(new LoginChangedEvent(true, new AccountData(id, userName, displayName, finalImgLink, type,
-                                                                            AccountData.getAccountTypeForString(loginType))));
-            EventBus.postSticky(new UserTypeChangedEvent(type));
+            onLoggedIn(new AccountData(id, userName, displayName, finalImgLink, type, loginType));
           }
         });
       } else {//user signed out
@@ -189,8 +181,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
   }
 
   @Override
-  protected void setEnvironment() {
-    super.setEnvironment();
+  protected void setupUrls() {
     URL_AUTH_OSM = URL_AUTH_OSM.replace("&&", URL_ENV[mCurrentServer]);
     URL_AUTH_FACEBOOK = URL_AUTH_FACEBOOK.replace("&&", URL_ENV[mCurrentServer]);
     URL_AUTH_GOOGLE = URL_AUTH_GOOGLE.replace("&&", URL_ENV[mCurrentServer]);
@@ -214,7 +205,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
           handleGoogleLoginResult(result);
         } else {
           Log.d(TAG, "onActivityResult: Google Sign In was unsuccessfull, rollback login");
-          EventBus.postSticky(new LogoutCommand());
+          logout();
         }
       }
     } else {
@@ -258,7 +249,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
         @Override
         public void requestFinished(int status, OsmProfileData osmProfileData) {
           if (osmProfileData != null) {
-            appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, osmProfileData.getProfilePictureUrl());
+            appPrefs.setUserPhotoUrl(osmProfileData.getProfilePictureUrl());
             mProfilePictureUrl = osmProfileData.getProfilePictureUrl();
           }
           activity.enableProgressBar(false);
@@ -272,17 +263,14 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
           final String token = userData.getAccessToken();
           final String userName = userData.getUsername();
           final int type = userData.getUserType();
-          final String loginType = userData.getLoginType();
+          final int loginType = userData.getLoginType();
           final String finalImgLink = mProfilePictureUrl;
           activity.runOnUiThread(() -> {
 
             if ("".equals(userName) || "".equals(token)) {
-              EventBus.postSticky(new LoginChangedEvent(false, null));
-              EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
+              logout();
             } else {
-              EventBus.postSticky(new LoginChangedEvent(true, new AccountData(id, userName, displayName, finalImgLink, type,
-                                                                              AccountData.getAccountTypeForString(loginType))));
-              EventBus.postSticky(new UserTypeChangedEvent(type));
+              onLoggedIn(new AccountData(id, userName, displayName, finalImgLink, type, loginType));
             }
             activity.enableProgressBar(false);
             activity.finish();
@@ -367,7 +355,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
             listener.requestFinished(statusLine.getStatusCode(), new OsmProfileDataParser().parse(response));
             authenticate(URL_AUTH_OSM, requestToken, secretToken, listener);
           } catch (Exception e) {
-            e.printStackTrace();
+            Log.d(TAG, Log.getStackTraceString(e));
             ApiResponse response = new ApiResponse();
             response.setHttpCode(403);
             response.setHttpMessage(e.getMessage());
@@ -400,19 +388,19 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
       @Override
       public void onSuccess(final int status, final AuthData authData) {
         runInBackground(() -> {
-          String loginType = "OSM";
+          int loginType = AccountData.ACCOUNT_TYPE_OSM;
           if (url.contains("facebook")) {
-            loginType = "FACEBOOK";
+            loginType = AccountData.ACCOUNT_TYPE_FACEBOOK;
           } else if (url.contains("google")) {
-            loginType = "GOOGLE";
+            loginType = AccountData.ACCOUNT_TYPE_GOOGLE;
           }
           authData.setLoginType(loginType);
-          appPrefs.saveStringPreference(PreferenceTypes.K_ACCESS_TOKEN, authData.getAccessToken());
-          appPrefs.saveStringPreference(PreferenceTypes.K_USER_ID, authData.getId());
-          appPrefs.saveStringPreference(PreferenceTypes.K_USER_NAME, authData.getUsername());
-          appPrefs.saveStringPreference(PreferenceTypes.K_DISPLAY_NAME, authData.getDisplayName());
-          appPrefs.saveIntPreference(PreferenceTypes.K_USER_TYPE, authData.getUserType());
-          appPrefs.saveStringPreference(PreferenceTypes.K_LOGIN_TYPE, authData.getLoginType());
+          appPrefs.setUserId(authData.getId());
+          appPrefs.setUserName(authData.getUsername());
+          appPrefs.setUserDisplayName(authData.getDisplayName());
+          appPrefs.setUserType(authData.getUserType());
+          appPrefs.setLoginType(authData.getLoginType());
+          appPrefs.saveAuthToken(authData.getAccessToken());
 
           listener.requestFinished(status, authData);
           Log.d(TAG, "authenticate: success");
@@ -435,7 +423,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
         GoogleSignInAccount acct = result.getSignInAccount();
         if (acct == null) {
           Log.d(TAG, "handleGoogleLoginResult: GoogleSignInAccount is null, rolling back login");
-          EventBus.postSticky(new LogoutCommand());
+          logout();
           return;
         }
         final AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
@@ -452,7 +440,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
           @Override
           public void requestFailed(int status, AuthData details) {
             Log.d(TAG, "handleGoogleLoginResult requestFinished: rolling back login");
-            EventBus.postSticky(new LogoutCommand());
+            logout();
           }
 
           @Override
@@ -461,18 +449,18 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
             mAuth.signInWithCredential(credential).addOnCompleteListener(task -> {
               Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
               if (!task.isSuccessful()) {
-                EventBus.postSticky(new LogoutCommand());
+                logout();
               }
             }).addOnFailureListener(e -> {
               Log.d(TAG, "signInWithCredential:onFailure:" + Log.getStackTraceString(e));
-              EventBus.postSticky(new LogoutCommand());
+              logout();
             });
           }
         });
       } catch (Exception e) {
         Log.d(TAG, "handleGoogleLoginResult: " + Log.getStackTraceString(e));
         Log.d(TAG, "handleGoogleLoginResult: rolling back login");
-        EventBus.postSticky(new LogoutCommand());
+        logout();
       }
     });
   }
@@ -486,7 +474,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
       @Override
       public void requestFailed(int status, AuthData details) {
         Log.d(TAG, "handleFacebookAccessToken requestFinished: API call failed, rolling back login");
-        EventBus.postSticky(new LogoutCommand());
+        logout();
       }
 
       @Override
@@ -497,7 +485,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
           if (!task.isSuccessful()) {
             Log.d(TAG, "handleFacebookAccessTokenonComplete: unsuccessful, rolling back login");
-            EventBus.postSticky(new LogoutCommand());
+            logout();
           }
         });
       }
@@ -533,50 +521,37 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
     }
   }
 
-  @Subscribe(threadMode = ThreadMode.BACKGROUND)
-  public void onLogoutCommand(LogoutCommand command) {
-    appPrefs.saveStringPreference(PreferenceTypes.K_USER_ID, "");
-    appPrefs.saveStringPreference(PreferenceTypes.K_ACCESS_TOKEN, "");
-    appPrefs.saveStringPreference(PreferenceTypes.K_LOGIN_TYPE, "");
-    appPrefs.saveStringPreference(PreferenceTypes.K_USER_NAME, "");
-    appPrefs.saveStringPreference(PreferenceTypes.K_DISPLAY_NAME, "");
-    appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, "");
-    appPrefs.saveIntPreference(PreferenceTypes.K_USER_TYPE, -1);
-    EventBus.postSticky(new LoginChangedEvent(false, null));
-    EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
+  public void logout() {
+    appPrefs.setUserId("");
+    appPrefs.setLoginType(AccountData.ACCOUNT_TYPE_NONE);
+    appPrefs.setUserName("");
+    appPrefs.setUserDisplayName("");
+    appPrefs.setUserPhotoUrl("");
+    appPrefs.setUserType(TYPE_UNKNOWN);
+    appPrefs.saveAuthToken("");
     logoutFirebase();
+    SharedPreferences profilePrefs = mContext.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
+    profilePrefs.edit().clear().apply();
+    if (!Utils.DEBUG || !prefs.getSaveAuth()) {
+      final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+      editor.clear();
+      editor.apply();
+      CookieManager.getInstance().removeAllCookies(value -> Log.d(TAG, "logout: removed cookies = " + value));
+    }
+    if (Fabric.isInitialized()) {
+      Crashlytics.setString(Log.USER_TYPE, "");
+    }
   }
 
-  @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
-  public void onLoginChanged(LoginChangedEvent event) {
-    Log.d(TAG, "onLoginChanged: logged=" + event.logged + " " + event.accountData);
-    if (Fabric.isInitialized()) {
-      if (event.logged) {
-        String method = appPrefs.getStringPreference(PreferenceTypes.K_LOGIN_TYPE);
-        int type = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
-        Answers.getInstance().logLogin(new LoginEvent().putSuccess(true).putMethod(method).putCustomAttribute("userType", type));
-        Crashlytics.setInt(Log.USER_TYPE, type);
-      } else {
-        Crashlytics.setString(Log.USER_TYPE, "");
-      }
+  private void onLoggedIn(AccountData accountData) {
+    if (accountData.isDriver()) {
+      prefs.setGamificationEnabled(false);
     }
-    if (!event.logged) {
-      SharedPreferences prefs = mContext.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
-      prefs.edit().clear().apply();
-      if (!Utils.DEBUG || !appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_SAVE_AUTH)) {
-        final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
-        editor.clear();
-        editor.apply();
-        //noinspection deprecation
-        CookieSyncManager.createInstance(mContext);
-        //noinspection deprecation
-        CookieManager.getInstance().removeAllCookie();
-      }
-    } else {
-      if (event.accountData.isDriver()) {
-        appPrefs.saveBooleanPreference(PreferenceTypes.K_GAMIFICATION, false);
-        EventBus.post(new GamificationSettingEvent(false));
-      }
+    if (Fabric.isInitialized()) {
+      int loginType = appPrefs.getLoginType();
+      int type = appPrefs.getUserType();
+      Answers.getInstance().logLogin(new LoginEvent().putSuccess(true).putMethod("" + loginType).putCustomAttribute("userType", type));
+      Crashlytics.setInt(Log.USER_TYPE, type);
     }
   }
 }

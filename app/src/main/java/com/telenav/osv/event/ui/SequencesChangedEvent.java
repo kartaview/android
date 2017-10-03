@@ -7,7 +7,7 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 public class SequencesChangedEvent extends OSVStickyEvent {
 
-  public final static String TAG = "SequencesChangedEvent";
+  public static final String TAG = "SequencesChangedEvent";
 
   public final boolean online;
 

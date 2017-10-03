@@ -1,6 +1,5 @@
 package com.telenav.osv.manager.network.parser;
 
-import com.telenav.osv.item.AccountData;
 import com.telenav.osv.item.network.UserData;
 import com.telenav.osv.utils.Log;
 import org.json.JSONObject;
@@ -47,7 +46,7 @@ public class UserDataParser extends ApiResponseParser<UserData> {
         if ("driver".equals(userType)) {
           userType = osv.getString("driver_type");
         }
-        userData.setUserType(AccountData.getUserTypeForString(userType));
+        userData.setUserType(AuthDataParser.getUserTypeForString(userType));
         obdDistance = osv.getString("obdDistance");
         totalDistance = osv.getString("totalDistance");
         totalPhotos = osv.getDouble("totalPhotos");
@@ -97,7 +96,7 @@ public class UserDataParser extends ApiResponseParser<UserData> {
         }
         userData.setObdDistance(obdDistanceNum);
       } catch (Exception e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       }
     }
     return userData;

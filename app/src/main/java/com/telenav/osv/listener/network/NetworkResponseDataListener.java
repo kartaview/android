@@ -3,8 +3,10 @@ package com.telenav.osv.listener.network;
 import com.telenav.osv.item.network.ApiResponse;
 
 /**
+ * Abstract network data listener
  * Created by kalmanb on 8/3/17.
  */
+@SuppressWarnings("unused")
 public interface NetworkResponseDataListener<T extends ApiResponse> {
 
   /**

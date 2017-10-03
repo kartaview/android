@@ -13,11 +13,13 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.jetbrains.annotations.NonNls;
 
 /**
  * Internal logging chained through crashlytics logging
  * Created by Kalman on 2/8/16.
  */
+@NonNls
 public class Log {
 
   public static final String RECORD_STATUS = "recording";
@@ -67,23 +69,23 @@ public class Log {
     return logFile;
   }
 
-  public static void d(String tag, String message) {
+  public static void d(@NonNls String tag, @NonNls String message) {
     appendLog(android.util.Log.DEBUG, tag, message);
   }
 
-  public static void w(String tag, String message) {
+  public static void w(@NonNls String tag, @NonNls String message) {
     appendLog(android.util.Log.WARN, tag, message);
   }
 
-  public static void e(String tag, String message) {
+  public static void e(@NonNls String tag, @NonNls String message) {
     appendLog(android.util.Log.ERROR, tag, message);
   }
 
-  public static void v(String tag, String message) {
+  public static void v(@NonNls String tag, @NonNls String message) {
     appendLog(android.util.Log.VERBOSE, tag, message);
   }
 
-  public static void i(String tag, String message) {
+  public static void i(@NonNls String tag, @NonNls String message) {
     appendLog(android.util.Log.INFO, tag, message);
   }
 
@@ -91,22 +93,22 @@ public class Log {
     return android.util.Log.getStackTraceString(throwable);
   }
 
-  public static void d(String tag, String message, Exception e) {
+  public static void d(@NonNls String tag, @NonNls String message, Exception e) {
     appendLog(android.util.Log.DEBUG, tag, message + " " + android.util.Log.getStackTraceString(e));
     android.util.Log.d(tag, message, e);
   }
 
-  public static void e(String tag, String message, Exception e) {
+  public static void e(@NonNls String tag, @NonNls String message, Exception e) {
     appendLog(android.util.Log.ERROR, tag, message + " " + android.util.Log.getStackTraceString(e));
     android.util.Log.e(tag, message, e);
   }
 
-  public static void i(String tag, String message, Exception e) {
+  public static void i(@NonNls String tag, @NonNls String message, Exception e) {
     appendLog(android.util.Log.INFO, tag, message + " " + android.util.Log.getStackTraceString(e));
     android.util.Log.i(tag, message, e);
   }
 
-  private static void appendLog(int priority, String tag, String text) {
+  private static void appendLog(int priority, @NonNls String tag, @NonNls String text) {
     if (logFile == null) {
       logFile = new File(externalFilesDir, "log_" + dateFormat.format(OSVApplication.runTime) + ".txt");
     }
@@ -114,7 +116,7 @@ public class Log {
       try {
         logFile.createNewFile();
       } catch (IOException e) {
-        //e.printStackTrace();
+        //Log.d(TAG, Log.getStackTraceString(e));
       }
     }
     try {
@@ -126,12 +128,13 @@ public class Log {
       buf.newLine();
       buf.close();
     } catch (IOException e) {
-      //e.printStackTrace();
+      //Log.d(TAG, Log.getStackTraceString(e));
     }
     if (Fabric.isInitialized()) {
       try {
         Crashlytics.log(priority, tag, text);
       } catch (Exception ignored) {
+        //do nothing
       }
     } else {
       android.util.Log.println(priority, tag, text);

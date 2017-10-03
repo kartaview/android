@@ -1,7 +1,6 @@
 package com.telenav.osv.item;
 
 import android.location.Location;
-import android.os.Build;
 import android.os.SystemClock;
 import com.telenav.osv.utils.Log;
 
@@ -18,6 +17,8 @@ import com.telenav.osv.utils.Log;
  * ([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;[-+]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?;))
  * <p>
  * <p>
+ *
+ * Model class for holding sensor information for a line in the metadata
  * Created by Kalman on 2/11/16.
  */
 
@@ -61,11 +62,7 @@ public class SensorData {
 
   public SensorData(Location location) {
     mLocation = location;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      mTimeStamp = System.currentTimeMillis() - (SystemClock.elapsedRealtimeNanos() - location.getElapsedRealtimeNanos()) / 1_000_000L;
-    } else {
-      mTimeStamp = System.currentTimeMillis();
-    }
+    mTimeStamp = System.currentTimeMillis() - (SystemClock.elapsedRealtimeNanos() - location.getElapsedRealtimeNanos()) / 1_000_000L;
   }
 
   public SensorData(int type, float[] data, long timeStamp) {
@@ -84,12 +81,10 @@ public class SensorData {
         break;
     }
     boolean unixTs = (timeStamp / 1_000_000L) > Y2015;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && !unixTs) {
+    if (!unixTs) {
       mTimeStamp = System.currentTimeMillis() - (SystemClock.elapsedRealtimeNanos() - timeStamp) / 1_000_000L;
-    } else if (unixTs) {
-      mTimeStamp = timeStamp / 1_000_000L;
     } else {
-      mTimeStamp = System.currentTimeMillis();
+      mTimeStamp = timeStamp / 1_000_000L;
     }
   }
 
@@ -97,12 +92,10 @@ public class SensorData {
     mPressure = new float[1];
     mPressure[0] = pressure;
     boolean unixTs = (timeStamp / 1_000_000L) > Y2015;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && !unixTs) {
+    if (!unixTs) {
       mTimeStamp = System.currentTimeMillis() - (SystemClock.elapsedRealtimeNanos() - timeStamp) / 1_000_000L;
-    } else if (unixTs) {
-      mTimeStamp = timeStamp / 1_000_000L;
     } else {
-      mTimeStamp = System.currentTimeMillis();
+      mTimeStamp = timeStamp / 1_000_000L;
     }
   }
 

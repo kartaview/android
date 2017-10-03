@@ -65,14 +65,9 @@ public class BLEConnection {
    */
   public BluetoothAdapter initConnection(Context context) {
     // Initializes Bluetooth adapter.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-      bluetoothAdapter = bluetoothManager.getAdapter();
-      bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-    }
-    if (bluetoothAdapter != null) {
-      bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-    }
+    final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+    bluetoothAdapter = bluetoothManager.getAdapter();
+    bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
     return bluetoothAdapter;
   }
 
@@ -114,35 +109,35 @@ public class BLEConnection {
     }
   }
 
-  /**
-   * Starts the scanning
-   * For Jelly Bean MR2 and Kitkat
-   *
-   * @param leScanCallback - the callback of the scanning
-   */
-  @Deprecated
-  public void startScanning(final BluetoothAdapter.LeScanCallback leScanCallback) {
-    // Stops scanning after a pre-defined scan period.
-    handler.postDelayed(() -> {
-      scanning = false;
-      bluetoothAdapter.stopLeScan(leScanCallback);
-    }, scanPeriod);
-
-    scanning = true;
-    bluetoothAdapter.startLeScan(leScanCallback);
-  }
-
-  /**
-   * Stop the scanning
-   * For Jelly Bean MR2 and Kitkat
-   *
-   * @param leScanCallback - the callback of the scanning
-   */
-  @Deprecated
-  public void stopScanning(final BluetoothAdapter.LeScanCallback leScanCallback) {
-    scanning = false;
-    bluetoothAdapter.stopLeScan(leScanCallback);
-  }
+  ///**
+  // * Starts the scanning
+  // * For Jelly Bean MR2 and Kitkat
+  // *
+  // * @param leScanCallback - the callback of the scanning
+  // */
+  //@Deprecated
+  //public void startScanning(final BluetoothAdapter.LeScanCallback leScanCallback) {
+  //  // Stops scanning after a pre-defined scan period.
+  //  handler.postDelayed(() -> {
+  //    scanning = false;
+  //    bluetoothAdapter.stopLeScan(leScanCallback);
+  //  }, scanPeriod);
+  //
+  //  scanning = true;
+  //  bluetoothAdapter.startLeScan(leScanCallback);
+  //}
+  //
+  ///**
+  // * Stop the scanning
+  // * For Jelly Bean MR2 and Kitkat
+  // *
+  // * @param leScanCallback - the callback of the scanning
+  // */
+  //@Deprecated
+  //public void stopScanning(final BluetoothAdapter.LeScanCallback leScanCallback) {
+  //  scanning = false;
+  //  bluetoothAdapter.stopLeScan(leScanCallback);
+  //}
 
   /**
    * Returns if the scanning is in progress

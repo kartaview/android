@@ -6,6 +6,7 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.data.AccountPreferences;
 import com.telenav.osv.http.IssueCreationRequest;
 import com.telenav.osv.http.IssueUploadRequest;
 import com.telenav.osv.item.OSVFile;
@@ -18,6 +19,9 @@ import com.telenav.osv.manager.network.parser.IssueCreationParser;
 import com.telenav.osv.utils.Log;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import javax.inject.Inject;
+
+import static com.telenav.osv.data.Preferences.URL_ENV;
 
 /**
  * responsible for uploading issue reports
@@ -46,15 +50,14 @@ public class IssueReporter extends NetworkManager implements RequestQueue.Reques
 
   private IssueCreationParser mIsueCreationParser = new IssueCreationParser();
 
-  public IssueReporter(Context context) {
-    super(context);
+  @Inject
+  public IssueReporter(Context context, AccountPreferences prefs) {
+    super(context, prefs);
     mQueue.addRequestFinishedListener(this);
-    setEnvironment();
   }
 
   @Override
-  protected void setEnvironment() {
-    super.setEnvironment();
+  protected void setupUrls() {
     URL_ISSUE_CREATE = URL_ISSUE_CREATE.replace("&&", URL_ENV[mCurrentServer]);
     URL_ISSUE_UPLOAD = URL_ISSUE_UPLOAD.replace("&&", URL_ENV[mCurrentServer]);
   }

@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -39,14 +40,10 @@ import com.skobbler.ngx.positioner.SKPositionerManager;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.activity.SplashActivity;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.command.BroadcastSegmentsCommand;
 import com.telenav.osv.command.PhotoCommand;
-import com.telenav.osv.db.SequenceDB;
+import com.telenav.osv.data.Preferences;
 import com.telenav.osv.event.EventBus;
-import com.telenav.osv.event.SdkEnabledEvent;
 import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.hardware.gps.LocationEvent;
 import com.telenav.osv.event.hardware.gps.TrackChangedEvent;
@@ -66,12 +63,13 @@ import com.telenav.osv.item.network.TrackCollection;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.manager.network.GeometryRetriever;
 import com.telenav.osv.manager.playback.PlaybackManager;
-import com.telenav.osv.ui.ScreenComposer;
+import com.telenav.osv.ui.Navigator;
 import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.DimenUtils;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -79,9 +77,9 @@ import org.greenrobot.eventbus.ThreadMode;
  * Fragment holding the map or the placeholder
  * Created by Kalman on 11/9/15.
  */
-public class MapFragment extends DisplayFragment implements SKMapSurfaceListener, PlaybackManager.PlaybackListener {
+public class MapFragment extends OSVFragment implements Displayable<Sequence>, SKMapSurfaceListener, PlaybackManager.PlaybackListener {
 
-  public final static String TAG = "MapFragment";
+  public static final String TAG = "MapFragment";
 
   /**
    * id for selected image marker annotation
@@ -97,6 +95,15 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   private static final int TRACK_POLYLINE_ID = 10000156;
 
   private static final int MATCHED_SEGMENT_POLYLINE_ID = 10000157;
+
+  /**
+   * the app prefs
+   */
+  @Inject
+  Preferences appPrefs;
+
+  @Inject
+  GeometryRetriever mGeometryRetriever;
 
   private Sequence mCurrentSequence;
 
@@ -120,11 +127,6 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   private SKMapSurfaceView mapView;
 
   /**
-   * the app prefs
-   */
-  private ApplicationPreferences appPrefs;
-
-  /**
    * the list of images with coordinates used for previewing a sequence
    */
   private ArrayList<ImageCoordinate> mPreviewNodes;
@@ -145,8 +147,6 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
 
   private boolean noPositionYet = true;
 
-  private PlaybackManager mPlayer;
-
   private int mCurrentMode = MODE_IDLE;
 
   private Polyline mMatchedPolyline;
@@ -155,20 +155,16 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
 
   private View chessBackground;
 
-  private GeometryRetriever mGeometryRetriever;
-
   private SegmentsReceivedEvent mLastSegmentsDisplayed;
 
   private Runnable mDisplayLocalSequencesRunnable = () -> {
-    if (SequenceDB.instance != null) {
-      synchronized (LocalSequence.getStaticSequences()) {
-        for (LocalSequence sequence : LocalSequence.getStaticSequences().values()) {
-          if (sequence.getOriginalFrameCount() > 0) {
-            try {
-              displayPolyline(sequence.getPolyline());
-            } catch (NumberFormatException e) {
-              Log.d(TAG, "diplayLocalSequences: " + e.getLocalizedMessage());
-            }
+    synchronized (LocalSequence.getStaticSequences()) {
+      for (LocalSequence sequence : LocalSequence.getStaticSequences().values()) {
+        if (sequence.getOriginalFrameCount() > 0) {
+          try {
+            displayPolyline(sequence.getPolyline());
+          } catch (NumberFormatException e) {
+            Log.d(TAG, "diplayLocalSequences: " + e.getLocalizedMessage());
           }
         }
       }
@@ -183,21 +179,19 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   @Override
   public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     activity = (OSVActivity) getActivity();
-    appPrefs = ((OSVApplication) activity.getApplication()).getAppPrefs();
-    mMapEnabled = !appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED);
-    mGeometryRetriever = new GeometryRetriever(activity);
+    mMapEnabled = appPrefs.isMapEnabled();
     view = inflater.inflate(R.layout.fragment_map, null);
     recordButton = view.findViewById(R.id.record_button);
     recordButton.setOnClickListener(v -> {
       int cameraPermitted = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA);
       if (cameraPermitted == PackageManager.PERMISSION_GRANTED) {
-        if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED) &&
-            appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true)) {
+        if (appPrefs.isMapEnabled() &&
+            appPrefs.isMiniMapEnabled()) {
           recordButton.setVisibility(View.INVISIBLE);
           positionButton.setVisibility(View.INVISIBLE);
         }
       }
-      activity.openScreen(ScreenComposer.SCREEN_RECORDING);
+      activity.openScreen(Navigator.SCREEN_RECORDING);
     });
     positionButton = view.findViewById(R.id.position_button);
     recordButton.setVisibility(View.INVISIBLE);
@@ -217,9 +211,9 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
         });
         mapViewGroup.onResume();
       };
-      if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED) && !SKMaps.getInstance().isSKMapsInitialized()) {
+      if (appPrefs.isMapEnabled() && !SKMaps.getInstance().isSKMapsInitialized()) {
         Log.d(TAG, "onCreateView: needs to initialize skmaps");
-        Utils.initializeLibrary(activity, b -> addMapRunnable.run());
+        Utils.initializeLibrary(activity, appPrefs, b -> addMapRunnable.run());
       } else {
         addMapRunnable.run();
       }
@@ -235,11 +229,6 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
     }
     Log.d(TAG, "onCreateView: ");
     return view;
-  }
-
-  @Override
-  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
   }
 
   @Override
@@ -282,23 +271,6 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   }
 
   @Override
-  public void onResume() {
-    super.onResume();
-    if (mapViewGroup != null && mMapEnabled) {
-      if (mapView == null) {
-        view.postDelayed(() -> mapViewGroup.onResume(), 300);
-      } else {
-        mapViewGroup.onResume();
-      }
-    }
-  }
-
-  @Override
-  public void onPause() {
-    super.onPause();
-  }
-
-  @Override
   public void onStop() {
     if (mMapEnabled) {
       if (mapViewGroup != null) {
@@ -325,11 +297,6 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
     super.onDestroyView();
   }
 
-  @Override
-  public void onDetach() {
-    super.onDetach();
-  }
-
   private void onViewChanged(SKMapViewHolder mapViewGroup, int width, int height) {
     int orientation = activity.getResources().getConfiguration().orientation;
     boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
@@ -341,11 +308,11 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
     }
     int screen = activity.getCurrentScreen();
     boolean isSmall = (width < point.x / 2) && (height < point.y / 2) &&
-        (screen == ScreenComposer.SCREEN_RECORDING || screen == ScreenComposer.SCREEN_RECORDING_HINTS);
+        (screen == Navigator.SCREEN_RECORDING || screen == Navigator.SCREEN_RECORDING_HINTS);
     boolean maximized = (width >= point.x / 10 * 9) && (height >= point.y / 10 * 9);
     if (maximized) {
       enterMode(MODE_IDLE);
-    } else if (screen == ScreenComposer.SCREEN_RECORDING || screen == ScreenComposer.SCREEN_RECORDING_HINTS) {
+    } else if (screen == Navigator.SCREEN_RECORDING || screen == Navigator.SCREEN_RECORDING_HINTS) {
       enterMode(MODE_RECORDING_SCREEN);
     } else {
       enterMode(MODE_TRACK_PREVIEW);
@@ -362,11 +329,11 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
         if (!Utils.isGPSEnabled(activity)) {
           activity.resolveLocationProblem(false);
         } else {
-          //                    EventBus.postSticky(new GpsCommand(true, true)); todo for power optimisation
+          //EventBus.postSticky(new GpsCommand(true, true/* request single position*/)); todo for power optimisation
           if (activity.hasPosition()) {
             mapView.centerOnCurrentPosition(16, true, 1000);//zoomlevel, anim time
           } else {
-            activity.showSnackBar("Waiting for GPS position...", Snackbar.LENGTH_SHORT);
+            activity.showSnackBar(getString(R.string.warning_waiting_for_location_message), Snackbar.LENGTH_SHORT);
           }
         }
       }
@@ -386,22 +353,21 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
         positionButton.setVisibility(View.VISIBLE);
       }
       applySettingsOnMapView(true);
-      final double lat = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LAT);
-      final double lon = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LON);
-      if (lat == 0 && lon == 0) {
+      Location loc = appPrefs.getLastLocation();
+      if (loc != null) {
+        if (noPositionYet) {
+          SKPositionerManager.getInstance().reportNewGPSPosition(new SKPosition(loc));
+        }
+      } else {
         if (mapView != null) {
           mapView.setZoom(1);
           mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
-        }
-      } else {
-        if (noPositionYet) {
-          SKPositionerManager.getInstance().reportNewGPSPosition(new SKPosition(lat, lon));
         }
       }
       if (mapView != null) {
         mapView.clearOverlay(TRACK_POLYLINE_ID);
         mapView.post(() -> {
-          if (lat == 0 && lon == 0) {
+          if (loc == null) {
             mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
           } else {
             mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
@@ -420,19 +386,18 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
         BackgroundThreadPool.cancelTask(mDisplayLocalSequencesRunnable);
         BackgroundThreadPool.cancelTask(mDisplayTracksRunnable);
         if (mapView != null) {
-          mapView.setZoom(appPrefs.getFloatPreference(PreferenceTypes.K_RECORDING_MAP_ZOOM, 16));
+          mapView.setZoom(appPrefs.getRecordingMapZoom());
           applySettingsOnMapView(false);
           mapView.setZOrderMediaOverlay(true);
           mapView.post(() -> mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_ARROW_SMALL));
         }
-      } else if (mCurrentMode == MODE_TRACK_PREVIEW && mPlayer != null) {
+      } else if (mCurrentMode == MODE_TRACK_PREVIEW && mCurrentSequence != null) {
         if (mapView != null) {
           applySettingsOnMapView(true);
           mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
         }
-        if (mPlayer != null) {
-          displaySequence(mPlayer.getTrack(), !mPlayer.isSafe(), mPlayer.getSequence().getRequestedFrameIndex());
-        }
+        displaySequence((ArrayList<SKCoordinate>) mCurrentSequence.getPolyline().getNodes(), !mCurrentSequence.isSafe(),
+                        mCurrentSequence.getRequestedFrameIndex());
       } else {
         Log.d(TAG, "setup: player is null");
       }
@@ -557,13 +522,14 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   // map interaction callbacks ...
   @Override
   public void onActionPan() {
+    //nothing
   }
 
   @Override
   public void onActionZoom() {
     if (mapView != null && mCurrentMode == MODE_RECORDING_SCREEN) {
       float zoom = mapView.getZoomLevel();
-      appPrefs.saveFloatPreference(PreferenceTypes.K_RECORDING_MAP_ZOOM, zoom, true);
+      appPrefs.postRecordingMapZoom(zoom);
       Log.d(TAG, "onActionZoom: " + zoom);
     }
   }
@@ -588,25 +554,25 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
     mapView.getMapSettings().setMapPoiIconsShown(false);
     mapView.getMapSettings().setHouseNumbersShown(false);
     mapView.setZOrderMediaOverlay(true);
-    if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MAP) {
+    if (activity.getCurrentScreen() == Navigator.SCREEN_MAP) {
       mapView.postDelayed(() -> {
-        final double lat = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LAT);
-        final double lon = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LON);
-        if (lat != 0 && lon != 0) {
-          Log.d(TAG, "run: lat lon = " + lat + ", " + lon);
-          SKPositionerManager.getInstance().reportNewGPSPosition(new SKPosition(lat, lon));
-          mapView.setPositionAsCurrent(new SKCoordinate(lat, lon), 20, true);
+        Location loc = appPrefs.getLastLocation();
+        if (loc != null) {
+          SKPosition skpos = new SKPosition(loc);
+          Log.d(TAG, "run: location = " + loc);
+          SKPositionerManager.getInstance().reportNewGPSPosition(skpos);
+          mapView.setPositionAsCurrent(new SKCoordinate(loc.getLatitude(), loc.getLongitude()), 20, true);
           mapView.centerOnCurrentPosition(16, true, 1000);//zoomlevel, anim time
-        } else if (lat == 0 && lon == 0) {
+        } else {
           mapView.setZoom(1);
           mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
         }
         mapView.postDelayed(() -> {
           diplayLocalSequences();
-          if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MAP) {
-            if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_TAP_ON_MAP, false)) {
-              activity.showSnackBar(R.string.tip_map_screen, Snackbar.LENGTH_LONG, R.string.got_it_label,
-                                    () -> appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_TAP_ON_MAP, true));
+          if (activity.getCurrentScreen() == Navigator.SCREEN_MAP) {
+            if (appPrefs.shouldShowTapOnMap()) {
+              activity.showSnackBar(R.string.tip_map_screen, Snackbar.LENGTH_LONG,
+                                    R.string.got_it_label, () -> appPrefs.setShouldShowTapOnMap(false));
             }
           }
         }, 1040);
@@ -621,9 +587,11 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   }
 
   public void onMapRegionChanged(SKCoordinateRegion skCoordinateRegion) {
+    //nothing
   }
 
   public void onMapRegionChangeStarted(SKCoordinateRegion skCoordinateRegion) {
+    //nothing
   }
 
   @Override
@@ -648,7 +616,7 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
       return;
     }
 
-    if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MAP) {
+    if (activity.getCurrentScreen() == Navigator.SCREEN_MAP) {
       activity.enableProgressBar(true);
       SKCoordinate tappedCoords = mapView.pointToCoordinate(skScreenPoint);
       mGeometryRetriever.nearby(new NetworkResponseDataListener<TrackCollection>() {
@@ -663,16 +631,17 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
         public void requestFinished(int status, TrackCollection collection) {
           activity.enableProgressBar(false);
           if (collection.getTrackList().size() > 0) {
-            activity.openScreen(ScreenComposer.SCREEN_NEARBY, collection);
+            activity.openScreen(Navigator.SCREEN_NEARBY, collection);
           } else {
             activity.showSnackBar(getString(R.string.nearby_no_result_label), Snackbar.LENGTH_SHORT);
           }
         }
-      }, "" + tappedCoords.getLatitude(), "" + tappedCoords.getLongitude());
+      }, String.valueOf(tappedCoords.getLatitude()), String.valueOf(tappedCoords.getLongitude()));
     }
   }
 
   public void onRotateMap() {
+    //nothing
   }
 
   @Override
@@ -688,6 +657,7 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   }
 
   public void onMapActionDown(SKScreenPoint skScreenPoint) {
+    //nothing
   }
 
   @Override
@@ -731,6 +701,7 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   }
 
   public void onCompassSelected() {
+    //nothing
   }
 
   @Override
@@ -744,18 +715,23 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   }
 
   public void onInternationalisationCalled(int i) {
+    //nothing
   }
 
   public void onDebugInfo(double v, float v1, double v2) {
+    //nothing
   }
 
   public void onBoundingBoxImageRendered(int i) {
+    //nothing
   }
 
   public void onGLInitializationError(String s) {
+    //nothing
   }
 
   public void onScreenshotReady(Bitmap bitmap) {
+    //nothing
   }
 
   private boolean onMapInteraction() {
@@ -782,7 +758,7 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
     if (enabled) {
       mapView.getMapSettings().setFollowPositions(true);
       mapView.getMapSettings().setHeadingMode(SKMapSettings.SKHeadingMode.ROUTE);
-      mapView.centerOnCurrentPosition(appPrefs.getFloatPreference(PreferenceTypes.K_RECORDING_MAP_ZOOM, 16), true, 1000);
+      mapView.centerOnCurrentPosition(appPrefs.getRecordingMapZoom(), true, 1000);
     } else {
       mapView.getMapSettings().setFollowPositions(false);
       mapView.getMapSettings().setHeadingMode(SKMapSettings.SKHeadingMode.NONE);
@@ -807,17 +783,14 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
         noPositionYet = false;
         final double latitude = event.location.getLatitude();
         final double longitude = event.location.getLongitude();
-        if (!appPrefs.getBooleanPreference(PreferenceTypes.K_RUN_COUNTER)) {
-          appPrefs.saveBooleanPreference(PreferenceTypes.K_RUN_COUNTER, true);
+        if (!appPrefs.isFirstRun()) {
           setMetrics(latitude, longitude);
         }
-        appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) latitude);
-        appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LON, (float) longitude);
-        setSignDetectionRegion(latitude, longitude);
+        appPrefs.saveLastLocation(event.location);
         if (mapView != null) {
           mapView.post(() -> {
             if (mapView != null && mCurrentMode == MODE_IDLE) {
-              if (latitude == 0 && longitude == 0) {
+              if (latitude <= 0 && longitude <= 0) {
                 mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
               } else {
                 mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
@@ -835,19 +808,9 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   private void setMetrics(double latitude, double longitude) {
     if (Utils.isInsideBoundingBox(latitude, longitude, boundingBoxUS.getTopLeft().getLatitude(), boundingBoxUS.getTopLeft().getLongitude(),
                                   boundingBoxUS.getBottomRight().getLatitude(), boundingBoxUS.getBottomRight().getLongitude())) {
-      appPrefs.saveBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC, false);
+      appPrefs.setUsingMetricUnits(false);
     } else {
-      appPrefs.saveBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC, true);
-    }
-  }
-
-  private void setSignDetectionRegion(double latitude, double longitude) {
-    //TODOdo reinitialize sign detection
-    if (Utils.isInsideBoundingBox(latitude, longitude, boundingBoxUS.getTopLeft().getLatitude(), boundingBoxUS.getTopLeft().getLongitude(),
-                                  boundingBoxUS.getBottomRight().getLatitude(), boundingBoxUS.getBottomRight().getLongitude())) {
-      appPrefs.saveBooleanPreference(PreferenceTypes.K_REGION_US, true);
-    } else {
-      appPrefs.saveBooleanPreference(PreferenceTypes.K_REGION_US, false);
+      appPrefs.setUsingMetricUnits(true);
     }
   }
 
@@ -860,8 +823,7 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   private void displaySequence(final ArrayList<SKCoordinate> nodes, boolean isLocal, int startIndex) {
     Log.d(TAG, "displaySequence: ");
     // set the nodes on the polyline
-    if (nodes != null && nodes.size() != 0 && mapView != null && mPlayer != null) {
-      mCurrentSequence = mPlayer.getSequence();
+    if (nodes != null && nodes.size() != 0 && mapView != null && mCurrentSequence != null) {
       int sequenceId = mCurrentSequence.getId();
       mapView.clearAllOverlays();
       mLastSegmentsDisplayed = null;
@@ -908,6 +870,9 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
     }
 
     SKBoundingBox boundingBox = new SKBoundingBox(new SKCoordinate(northLat, westLon), new SKCoordinate(southLat, eastLon));
+    //int height = (int) (Utils.dpToPx(activity, activity.getResources().getConfiguration().screenHeightDp) * 0.64f)
+    //mapView.fitBoundingBox(boundingBox, paddingX, paddingY, paddingY / 2 + height, paddingY / 2)
+    ////todo uncomment for when, sdk method for fit bb is fixed and track preview card will have no background only map
     mapView.fitBoundingBox(boundingBox, paddingX, paddingY, paddingY / 2, paddingY / 2);
   }
 
@@ -916,7 +881,6 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
    */
   private void displayPolyline(Polyline polyline) {
     if (mapView != null && polyline != null && polyline.getNodes().size() > 0) {
-      //            Log.d(TAG, "displayPolyline: " + polyline.getIdentifier() + ", size " + polyline.getNodes().size());
       // set polyline color
       int outlineSize = 3;
       if (polyline.isLocal) {
@@ -960,7 +924,6 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
               color[2] = 0f;
               break;
           }
-          //                    outlineSize = new Random().nextInt(5);
           polyline.setColor(color);
           polyline.setOutlineColor(color);
         } else {
@@ -1019,9 +982,8 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   }
 
   @Override
-  public void setSource(Object extra) {
-    mPlayer = (PlaybackManager) extra;
-    mPlayer.addPlaybackListener(this);
+  public void setDisplayData(Sequence extra) {
+    mCurrentSequence = extra;
   }
 
   private void enterMode(int mode) {
@@ -1036,27 +998,36 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
         if (mLastSegmentsDisplayed == null || !mLastSegmentsDisplayed.matcher) {
           EventBus.post(new BroadcastSegmentsCommand());
         }
+        break;
       case MODE_TRACK_PREVIEW:
         break;
     }
   }
 
   public void onPlaying() {
+    //nothing
   }
 
   public void onPaused() {
+    //nothing
   }
 
   public void onStopped() {
+    //nothing
   }
 
   @Override
-  public void onPrepared() {
+  public void onPreparing() {
+  }
+
+  @Override
+  public void onPrepared(boolean success) {
     Log.d(TAG, "onPrepared: ");
     if (mapView != null) {
       mapView.post(() -> {
-        if (mPlayer != null) {
-          displaySequence(mPlayer.getTrack(), !mPlayer.isSafe(), mPlayer.getSequence().getRequestedFrameIndex());
+        if (mCurrentSequence != null) {
+          displaySequence((ArrayList<SKCoordinate>) mCurrentSequence.getPolyline().getNodes(), !mCurrentSequence.isSafe(),
+                          mCurrentSequence.getRequestedFrameIndex());
         }
       });
     }
@@ -1076,53 +1047,7 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
   public void onExit() {
     removeSequence();
     onPositionerClicked(null);
-    mPlayer = null;
-  }
-
-  @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
-  public void onSdkEnabled(final SdkEnabledEvent event) {
-    BackgroundThreadPool.post(() -> {
-      mMapEnabled = event.enabled;
-      final LayoutInflater inflater = activity.getLayoutInflater();
-      if (mMapEnabled) {
-        if (!SKMaps.getInstance().isSKMapsInitialized()) {
-          Utils.initializeLibrary(getActivity(), null);
-        }
-        boundingBoxUS = new SKBoundingBox(new SKCoordinate(49.384358, -124.848974), new SKCoordinate(24.396308, -66.885444));
-        activity.runOnUiThread(() -> {
-          View map = inflater.inflate(R.layout.partial_map, null);
-          final FrameLayout holder = view.findViewById(R.id.frameLayout);
-          holder.removeAllViews();
-          holder.addView(map);
-          mapViewGroup = map.findViewById(R.id.view_group_map);
-          mapViewGroup.setMapSurfaceListener(MapFragment.this);
-          mapViewGroup.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-            if (v instanceof SKMapViewHolder) {
-              onViewChanged((SKMapViewHolder) v, right, bottom);
-            }
-          });
-
-          recordButton.setVisibility(View.VISIBLE);
-          positionButton.setVisibility(View.VISIBLE);
-          positionButton.setOnClickListener(v -> onPositionerClicked(null));
-        });
-      } else {
-        SKMaps.getInstance().destroySKMaps();
-        activity.runOnUiThread(() -> {
-          View map = inflater.inflate(R.layout.partial_map_placeholder, null);
-          FrameLayout holder = view.findViewById(R.id.frameLayout);
-          holder.removeAllViews();
-          holder.addView(map);
-          recordButton.setVisibility(View.VISIBLE);
-          positionButton.setVisibility(View.INVISIBLE);
-          if (mapViewGroup != null) {
-            mapViewGroup.setMapSurfaceListener(null);
-          }
-        });
-      }
-    });
-
-    EventBus.clear(SdkEnabledEvent.class);
+    mCurrentSequence = null;
   }
 
   @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
@@ -1212,7 +1137,6 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
         SKAnnotation annot = new SKAnnotation(MATCHED_SEGMENT_POLYLINE_ID + 1);
         annot.setLocation(ref);
         annot.setAnnotationType(SKAnnotation.SK_ANNOTATION_TYPE_RED);
-        //                annot.setAnnotationView(blueAnnotationView);
         mapView.addAnnotation(annot, SKAnimationSettings.ANIMATION_NONE);
       }
     }
@@ -1229,11 +1153,9 @@ public class MapFragment extends DisplayFragment implements SKMapSurfaceListener
     }
     Log.d(TAG, "onSegmentsReceived: from " + (event.matcher ? "matcher" : "map"));
     if (event.all != null) {
-      //            synchronized (event.syncObject) {
       for (Polyline poly : event.all) {
         displayPolyline(poly);
       }
-      //            }
       mLastSegmentsDisplayed = event;
     }
   }

@@ -5,6 +5,9 @@ package com.telenav.osv.item.network;
  */
 public class OsmProfileData extends ApiResponse {
 
+  /**
+   * this is explicitly used for osm profile info like profile picture
+   */
   private String profilePictureUrl;
 
   public String getProfilePictureUrl() {

@@ -1,6 +1,7 @@
 package com.telenav.osv.manager.capture;
 
 import android.annotation.TargetApi;
+import android.arch.lifecycle.ProcessLifecycleOwner;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
@@ -26,9 +27,7 @@ import android.support.annotation.NonNull;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.command.CameraConfigChangedCommand;
+import com.telenav.osv.data.RecordingPreferences;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.CameraPermissionEvent;
 import com.telenav.osv.event.hardware.camera.CameraInfoEvent;
@@ -44,8 +43,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import javax.inject.Inject;
 
 /**
  * This class is responsible for interacting with the Camera hardware.
@@ -53,7 +51,7 @@ import org.greenrobot.eventbus.ThreadMode;
  * Created by Kalman on 10/7/2015.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-class Camera2Manager extends CameraManager {
+public class Camera2Manager extends CameraManager {
 
   /**
    * Conversion from screen rotation to JPEG orientation.
@@ -141,7 +139,7 @@ class Camera2Manager extends CameraManager {
 
   private ArrayList<Size> mPictureResolutions;
 
-  private ApplicationPreferences appPrefs;
+  private RecordingPreferences appPrefs;
 
   private int mSensorOrientation;
 
@@ -204,20 +202,30 @@ class Camera2Manager extends CameraManager {
 
   private boolean mSupportsTapToFocus = false;
 
-  Camera2Manager(Context context) {
+  @Inject
+  public Camera2Manager(Context context, RecordingPreferences prefs) {
     super(context);
-    appPrefs = new ApplicationPreferences(mContext);
+    appPrefs = prefs;
     startBackgroundThread();
     readCameraCharacteristics();
+    appPrefs.getResolutionLive().observe(ProcessLifecycleOwner.get(), this::onResolutionChanged);
   }
 
+  /**
+   * sets resolutions
+   * creates imagereader for obtaining photos
+   * and creates templates for snapshot and preview
+   *
+   * @param camera
+   */
   private void setupCameraDevice(final CameraDevice camera) {
     Log.d(TAG, "setupCameraDevice: camera is " + camera);
     try {
       getOptimalPictureSize(mPictureResolutions);
       setSupportedPicturesSizesPreferences();
-      int width = appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH);
-      int height = appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT);
+      com.telenav.osv.utils.Size resolution = appPrefs.getResolution();
+      int width = resolution.width;
+      int height = resolution.height;
       Log.d(TAG, " resolutionWidth: " + width + " resolutionHeight : " + height);
 
       int maxImages;
@@ -240,6 +248,10 @@ class Camera2Manager extends CameraManager {
     }
   }
 
+  /**
+   * creates a session with only the imagereaders surface added.
+   * that means that the camera is only used for a shutter event
+   */
   private void createNoPreviewSession() {
     if (mCameraDevice != null) {
       try {
@@ -268,11 +280,7 @@ class Camera2Manager extends CameraManager {
             Log.d(TAG, "onConfigureFailed: capture session config failed");
           }
         }, mCameraHandler);
-      } catch (InterruptedException e) {
-        Log.d(TAG, "createNoPreviewSession: " + Log.getStackTraceString(e));
-      } catch (CameraAccessException e) {
-        Log.d(TAG, "createNoPreviewSession: " + Log.getStackTraceString(e));
-      } catch (SecurityException e) {
+      } catch (InterruptedException | CameraAccessException | SecurityException e) {
         Log.d(TAG, "createNoPreviewSession: " + Log.getStackTraceString(e));
       } finally {
         Log.d(TAG, "createNoPreviewSession mCameraWorkLock: released");
@@ -285,8 +293,8 @@ class Camera2Manager extends CameraManager {
    * Set preferences based on the available picture sizes (8MP is the priority)
    */
   private void setSupportedPicturesSizesPreferences() {
-    if ((appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT) == 0) ||
-        (appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH) == 0)) {
+    com.telenav.osv.utils.Size resolution = appPrefs.getResolution();
+    if (resolution.width == 0 || resolution.height == 0) {
       Size sizesPreferences = null;
       if (eight != null) {
         sizesPreferences = eight;
@@ -298,14 +306,15 @@ class Camera2Manager extends CameraManager {
         sizesPreferences = five;
       }
       if (sizesPreferences != null) {
-        appPrefs.saveIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH, sizesPreferences.getWidth());
-        appPrefs.saveIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT, sizesPreferences.getHeight());
+        appPrefs.setResolution(new com.telenav.osv.utils.Size(sizesPreferences.getWidth(), sizesPreferences.getHeight()));
       }
     }
   }
 
   /**
    * This method chooses the best resolution for the preview
+   * ratio should be 4:3 and resolution should be max 1080p
+   * the highest quality resolution is selected under the restrictions above
    *
    * @param supportedSizes sad
    *
@@ -324,18 +333,15 @@ class Camera2Manager extends CameraManager {
   }
 
   /**
-   * This method chooses the best resolution for the taken picture below 16mp
-   *
-   * @param supportedPictureSizes ad
-   *
-   * @return ad
+   * This method chooses the resolutions to be selectable in the apps settings screen
+   * if available it provides
+   * todo refactor this, fields not needed
+   * @param supportedPictureSizes all supported resolutions
+   * @return resolutions that are close to 5 8 12 16 mega pixels
    */
   private List<Size> getOptimalPictureSize(List<Size> supportedPictureSizes) {
     List<Size> relevantSizesList = new ArrayList<>();
 
-    //        for (Camera.Size size: supportedPictureSizes){
-    //            Log.d(TAG, "resolution: " + size.getWidth() + " x " + size.getHeight());
-    //        }
     int fiveMpLimit = (1948 * 2596) + 20;
     int eightMpLimit = (3840 * 2160) + 20;
     int twelveMpLimit = (3024 * 4032) + 20;
@@ -373,6 +379,11 @@ class Camera2Manager extends CameraManager {
     if (five != null) {
       relevantSizesList.add(five);
     }
+    ArrayList<com.telenav.osv.utils.Size> set = new ArrayList<>();
+    for (Size size : relevantSizesList) {
+      set.add(new com.telenav.osv.utils.Size(size));
+    }
+    appPrefs.setSupportedResolutions(set);
     return relevantSizesList;
   }
 
@@ -424,6 +435,16 @@ class Camera2Manager extends CameraManager {
     mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
   }
 
+  /**
+   * dispatches a snapshot request
+   *
+   * @param shutterCallback gets called at the moment when the picture is taken
+   * @param imageReadyCallback called when the byte array is obtained from image reader
+   * @param timestamp the timestamp of the request
+   * @param sequenceId the id of the current sequence
+   * @param folderPath path to the parent folder
+   * @param location the actual location at provided timestamp
+   */
   @Override
   public void takeSnapshot(final ShutterCallback shutterCallback, final ImageReadyCallback imageReadyCallback, final long timestamp,
                            final int sequenceId, final String folderPath, final Location location) {
@@ -446,7 +467,7 @@ class Camera2Manager extends CameraManager {
             try {
               Image mImage = reader.acquireNextImage();
               if (mImage.getFormat() == ImageFormat.JPEG) {
-                ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
+                ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();//jpeg has 1 plane
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 imageReadyCallback.onPictureTaken(bytes, timestamp, sequenceId, folderPath, location);
@@ -511,9 +532,9 @@ class Camera2Manager extends CameraManager {
         manager.openCamera(mCameraId, mCameraStateCallback, mCameraHandler);
       } catch (SecurityException e) {
         EventBus.postSticky(new CameraPermissionEvent());
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       } catch (CameraAccessException e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       } catch (InterruptedException e) {
         throw new RuntimeException("Interrupted while trying to lock camera opening.", e);
       }
@@ -534,6 +555,13 @@ class Camera2Manager extends CameraManager {
     }
   }
 
+  /**
+   * set focus area to focusRect after some adaptation, which is in the old camera api coordinate system
+   * see documentation on focus
+   *
+   * (the focus area coordinate system differs from the old camera API)
+   * @param focusRect
+   */
   @Override
   protected void focus(Rect focusRect) {
     if (mSupportsTapToFocus && mPreviewRequestBuilder != null && mCaptureSession != null && mCameraDevice != null) {
@@ -544,26 +572,26 @@ class Camera2Manager extends CameraManager {
       focusRect.top += 1000;
       focusRect.bottom += 1000;
       //            Log.d(TAG, "focus: left=" + focusRect.left + " right=" + focusRect.right + " top=" + focusRect.top + " bottom=" +
-      // focusRect.bottom);
+      // focusRect.bottom)
       scaleRect(focusRect, mFocusRect);
       //            Log.d(TAG, "focus: left=" + focusRect.left + " right=" + focusRect.right + " top=" + focusRect.top + " bottom=" +
-      // focusRect.bottom);
+      // focusRect.bottom)
       MeteringRectangle meteringRectangle = new MeteringRectangle(focusRect, 1000);
       MeteringRectangle[] meteringRectangleArr = {meteringRectangle};
-      //            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+      //            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL)
       mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, meteringRectangleArr);
-      //            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, meteringRectangleArr);
+      //            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, meteringRectangleArr)
       mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
       mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
       //            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata
-      // .CONTROL_AE_PRECAPTURE_TRIGGER_START);
+      // .CONTROL_AE_PRECAPTURE_TRIGGER_START)
       //setting up snapshot request builder
-      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_OFF);
-      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
-      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, meteringRectangleArr);
-      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
-      //                    mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, meteringRectangleArr);
+      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_OFF)
+      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_TRIGGER_IDLE)
+      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, meteringRectangleArr)
+      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE)
+      //                    mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START)
+      //            mSnapShotRequestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, meteringRectangleArr)
       try {
         mCameraWorkLock.acquire();
         mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
@@ -638,13 +666,8 @@ class Camera2Manager extends CameraManager {
         EventBus.postSticky(new CameraInfoEvent(mPreviewSize.getWidth(), mPreviewSize.getHeight()));
         return;
       }
-    } catch (CameraAccessException e) {
-      e.printStackTrace();
-    } catch (NullPointerException e) {
-      // Currently an NPE is thrown when the Camera2API is used but not supported on the
-      // device this code runs.
-      //            ErrorDialog.newInstance(getString(R.string.camera_error))
-      //                    .show(getChildFragmentManager(), FRAGMENT_DIALOG);
+    } catch (CameraAccessException | NullPointerException e) {
+      Log.d(TAG, Log.getStackTraceString(e));
     }
   }
 
@@ -691,9 +714,7 @@ class Camera2Manager extends CameraManager {
           }
         }, mCameraHandler);
         mTexture = texture;
-      } catch (CameraAccessException e) {
-        Log.d(TAG, "addPreviewToCaptureSession: " + Log.getStackTraceString(e));
-      } catch (InterruptedException e) {
+      } catch (CameraAccessException | InterruptedException e) {
         Log.d(TAG, "addPreviewToCaptureSession: " + Log.getStackTraceString(e));
       } finally {
         Log.d(TAG, "addPreviewToCaptureSession mCameraWorkLock: released");
@@ -724,12 +745,11 @@ class Camera2Manager extends CameraManager {
     }
   }
 
-  @Subscribe(threadMode = ThreadMode.BACKGROUND)
-  public void onResolutionChanged(CameraConfigChangedCommand command) {
+  private void onResolutionChanged(com.telenav.osv.utils.Size resolution) {
     try {
       mCameraWorkLock.acquire();
-      int width = appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH);
-      int height = appPrefs.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT);
+      int width = resolution.width;
+      int height = resolution.height;
       int maxImages;
       if (width * height > (3840 * 2160) + 20) {
         maxImages = 1;
@@ -749,10 +769,8 @@ class Camera2Manager extends CameraManager {
         }
         mSnapShotRequestBuilder.addTarget(mImageReader.getSurface());
       }
-    } catch (InterruptedException e) {
-      Log.d(TAG, "onCameraConfigChanged: " + Log.getStackTraceString(e));
-    } catch (CameraAccessException e) {
-      Log.d(TAG, "onCameraConfigChanged: " + Log.getStackTraceString(e));
+    } catch (InterruptedException | CameraAccessException e) {
+      Log.d(TAG, "onResolutionChanged: " + Log.getStackTraceString(e));
     } finally {
       mCameraWorkLock.release();
     }

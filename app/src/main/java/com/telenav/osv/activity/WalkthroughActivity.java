@@ -1,6 +1,5 @@
 package com.telenav.osv.activity;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,23 +7,29 @@ import android.view.Window;
 import android.view.WindowManager;
 import com.github.paolorotolo.appintro.AppIntro;
 import com.telenav.osv.R;
-import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.data.Preferences;
+import com.telenav.osv.di.Injectable;
 import com.telenav.osv.ui.fragment.WalkthroughSlideFragment;
+import dagger.android.AndroidInjector;
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.support.HasSupportFragmentInjector;
+import javax.inject.Inject;
 
 /**
+ * Activity used to display walkthrough screens at first install
  * Created by alexandra on 7/7/16.
  */
+public class WalkthroughActivity extends AppIntro implements Injectable, HasSupportFragmentInjector {
 
-public class WalkthroughActivity extends AppIntro {
+  @Inject
+  DispatchingAndroidInjector<Fragment> fragmentInjector;
 
-  private ApplicationPreferences appPrefs;
+  @Inject
+  Preferences appPrefs;
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    appPrefs = ((OSVApplication) getApplication()).getAppPrefs();
 
     addSlide(WalkthroughSlideFragment.newInstance(R.layout.fragment_walkthrough_discover));
     addSlide(WalkthroughSlideFragment.newInstance(R.layout.fragment_walkthrough_record));
@@ -60,30 +65,33 @@ public class WalkthroughActivity extends AppIntro {
         backgroundColor = -1;
         break;
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      Window window = getWindow();
-      window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-      window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-      if (backgroundColor == -1) {
-        window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-      } else {
-        int clr = getResources().getColor(backgroundColor);
-        window.setStatusBarColor(clr);
-      }
+    Window window = getWindow();
+    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+    if (backgroundColor == -1) {
+      window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+    } else {
+      int clr = getResources().getColor(backgroundColor);
+      window.setStatusBarColor(clr);
     }
   }
 
   @Override
   public void onSkipPressed(Fragment currentFragment) {
     super.onSkipPressed(currentFragment);
-    appPrefs.saveBooleanPreference(PreferenceTypes.K_INTRO_SHOWN, true);
+    appPrefs.setShouldShowWalkthrough(false);
     finish();
   }
 
   @Override
   public void onDonePressed(Fragment currentFragment) {
     // Do something when users tap on Done button.
-    appPrefs.saveBooleanPreference(PreferenceTypes.K_INTRO_SHOWN, true);
+    appPrefs.setShouldShowWalkthrough(false);
     finish();
+  }
+
+  @Override
+  public AndroidInjector<Fragment> supportFragmentInjector() {
+    return fragmentInjector;
   }
 }

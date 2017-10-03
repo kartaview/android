@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -132,11 +131,8 @@ public class DeviceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
       if (deviceName != null && deviceName.length() > 0) {
         viewHolder.deviceName.setText(deviceName);
         viewHolder.deviceAddress.setText(deviceAdress);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-          if (device != null && device.getType() != mHighlightedType) {
-            //                        viewHolder.deviceName.setTypeface(Typeface.SANS_SERIF);
-            viewHolder.deviceName.setPaintFlags(viewHolder.deviceName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-          }
+        if (device != null && device.getType() != mHighlightedType) {
+          viewHolder.deviceName.setPaintFlags(viewHolder.deviceName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
       }
       viewHolder.device = device;
@@ -148,9 +144,9 @@ public class DeviceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     } else if (holder instanceof HeaderViewHolder) {
       HeaderViewHolder viewHolder = (HeaderViewHolder) holder;
       if (position == 0) {
-        ((TextView) viewHolder.itemView).setText("Paired devices");
+        ((TextView) viewHolder.itemView).setText(R.string.paired_devices_label);
       } else {
-        ((TextView) viewHolder.itemView).setText("Available devices");
+        ((TextView) viewHolder.itemView).setText(R.string.available_devices_label);
       }
       ((TextView) viewHolder.itemView).setTypeface(null, Typeface.BOLD);
     }

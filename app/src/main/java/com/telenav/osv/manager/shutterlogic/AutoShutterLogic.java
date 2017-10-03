@@ -77,6 +77,7 @@ public class AutoShutterLogic extends ShutterLogic {
         try {
           mAutoShutterThread.quit();
         } catch (Exception ignored) {
+          Log.d(TAG, Log.getStackTraceString(ignored));
         }
       }
       mAutoShutterThread = null;
@@ -95,6 +96,7 @@ public class AutoShutterLogic extends ShutterLogic {
       try {
         mAutoShutterThread.quit();
       } catch (Exception ignored) {
+        Log.d(TAG, Log.getStackTraceString(ignored));
       }
       mAutoShutterThread = null;
     }

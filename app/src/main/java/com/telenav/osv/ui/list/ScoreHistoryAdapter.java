@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.item.ScoreItem;
+import com.telenav.osv.utils.Log;
 import java.util.ArrayList;
 
 /**
@@ -21,6 +22,8 @@ public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
   private static final int TYPE_HEADER = 0;
 
   private static final int TYPE_ITEM = 1;
+
+  private static final String TAG = "ScoreHistoryAdapter";
 
   private ArrayList<ScoreItem> mScoreHistory;
 
@@ -64,7 +67,7 @@ public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         pointsHolder.pointsText.setTextColor(clr);
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Log.d(TAG, Log.getStackTraceString(e));
     }
   }
 

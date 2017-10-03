@@ -8,6 +8,9 @@ import java.util.ArrayList;
  */
 public class GeometryCollection extends ApiResponse {
 
+  /**
+   * total number of segments in the response
+   */
   private int totalFilteredItems;
 
   private ArrayList<Polyline> segmentList = new ArrayList<>();

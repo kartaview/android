@@ -26,7 +26,7 @@ public class SequenceDataParser extends ApiResponseParser<SequenceData> {
         jsonObject = new JSONObject(json);
         sequenceData.setOnlineID(jsonObject.getJSONObject("osv").getJSONObject("sequence").getInt("id"));
       } catch (JSONException e) {
-        e.printStackTrace();
+        Log.d(TAG, Log.getStackTraceString(e));
       }
     } catch (Exception e) {
       Log.w(TAG, "createSequence: " + e.getLocalizedMessage());

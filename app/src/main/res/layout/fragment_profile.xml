@@ -83,7 +83,7 @@
                 android:layout_width="76dp"
                 android:layout_height="76dp"
                 android:layout_gravity="center"
-                android:elevation="8dp"
+                android:elevation="4dp"
                 app:civ_border_color="@color/transparent"
                 app:civ_border_width="3dp"
                 app:civ_fill_color="@color/white"
@@ -289,7 +289,7 @@
         android:paddingStart="@dimen/sequence_list_padding_side_portrait"
         android:paddingEnd="@dimen/sequence_list_padding_side_portrait"
         tools:listitem="@layout/item_sequence_card"
-        tools:listheader="@layout/partial_profile_header_user"
+        tools:listheader="@layout/partial_track_list_header_user"
         />
   </android.support.v4.widget.SwipeRefreshLayout>
 </android.support.design.widget.CoordinatorLayout>

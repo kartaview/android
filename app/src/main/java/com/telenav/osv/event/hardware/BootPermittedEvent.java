@@ -8,7 +8,7 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 public class BootPermittedEvent extends OSVStickyEvent {
 
-  public final static String TAG = "BootPermissionEvent";
+  public static final String TAG = "BootPermissionEvent";
 
   public boolean enabled;
 

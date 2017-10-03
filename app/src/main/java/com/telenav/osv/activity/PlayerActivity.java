@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -17,27 +18,40 @@ import com.skobbler.ngx.SKMaps;
 import com.skobbler.ngx.util.SKLogging;
 import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.db.SequenceDB;
+import com.telenav.osv.di.PlaybackModule;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.FullscreenEvent;
 import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.manager.playback.LocalPlaybackManager;
 import com.telenav.osv.manager.playback.PlaybackManager;
-import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.ui.fragment.MapFragment;
 import com.telenav.osv.ui.fragment.TrackPreviewFragment;
 import com.telenav.osv.utils.Log;
+import dagger.android.AndroidInjector;
+import dagger.android.DispatchingAndroidInjector;
+import dagger.android.support.HasSupportFragmentInjector;
 import io.fabric.sdk.android.Fabric;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.greenrobot.eventbus.Subscribe;
 
-public class PlayerActivity extends OSVActivity {
+public class PlayerActivity extends OSVActivity implements HasSupportFragmentInjector {
 
   public static final String EXTRA_SEQUENCE_ID = "extraSequenceId";
 
   private static final String TAG = "PlayerActivity";
+
+  @Inject
+  @Named(PlaybackModule.SCOPE_MP4_LOCAL)
+  PlaybackManager player;
+
+  @Inject
+  DispatchingAndroidInjector<Fragment> playerActivityFragmentInjector;
+
+  @Inject
+  SequenceDB db;
 
   private TrackPreviewFragment trackPreviewFragment;
 
@@ -51,17 +65,15 @@ public class PlayerActivity extends OSVActivity {
 
   private LinearLayout mLinearLayout;
 
-  private boolean mMapDisabled;
+  private boolean mMapEnabled;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    appPrefs = getApp().getAppPrefs();
     setContentView(R.layout.activity_player);
     if (Fabric.isInitialized()) {
       Crashlytics.setString(Log.PLAYBACK, "local-mp4");
     }
-    SequenceDB.instantiate(this);
 
     mLinearLayout = findViewById(R.id.player_main_holder);
     mapHolder = findViewById(R.id.content_frame_map);
@@ -70,8 +82,8 @@ public class PlayerActivity extends OSVActivity {
     View backButton = findViewById(R.id.back_button);
     backButton.setOnClickListener(v -> onBackPressed());
     progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
-    mMapDisabled = appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false);
-    if (!mMapDisabled) {
+    mMapEnabled = appPrefs.isMapEnabled();
+    if (mMapEnabled) {
       SKMaps.getInstance().setLogOption(SKMaps.NGXLoggingOption.LOGGING_OPTION_FILE_AND_CONSOLE, false);
       SKMaps.getInstance().setLogOption(SKMaps.NGXLoggingOption.LOGGING_OPTION_DISABLED, true);
       SKLogging.enableLogs(false);
@@ -100,17 +112,17 @@ public class PlayerActivity extends OSVActivity {
   }
 
   private void openScreen(final Object extra) {
-    PlaybackManager player;
-    player = new LocalPlaybackManager(PlayerActivity.this, (Sequence) extra);
+    player.setSource((Sequence) extra);
     trackPreviewFragment = new TrackPreviewFragment();
-    trackPreviewFragment.setSource(player);
+    trackPreviewFragment.setDisplayData(player.getSequence());
     trackPreviewFragment.hideDelete(false);
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
     ft.add(R.id.content_frame_large, trackPreviewFragment, TrackPreviewFragment.TAG);
-    if (!mMapDisabled) {
+    if (mMapEnabled) {
       MapFragment mapFragment = new MapFragment();
-      mapFragment.setSource(player);
+      mapFragment.setDisplayData(player.getSequence());
       ft.add(R.id.content_frame_map, mapFragment, MapFragment.TAG);
+      trackPreviewFragment.setListener(mapFragment);
     }
     ft.commitAllowingStateLoss();
   }
@@ -140,7 +152,7 @@ public class PlayerActivity extends OSVActivity {
     mapHolder.setLayoutParams(lpu);
     largeHolder.setLayoutParams(lpl);
     Resources res = getResources();
-    if (ratio == 1) {
+    if (ratio >= 1.0f) {
       largeHolder.setPadding((int) res.getDimension(R.dimen.track_preview_card_padding_sides),
                              (int) (res.getDimension(R.dimen.track_preview_card_padding_top) +
                                         res.getDimension(R.dimen.track_preview_card_additional_padding_top)),
@@ -217,11 +229,6 @@ public class PlayerActivity extends OSVActivity {
   }
 
   @Override
-  public int getCurrentScreen() {
-    return ScreenComposer.SCREEN_PREVIEW;
-  }
-
-  @Override
   public void resolveLocationProblem(boolean b) {
 
   }
@@ -256,17 +263,27 @@ public class PlayerActivity extends OSVActivity {
   }
 
   @Override
-  public void openScreen(int screenRecording) {
-
-  }
-
-  @Override
   public void openScreen(int screenNearby, Object extra) {
 
   }
 
   @Override
+  public void openScreen(int screenRecording) {
+
+  }
+
+  @Override
+  public int getCurrentScreen() {
+    return SCREEN_PREVIEW;
+  }
+
+  @Override
   public boolean hasPosition() {
     return false;
+  }
+
+  @Override
+  public AndroidInjector<Fragment> supportFragmentInjector() {
+    return playerActivityFragmentInjector;
   }
 }
