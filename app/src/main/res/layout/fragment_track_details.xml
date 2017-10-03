@@ -6,250 +6,249 @@
     android:layout_height="match_parent"
     android:background="@color/background_material_light_1"
     android:clickable="true"
-    android:focusable="true"
-    >
-  <android.support.v7.widget.CardView
-      style="@style/CardView.Light"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_marginStart="@dimen/track_preview_card_margin_sides"
-      android:layout_marginEnd="@dimen/track_preview_card_margin_sides"
-      android:layout_marginBottom="@dimen/track_preview_card_margin_bottom"
-      android:layout_marginTop="@dimen/track_preview_card_margin_top"
-      android:stateListAnimator="@animator/lift_on_touch"
-      android:clickable="true"
-      android:focusable="true"
-      tools:targetApi="lollipop"
-      >
-    <RelativeLayout
+    android:focusable="true">
+
+    <android.support.v7.widget.CardView
+        style="@style/CardView.Light"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
-      <FrameLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:layout_above="@+id/track_details_layout"
-          >
-        <FrameLayout
-            android:id="@+id/image_holder"
+        android:layout_marginBottom="@dimen/track_preview_card_margin_bottom"
+        android:layout_marginEnd="@dimen/track_preview_card_margin_sides"
+        android:layout_marginStart="@dimen/track_preview_card_margin_sides"
+        android:layout_marginTop="@dimen/track_preview_card_margin_top"
+        android:clickable="true"
+        android:focusable="true"
+        android:stateListAnimator="@animator/lift_on_touch"
+        tools:targetApi="lollipop">
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/custom_pattern_preview_background"
-            />
-        <ImageButton
-            android:theme="@style/PreviewButton"
-            android:id="@+id/maximize_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="start"
-            android:layout_marginLeft="7dp"
-            android:layout_marginTop="7dp"
-            android:padding="0dp"
-            app:srcCompat="@drawable/vector_maximize"
-            tools:ignore="ContentDescription"
-            />
-        <ImageButton
-            android:theme="@style/PreviewButton"
-            android:id="@+id/delete_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="bottom|start"
-            android:layout_marginBottom="7dp"
-            android:layout_marginLeft="7dp"
-            android:padding="0dp"
-            app:srcCompat="@drawable/vector_delete"
-            tools:ignore="ContentDescription"
-            />
-        <ImageView
-            android:id="@+id/points_background"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="end"
-            android:gravity="center"
-            android:layout_marginRight="@dimen/track_preview_score_button_margin"
-            android:layout_marginTop="@dimen/track_preview_score_button_margin"
-            app:srcCompat="@drawable/vector_multiplier"
-            tools:ignore="ContentDescription"
-            />
-        <TextView
-            android:id="@+id/points_text"
-            style="@style/textStyle"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_gravity="end"
-            android:layout_marginRight="@dimen/track_preview_score_button_margin"
-            android:layout_marginTop="@dimen/track_preview_score_button_margin"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            tools:text="115\npts"
-            android:textSize="18sp"
-            />
-        <com.telenav.osv.ui.custom.RevealRelativeLayout
-            android:id="@+id/score_reveal_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clickable="true"
-            android:focusable="true"
-            android:visibility="invisible"
-            android:elevation="10dp"
-            app:backgroundColor="@color/action_bar_blue"
-            tools:visibility="visible"
-            >
-          <TextView
-              android:id="@+id/total_points_text"
-              style="@style/textStyle"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_margin="24dp"
-              tools:text="Total Points: 0"
-              />
-          <ImageView
-              android:id="@+id/score_close"
-              android:layout_width="54dp"
-              android:layout_height="54dp"
-              android:layout_alignParentEnd="true"
-              android:layout_alignParentRight="true"
-              android:layout_gravity="end"
-              android:layout_marginRight="9dp"
-              android:layout_marginTop="7dp"
-              android:gravity="center"
-              app:srcCompat="@drawable/vector_close_white_blue"
-              tools:ignore="ContentDescription"
-              />
-          <android.support.v7.widget.RecyclerView
-              android:id="@+id/points_details"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_below="@id/total_points_text"
-              android:layout_centerVertical="true"
-              android:layout_marginLeft="20dp"
-              android:layout_marginRight="20dp"
-              android:layout_marginTop="10dp"
-              android:orientation="vertical"
-              />
-        </com.telenav.osv.ui.custom.RevealRelativeLayout>
-      </FrameLayout>
-      <RelativeLayout
-          android:id="@+id/track_details_layout"
-          android:layout_width="match_parent"
-          android:layout_above="@+id/control_preview_layout"
-          android:layout_height="wrap_content"
-          android:layout_marginBottom="27dp"
-          android:layout_marginTop="10dp"
-          >
-        <TextView
-            android:id="@+id/current_image_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
-            android:fontFamily="sans-serif"
-            android:gravity="center_vertical"
-            tools:text="0/0 IMG"
-            android:textColor="@color/text_colour_default_light"
-            android:textSize="12sp"
-            android:textStyle="normal"
-            tools:drawableLeft="@drawable/vector_camera_gray"
-            />
-        <TextView
-            android:id="@+id/image_date_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center"
-            android:layout_toEndOf="@id/current_image_text"
-            android:layout_toRightOf="@id/current_image_text"
-            android:gravity="end"
-            android:layout_marginRight="10dp"
-            android:fontFamily="sans-serif"
-            tools:text="January 1st | 02:00 AM"
-            android:textColor="@color/text_colour_default_light"
-            android:textSize="12sp"
-            android:textStyle="normal"
-            />
-      </RelativeLayout>
-      <LinearLayout
-          android:id="@+id/control_preview_layout"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_above="@+id/seek_bar_for_preview"
-          android:gravity="center"
-          android:orientation="horizontal"
-          android:weightSum="99"
-          >
-        <ImageButton
-            android:id="@+id/previous_button"
-            style="@style/toolbarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="15"
-            app:srcCompat="@drawable/vector_previous"
-            tools:ignore="ContentDescription"
-            />
-        <ImageButton
-            android:id="@+id/fast_backward_button"
-            style="@style/toolbarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="23"
-            app:srcCompat="@drawable/vector_rewind"
-            tools:ignore="ContentDescription"
-            />
-        <ImageButton
-            android:id="@+id/play_button"
-            style="@style/toolbarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="23"
-            app:srcCompat="@drawable/vector_play"
-            tools:ignore="ContentDescription"
-            />
-        <ImageButton
-            android:id="@+id/fast_forward_button"
-            style="@style/toolbarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="23"
-            app:srcCompat="@drawable/vector_fast_forward"
-            tools:ignore="ContentDescription"
-            />
-        <ImageButton
-            android:id="@+id/next_button"
-            style="@style/toolbarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="15"
-            app:srcCompat="@drawable/vector_next"
-            tools:ignore="ContentDescription"
-            />
-      </LinearLayout>
-      <SeekBar
-          android:id="@+id/seek_bar_for_preview"
-          style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_alignParentBottom="true"
-          android:layout_gravity="center"
-          android:layout_marginBottom="22dp"
-          android:paddingStart="14dp"
-          android:paddingEnd="14dp"
-          android:layout_marginTop="26dp"
-          android:max="100"
-          android:maxHeight="2dp"
-          android:minHeight="2dp"
-          android:progress="0"
-          android:progressDrawable="@drawable/custom_seeckbar_drawable"
-          android:secondaryProgress="0"
-          android:thumb="@drawable/custom_seek_bar_thumb"
-          tools:progress="35"
-          />
-    </RelativeLayout>
-  </android.support.v7.widget.CardView>
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/track_details_layout">
+
+                <FrameLayout
+                    android:id="@+id/image_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/custom_pattern_preview_background" />
+
+                <ImageButton
+                    android:id="@+id/maximize_button"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="start"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginTop="7dp"
+                    android:padding="0dp"
+                    android:theme="@style/PreviewButton"
+                    app:srcCompat="@drawable/vector_maximize"
+                    tools:ignore="ContentDescription" />
+
+                <ImageButton
+                    android:id="@+id/delete_button"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="bottom|start"
+                    android:layout_marginBottom="7dp"
+                    android:layout_marginLeft="7dp"
+                    android:padding="0dp"
+                    android:theme="@style/PreviewButton"
+                    app:srcCompat="@drawable/vector_delete"
+                    tools:ignore="ContentDescription" />
+
+                <ImageView
+                    android:id="@+id/points_background"
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:layout_gravity="end"
+                    android:layout_marginRight="@dimen/track_preview_score_button_margin"
+                    android:layout_marginTop="@dimen/track_preview_score_button_margin"
+                    android:gravity="center"
+                    app:srcCompat="@drawable/vector_multiplier"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/points_text"
+                    style="@style/textStyle"
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:layout_gravity="end"
+                    android:layout_marginRight="@dimen/track_preview_score_button_margin"
+                    android:layout_marginTop="@dimen/track_preview_score_button_margin"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:textSize="18sp"
+                    tools:text="115\npts" />
+
+                <com.telenav.osv.ui.custom.RevealRelativeLayout
+                    android:id="@+id/score_reveal_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:elevation="10dp"
+                    android:focusable="true"
+                    android:visibility="invisible"
+                    app:backgroundColor="@color/action_bar_blue"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/total_points_text"
+                        style="@style/textStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="24dp"
+                        tools:text="Total Points: 0" />
+
+                    <ImageView
+                        android:id="@+id/score_close"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_gravity="end"
+                        android:layout_marginRight="9dp"
+                        android:layout_marginTop="7dp"
+                        android:gravity="center"
+                        app:srcCompat="@drawable/vector_close_white_blue"
+                        tools:ignore="ContentDescription" />
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/points_details"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/total_points_text"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="10dp"
+                        android:orientation="vertical" />
+                </com.telenav.osv.ui.custom.RevealRelativeLayout>
+            </FrameLayout>
+
+            <RelativeLayout
+                android:id="@+id/track_details_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/control_preview_layout"
+                android:layout_marginBottom="27dp"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:id="@+id/current_image_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/text_colour_default_light"
+                    android:textSize="12sp"
+                    android:textStyle="normal"
+                    tools:drawableLeft="@drawable/vector_camera_gray"
+                    tools:text="0/0 IMG" />
+
+                <TextView
+                    android:id="@+id/image_date_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="10dp"
+                    android:layout_toEndOf="@id/current_image_text"
+                    android:layout_toRightOf="@id/current_image_text"
+                    android:fontFamily="sans-serif"
+                    android:gravity="end"
+                    android:textColor="@color/text_colour_default_light"
+                    android:textSize="12sp"
+                    android:textStyle="normal"
+                    tools:text="January 1st | 02:00 AM" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/control_preview_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/seek_bar_for_preview"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="99">
+
+                <ImageButton
+                    android:id="@+id/previous_button"
+                    style="@style/toolbarButtonStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="15"
+                    app:srcCompat="@drawable/vector_previous"
+                    tools:ignore="ContentDescription" />
+
+                <ImageButton
+                    android:id="@+id/fast_backward_button"
+                    style="@style/toolbarButtonStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="23"
+                    app:srcCompat="@drawable/vector_rewind"
+                    tools:ignore="ContentDescription" />
+
+                <ImageButton
+                    android:id="@+id/play_button"
+                    style="@style/toolbarButtonStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="23"
+                    app:srcCompat="@drawable/vector_play"
+                    tools:ignore="ContentDescription" />
+
+                <ImageButton
+                    android:id="@+id/fast_forward_button"
+                    style="@style/toolbarButtonStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="23"
+                    app:srcCompat="@drawable/vector_fast_forward"
+                    tools:ignore="ContentDescription" />
+
+                <ImageButton
+                    android:id="@+id/next_button"
+                    style="@style/toolbarButtonStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="15"
+                    app:srcCompat="@drawable/vector_next"
+                    tools:ignore="ContentDescription" />
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seek_bar_for_preview"
+                style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="center"
+                android:layout_marginBottom="22dp"
+                android:layout_marginTop="26dp"
+                android:max="100"
+                android:maxHeight="2dp"
+                android:minHeight="2dp"
+                android:paddingEnd="14dp"
+                android:paddingStart="14dp"
+                android:progress="0"
+                android:progressDrawable="@drawable/custom_seeckbar_drawable"
+                android:secondaryProgress="0"
+                android:thumb="@drawable/custom_seek_bar_thumb"
+                tools:progress="35" />
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
 </FrameLayout>
 

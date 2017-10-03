@@ -12,33 +12,33 @@ import com.telenav.osv.ui.binding.viewmodel.SingleLiveEvent;
  */
 public class SettingsItemOneRowViewModel extends SettingsItemViewModel {
 
-  public final ObservableField<String> title = new ObservableField<>();
+    public final ObservableField<String> title = new ObservableField<>();
 
-  private SingleLiveEvent event;
+    private SingleLiveEvent event;
 
-  public SettingsItemOneRowViewModel(Application application, LifecycleOwner owner) {
-    super(application);
-    this.owner = owner;
-  }
-
-  public void onClick() {
-    if (event != null) {
-      event.call();
+    public SettingsItemOneRowViewModel(Application application, LifecycleOwner owner) {
+        super(application);
+        this.owner = owner;
     }
-  }
 
-  public SettingsItemOneRowViewModel setTitle(MutableLiveData<String> title) {
-    title.observe(owner, this.title::set);
-    return this;
-  }
+    public void onClick() {
+        if (event != null) {
+            event.call();
+        }
+    }
 
-  public SettingsItemOneRowViewModel setTitle(String title) {
-    this.title.set(title);
-    return this;
-  }
+    public SettingsItemOneRowViewModel setTitle(MutableLiveData<String> title) {
+        title.observe(owner, this.title::set);
+        return this;
+    }
 
-  public SettingsItemOneRowViewModel setEvent(SingleLiveEvent event) {
-    this.event = event;
-    return this;
-  }
+    public SettingsItemOneRowViewModel setTitle(String title) {
+        this.title.set(title);
+        return this;
+    }
+
+    public SettingsItemOneRowViewModel setEvent(SingleLiveEvent event) {
+        this.event = event;
+        return this;
+    }
 }

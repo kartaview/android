@@ -1,11 +1,11 @@
 package com.telenav.osv.http;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.toolbox.StringRequest;
-import com.telenav.osv.listener.network.GenericResponseListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import com.android.volley.AuthFailureError;
+import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
@@ -13,57 +13,57 @@ import java.util.Map;
 @SuppressWarnings("HardCodedStringLiteral")
 public class NearbyRequest extends StringRequest {
 
-  private static final String PARAM_LAT = "lat";
+    private static final String PARAM_LAT = "lat";
 
-  private static final String PARAM_LON = "lng";
+    private static final String PARAM_LON = "lng";
 
-  private static final String PARAM_RADIUS = "distance";
+    private static final String PARAM_RADIUS = "distance";
 
-  private final GenericResponseListener mListener;
+    private final GenericResponseListener mListener;
 
-  private final String mLat;
+    private final String mLat;
 
-  private final String mLon;
+    private final String mLon;
 
-  private final String mRadius;
+    private final String mRadius;
 
-  public NearbyRequest(String url, GenericResponseListener listener, String lat, String lon, int radius) {
-    super(Method.POST, url, listener, listener);
-    mListener = listener;
-    mLat = lat;
-    mLon = lon;
-    mRadius = "" + radius;
-  }
-
-  @Override
-  public Map<String, String> getHeaders() throws AuthFailureError {
-    Map<String, String> headers = super.getHeaders();
-
-    if (headers == null || headers.equals(Collections.emptyMap())) {
-      headers = new HashMap<>();
+    public NearbyRequest(String url, GenericResponseListener listener, String lat, String lon, int radius) {
+        super(Method.POST, url, listener, listener);
+        mListener = listener;
+        mLat = lat;
+        mLon = lon;
+        mRadius = "" + radius;
     }
 
-    headers.put("Accept", "application/json");
+    @Override
+    public Map<String, String> getHeaders() throws AuthFailureError {
+        Map<String, String> headers = super.getHeaders();
 
-    return headers;
-  }
+        if (headers == null || headers.equals(Collections.emptyMap())) {
+            headers = new HashMap<>();
+        }
 
-  @Override
-  protected Map<String, String> getParams() throws AuthFailureError {
-    Map<String, String> params = super.getParams();
-    if (params == null || params.equals(Collections.emptyMap())) {
-      params = new HashMap<>();
+        headers.put("Accept", "application/json");
+
+        return headers;
     }
-    params.put(PARAM_LAT, mLat);
-    params.put(PARAM_LON, mLon);
-    params.put(PARAM_RADIUS, mRadius);
-    params.put("radius", mRadius);
 
-    return params;
-  }
+    @Override
+    protected Map<String, String> getParams() throws AuthFailureError {
+        Map<String, String> params = super.getParams();
+        if (params == null || params.equals(Collections.emptyMap())) {
+            params = new HashMap<>();
+        }
+        params.put(PARAM_LAT, mLat);
+        params.put(PARAM_LON, mLon);
+        params.put(PARAM_RADIUS, mRadius);
+        params.put("radius", mRadius);
 
-  @Override
-  protected void deliverResponse(String response) {
-    mListener.onResponse(response);
-  }
+        return params;
+    }
+
+    @Override
+    protected void deliverResponse(String response) {
+        mListener.onResponse(response);
+    }
 }

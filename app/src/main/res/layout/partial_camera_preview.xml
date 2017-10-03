@@ -2,39 +2,38 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
-    >
-  <FrameLayout
-      android:id="@+id/camera_view"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      />
-  <ImageView
-      android:id="@+id/focus_indicator"
-      android:layout_width="@dimen/tap_to_focus_view"
-      android:layout_height="@dimen/tap_to_focus_view"
-      android:src="@drawable/custom_circle_tap_to_focus"
-      android:visibility="invisible"
-      />
-  <FrameLayout
-      android:id="@+id/focus_locked_indicator"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:visibility="invisible"
-      >
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/focus_locked"
-        android:textColor="#01579B"
-        android:textSize="7pt"
-        />
+    android:background="@color/black">
+
+    <FrameLayout
+        android:id="@+id/camera_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <ImageView
+        android:id="@+id/focus_indicator"
+        android:layout_width="@dimen/tap_to_focus_view"
+        android:layout_height="@dimen/tap_to_focus_view"
+        android:src="@drawable/custom_circle_tap_to_focus"
+        android:visibility="invisible" />
+
+    <FrameLayout
+        android:id="@+id/focus_locked_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/custom_circle_tap_to_lock_focus"
-        />
-  </FrameLayout>
+        android:visibility="invisible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/focus_locked"
+            android:textColor="#01579B"
+            android:textSize="7pt" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/custom_circle_tap_to_lock_focus" />
+    </FrameLayout>
 </FrameLayout>

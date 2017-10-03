@@ -15,36 +15,36 @@ import com.telenav.osv.item.view.tracklist.StatsData;
  */
 public class ByodTrackListHeaderViewModel extends TrackListHeaderViewModel {
 
-  public ObservableField<SpannableString> acceptedDistance = new ObservableField<>();
+    public ObservableField<SpannableString> acceptedDistance = new ObservableField<>();
 
-  public ObservableField<SpannableString> rejectedDistance = new ObservableField<>();
+    public ObservableField<SpannableString> rejectedDistance = new ObservableField<>();
 
-  public ObservableField<SpannableString> obdDistance = new ObservableField<>();
+    public ObservableField<SpannableString> obdDistance = new ObservableField<>();
 
-  public ObservableField<SpannableString> images = new ObservableField<>();
+    public ObservableField<SpannableString> images = new ObservableField<>();
 
-  public ObservableField<SpannableString> tracks = new ObservableField<>();
+    public ObservableField<SpannableString> tracks = new ObservableField<>();
 
-  private LiveData<StatisticsData> statsData;
+    private LiveData<StatisticsData> statsData;
 
-  public ByodTrackListHeaderViewModel(Application application, LifecycleOwner owner, ValueFormatter valueFormatter) {
-    super(application, valueFormatter);
-    this.owner = owner;
-  }
+    public ByodTrackListHeaderViewModel(Application application, LifecycleOwner owner, ValueFormatter valueFormatter) {
+        super(application, valueFormatter);
+        this.owner = owner;
+    }
 
-  public void setStats(LiveData<StatisticsData> statsData) {
-    this.statsData = statsData;
+    public void setStats(LiveData<StatisticsData> statsData) {
+        this.statsData = statsData;
 
-    this.statsData.observe(owner, stats -> {
-      if (stats == null) {
-        return;
-      }
-      StatsData formatted = create(stats);
-      acceptedDistance.set(formatted.getAcceptedDistance());
-      rejectedDistance.set(formatted.getRejectedDistance());
-      obdDistance.set(formatted.getObdDistance());
-      images.set(formatted.getTotalPhotos());
-      tracks.set(formatted.getTotalTracks());
-    });
-  }
+        this.statsData.observe(owner, stats -> {
+            if (stats == null) {
+                return;
+            }
+            StatsData formatted = create(stats);
+            acceptedDistance.set(formatted.getAcceptedDistance());
+            rejectedDistance.set(formatted.getRejectedDistance());
+            obdDistance.set(formatted.getObdDistance());
+            images.set(formatted.getTotalPhotos());
+            tracks.set(formatted.getTotalTracks());
+        });
+    }
 }

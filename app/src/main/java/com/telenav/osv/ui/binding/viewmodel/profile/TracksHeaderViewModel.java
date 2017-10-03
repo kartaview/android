@@ -13,55 +13,55 @@ import com.telenav.osv.item.view.tracklist.StatsData;
  */
 public class TracksHeaderViewModel extends BaseObservable {
 
-  private final ValueFormatter valueFormatter;
+    private final ValueFormatter valueFormatter;
 
-  private final Context context;
+    private final Context context;
 
-  @Bindable
-  public boolean showHeader;
+    @Bindable
+    public boolean showHeader;
 
-  private StatsData stats = new StatsData();
+    private StatsData stats = new StatsData();
 
-  public TracksHeaderViewModel(Context context, ValueFormatter valueFormatter, boolean showHeader) {
-    this.valueFormatter = valueFormatter;
-    this.showHeader = showHeader;
-    this.context = context;
-  }
-
-  public void setStats(StatsData stats) {
-    if (stats != null) {
-      this.stats = stats;
-      notifyChange();
+    public TracksHeaderViewModel(Context context, ValueFormatter valueFormatter, boolean showHeader) {
+        this.valueFormatter = valueFormatter;
+        this.showHeader = showHeader;
+        this.context = context;
     }
-  }
 
-  @Bindable
-  public SpannableString getImagesText() {
-    return stats.getTotalPhotos();
-  }
+    public void setStats(StatsData stats) {
+        if (stats != null) {
+            this.stats = stats;
+            notifyChange();
+        }
+    }
 
-  @Bindable
-  public SpannableString getDistanceText() {
-    return stats.getAcceptedDistance();
-  }
+    @Bindable
+    public SpannableString getImagesText() {
+        return stats.getTotalPhotos();
+    }
 
-  @Bindable
-  public SpannableString getAcceptedDistanceText() {
-    return stats.getAcceptedDistance();
-  }
+    @Bindable
+    public SpannableString getDistanceText() {
+        return stats.getAcceptedDistance();
+    }
 
-  @Bindable
-  public SpannableString getRejectedDistanceText() {
-    return stats.getRejectedDistance();
-  }
+    @Bindable
+    public SpannableString getAcceptedDistanceText() {
+        return stats.getAcceptedDistance();
+    }
 
-  @Bindable
-  public SpannableString getObdDistanceText() {
-    return stats.getObdDistance();
-  }
+    @Bindable
+    public SpannableString getRejectedDistanceText() {
+        return stats.getRejectedDistance();
+    }
 
-  @Bindable
-  public SpannableString getTracksText() {
-    return stats.getTotalTracks();
-  }
+    @Bindable
+    public SpannableString getObdDistanceText() {
+        return stats.getObdDistance();
+    }
+
+    @Bindable
+    public SpannableString getTracksText() {
+        return stats.getTotalTracks();
+    }
 }

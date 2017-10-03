@@ -9,61 +9,61 @@ import android.arch.lifecycle.MutableLiveData;
 @SuppressWarnings({"SameParameterValue", "unused"})
 public interface DynamicPreferences extends GeneralPreferences {
 
-  String[] URL_ENV = {"openstreetcam.org/", "staging.openstreetcam.org/", "testing.openstreetcam.org/", "beta.openstreetcam.org/"};
+    String[] URL_ENV = {"openstreetcam.org/", "staging.openstreetcam.org/", "testing.openstreetcam.org/", "beta.openstreetcam.org/"};
 
-  boolean isAutoUploadEnabled();
+    boolean isAutoUploadEnabled();
 
-  MutableLiveData<Boolean> getAutoUploadLive();
+    MutableLiveData<Boolean> getAutoUploadLive();
 
-  boolean isDataUploadEnabled();
+    boolean isDataUploadEnabled();
 
-  MutableLiveData<Boolean> getDataUploadLive();
+    MutableLiveData<Boolean> getDataUploadLive();
 
-  boolean isChargingUploadEnabled();
+    boolean isChargingUploadEnabled();
 
-  MutableLiveData<Boolean> getChargingUploadLive();
+    MutableLiveData<Boolean> getChargingUploadLive();
 
-  MutableLiveData<Boolean> getSaveAuthLive();
+    MutableLiveData<Boolean> getSaveAuthLive();
 
-  boolean getSaveAuth();
+    boolean getSaveAuth();
 
-  MutableLiveData<Boolean> getUsingMetricUnitsLive();
+    MutableLiveData<Boolean> getUsingMetricUnitsLive();
 
-  boolean isUsingMetricUnits();
+    boolean isUsingMetricUnits();
 
-  void setUsingMetricUnits(boolean value);
+    void setUsingMetricUnits(boolean value);
 
-  MutableLiveData<Boolean> getExtStorageLive();
+    MutableLiveData<Boolean> getExtStorageLive();
 
-  boolean isUsingExternalStorage();
+    boolean isUsingExternalStorage();
 
-  void setUsingExternalStorage(boolean value);
+    void setUsingExternalStorage(boolean value);
 
-  MutableLiveData<Boolean> getGamificationEnabledLive();
+    MutableLiveData<Boolean> getGamificationEnabledLive();
 
-  boolean isGamificationEnabled();
+    boolean isGamificationEnabled();
 
-  void setGamificationEnabled(boolean value);
+    void setGamificationEnabled(boolean value);
 
-  MutableLiveData<Boolean> getMapEnabledLive();
+    MutableLiveData<Boolean> getMapEnabledLive();
 
-  boolean isMapEnabled();
+    boolean isMapEnabled();
 
-  void setMapEnabled(boolean value);
+    void setMapEnabled(boolean value);
 
-  MutableLiveData<Boolean> getMiniMapEnabledLive();
+    MutableLiveData<Boolean> getMiniMapEnabledLive();
 
-  boolean isMiniMapEnabled();
+    boolean isMiniMapEnabled();
 
-  void setMiniMapEnabled(boolean value);
+    void setMiniMapEnabled(boolean value);
 
-  MutableLiveData<Integer> getObdTypeLive();
+    MutableLiveData<Integer> getObdTypeLive();
 
-  int getObdType();
+    int getObdType();
 
-  void setObdType(int value);
+    void setObdType(int value);
 
-  MutableLiveData<Integer> getObdStatusLive();
+    MutableLiveData<Integer> getObdStatusLive();
 
-  int getObdStatus();
+    int getObdStatus();
 }

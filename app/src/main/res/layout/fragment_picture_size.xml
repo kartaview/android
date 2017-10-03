@@ -8,39 +8,38 @@
     android:focusableInTouchMode="true"
     android:minWidth="300dp"
     android:orientation="vertical"
-    android:padding="20dp"
-    >
-  <TextView
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginBottom="3dp"
-      android:layout_marginTop="10dp"
-      android:text="@string/resolutions_label"
-      android:textColor="@color/text_colour_default_light"
-      android:textSize="25sp"
-      android:textStyle="bold"
-      />
-  <RadioGroup
-      android:id="@+id/picture_size_radio_group"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      />
-  <TextView
-      android:id="@+id/ok_button_selection"
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="end|right"
-      android:layout_marginTop="20dp"
-      android:clickable="true"
-      android:paddingEnd="20dp"
-      android:paddingLeft="20dp"
-      android:paddingRight="20dp"
-      android:paddingStart="20dp"
-      android:text="@string/ok_label"
-      android:textColor="@color/accent_material_dark_1"
-      android:textSize="18sp"
-      android:textStyle="bold"
-      />
+    android:padding="20dp">
+
+    <TextView
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="3dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/resolutions_label"
+        android:textColor="@color/text_colour_default_light"
+        android:textSize="25sp"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/picture_size_radio_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/ok_button_selection"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|right"
+        android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:paddingEnd="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingStart="20dp"
+        android:text="@string/ok_label"
+        android:textColor="@color/accent_material_dark_1"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 </LinearLayout>

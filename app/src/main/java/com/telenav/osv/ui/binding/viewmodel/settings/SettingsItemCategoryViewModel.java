@@ -12,27 +12,27 @@ import android.databinding.ObservableField;
  */
 public class SettingsItemCategoryViewModel extends SettingsItemViewModel {
 
-  public final ObservableField<String> title = new ObservableField<>();
+    public final ObservableField<String> title = new ObservableField<>();
 
-  public final ObservableBoolean visible = new ObservableBoolean();
+    public final ObservableBoolean visible = new ObservableBoolean();
 
-  public SettingsItemCategoryViewModel(Application application, LifecycleOwner owner) {
-    super(application);
-    this.owner = owner;
-    visible.set(true);
-  }
+    public SettingsItemCategoryViewModel(Application application, LifecycleOwner owner) {
+        super(application);
+        this.owner = owner;
+        visible.set(true);
+    }
 
-  public SettingsItemCategoryViewModel setTitle(String title) {
-    this.title.set(title);
-    return this;
-  }
+    public SettingsItemCategoryViewModel setTitle(String title) {
+        this.title.set(title);
+        return this;
+    }
 
-  public SettingsItemCategoryViewModel setVisibility(LiveData<Boolean> visibilityPref) {
-    visibilityPref.observe(owner, this::setVisible);
-    return this;
-  }
+    public SettingsItemCategoryViewModel setVisibility(LiveData<Boolean> visibilityPref) {
+        visibilityPref.observe(owner, this::setVisible);
+        return this;
+    }
 
-  public void setVisible(boolean value) {
-    visible.set(value);
-  }
+    public void setVisible(boolean value) {
+        visible.set(value);
+    }
 }

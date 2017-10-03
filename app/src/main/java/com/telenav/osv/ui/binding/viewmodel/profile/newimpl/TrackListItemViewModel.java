@@ -9,8 +9,8 @@ import android.arch.lifecycle.LifecycleOwner;
  */
 public class TrackListItemViewModel extends ListItemViewModel {
 
-  public TrackListItemViewModel(Application application, LifecycleOwner owner) {
-    super(application);
-    this.owner = owner;
-  }
+    public TrackListItemViewModel(Application application, LifecycleOwner owner) {
+        super(application);
+        this.owner = owner;
+    }
 }

@@ -4,108 +4,107 @@
     style="@style/CardView.Light"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/sequence_list_item_margin_side"
     android:layout_marginEnd="@dimen/sequence_list_item_margin_side"
-    android:orientation="vertical"
-    android:focusable="true"
+    android:layout_marginStart="@dimen/sequence_list_item_margin_side"
     android:clickable="true"
-    >
-  <FrameLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="horizontal"
-      android:paddingTop="51dp"
-      android:paddingBottom="47.5dp"
-      android:paddingStart="@dimen/payment_list_text_inset"
-      android:paddingEnd="@dimen/payment_list_text_inset"
-      >
-    <TextView
-        android:layout_width="wrap_content"
+    android:focusable="true"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/textStyle"
-        android:textSize="17sp"
-        android:fontFamily="sans-serif"
-        android:textStyle="normal"
-        android:textColor="#4d4d4d"
-        android:text="@string/payment_header_label_total_paid"
-        />
-    <TextView
-        android:id="@+id/payment_header_total_payment_text"
-        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="47.5dp"
+        android:paddingEnd="@dimen/payment_list_text_inset"
+        android:paddingStart="@dimen/payment_list_text_inset"
+        android:paddingTop="51dp">
+
+        <TextView
+            style="@style/textStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:text="@string/payment_header_label_total_paid"
+            android:textColor="#4d4d4d"
+            android:textSize="17sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/payment_header_total_payment_text"
+            style="@style/textStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="#4d4d4d"
+            android:textSize="17sp"
+            android:textStyle="normal"
+            tools:text="$1,843.00" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        style="@style/textStyle"
-        android:textSize="17sp"
-        android:fontFamily="sans-serif-medium"
-        android:textStyle="normal"
-        android:textColor="#4d4d4d"
-        tools:text="$1,843.00"
-        />
-  </FrameLayout>
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="horizontal"
-      android:paddingBottom="22dp"
-      android:paddingStart="5dp"
-      android:paddingEnd="5dp"
-      android:weightSum="6"
-      >
-    <TextView
-        android:id="@+id/payment_id_text"
-        style="@style/textStyle"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:layout_gravity="center_vertical"
-        android:text="@string/payment_header_label_id"
-        android:fontFamily="sans-serif"
-        android:textStyle="normal"
-        android:textColor="#6e707b"
-        android:textSize="12sp"
-        />
-    <TextView
-        android:id="@+id/payment_date_text"
-        style="@style/textStyle"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:layout_weight="1.5"
-        android:gravity="center_vertical"
-        android:layout_gravity="center_vertical"
-        android:text="@string/payment_header_label_date"
-        android:fontFamily="sans-serif"
-        android:textStyle="normal"
-        android:textColor="#6e707b"
-        android:textSize="12sp"
-        />
-    <TextView
-        android:id="@+id/payment_distance_text"
-        style="@style/textStyle"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:layout_weight="1.5"
-        android:gravity="center_vertical|end"
-        android:layout_gravity="center_vertical"
-        android:text="@string/payment_header_label_distance"
-        android:fontFamily="sans-serif"
-        android:textStyle="normal"
-        android:textColor="#6e707b"
-        android:textSize="12sp"
-        />
-    <TextView
-        android:id="@+id/payment_value_text"
-        style="@style/textStyle"
-        android:layout_width="0dp"
-        android:layout_height="20dp"
-        android:layout_weight="2"
-        android:gravity="center_vertical|end"
-        android:layout_gravity="center_vertical"
-        android:text="@string/payment_header_label_value"
-        android:fontFamily="sans-serif"
-        android:textStyle="normal"
-        android:textColor="#6e707b"
-        android:textSize="12sp"
-        />
-  </LinearLayout>
+        android:orientation="horizontal"
+        android:paddingBottom="22dp"
+        android:paddingEnd="5dp"
+        android:paddingStart="5dp"
+        android:weightSum="6">
+
+        <TextView
+            android:id="@+id/payment_id_text"
+            style="@style/textStyle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical"
+            android:text="@string/payment_header_label_id"
+            android:textColor="#6e707b"
+            android:textSize="12sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/payment_date_text"
+            style="@style/textStyle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1.5"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical"
+            android:text="@string/payment_header_label_date"
+            android:textColor="#6e707b"
+            android:textSize="12sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/payment_distance_text"
+            style="@style/textStyle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1.5"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical|end"
+            android:text="@string/payment_header_label_distance"
+            android:textColor="#6e707b"
+            android:textSize="12sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/payment_value_text"
+            style="@style/textStyle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="2"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical|end"
+            android:text="@string/payment_header_label_value"
+            android:textColor="#6e707b"
+            android:textSize="12sp"
+            android:textStyle="normal" />
+    </LinearLayout>
 </LinearLayout>

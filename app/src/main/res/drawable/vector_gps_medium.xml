@@ -4,56 +4,51 @@
     android:width="48dp"
     android:height="48dp"
     android:viewportHeight="44"
-    android:viewportWidth="44"
-    >
-  <group android:name="Mobile">
-    <group android:name="fill">
-      <path
-          android:name="points/multiplier"
-          android:fillColor="#E7A100"
-          android:fillType="evenOdd"
-          android:pathData="
+    android:viewportWidth="44">
+    <group android:name="Mobile">
+        <group android:name="fill">
+            <path
+                android:name="points/multiplier"
+                android:fillColor="#E7A100"
+                android:fillType="evenOdd"
+                android:pathData="
                 M 22,44
                 C 34.150264  ,44            44         ,34.150264    44      ,22
                 C 44         ,9.849736      34.150264  ,0            22      ,0
                 C 9.849736   ,0             0          ,9.849736     0       ,22
                 C 0          ,34.150264     9.849736   ,44           22      ,44
                 Z"
-          tools:targetApi="n"
-          />
-      <path
-          android:name="points/multiplier"
-          android:fillColor="#00000000"
-          android:fillType="evenOdd"
-          android:pathData="
+                tools:targetApi="n" />
+            <path
+                android:name="points/multiplier"
+                android:fillColor="#00000000"
+                android:fillType="evenOdd"
+                android:pathData="
                 M 22,42.5
                 C 32.650264  ,42.5          42.5       ,34.150264    42.5     ,22
                 C 42.5       ,9.849736      32.650264  ,1.5          22       ,1.5
                 C 11.349736  ,1.5           1.5        ,9.849736     1.5      ,22
                 C 1.5        ,34.150264     11.349736  ,42.5         22       ,42.5
                 Z"
-          android:strokeAlpha="0.5"
-          android:strokeColor="#FFFFFF"
-          android:strokeWidth="3"
-          tools:targetApi="n"
-          />
+                android:strokeAlpha="0.5"
+                android:strokeColor="#FFFFFF"
+                android:strokeWidth="3"
+                tools:targetApi="n" />
+        </group>
     </group>
-  </group>
-  <group
-      android:name="Icons"
-      android:translateX="-124.000000"
-      android:translateY="-193.000000"
-      >
     <group
-        android:name="GPS-problem"
-        android:translateX="124.000000"
-        android:translateY="193.000000"
-        >
-      <path
-          android:name="Shape"
-          android:fillColor="#FFFFFF"
-          android:fillType="evenOdd"
-          android:pathData="M22,17.2727273 C19.3881818,17.2727273 17.2727273,19.3881818 17.2727273,22
+        android:name="Icons"
+        android:translateX="-124.000000"
+        android:translateY="-193.000000">
+        <group
+            android:name="GPS-problem"
+            android:translateX="124.000000"
+            android:translateY="193.000000">
+            <path
+                android:name="Shape"
+                android:fillColor="#FFFFFF"
+                android:fillType="evenOdd"
+                android:pathData="M22,17.2727273 C19.3881818,17.2727273 17.2727273,19.3881818 17.2727273,22
 C17.2727273,24.6118182 19.3881818,26.7272727 22,26.7272727
 C24.6118182,26.7272727 26.7272727,24.6118182 26.7272727,22
 C26.7272727,19.3881818 24.6118182,17.2727273 22,17.2727273 L22,17.2727273 Z
@@ -68,10 +63,9 @@ C17.4263636,30.2727273 13.7272727,26.5736364 13.7272727,22
 C13.7272727,17.4263636 17.4263636,13.7272727 22,13.7272727
 C26.5736364,13.7272727 30.2727273,17.4263636 30.2727273,22
 C30.2727273,26.5736364 26.5736364,30.2727273 22,30.2727273 L22,30.2727273 Z"
-          android:strokeWidth="1"
-          tools:ignore="InvalidVectorPath"
-          tools:targetApi="n"
-          />
+                android:strokeWidth="1"
+                tools:ignore="InvalidVectorPath"
+                tools:targetApi="n" />
+        </group>
     </group>
-  </group>
 </vector>

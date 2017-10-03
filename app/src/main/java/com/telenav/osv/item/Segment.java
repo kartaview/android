@@ -10,64 +10,64 @@ import com.skobbler.ngx.SKCoordinate;
 
 public class Segment {
 
-  private static final String TAG = "Segment";
+    private static final String TAG = "Segment";
 
-  private final SKCoordinate reference;
+    private final SKCoordinate reference;
 
-  private double deltaBearing;
+    private double deltaBearing;
 
-  private float score;
+    private float score;
 
-  private SKCoordinate start;
+    private SKCoordinate start;
 
-  private SKCoordinate end;
+    private SKCoordinate end;
 
-  private double distance;
+    private double distance;
 
-  private Polyline polyline;
+    private Polyline polyline;
 
-  public Segment(double distance, SKCoordinate referencePoint, @NonNull Polyline polyline, SKCoordinate start, SKCoordinate end,
-                 double deltaBearing, float score) {
-    this.distance = distance;
-    this.polyline = polyline;
-    this.reference = referencePoint;
-    this.start = start;
-    this.end = end;
-    this.deltaBearing = deltaBearing;
-    this.score = score;
-  }
+    public Segment(double distance, SKCoordinate referencePoint, @NonNull Polyline polyline, SKCoordinate start, SKCoordinate end,
+                   double deltaBearing, float score) {
+        this.distance = distance;
+        this.polyline = polyline;
+        this.reference = referencePoint;
+        this.start = start;
+        this.end = end;
+        this.deltaBearing = deltaBearing;
+        this.score = score;
+    }
 
-  public Polyline getPolyline() {
-    return polyline;
-  }
+    @Override
+    public String toString() {
+        return TAG + " from " + polyline.getIdentifier() + ", distance " + (int) (distance * 110000) + ", deltaBearing " + deltaBearing +
+                ", score " + score;
+    }
 
-  public double getDistance() {
-    return distance;
-  }
+    public Polyline getPolyline() {
+        return polyline;
+    }
 
-  public SKCoordinate getStart() {
-    return start;
-  }
+    public double getDistance() {
+        return distance;
+    }
 
-  public SKCoordinate getEnd() {
-    return end;
-  }
+    public SKCoordinate getStart() {
+        return start;
+    }
 
-  public SKCoordinate getReference() {
-    return reference;
-  }
+    public SKCoordinate getEnd() {
+        return end;
+    }
 
-  public double getDeltaBearing() {
-    return deltaBearing;
-  }
+    public SKCoordinate getReference() {
+        return reference;
+    }
 
-  public float getScore() {
-    return score;
-  }
+    public double getDeltaBearing() {
+        return deltaBearing;
+    }
 
-  @Override
-  public String toString() {
-    return TAG + " from " + polyline.getIdentifier() + ", distance " + (int) (distance * 110000) + ", deltaBearing " + deltaBearing +
-        ", score " + score;
-  }
+    public float getScore() {
+        return score;
+    }
 }

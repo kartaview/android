@@ -5,5 +5,4 @@
     android:layout_centerInParent="true"
     android:adjustViewBounds="true"
     android:contentDescription="@string/descr_image"
-    android:scaleType="fitCenter"
-    />
+    android:scaleType="fitCenter" />

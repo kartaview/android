@@ -1,10 +1,10 @@
 package com.telenav.osv.manager.playback;
 
+import java.util.ArrayList;
 import android.view.View;
 import android.widget.SeekBar;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.item.Sequence;
-import java.util.ArrayList;
 
 /**
  * abstract playback manager
@@ -12,62 +12,62 @@ import java.util.ArrayList;
  */
 public interface PlaybackManager {
 
-  void setSource(Sequence sequence);
+    void setSource(Sequence sequence);
 
-  View getSurface();
+    View getSurface();
 
-  void setSurface(View surface);
+    void setSurface(View surface);
 
-  void prepare();
+    void prepare();
 
-  void next();
+    void next();
 
-  void previous();
+    void previous();
 
-  void play();
+    void play();
 
-  void pause();
+    void pause();
 
-  void stop();
+    void stop();
 
-  void fastForward();
+    void fastForward();
 
-  void fastBackward();
+    void fastBackward();
 
-  boolean isPlaying();
+    boolean isPlaying();
 
-  void setSeekBar(SeekBar seekBar);
+    void setSeekBar(SeekBar seekBar);
 
-  int getLength();
+    int getLength();
 
-  void destroy();
+    void destroy();
 
-  void addPlaybackListener(PlaybackListener playbackListener);
+    void addPlaybackListener(PlaybackListener playbackListener);
 
-  void removePlaybackListener(PlaybackListener playbackListener);
+    void removePlaybackListener(PlaybackListener playbackListener);
 
-  boolean isSafe();
+    boolean isSafe();
 
-  Sequence getSequence();
+    Sequence getSequence();
 
-  ArrayList<SKCoordinate> getTrack();
+    ArrayList<SKCoordinate> getTrack();
 
-  void onSizeChanged();
+    void onSizeChanged();
 
-  interface PlaybackListener {
+    interface PlaybackListener {
 
-    void onPlaying();
+        void onPlaying();
 
-    void onPaused();
+        void onPaused();
 
-    void onStopped();
+        void onStopped();
 
-    void onPreparing();
+        void onPreparing();
 
-    void onPrepared(boolean success);
+        void onPrepared(boolean success);
 
-    void onProgressChanged(int index);
+        void onProgressChanged(int index);
 
-    void onExit();
-  }
+        void onExit();
+    }
 }

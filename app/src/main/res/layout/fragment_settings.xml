@@ -1,47 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
-  <data>
-    <import type="com.telenav.osv.ui.list.LayoutManagers"/>
-    <variable
-        name="viewModel"
-        type="com.telenav.osv.ui.binding.viewmodel.settings.SettingsViewModel"
-        />
-  </data>
-  <android.support.design.widget.CoordinatorLayout xmlns:tools="http://schemas.android.com/tools"
-      xmlns:app="http://schemas.android.com/apk/res-auto"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      style="@style/AppTheme"
-      >
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/app_bar"
+
+    <data>
+
+        <import type="com.telenav.osv.ui.list.LayoutManagers" />
+
+        <variable
+            name="viewModel"
+            type="com.telenav.osv.ui.binding.viewmodel.settings.SettingsViewModel" />
+    </data>
+
+    <android.support.design.widget.CoordinatorLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        style="@style/AppTheme"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="4dp"
-        >
-      <android.support.v7.widget.Toolbar
-          android:id="@+id/toolbar"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          app:title="@string/settings"
-          app:titleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
-          app:titleTextColor="@color/black"
-          app:navigationIcon="@drawable/vector_back_black"
-          android:background="@color/white"
-          />
-    </android.support.design.widget.AppBarLayout>
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:background="@drawable/custom_ripple"
-        tools:listitem="@layout/item_settings_switch"
-        app:adapter="@{viewModel.adapter}"
-        app:itemBinding="@{viewModel.multipleItems}"
-        app:items="@{viewModel.headerFooterItems}"
-        app:viewHolder="@{viewModel.viewHolder}"
-        app:layoutManager="@{LayoutManagers.linear()}"
-        />
-  </android.support.design.widget.CoordinatorLayout>
+        android:layout_height="match_parent">
+
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="4dp">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                app:navigationIcon="@drawable/vector_back_black"
+                app:title="@string/settings"
+                app:titleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
+                app:titleTextColor="@color/black" />
+        </android.support.design.widget.AppBarLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/custom_ripple"
+            app:adapter="@{viewModel.adapter}"
+            app:itemBinding="@{viewModel.multipleItems}"
+            app:items="@{viewModel.headerFooterItems}"
+            app:layoutManager="@{LayoutManagers.linear()}"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:viewHolder="@{viewModel.viewHolder}"
+            tools:listitem="@layout/item_settings_switch" />
+    </android.support.design.widget.CoordinatorLayout>
 </layout>

@@ -8,71 +8,71 @@ import android.net.wifi.WifiManager;
 
 public class NetworkUtils {
 
-  /**
-   * name of the class used for networking
-   */
-  private static final String TAG = "NetworkUtils";
+    /**
+     * name of the class used for networking
+     */
+    private static final String TAG = "NetworkUtils";
 
-  /**
-   * checks if there is WI-FI or network connection available
-   */
-  public static boolean isInternetAvailable(Context context) {
-    final ConnectivityManager conectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-    final NetworkInfo networkInfo = conectivityManager.getActiveNetworkInfo();
-    if (networkInfo != null) {
-      if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-        if (networkInfo.isConnected()) {
-          return true;
+    /**
+     * checks if there is WI-FI or network connection available
+     */
+    public static boolean isInternetAvailable(Context context) {
+        final ConnectivityManager conectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo networkInfo = conectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                if (networkInfo.isConnected()) {
+                    return true;
+                }
+            } else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                if (networkInfo.isConnected()) {
+                    return true;
+                }
+            }
         }
-      } else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
-        if (networkInfo.isConnected()) {
-          return true;
-        }
-      }
+
+        return false;
     }
 
-    return false;
-  }
-
-  /**
-   * Checks if wifi is ON
-   */
-  public static boolean isWifiOn(Context context) {
-    WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-    return wifi.isWifiEnabled();
-  }
-
-  /**
-   * checks if there is WI-FI connection available
-   */
-  public static boolean isWifiInternetAvailable(Context context) {
-    final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-    final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-    if (networkInfo != null) {
-      if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-        if (networkInfo.isConnected()) {
-          return true;
-        }
-      }
+    /**
+     * Checks if wifi is ON
+     */
+    public static boolean isWifiOn(Context context) {
+        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        return wifi.isWifiEnabled();
     }
 
-    return false;
-  }
-
-  /**
-   * checks if there is network connection available
-   */
-  public static boolean isMobileInternetAvailable(Activity currentActivity) {
-    final ConnectivityManager connectivityManager = (ConnectivityManager) currentActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
-    final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-    if (networkInfo != null) {
-      if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
-        if (networkInfo.isConnected()) {
-          return true;
+    /**
+     * checks if there is WI-FI connection available
+     */
+    public static boolean isWifiInternetAvailable(Context context) {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                if (networkInfo.isConnected()) {
+                    return true;
+                }
+            }
         }
-      }
+
+        return false;
     }
 
-    return false;
-  }
+    /**
+     * checks if there is network connection available
+     */
+    public static boolean isMobileInternetAvailable(Activity currentActivity) {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) currentActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                if (networkInfo.isConnected()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

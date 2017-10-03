@@ -8,8 +8,8 @@ import com.telenav.osv.event.OSVStickyEvent;
 
 public class CameraPermissionEvent extends OSVStickyEvent {
 
-  @Override
-  public Class getStickyClass() {
-    return CameraPermissionEvent.class;
-  }
+    @Override
+    public Class getStickyClass() {
+        return CameraPermissionEvent.class;
+    }
 }

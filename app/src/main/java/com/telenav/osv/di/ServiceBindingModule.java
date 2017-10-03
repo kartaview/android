@@ -25,12 +25,12 @@ import dagger.android.ContributesAndroidInjector;
 @Module
 abstract class ServiceBindingModule {
 
-  @ContributesAndroidInjector
-  abstract CameraHandlerService contributeCameraHandlerService();
+    @ContributesAndroidInjector
+    abstract CameraHandlerService contributeCameraHandlerService();
 
-  @ContributesAndroidInjector
-  abstract UploadJobService contributeUploadJobService();
+    @ContributesAndroidInjector
+    abstract UploadJobService contributeUploadJobService();
 
-  @ContributesAndroidInjector
-  abstract RecentClearedService contributeRecentClearedService();
+    @ContributesAndroidInjector
+    abstract RecentClearedService contributeRecentClearedService();
 }

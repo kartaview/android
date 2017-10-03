@@ -8,12 +8,12 @@ import com.telenav.osv.ui.binding.DefaultBindingAdapter;
  */
 public class DefaultBindingComponent implements DataBindingComponent {
 
-  private static final String TAG = "DefaultBindingComponent";
+    private static final String TAG = "DefaultBindingComponent";
 
-  private DefaultBindingAdapter mDefaultBindingAdapter = new DefaultBindingAdapter();
+    private DefaultBindingAdapter mDefaultBindingAdapter = new DefaultBindingAdapter();
 
-  @Override
-  public DefaultBindingAdapter getDefaultBindingAdapter() {
-    return mDefaultBindingAdapter;
-  }
+    @Override
+    public DefaultBindingAdapter getDefaultBindingAdapter() {
+        return mDefaultBindingAdapter;
+    }
 }

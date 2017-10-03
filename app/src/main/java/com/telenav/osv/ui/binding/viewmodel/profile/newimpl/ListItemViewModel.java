@@ -11,12 +11,12 @@ import com.telenav.osv.ui.binding.viewmodel.RepeatableViewModel;
  */
 public class ListItemViewModel extends RepeatableViewModel {
 
-  public ListItemViewModel(Application application) {
-    super(application);
-  }
+    public ListItemViewModel(Application application) {
+        super(application);
+    }
 
-  @Override
-  public void setOwner(LifecycleOwner lifecycleOwner) {
-    this.owner = lifecycleOwner;
-  }
+    @Override
+    public void setOwner(LifecycleOwner lifecycleOwner) {
+        this.owner = lifecycleOwner;
+    }
 }

@@ -1,5 +1,8 @@
 package com.telenav.osv.service;
 
+import javax.inject.Inject;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -24,9 +27,6 @@ import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.utils.Log;
 import dagger.android.AndroidInjection;
-import javax.inject.Inject;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Service handling camera connection
@@ -34,110 +34,110 @@ import org.greenrobot.eventbus.ThreadMode;
  */
 public class CameraHandlerService extends Service {
 
-  private static final String TAG = "CameraHandlerService";
+    private static final String TAG = "CameraHandlerService";
 
-  private static final int NOTIFICATION_ID = 114;
+    private static final int NOTIFICATION_ID = 114;
 
-  private static final String NOTIFICATION_CHANNEL_RECORD = "notificationChannelRecord";
+    private static final String NOTIFICATION_CHANNEL_RECORD = "notificationChannelRecord";
 
-  private static final String NOTIFICATION_CHANNEL_RECORD_NAME = "Record Channel";
+    private static final String NOTIFICATION_CHANNEL_RECORD_NAME = "Record Channel";
 
-  private final CameraHandlerBinder mBinder = new CameraHandlerBinder();
+    private final CameraHandlerBinder mBinder = new CameraHandlerBinder();
 
-  @Inject
-  Recorder mRecorder;
+    @Inject
+    Recorder mRecorder;
 
-  @Override
-  public void onCreate() {
-    AndroidInjection.inject(this);
-    super.onCreate();
-    OSVApplication app = ((OSVApplication) getApplication());
-    while (!app.isReady()) {
-      try {
-        Thread.sleep(5);
-      } catch (InterruptedException e) {
-        Log.d(TAG, "onStartCommand: " + Log.getStackTraceString(e));
-      }
+    @Override
+    public void onCreate() {
+        AndroidInjection.inject(this);
+        super.onCreate();
+        OSVApplication app = ((OSVApplication) getApplication());
+        while (!app.isReady()) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                Log.d(TAG, "onStartCommand: " + Log.getStackTraceString(e));
+            }
+        }
+        mRecorder.connectLocation();
+        EventBus.register(this);
     }
-    mRecorder.connectLocation();
-    EventBus.register(this);
-  }
 
-  @Override
-  public void onDestroy() {
-    EventBus.unregister(this);
-    mRecorder.closeCamera();
-    mRecorder.disconnectLocation();
-    super.onDestroy();
-  }
-
-  @Nullable
-  @Override
-  public IBinder onBind(Intent intent) {
-    setupCamera();
-    return mBinder;
-  }
-
-  private void setupCamera() {
-    // Setup the Camera hardware and preview
-    mRecorder.closeCamera();
-    //        mWifiCamManager = new WifiCamManager(application);
-    int cameraPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-    if (cameraPermitted == PackageManager.PERMISSION_DENIED) {
-      EventBus.postSticky(new CameraPermissionEvent());
-    } else {
-      mRecorder.openCamera();
+    @Override
+    public void onDestroy() {
+        EventBus.unregister(this);
+        mRecorder.closeCamera();
+        mRecorder.disconnectLocation();
+        super.onDestroy();
     }
-  }
 
-  private void recordingStarted() {
-    Intent intent = new Intent(this, MainActivity.class);
-    intent.putExtra(MainActivity.K_OPEN_CAMERA, true);
-    PendingIntent pnextIntent = PendingIntent.getActivity(this, 0, intent, 0);
-    initChannels();
-    Notification notification =
-        new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_RECORD).setContentTitle(getString(R.string.app_short_name))
-        .setContentText(getString(R.string.notification_sequence_recording_label)).setSmallIcon(R.drawable.ic_recording_pin)
-        .setOngoing(true).setWhen(0).setContentIntent(pnextIntent).build();
-    startForeground(NOTIFICATION_ID, notification);
-  }
-
-  public void initChannels() {
-    if (Build.VERSION.SDK_INT < 26) {
-      return;
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        setupCamera();
+        return mBinder;
     }
-    NotificationManager mNotificationManager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
 
-    NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_RECORD,
-                                                          NOTIFICATION_CHANNEL_RECORD_NAME,
-                                                          NotificationManager.IMPORTANCE_DEFAULT);
-    channel.setDescription("Channel used for the recording progress notification.");
-    mNotificationManager.createNotificationChannel(channel);
-  }
+    public void initChannels() {
+        if (Build.VERSION.SDK_INT < 26) {
+            return;
+        }
+        NotificationManager mNotificationManager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
 
-  private void recordingStopped() {
-    stopForeground(true);
-  }
-
-  @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
-  public void onRecordingStatusChanged(RecordingEvent event) {
-    if (event.started) {
-      recordingStarted();
-    } else {
-      recordingStopped();
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_RECORD,
+                NOTIFICATION_CHANNEL_RECORD_NAME,
+                NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription("Channel used for the recording progress notification.");
+        mNotificationManager.createNotificationChannel(channel);
     }
-  }
 
-  //    public void setSignDetectedListener(SignDetectedListener signDetectedListener) {
-  //        if (mCamManager != null) {
-  //            mCamManager.setSignDetectedListener(signDetectedListener);
-  //        }
-  //    }
-
-  public class CameraHandlerBinder extends Binder {
-
-    public CameraHandlerService getService() {
-      return CameraHandlerService.this;
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public void onRecordingStatusChanged(RecordingEvent event) {
+        if (event.started) {
+            recordingStarted();
+        } else {
+            recordingStopped();
+        }
     }
-  }
+
+    private void setupCamera() {
+        // Setup the Camera hardware and preview
+        mRecorder.closeCamera();
+        //        mWifiCamManager = new WifiCamManager(application);
+        int cameraPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        if (cameraPermitted == PackageManager.PERMISSION_DENIED) {
+            EventBus.postSticky(new CameraPermissionEvent());
+        } else {
+            mRecorder.openCamera();
+        }
+    }
+
+    private void recordingStarted() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(MainActivity.K_OPEN_CAMERA, true);
+        PendingIntent pnextIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        initChannels();
+        Notification notification =
+                new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_RECORD).setContentTitle(getString(R.string.app_short_name))
+                        .setContentText(getString(R.string.notification_sequence_recording_label)).setSmallIcon(R.drawable.ic_recording_pin)
+                        .setOngoing(true).setWhen(0).setContentIntent(pnextIntent).build();
+        startForeground(NOTIFICATION_ID, notification);
+    }
+
+    private void recordingStopped() {
+        stopForeground(true);
+    }
+
+    //    public void setSignDetectedListener(SignDetectedListener signDetectedListener) {
+    //        if (mCamManager != null) {
+    //            mCamManager.setSignDetectedListener(signDetectedListener);
+    //        }
+    //    }
+
+    public class CameraHandlerBinder extends Binder {
+
+        public CameraHandlerService getService() {
+            return CameraHandlerService.this;
+        }
+    }
 }

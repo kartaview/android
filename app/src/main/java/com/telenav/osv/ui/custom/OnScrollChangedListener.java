@@ -8,5 +8,5 @@ import android.widget.ScrollView;
  */
 interface OnScrollChangedListener {
 
-  void onScrollChanged(ScrollView view, int x, int y, int oldX, int oldY);
+    void onScrollChanged(ScrollView view, int x, int y, int oldX, int oldY);
 }

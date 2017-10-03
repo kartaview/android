@@ -9,12 +9,12 @@ import com.telenav.osv.item.LocalSequence;
  */
 public class ImageSavedEvent extends OSVEvent {
 
-  public final LocalSequence sequence;
+    public final LocalSequence sequence;
 
-  private boolean saved;
+    private boolean saved;
 
-  public ImageSavedEvent(LocalSequence sequence, boolean saved) {
-    this.sequence = sequence;
-    this.saved = saved;
-  }
+    public ImageSavedEvent(LocalSequence sequence, boolean saved) {
+        this.sequence = sequence;
+        this.saved = saved;
+    }
 }

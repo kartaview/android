@@ -4,20 +4,17 @@
     android:width="22dp"
     android:height="12dp"
     android:viewportHeight="12"
-    android:viewportWidth="22"
-    >
-  <group
-      android:name="Icons"
-      android:translateX="-520.000000"
-      android:translateY="-77.000000"
-      >
-    <path
-        android:name="triangle"
-        android:fillColor="#FFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="M541.313708,77 L531,87.3137085 L520.686292,77 L541.313708,77 Z"
-        android:strokeWidth="1"
-        tools:targetApi="n"
-        />
-  </group>
+    android:viewportWidth="22">
+    <group
+        android:name="Icons"
+        android:translateX="-520.000000"
+        android:translateY="-77.000000">
+        <path
+            android:name="triangle"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M541.313708,77 L531,87.3137085 L520.686292,77 L541.313708,77 Z"
+            android:strokeWidth="1"
+            tools:targetApi="n" />
+    </group>
 </vector>

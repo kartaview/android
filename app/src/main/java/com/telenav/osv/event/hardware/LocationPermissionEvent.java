@@ -9,14 +9,14 @@ import com.telenav.osv.event.OSVStickyEvent;
 
 public class LocationPermissionEvent extends OSVStickyEvent {
 
-  public final Status status;
+    public final Status status;
 
-  public LocationPermissionEvent(Status status) {
-    this.status = status;
-  }
+    public LocationPermissionEvent(Status status) {
+        this.status = status;
+    }
 
-  @Override
-  public Class getStickyClass() {
-    return LocationPermissionEvent.class;
-  }
+    @Override
+    public Class getStickyClass() {
+        return LocationPermissionEvent.class;
+    }
 }

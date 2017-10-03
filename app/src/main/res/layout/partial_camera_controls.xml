@@ -5,249 +5,248 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#1B1C1F"
-    tools:layout_height="180dp"
     tools:layout_gravity="bottom"
-    >
-  <LinearLayout
-      android:id="@+id/track_details"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:gravity="center"
-      android:orientation="horizontal"
-      android:visibility="visible"
-      android:weightSum="5"
-      tools:visibility="visible"
-      >
+    tools:layout_height="180dp">
+
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="36dp"
-        android:layout_weight="1.66"
-        android:gravity="center"
-        android:orientation="horizontal"
-        >
-      <ImageView
-          android:layout_width="36dp"
-          android:layout_height="match_parent"
-          android:layout_gravity="center"
-          app:srcCompat="@drawable/vector_camera_white"
-          tools:ignore="ContentDescription"
-          />
-      <TextView
-          android:id="@+id/images_recorded_value"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:layout_marginLeft="5dp"
-          android:layout_marginRight="3dp"
-          android:gravity="center"
-          android:text="@string/default_value_0"
-          android:textColor="@color/text_colour_default"
-          android:textSize="18sp"
-          />
-      <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:gravity="center"
-          android:lines="1"
-          android:text="@string/partial_img_label"
-          android:textColor="#6E707B"
-          android:textSize="18sp"
-          />
-    </LinearLayout>
-    <View
-        android:layout_width="0dp"
-        android:layout_height="18dp"
-        android:layout_gravity="center"
-        android:layout_weight="0.01"
-        android:background="#6E707B"
-        />
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="36dp"
-        android:layout_weight="1.66"
-        android:gravity="center"
-        android:orientation="horizontal"
-        >
-      <ImageView
-          android:layout_width="36dp"
-          android:layout_height="match_parent"
-          android:gravity="center"
-          app:srcCompat="@drawable/vector_size_white"
-          tools:ignore="ContentDescription"
-          />
-      <TextView
-          android:id="@+id/size_recorder_images_value"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:layout_marginLeft="5dp"
-          android:layout_marginRight="3dp"
-          android:gravity="center"
-          android:text="@string/default_value_0"
-          android:textColor="@color/text_colour_default"
-          android:textSize="18sp"
-          />
-      <TextView
-          android:id="@+id/size_recorder_images_text"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:gravity="center"
-          android:lines="1"
-          android:text="@string/partial_mb_label"
-          android:textColor="#6E707B"
-          android:textSize="18sp"
-          />
-    </LinearLayout>
-    <View
-        android:layout_width="0dp"
-        android:layout_height="18dp"
-        android:layout_gravity="center"
-        android:layout_weight="0.01"
-        android:background="#6E707B"
-        />
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="36dp"
-        android:layout_weight="1.66"
-        android:gravity="center"
-        android:orientation="horizontal"
-        >
-      <ImageView
-          android:layout_width="36dp"
-          android:layout_height="match_parent"
-          android:layout_gravity="center"
-          app:srcCompat="@drawable/vector_distance_white"
-          tools:ignore="ContentDescription"
-          />
-      <TextView
-          android:id="@+id/distance_covered_value"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:layout_marginLeft="5dp"
-          android:layout_marginRight="3dp"
-          android:gravity="center"
-          android:text="@string/default_value_0"
-          android:textColor="@color/text_colour_default"
-          android:textSize="18sp"
-          />
-      <TextView
-          android:id="@+id/distance_covered_text"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:gravity="center"
-          android:lines="1"
-          android:text="@string/partial_km_label"
-          android:textColor="#6E707B"
-          android:textSize="18sp"
-          />
-    </LinearLayout>
-  </LinearLayout>
-  <LinearLayout
-      android:id="@+id/record_hint_layout"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:gravity="center"
-      android:orientation="vertical"
-      android:visibility="visible"
-      >
-    <TextView
-        style="@style/textStyle"
+        android:id="@+id/track_details"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:background="@color/white"
-        android:fontFamily="sans-serif"
-        android:gravity="center"
-        android:text="@string/tap_to_start_recording_hint"
-        android:textColor="@color/darker_grey"
-        />
-    <ImageView
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/vector_triangle"
-        tools:ignore="ContentDescription"
-        />
-  </LinearLayout>
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_alignParentBottom="true"
-      android:layout_alignWithParentIfMissing="true"
-      android:layout_below="@+id/track_details"
-      android:baselineAligned="false"
-      android:orientation="horizontal"
-      android:weightSum="3"
-      >
-    <RelativeLayout
-        android:id="@+id/info_button_layout"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
         android:gravity="center"
-        >
-      <ImageView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_centerHorizontal="true"
-          android:layout_centerVertical="true"
-          app:srcCompat="@drawable/vector_info_white"
-          tools:ignore="ContentDescription"
-          />
-    </RelativeLayout>
-    <FrameLayout
-        android:layout_width="0dp"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:weightSum="5"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1.66"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/vector_camera_white"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/images_recorded_value"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="3dp"
+                android:gravity="center"
+                android:text="@string/default_value_0"
+                android:textColor="@color/text_colour_default"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:lines="1"
+                android:text="@string/partial_img_label"
+                android:textColor="#6E707B"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:layout_weight="0.01"
+            android:background="#6E707B" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1.66"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                app:srcCompat="@drawable/vector_size_white"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/size_recorder_images_value"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="3dp"
+                android:gravity="center"
+                android:text="@string/default_value_0"
+                android:textColor="@color/text_colour_default"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/size_recorder_images_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:lines="1"
+                android:text="@string/partial_mb_label"
+                android:textColor="#6E707B"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:layout_weight="0.01"
+            android:background="#6E707B" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1.66"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/vector_distance_white"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/distance_covered_value"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="3dp"
+                android:gravity="center"
+                android:text="@string/default_value_0"
+                android:textColor="@color/text_colour_default"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/distance_covered_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:lines="1"
+                android:text="@string/partial_km_label"
+                android:textColor="#6E707B"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/record_hint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <TextView
+            style="@style/textStyle"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@color/white"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:text="@string/tap_to_start_recording_hint"
+            android:textColor="@color/darker_grey" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/vector_triangle"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        >
-      <ImageView
-          android:id="@+id/btn_shutter"
-          android:layout_width="64dp"
-          android:layout_height="64dp"
-          android:layout_gravity="center"
-          android:clickable="true"
-          android:focusable="true"
-          android:scaleType="fitXY"
-          app:srcCompat="@drawable/vector_button_record_inactive_2"
-          tools:ignore="ContentDescription"
-          />
-      <com.pnikosis.materialishprogress.ProgressWheel
-          android:id="@+id/shutter_progress"
-          android:layout_width="71dp"
-          android:layout_height="71dp"
-          android:layout_gravity="center"
-          android:gravity="center"
-          android:indeterminate="true"
-          android:max="100"
-          android:minHeight="64dp"
-          android:minWidth="64dp"
-          android:visibility="visible"
-          app:matProg_barColor="#A233B1"
-          app:matProg_barWidth="7dp"
-          app:matProg_circleRadius="100dp"
-          app:matProg_linearProgress="false"
-          app:matProg_progressIndeterminate="true"
-          app:matProg_rimColor="#ffffff"
-          app:matProg_spinSpeed="0.45"
-          tools:visibility="visible"
-          />
-    </FrameLayout>
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:clickable="true"
-        android:focusable="true"
-        >
-      <TextView
-          android:id="@+id/cancel_text_camera_preview"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:clickable="false"
-          android:text="@string/cancel_label"
-          android:textAlignment="center"
-          android:textColor="@color/text_colour_default"
-          android:textSize="26sp"
-          />
-    </FrameLayout>
-  </LinearLayout>
+        android:layout_alignParentBottom="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_below="@+id/track_details"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <RelativeLayout
+            android:id="@+id/info_button_layout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                app:srcCompat="@drawable/vector_info_white"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/btn_shutter"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/vector_button_record_inactive_2"
+                tools:ignore="ContentDescription" />
+
+            <com.pnikosis.materialishprogress.ProgressWheel
+                android:id="@+id/shutter_progress"
+                android:layout_width="71dp"
+                android:layout_height="71dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:indeterminate="true"
+                android:max="100"
+                android:minHeight="64dp"
+                android:minWidth="64dp"
+                android:visibility="visible"
+                app:matProg_barColor="#A233B1"
+                app:matProg_barWidth="7dp"
+                app:matProg_circleRadius="100dp"
+                app:matProg_linearProgress="false"
+                app:matProg_progressIndeterminate="true"
+                app:matProg_rimColor="#ffffff"
+                app:matProg_spinSpeed="0.45"
+                tools:visibility="visible" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/cancel_text_camera_preview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clickable="false"
+                android:text="@string/cancel_label"
+                android:textAlignment="center"
+                android:textColor="@color/text_colour_default"
+                android:textSize="26sp" />
+        </FrameLayout>
+    </LinearLayout>
 </RelativeLayout>
 
 

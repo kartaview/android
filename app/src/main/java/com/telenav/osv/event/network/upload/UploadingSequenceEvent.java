@@ -8,15 +8,15 @@ import com.telenav.osv.item.Sequence;
  */
 public class UploadingSequenceEvent extends OSVEvent {
 
-  public int remainingSequences;
+    public int remainingSequences;
 
-  public int numberOfSequences;
+    public int numberOfSequences;
 
-  private Sequence sequence;
+    private Sequence sequence;
 
-  public UploadingSequenceEvent(Sequence sequence, int remainingRecordings, int numberOfSequences) {
-    this.remainingSequences = remainingRecordings;
-    this.sequence = sequence;
-    this.numberOfSequences = numberOfSequences;
-  }
+    public UploadingSequenceEvent(Sequence sequence, int remainingRecordings, int numberOfSequences) {
+        this.remainingSequences = remainingRecordings;
+        this.sequence = sequence;
+        this.numberOfSequences = numberOfSequences;
+    }
 }

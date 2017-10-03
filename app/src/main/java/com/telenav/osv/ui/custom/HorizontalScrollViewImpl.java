@@ -9,34 +9,34 @@ import android.widget.HorizontalScrollView;
  */
 public class HorizontalScrollViewImpl extends HorizontalScrollView {
 
-  private ScrollViewListener scrollViewListener;
+    private ScrollViewListener scrollViewListener;
 
-  public HorizontalScrollViewImpl(Context context) {
-    super(context);
-  }
-
-  public HorizontalScrollViewImpl(Context context, AttributeSet attrs) {
-    super(context, attrs);
-  }
-
-  public HorizontalScrollViewImpl(Context context, AttributeSet attrs, int defStyleAttr) {
-    super(context, attrs, defStyleAttr);
-  }
-
-  public void setScrollViewListener(ScrollViewListener scrollViewListener) {
-    this.scrollViewListener = scrollViewListener;
-  }
-
-  @Override
-  protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
-    super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
-    if (scrollViewListener != null) {
-      scrollViewListener.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
+    public HorizontalScrollViewImpl(Context context) {
+        super(context);
     }
-  }
 
-  public interface ScrollViewListener {
+    public HorizontalScrollViewImpl(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
-    void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY);
-  }
+    public HorizontalScrollViewImpl(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
+
+    @Override
+    protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
+        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
+        if (scrollViewListener != null) {
+            scrollViewListener.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
+        }
+    }
+
+    public void setScrollViewListener(ScrollViewListener scrollViewListener) {
+        this.scrollViewListener = scrollViewListener;
+    }
+
+    public interface ScrollViewListener {
+
+        void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY);
+    }
 }

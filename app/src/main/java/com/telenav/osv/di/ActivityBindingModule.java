@@ -27,18 +27,18 @@ import dagger.android.ContributesAndroidInjector;
 @Module
 abstract class ActivityBindingModule {
 
-  @ContributesAndroidInjector(modules = FragmentBindingModule.class)
-  abstract MainActivity contributeMainActivity();
+    @ContributesAndroidInjector(modules = FragmentBindingModule.class)
+    abstract MainActivity contributeMainActivity();
 
-  @ContributesAndroidInjector(modules = FragmentBindingModule.class)
-  abstract PlayerActivity contributePlayerActivity();
+    @ContributesAndroidInjector(modules = FragmentBindingModule.class)
+    abstract PlayerActivity contributePlayerActivity();
 
-  @ContributesAndroidInjector
-  abstract SplashActivity contributeSplashActivity();
+    @ContributesAndroidInjector
+    abstract SplashActivity contributeSplashActivity();
 
-  @ContributesAndroidInjector
-  abstract LoginActivity contributeLoginActivity();
+    @ContributesAndroidInjector
+    abstract LoginActivity contributeLoginActivity();
 
-  @ContributesAndroidInjector(modules = FragmentBindingModule.class)
-  abstract WalkthroughActivity contributeWalkthroughActivity();
+    @ContributesAndroidInjector(modules = FragmentBindingModule.class)
+    abstract WalkthroughActivity contributeWalkthroughActivity();
 }

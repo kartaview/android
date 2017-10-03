@@ -6,11 +6,11 @@ import com.telenav.osv.event.OSVEvent;
 
 public class PreviewSwitchEvent extends OSVEvent {
 
-  public static final String TAG = "PreviewSwitchEvent";
+    public static final String TAG = "PreviewSwitchEvent";
 
-  public final boolean cameraTapped;
+    public final boolean cameraTapped;
 
-  public PreviewSwitchEvent(boolean cameraTapped) {
-    this.cameraTapped = cameraTapped;
-  }
+    public PreviewSwitchEvent(boolean cameraTapped) {
+        this.cameraTapped = cameraTapped;
+    }
 }

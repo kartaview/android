@@ -10,8 +10,8 @@ import android.support.transition.TransitionSet;
  */
 public class ScaleFragmentTransition extends TransitionSet {
 
-  public ScaleFragmentTransition() {
-    setOrdering(ORDERING_TOGETHER);
-    addTransition(new ChangeBounds()).addTransition(new ChangeTransform()).addTransition(new ChangeImageTransform());
-  }
+    public ScaleFragmentTransition() {
+        setOrdering(ORDERING_TOGETHER);
+        addTransition(new ChangeBounds()).addTransition(new ChangeTransform()).addTransition(new ChangeImageTransform());
+    }
 }

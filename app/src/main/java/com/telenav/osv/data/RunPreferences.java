@@ -7,17 +7,17 @@ package com.telenav.osv.data;
 @SuppressWarnings({"SameParameterValue", "unused"})
 public interface RunPreferences {
 
-  boolean isFirstRun();
+    boolean isFirstRun();
 
-  int getFfmpegCrashCounter();
+    int getFfmpegCrashCounter();
 
-  void setFfmpegCrashCounter(int value);
+    void setFfmpegCrashCounter(int value);
 
-  int getRestartCounter();
+    int getRestartCounter();
 
-  void setRestartCounter(int value);
+    void setRestartCounter(int value);
 
-  boolean getCrashed();
+    boolean getCrashed();
 
-  void setCrashed(boolean value);
+    void setCrashed(boolean value);
 }

@@ -8,38 +8,38 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 public class SpeedCategoryEvent extends OSVStickyEvent {
 
-  public final SpeedCategory category;
+    public final SpeedCategory category;
 
-  public final float speed;
+    public final float speed;
 
-  public SpeedCategoryEvent(float speed, SpeedCategory category) {
-    this.speed = speed;
-    this.category = category;
-  }
+    public enum SpeedCategory {
+        SPEED_STATIONARY(10000),
+        SPEED_5(5),
+        SPEED_10(10),
+        SPEED_15(15),
+        SPEED_20(20),
+        SPEED_25(25),
+        SPEED_35(35);
 
-  @Override
-  public Class getStickyClass() {
-    return SpeedCategoryEvent.class;
-  }
+        private final double distance;
 
-  public enum SpeedCategory {
-    SPEED_STATIONARY(10000),
-    SPEED_5(5),
-    SPEED_10(10),
-    SPEED_15(15),
-    SPEED_20(20),
-    SPEED_25(25),
-    SPEED_35(35);
+        SpeedCategory(final double newValue) {
+            distance = newValue;
+        }
 
-    private final double distance;
+        public double getDistance() {
+            return distance;
+        }
 
-    SpeedCategory(final double newValue) {
-      distance = newValue;
     }
 
-    public double getDistance() {
-      return distance;
+    public SpeedCategoryEvent(float speed, SpeedCategory category) {
+        this.speed = speed;
+        this.category = category;
     }
 
-  }
+    @Override
+    public Class getStickyClass() {
+        return SpeedCategoryEvent.class;
+    }
 }

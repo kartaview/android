@@ -6,5 +6,5 @@ package com.telenav.osv.event;
 
 public abstract class OSVStickyEvent extends OSVEvent {
 
-  public abstract Class getStickyClass();
+    public abstract Class getStickyClass();
 }

@@ -8,27 +8,27 @@ import com.telenav.osv.item.Sequence;
  */
 public interface UploadProgressListener extends ConnectionClassManager.ConnectionClassStateChangeListener {
 
-  void onUploadStarted(long totalSize, int remainingSequences, int numberOfSequences);
+    void onUploadStarted(long totalSize, int remainingSequences, int numberOfSequences);
 
-  void onUploadingMetadata();
+    void onUploadingMetadata();
 
-  void onPreparing(int nrOfFrames);
+    void onPreparing(int nrOfFrames);
 
-  void onIndexingFinished();
+    void onIndexingFinished();
 
-  void onUploadPaused();
+    void onUploadPaused();
 
-  void onUploadResumed();
+    void onUploadResumed();
 
-  void onUploadCancelled(long total, long remaining);
+    void onUploadCancelled(long total, long remaining);
 
-  void onUploadFinished();
+    void onUploadFinished();
 
-  void onProgressChanged(long total, long remaining);
+    void onProgressChanged(long total, long remaining);
 
-  void onImageUploaded(Sequence sequence);
+    void onImageUploaded(Sequence sequence);
 
-  void onSequenceUploaded(Sequence sequence);
+    void onSequenceUploaded(Sequence sequence);
 
-  void onIndexingSequence(Sequence sequence, int remainingRecordings, int numberOfSequences);
+    void onIndexingSequence(Sequence sequence, int remainingRecordings, int numberOfSequences);
 }

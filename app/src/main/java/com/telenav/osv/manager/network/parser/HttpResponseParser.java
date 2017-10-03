@@ -7,10 +7,10 @@ import com.telenav.osv.item.network.ApiResponse;
  */
 public class HttpResponseParser extends ApiResponseParser<ApiResponse> {
 
-  private static final String TAG = "HttpResponseParser";
+    private static final String TAG = "HttpResponseParser";
 
-  @Override
-  public ApiResponse getHolder() {
-    return new ApiResponse();
-  }
+    @Override
+    public ApiResponse getHolder() {
+        return new ApiResponse();
+    }
 }

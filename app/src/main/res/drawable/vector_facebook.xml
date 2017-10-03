@@ -4,18 +4,16 @@
     android:width="14dp"
     android:height="30dp"
     android:viewportHeight="30"
-    android:viewportWidth="14"
-    >
-  <path
-      android:name="facebook"
-      android:fillColor="#FFFFFF"
-      android:fillType="evenOdd"
-      android:pathData="M9.0567,10.7034 L10.7034,10.7034 L12.35,10.7034 L13.9967,10.7034 L12.35,14.82
+    android:viewportWidth="14">
+    <path
+        android:name="facebook"
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M9.0567,10.7034 L10.7034,10.7034 L12.35,10.7034 L13.9967,10.7034 L12.35,14.82
 L9.0567,14.82 L9.0567,29.6401 L3.29333,29.6401 L3.29333,14.82 L0,14.82
 L0,10.7034 L3.29333,10.7034 L3.29333,6.58667
 C3.19385,0.126938,8.23334,0,8.23334,0 L13.1185,0 L13.1733,0 L13.1733,4.94002
 C9.05328,4.66899,9.0567,6.58667,9.0567,6.58667 L9.0567,10.7034 Z"
-      android:strokeWidth="1"
-      tools:targetApi="n"
-      />
+        android:strokeWidth="1"
+        tools:targetApi="n" />
 </vector>

@@ -1,9 +1,9 @@
 package com.telenav.osv.manager.network.parser;
 
-import com.telenav.osv.item.network.SequenceData;
-import com.telenav.osv.utils.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.telenav.osv.item.network.SequenceData;
+import com.telenav.osv.utils.Log;
 
 /**
  * JSON parser for driver profile data
@@ -11,26 +11,26 @@ import org.json.JSONObject;
  */
 public class SequenceDataParser extends ApiResponseParser<SequenceData> {
 
-  private static final String TAG = "SequenceDataParser";
+    private static final String TAG = "SequenceDataParser";
 
-  @Override
-  public SequenceData getHolder() {
-    return new SequenceData();
-  }
-
-  public SequenceData parse(String json) {
-    SequenceData sequenceData = super.parse(json);
-    try {
-      JSONObject jsonObject;
-      try {
-        jsonObject = new JSONObject(json);
-        sequenceData.setOnlineID(jsonObject.getJSONObject("osv").getJSONObject("sequence").getInt("id"));
-      } catch (JSONException e) {
-        Log.d(TAG, Log.getStackTraceString(e));
-      }
-    } catch (Exception e) {
-      Log.w(TAG, "createSequence: " + e.getLocalizedMessage());
+    @Override
+    public SequenceData getHolder() {
+        return new SequenceData();
     }
-    return sequenceData;
-  }
+
+    public SequenceData parse(String json) {
+        SequenceData sequenceData = super.parse(json);
+        try {
+            JSONObject jsonObject;
+            try {
+                jsonObject = new JSONObject(json);
+                sequenceData.setOnlineID(jsonObject.getJSONObject("osv").getJSONObject("sequence").getInt("id"));
+            } catch (JSONException e) {
+                Log.d(TAG, Log.getStackTraceString(e));
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "createSequence: " + e.getLocalizedMessage());
+        }
+        return sequenceData;
+    }
 }

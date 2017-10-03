@@ -11,37 +11,37 @@ import android.view.animation.Transformation;
  */
 class ResizeAnimation extends Animation {
 
-  public static final String TAG = "ResizeAnimation";
+    public static final String TAG = "ResizeAnimation";
 
-  private final float mToHeight;
+    private final float mToHeight;
 
-  private final float mFromHeight;
+    private final float mFromHeight;
 
-  private final float mToWidth;
+    private final float mToWidth;
 
-  private final float mFromWidth;
+    private final float mFromWidth;
 
-  private View mView;
+    private View mView;
 
-  public ResizeAnimation(View v, float fromWidth, float fromHeight, float toWidth, float toHeight) {
-    mToHeight = toHeight;
-    mToWidth = toWidth;
-    mFromHeight = fromHeight;
-    mFromWidth = fromWidth;
-    mView = v;
-    setDuration(300);
-  }
-
-  @Override
-  protected void applyTransformation(float interpolatedTime, Transformation t) {
-    if (!hasEnded()) {
-      float height = (mToHeight - mFromHeight) * interpolatedTime + mFromHeight;
-      float width = (mToWidth - mFromWidth) * interpolatedTime + mFromWidth;
-      ViewGroup.LayoutParams p = mView.getLayoutParams();
-      p.height = (int) height;
-      p.width = (int) width;
-      //            Log.d(TAG, "applyTransformation: setting interpolated size " + width + " x " + height);
-      mView.requestLayout();
+    public ResizeAnimation(View v, float fromWidth, float fromHeight, float toWidth, float toHeight) {
+        mToHeight = toHeight;
+        mToWidth = toWidth;
+        mFromHeight = fromHeight;
+        mFromWidth = fromWidth;
+        mView = v;
+        setDuration(300);
     }
-  }
+
+    @Override
+    protected void applyTransformation(float interpolatedTime, Transformation t) {
+        if (!hasEnded()) {
+            float height = (mToHeight - mFromHeight) * interpolatedTime + mFromHeight;
+            float width = (mToWidth - mFromWidth) * interpolatedTime + mFromWidth;
+            ViewGroup.LayoutParams p = mView.getLayoutParams();
+            p.height = (int) height;
+            p.width = (int) width;
+            //            Log.d(TAG, "applyTransformation: setting interpolated size " + width + " x " + height);
+            mView.requestLayout();
+        }
+    }
 }

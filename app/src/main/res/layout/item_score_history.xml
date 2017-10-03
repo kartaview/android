@@ -2,44 +2,43 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    >
-  <TextView
-      android:id="@+id/distance"
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      android:layout_gravity="start"
-      android:layout_marginLeft="10dp"
-      android:layout_marginRight="10dp"
-      android:fontFamily="sans-serif"
-      android:gravity="center"
-      android:text="@string/default_value_0"
-      android:textColor="@color/white"
-      />
-  <TextView
-      android:id="@+id/multiplier"
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      android:layout_gravity="center"
-      android:layout_marginLeft="10dp"
-      android:layout_marginRight="10dp"
-      android:fontFamily="sans-serif"
-      android:text="@string/default_value_0"
-      android:textColor="@color/white"
-      />
-  <TextView
-      android:id="@+id/points"
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      android:layout_gravity="end"
-      android:layout_marginLeft="10dp"
-      android:layout_marginRight="10dp"
-      android:fontFamily="sans-serif"
-      android:gravity="center"
-      android:text="@string/default_value_0"
-      android:textColor="@color/white"
-      />
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/distance"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="@string/default_value_0"
+        android:textColor="@color/white" />
+
+    <TextView
+        android:id="@+id/multiplier"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:text="@string/default_value_0"
+        android:textColor="@color/white" />
+
+    <TextView
+        android:id="@+id/points"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="@string/default_value_0"
+        android:textColor="@color/white" />
 </FrameLayout>

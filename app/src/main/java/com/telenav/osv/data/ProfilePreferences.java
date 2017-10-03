@@ -7,27 +7,27 @@ package com.telenav.osv.data;
 @SuppressWarnings({"SameParameterValue", "unused"})
 public interface ProfilePreferences extends AccountPreferences {
 
-  double getDistance();
+    double getDistance();
 
-  void setDistance(double value);
+    void setDistance(double value);
 
-  double getAcceptedDistance();
+    double getAcceptedDistance();
 
-  void setAcceptedDistance(double value);
+    void setAcceptedDistance(double value);
 
-  double getRejectedDistance();
+    double getRejectedDistance();
 
-  void setRejectedDistance(double value);
+    void setRejectedDistance(double value);
 
-  double getObdDistance();
+    double getObdDistance();
 
-  void setObdDistance(double value);
+    void setObdDistance(double value);
 
-  int getTracksCount();
+    int getTracksCount();
 
-  void setTracksCount(int value);
+    void setTracksCount(int value);
 
-  int getPhotosCount();
+    int getPhotosCount();
 
-  void setPhotosCount(int value);
+    void setPhotosCount(int value);
 }

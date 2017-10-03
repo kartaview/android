@@ -6,148 +6,148 @@ package com.telenav.osv.item.network;
  */
 public class DriverData extends ApiResponse {
 
-  /**
-   * the value displayed in the scrollable track list header
-   */
-  private double totalAcceptedDistance;
+    /**
+     * the value displayed in the scrollable track list header
+     */
+    private double totalAcceptedDistance;
 
-  /**
-   * the value displayed in the scrollable track list header
-   */
-  private double totalRejectedDistance;
+    /**
+     * the value displayed in the scrollable track list header
+     */
+    private double totalRejectedDistance;
 
-  /**
-   * the value displayed in the scrollable track list header
-   */
-  private double totalObdDistance;
+    /**
+     * the value displayed in the scrollable track list header
+     */
+    private double totalObdDistance;
 
-  /**
-   * the value displayed in the scrollable track list header
-   */
-  private double totalPhotos;
+    /**
+     * the value displayed in the scrollable track list header
+     */
+    private double totalPhotos;
 
-  /**
-   * the value displayed in the scrollable track list header
-   */
-  private double totalTracks;
+    /**
+     * the value displayed in the scrollable track list header
+     */
+    private double totalTracks;
 
-  private String displayName;
+    private String displayName;
 
-  private String currency;
+    private String currency;
 
-  /**
-   * the value displayed in the profile extensible header in the appbar
-   */
-  private double currentAcceptedDistance;
+    /**
+     * the value displayed in the profile extensible header in the appbar
+     */
+    private double currentAcceptedDistance;
 
-  /**
-   * the value displayed in the profile extensible header in the appbar
-   */
-  private double currentPayRate;
+    /**
+     * the value displayed in the profile extensible header in the appbar
+     */
+    private double currentPayRate;
 
-  /**
-   * the value displayed in the profile extensible header in the appbar
-   */
-  private double currentPaymentValue;
+    /**
+     * the value displayed in the profile extensible header in the appbar
+     */
+    private double currentPaymentValue;
 
-  /**
-   * the total value displayed in byod profile screen in the payments history tab under the Payments tab
-   */
-  private double totalPaidValue;
+    /**
+     * the total value displayed in byod profile screen in the payments history tab under the Payments tab
+     */
+    private double totalPaidValue;
 
-  public double getTotalPaidValue() {
-    return totalPaidValue;
-  }
+    @Override
+    public String toString() {
+        return "DriverData{" + "totalAcceptedDistance=" + totalAcceptedDistance + ", totalRejectedDistance=" + totalRejectedDistance +
+                ", totalObdDistance=" + totalObdDistance + ", totalPhotos=" + totalPhotos + ", totalTracks=" + totalTracks + ", displayName='" +
+                displayName + '\'' + ", currency='" + currency + '\'' + ", currentAcceptedDistance=" + currentAcceptedDistance +
+                ", currentPayRate=" + currentPayRate + ", currentPaymentValue=" + currentPaymentValue + ", totalPaidValue=" + totalPaidValue + '}';
+    }
 
-  public void setTotalPaidValue(double totalValue) {
-    this.totalPaidValue = totalValue;
-  }
+    public double getTotalPaidValue() {
+        return totalPaidValue;
+    }
 
-  public String getDisplayName() {
-    return displayName;
-  }
+    public void setTotalPaidValue(double totalValue) {
+        this.totalPaidValue = totalValue;
+    }
 
-  public void setDisplayName(String displayName) {
-    this.displayName = displayName;
-  }
+    public String getDisplayName() {
+        return displayName;
+    }
 
-  public String getCurrency() {
-    return currency;
-  }
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
-  public void setCurrency(String currency) {
-    this.currency = currency;
-  }
+    public String getCurrency() {
+        return currency;
+    }
 
-  public double getCurrentPayRate() {
-    return currentPayRate;
-  }
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
 
-  public void setCurrentPayRate(double currentPayRate) {
-    this.currentPayRate = currentPayRate;
-  }
+    public double getCurrentPayRate() {
+        return currentPayRate;
+    }
 
-  public double getCurrentPaymentValue() {
-    return currentPaymentValue;
-  }
+    public void setCurrentPayRate(double currentPayRate) {
+        this.currentPayRate = currentPayRate;
+    }
 
-  public void setCurrentPaymentValue(double currentPaymentValue) {
-    this.currentPaymentValue = currentPaymentValue;
-  }
+    public double getCurrentPaymentValue() {
+        return currentPaymentValue;
+    }
 
-  public double getTotalAcceptedDistance() {
-    return totalAcceptedDistance;
-  }
+    public void setCurrentPaymentValue(double currentPaymentValue) {
+        this.currentPaymentValue = currentPaymentValue;
+    }
 
-  public void setTotalAcceptedDistance(double totalAcceptedDistance) {
-    this.totalAcceptedDistance = totalAcceptedDistance;
-  }
+    public double getTotalAcceptedDistance() {
+        return totalAcceptedDistance;
+    }
 
-  public double getTotalRejectedDistance() {
-    return totalRejectedDistance;
-  }
+    public void setTotalAcceptedDistance(double totalAcceptedDistance) {
+        this.totalAcceptedDistance = totalAcceptedDistance;
+    }
 
-  public void setTotalRejectedDistance(double totalRejectedDistance) {
-    this.totalRejectedDistance = totalRejectedDistance;
-  }
+    public double getTotalRejectedDistance() {
+        return totalRejectedDistance;
+    }
 
-  public double getTotalObdDistance() {
-    return totalObdDistance;
-  }
+    public void setTotalRejectedDistance(double totalRejectedDistance) {
+        this.totalRejectedDistance = totalRejectedDistance;
+    }
 
-  public void setTotalObdDistance(double totalObdDistance) {
-    this.totalObdDistance = totalObdDistance;
-  }
+    public double getTotalObdDistance() {
+        return totalObdDistance;
+    }
 
-  public double getTotalPhotos() {
-    return totalPhotos;
-  }
+    public void setTotalObdDistance(double totalObdDistance) {
+        this.totalObdDistance = totalObdDistance;
+    }
 
-  public void setTotalPhotos(double totalPhotos) {
-    this.totalPhotos = totalPhotos;
-  }
+    public double getTotalPhotos() {
+        return totalPhotos;
+    }
 
-  public double getTotalTracks() {
-    return totalTracks;
-  }
+    public void setTotalPhotos(double totalPhotos) {
+        this.totalPhotos = totalPhotos;
+    }
 
-  public void setTotalTracks(double totalTracks) {
-    this.totalTracks = totalTracks;
-  }
+    public double getTotalTracks() {
+        return totalTracks;
+    }
 
-  public double getCurrentAcceptedDistance() {
-    return currentAcceptedDistance;
-  }
+    public void setTotalTracks(double totalTracks) {
+        this.totalTracks = totalTracks;
+    }
 
-  public void setCurrentAcceptedDistance(double currentAcceptedDistance) {
-    this.currentAcceptedDistance = currentAcceptedDistance;
-  }
+    public double getCurrentAcceptedDistance() {
+        return currentAcceptedDistance;
+    }
 
-  @Override
-  public String toString() {
-    return "DriverData{" + "totalAcceptedDistance=" + totalAcceptedDistance + ", totalRejectedDistance=" + totalRejectedDistance +
-        ", totalObdDistance=" + totalObdDistance + ", totalPhotos=" + totalPhotos + ", totalTracks=" + totalTracks + ", displayName='" +
-        displayName + '\'' + ", currency='" + currency + '\'' + ", currentAcceptedDistance=" + currentAcceptedDistance +
-        ", currentPayRate=" + currentPayRate + ", currentPaymentValue=" + currentPaymentValue + ", totalPaidValue=" + totalPaidValue + '}';
-  }
+    public void setCurrentAcceptedDistance(double currentAcceptedDistance) {
+        this.currentAcceptedDistance = currentAcceptedDistance;
+    }
 }

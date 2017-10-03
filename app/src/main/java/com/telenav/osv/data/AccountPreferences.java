@@ -9,47 +9,47 @@ import android.arch.lifecycle.LiveData;
 @SuppressWarnings({"SameParameterValue", "unused"})
 public interface AccountPreferences extends GeneralPreferences {
 
-  boolean isLoggedIn();
+    boolean isLoggedIn();
 
-  LiveData<Boolean> observeLogin();
+    LiveData<Boolean> observeLogin();
 
-  int getLoginType();
+    int getLoginType();
 
-  void setLoginType(int type);
+    void setLoginType(int type);
 
-  LiveData<String> getAuthTokenLive();
+    LiveData<String> getAuthTokenLive();
 
-  String getAuthToken();
+    String getAuthToken();
 
-  void saveAuthToken(String accessToken);
+    void saveAuthToken(String accessToken);
 
-  String getUserName();
+    String getUserName();
 
-  void setUserName(String userName);
+    void setUserName(String userName);
 
-  String getUserId();
+    String getUserId();
 
-  void setUserId(String id);
+    void setUserId(String id);
 
-  String getUserDisplayName();
+    String getUserDisplayName();
 
-  void setUserDisplayName(String userDisplayName);
+    void setUserDisplayName(String userDisplayName);
 
-  String getUserPhotoUrl();
+    String getUserPhotoUrl();
 
-  LiveData<String> getUserPhotoUrlLive();
+    void setUserPhotoUrl(String url);
 
-  void setUserPhotoUrl(String url);
+    LiveData<String> getUserPhotoUrlLive();
 
-  LiveData<Integer> getUserTypeLive();
+    LiveData<Integer> getUserTypeLive();
 
-  int getUserType();
+    int getUserType();
 
-  void setUserType(int type);
+    void setUserType(int type);
 
-  boolean isDriver();
+    boolean isDriver();
 
-  LiveData<Boolean> isDriverLive();
+    LiveData<Boolean> isDriverLive();
 
-  boolean loggedIn();
+    boolean loggedIn();
 }

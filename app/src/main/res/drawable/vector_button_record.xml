@@ -4,44 +4,38 @@
     android:width="24dp"
     android:height="24dp"
     android:viewportHeight="24"
-    android:viewportWidth="24"
-    >
-  <group
-      android:name="Icons"
-      android:translateX="-632.000000"
-      android:translateY="-129.000000"
-      >
+    android:viewportWidth="24">
     <group
-        android:name="Record"
-        android:translateX="632.000000"
-        android:translateY="129.000000"
-        >
-      <group
-          android:name="Group"
-          android:translateY="1.000000"
-          >
-        <path
-            android:name="Oval"
-            android:fillColor="#FFFFFF"
-            android:fillType="evenOdd"
-            android:pathData="M 12 8.16 C 14.1207734394 8.16 15.84 9.87922656065 15.84 12 C 15.84 14.1207734394 14.1207734394 15.84 12 15.84 C 9.87922656065 15.84 8.16 14.1207734394 8.16 12 C 8.16 9.87922656065 9.87922656065 8.16 12 8.16 Z"
-            android:strokeWidth="1"
-            tools:targetApi="n"
-            />
-        <path
-            android:name="Shape"
-            android:fillColor="#FFFFFF"
-            android:fillType="evenOdd"
-            android:pathData="M8.4,0 L6.204,2.4 L2.4,2.4 C1.08,2.4 0,3.48 0,4.8 L0,19.2 C0,20.52 1.08,21.6
+        android:name="Icons"
+        android:translateX="-632.000000"
+        android:translateY="-129.000000">
+        <group
+            android:name="Record"
+            android:translateX="632.000000"
+            android:translateY="129.000000">
+            <group
+                android:name="Group"
+                android:translateY="1.000000">
+                <path
+                    android:name="Oval"
+                    android:fillColor="#FFFFFF"
+                    android:fillType="evenOdd"
+                    android:pathData="M 12 8.16 C 14.1207734394 8.16 15.84 9.87922656065 15.84 12 C 15.84 14.1207734394 14.1207734394 15.84 12 15.84 C 9.87922656065 15.84 8.16 14.1207734394 8.16 12 C 8.16 9.87922656065 9.87922656065 8.16 12 8.16 Z"
+                    android:strokeWidth="1"
+                    tools:targetApi="n" />
+                <path
+                    android:name="Shape"
+                    android:fillColor="#FFFFFF"
+                    android:fillType="evenOdd"
+                    android:pathData="M8.4,0 L6.204,2.4 L2.4,2.4 C1.08,2.4 0,3.48 0,4.8 L0,19.2 C0,20.52 1.08,21.6
 2.4,21.6 L21.6,21.6 C22.92,21.6 24,20.52 24,19.2 L24,4.8 C24,3.48 22.92,2.4
 21.6,2.4 L17.796,2.4 L15.6,0 L8.4,0 L8.4,0 Z M12,18 C8.688,18 6,15.312 6,12
 C6,8.688 8.688,6 12,6 C15.312,6 18,8.688 18,12 C18,15.312 15.312,18 12,18 L12,18
 Z"
-            android:strokeWidth="1"
-            tools:ignore="InvalidVectorPath"
-            tools:targetApi="n"
-            />
-      </group>
+                    android:strokeWidth="1"
+                    tools:ignore="InvalidVectorPath"
+                    tools:targetApi="n" />
+            </group>
+        </group>
     </group>
-  </group>
 </vector>

@@ -1,5 +1,6 @@
 package com.telenav.osv.di;
 
+import javax.inject.Singleton;
 import android.app.Application;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.ProcessLifecycleOwner;
@@ -24,101 +25,100 @@ import com.telenav.osv.manager.location.ScoreManager;
 import com.telenav.osv.manager.location.SensorManager;
 import dagger.Module;
 import dagger.Provides;
-import javax.inject.Singleton;
 
 /**
  * Main app module
  * Created by kalmanb on 9/21/17.
  */
 @Module(includes = {
-    ViewModelModule.class,
+        ViewModelModule.class,
 })
 class AppModule {
 
-  private static final String TAG = "AppModule";
+    private static final String TAG = "AppModule";
 
-  @Singleton
-  @Provides
-  SequenceDB provideDB(Context context, Preferences preferences) {
-    return new SequenceDB(context, preferences);
-  }
+    @Singleton
+    @Provides
+    SequenceDB provideDB(Context context, Preferences preferences) {
+        return new SequenceDB(context, preferences);
+    }
 
-  @Provides
-  LifecycleOwner provideLifeCycleOwner() {
-    return ProcessLifecycleOwner.get();
-  }
+    @Provides
+    LifecycleOwner provideLifeCycleOwner() {
+        return ProcessLifecycleOwner.get();
+    }
 
-  @Singleton
-  @Provides
-  Recorder provideRecorder(Application application, SequenceDB db, Preferences prefs, CameraManager cameraManager,
-                           SensorManager sensorManager,
-                           LocationManager locationManager, ScoreManager scoreManager) {
-    return new Recorder(application, db, prefs, cameraManager, locationManager, sensorManager, scoreManager);
-  }
+    @Singleton
+    @Provides
+    Recorder provideRecorder(Application application, SequenceDB db, Preferences prefs, CameraManager cameraManager,
+                             SensorManager sensorManager,
+                             LocationManager locationManager, ScoreManager scoreManager) {
+        return new Recorder(application, db, prefs, cameraManager, locationManager, sensorManager, scoreManager);
+    }
 
-  @Singleton
-  @Provides
-  ValueFormatter provideValueFormatter(DynamicPreferences prefs) {
-    return new ValueFormatter(prefs.getUsingMetricUnitsLive());
-  }
+    @Singleton
+    @Provides
+    ValueFormatter provideValueFormatter(DynamicPreferences prefs) {
+        return new ValueFormatter(prefs.getUsingMetricUnitsLive());
+    }
 
-  @Singleton
-  @Provides
-  ApplicationPreferences provideApplicationPreferences(Application application) {
-    return new ApplicationPreferences(application);
-  }
+    @Singleton
+    @Provides
+    ApplicationPreferences provideApplicationPreferences(Application application) {
+        return new ApplicationPreferences(application);
+    }
 
-  @Singleton
-  @Provides
-  Preferences providePreferences(ApplicationPreferences appPrefs) {
-    return new Preferences(appPrefs);
-  }
+    @Singleton
+    @Provides
+    Preferences providePreferences(ApplicationPreferences appPrefs) {
+        return new Preferences(appPrefs);
+    }
 
-  @Singleton
-  @Provides
-  MapPreferences provideMapPreferences(Preferences prefs) {
-    return prefs;
-  }
+    @Singleton
+    @Provides
+    MapPreferences provideMapPreferences(Preferences prefs) {
+        return prefs;
+    }
 
-  @Singleton
-  @Provides
-  AccountPreferences provideAccountPreferences(Preferences prefs) {
-    return prefs;
-  }
+    @Singleton
+    @Provides
+    AccountPreferences provideAccountPreferences(Preferences prefs) {
+        return prefs;
+    }
 
-  @Singleton
-  @Provides
-  ProfilePreferences provideProfilePreferences(Preferences prefs) {
-    return prefs;
-  }
+    @Singleton
+    @Provides
+    ProfilePreferences provideProfilePreferences(Preferences prefs) {
+        return prefs;
+    }
 
-  @Singleton
-  @Provides
-  DynamicPreferences provideDynamicPreferences(Preferences prefs) {
-    return prefs;
-  }
+    @Singleton
+    @Provides
+    DynamicPreferences provideDynamicPreferences(Preferences prefs) {
+        return prefs;
+    }
 
-  @Singleton
-  @Provides
-  RecordingPreferences provideRecordingPreferences(Preferences prefs) {
-    return prefs;
-  }
+    @Singleton
+    @Provides
+    RecordingPreferences provideRecordingPreferences(Preferences prefs) {
+        return prefs;
+    }
 
-  @Singleton
-  @Provides
-  RunPreferences provideRunPreferences(Preferences prefs) {
-    return prefs;
-  }
+    @Singleton
+    @Provides
+    RunPreferences provideRunPreferences(Preferences prefs) {
+        return prefs;
+    }
 
-  @Singleton
-  @Provides
-  UIPreferences provideUIPreferences(Preferences prefs) {
-    return prefs;
-  }
+    @Singleton
+    @Provides
+    UIPreferences provideUIPreferences(Preferences prefs) {
+        return prefs;
+    }
 
-  @Singleton
-  @Provides
-  VersionPreferences provideVersionPreferences(Preferences prefs) {
-    return prefs;
-  }
+    @Singleton
+    @Provides
+    VersionPreferences provideVersionPreferences(Preferences prefs) {
+        return prefs;
+    }
 }

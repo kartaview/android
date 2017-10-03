@@ -8,15 +8,15 @@ import com.telenav.osv.event.OSVEvent;
  */
 public class UploadBandwidthEvent extends OSVEvent {
 
-  public final ConnectionQuality bandwidthState;
+    public final ConnectionQuality bandwidthState;
 
-  public final double bandwidth;
+    public final double bandwidth;
 
-  public final long remainingSizeValue;
+    public final long remainingSizeValue;
 
-  public UploadBandwidthEvent(ConnectionQuality bandwidthState, final double bandwidth, final long remaining) {
-    this.bandwidthState = bandwidthState;
-    this.bandwidth = bandwidth;
-    this.remainingSizeValue = remaining;
-  }
+    public UploadBandwidthEvent(ConnectionQuality bandwidthState, final double bandwidth, final long remaining) {
+        this.bandwidthState = bandwidthState;
+        this.bandwidth = bandwidth;
+        this.remainingSizeValue = remaining;
+    }
 }

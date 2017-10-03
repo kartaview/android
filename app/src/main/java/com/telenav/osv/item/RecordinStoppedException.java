@@ -5,7 +5,7 @@ package com.telenav.osv.item;
  */
 class RecordinStoppedException extends Exception {
 
-  public RecordinStoppedException(String message) {
-    super(message);
-  }
+    public RecordinStoppedException(String message) {
+        super(message);
+    }
 }

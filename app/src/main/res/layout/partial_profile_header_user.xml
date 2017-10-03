@@ -6,79 +6,79 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center_horizontal"
     android:orientation="vertical"
-    tools:background="@color/action_bar_blue"
-    >
-  <LinearLayout
-      android:layout_width="360dp"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center_horizontal"
-      android:layout_marginBottom="55dp"
-      android:baselineAligned="false"
-      android:layout_marginTop="@dimen/action_bar_size"
-      android:orientation="horizontal"
-      android:weightSum="3"
-      >
+    tools:background="@color/action_bar_blue">
+
     <LinearLayout
-        android:id="@+id/score_view"
-        android:layout_width="0dp"
+        android:layout_width="360dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|left"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:visibility="invisible"
-        tools:visibility="visible"
-        >
-      <TextView
-          style="@style/textStyle.profileInfoTextSmall"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:gravity="center"
-          android:text="@string/profile_user_score"
-          />
-      <TextView
-          android:id="@+id/score_text"
-          style="@style/textStyle.profileInfoTextLarge"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:gravity="center"
-          android:text="@string/default_value_0"
-          />
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="55dp"
+        android:layout_marginTop="@dimen/action_bar_size"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <LinearLayout
+            android:id="@+id/score_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|left"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            tools:visibility="visible">
+
+            <TextView
+                style="@style/textStyle.profileInfoTextSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/profile_user_score" />
+
+            <TextView
+                android:id="@+id/score_text"
+                style="@style/textStyle.profileInfoTextLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/default_value_0" />
+        </LinearLayout>
+
+        <include layout="@layout/partial_profile_picture_dynamic" />
+
+        <LinearLayout
+            android:id="@+id/rank_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|right"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:visibility="invisible"
+            tools:visibility="visible">
+
+            <TextView
+                style="@style/textStyle.profileInfoTextSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/profile_user_rank" />
+
+            <TextView
+                android:id="@+id/rank_text"
+                style="@style/textStyle.profileInfoTextLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/custom_bg_white_rounded"
+                android:gravity="center"
+                android:minWidth="48dp"
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                android:text="@string/default_value_0"
+                android:textColor="@color/profile_header_blue_text" />
+        </LinearLayout>
     </LinearLayout>
-    <include layout="@layout/partial_profile_picture_dynamic"/>
-    <LinearLayout
-        android:id="@+id/rank_view"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|right"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:visibility="invisible"
-        tools:visibility="visible"
-        >
-      <TextView
-          style="@style/textStyle.profileInfoTextSmall"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:gravity="center"
-          android:text="@string/profile_user_rank"
-          />
-      <TextView
-          android:id="@+id/rank_text"
-          style="@style/textStyle.profileInfoTextLarge"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:background="@drawable/custom_bg_white_rounded"
-          android:gravity="center"
-          android:minWidth="48dp"
-          android:paddingEnd="10dp"
-          android:paddingStart="10dp"
-          android:text="@string/default_value_0"
-          android:textColor="@color/profile_header_blue_text"
-          />
-    </LinearLayout>
-  </LinearLayout>
 </LinearLayout>

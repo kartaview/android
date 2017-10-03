@@ -8,21 +8,21 @@ import java.util.HashMap;
  */
 public class CameraParamParser {
 
-  private static final String TAG = "CameraParamParser";
+    private static final String TAG = "CameraParamParser";
 
-  public static HashMap<String, String> parse(String flat) {
-    HashMap<String, String> result = new HashMap<>();
-    String[] params = flat.split(";");
-    for (String param : params) {
-      String[] items = param.split("=");
-      try {
-        String key = items[0];
-        String value = items[1];
-        result.put(key, value);
-      } catch (Exception ignored) {
-        Log.d(TAG, Log.getStackTraceString(ignored));
-      }
+    public static HashMap<String, String> parse(String flat) {
+        HashMap<String, String> result = new HashMap<>();
+        String[] params = flat.split(";");
+        for (String param : params) {
+            String[] items = param.split("=");
+            try {
+                String key = items[0];
+                String value = items[1];
+                result.put(key, value);
+            } catch (Exception ignored) {
+                Log.d(TAG, Log.getStackTraceString(ignored));
+            }
+        }
+        return result;
     }
-    return result;
-  }
 }

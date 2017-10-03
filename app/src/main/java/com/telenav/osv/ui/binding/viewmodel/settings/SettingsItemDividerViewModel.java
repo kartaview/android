@@ -9,8 +9,8 @@ import android.arch.lifecycle.LifecycleOwner;
  */
 public class SettingsItemDividerViewModel extends SettingsItemViewModel {
 
-  public SettingsItemDividerViewModel(Application application, LifecycleOwner owner) {
-    super(application);
-    this.owner = owner;
-  }
+    public SettingsItemDividerViewModel(Application application, LifecycleOwner owner) {
+        super(application);
+        this.owner = owner;
+    }
 }

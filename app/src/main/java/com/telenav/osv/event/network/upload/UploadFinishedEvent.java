@@ -5,6 +5,6 @@ package com.telenav.osv.event.network.upload;
  */
 public class UploadFinishedEvent extends UploadEvent {
 
-  public UploadFinishedEvent() {
-  }
+    public UploadFinishedEvent() {
+    }
 }

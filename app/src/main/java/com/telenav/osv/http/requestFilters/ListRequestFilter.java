@@ -9,8 +9,8 @@ import com.telenav.osv.http.ListSequencesRequest;
  */
 public class ListRequestFilter implements RequestQueue.RequestFilter {
 
-  @Override
-  public boolean apply(Request<?> request) {
-    return request instanceof ListSequencesRequest;
-  }
+    @Override
+    public boolean apply(Request<?> request) {
+        return request instanceof ListSequencesRequest;
+    }
 }

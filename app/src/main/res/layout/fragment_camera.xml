@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      >
-    <include
-        android:id="@+id/camera_preview_layout"
-        layout="@layout/partial_camera_preview"
-        />
-  </RelativeLayout>
-  <View
-      android:layout_width="1dp"
-      android:layout_height="1dp"
-      android:layout_gravity="bottom|end"
-      android:background="@color/transparent"
-      android:visibility="visible"
-      />
-  <View
-      android:layout_width="1dp"
-      android:layout_height="1dp"
-      android:layout_gravity="top|start"
-      android:background="@color/transparent"
-      android:visibility="visible"
-      />
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include
+            android:id="@+id/camera_preview_layout"
+            layout="@layout/partial_camera_preview" />
+    </RelativeLayout>
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_gravity="bottom|end"
+        android:background="@color/transparent"
+        android:visibility="visible" />
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_gravity="top|start"
+        android:background="@color/transparent"
+        android:visibility="visible" />
 </FrameLayout>

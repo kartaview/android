@@ -1,14 +1,14 @@
 package com.telenav.osv.manager.network.parser;
 
-import android.os.Looper;
-import android.util.Log;
-import com.telenav.osv.item.network.UserData;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import android.os.Looper;
+import android.util.Log;
+import com.telenav.osv.item.network.UserData;
 
 /**
  * Created by kalmanb on 8/1/17.
@@ -17,19 +17,19 @@ import org.powermock.modules.junit4.PowerMockRunner;
 @PrepareForTest({Looper.class, Log.class})
 public class UserDataParserTest extends JsonParserTest {
 
-  @Before
-  public void setup() {
-    PowerMockito.mockStatic(Log.class);
-  }
+    @Override
+    protected String getFileName() {
+        return "userDetails.json";
+    }
 
-  @Test
-  public void parse() throws Exception {
-    String json = readJson();
-    UserData userData = new UserDataParser().parse(json);
-  }
+    @Before
+    public void setup() {
+        PowerMockito.mockStatic(Log.class);
+    }
 
-  @Override
-  protected String getFileName() {
-    return "userDetails.json";
-  }
+    @Test
+    public void parse() throws Exception {
+        String json = readJson();
+        UserData userData = new UserDataParser().parse(json);
+    }
 }

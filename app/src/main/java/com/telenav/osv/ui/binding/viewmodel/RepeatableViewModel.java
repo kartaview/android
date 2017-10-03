@@ -7,7 +7,7 @@ import android.app.Application;
  */
 public abstract class RepeatableViewModel extends AbstractViewModel {
 
-  public RepeatableViewModel(Application application) {
-    super(application);
-  }
+    public RepeatableViewModel(Application application) {
+        super(application);
+    }
 }

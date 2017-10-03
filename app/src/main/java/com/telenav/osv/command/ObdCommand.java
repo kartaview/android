@@ -8,14 +8,14 @@ import com.telenav.osv.event.OSVStickyEvent;
 
 public class ObdCommand extends OSVStickyEvent {
 
-  public final boolean start;
+    public final boolean start;
 
-  public ObdCommand(boolean start) {
-    this.start = start;
-  }
+    public ObdCommand(boolean start) {
+        this.start = start;
+    }
 
-  @Override
-  public Class getStickyClass() {
-    return ObdCommand.class;
-  }
+    @Override
+    public Class getStickyClass() {
+        return ObdCommand.class;
+    }
 }

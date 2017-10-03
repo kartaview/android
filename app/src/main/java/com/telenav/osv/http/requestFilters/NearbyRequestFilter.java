@@ -9,8 +9,8 @@ import com.telenav.osv.http.NearbyRequest;
  */
 public class NearbyRequestFilter implements RequestQueue.RequestFilter {
 
-  @Override
-  public boolean apply(Request<?> request) {
-    return request instanceof NearbyRequest;
-  }
+    @Override
+    public boolean apply(Request<?> request) {
+        return request instanceof NearbyRequest;
+    }
 }

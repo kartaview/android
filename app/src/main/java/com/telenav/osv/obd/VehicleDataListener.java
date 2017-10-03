@@ -5,5 +5,5 @@ package com.telenav.osv.obd;
  */
 public interface VehicleDataListener {
 
-  void onSpeed(int speed);
+    void onSpeed(int speed);
 }

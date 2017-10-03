@@ -8,9 +8,9 @@ import com.telenav.osv.event.OSVEvent;
  */
 public class FrameQueueEvent extends OSVEvent {
 
-  public final int queueSize;
+    public final int queueSize;
 
-  public FrameQueueEvent(int size) {
-    this.queueSize = size;
-  }
+    public FrameQueueEvent(int size) {
+        this.queueSize = size;
+    }
 }

@@ -4,23 +4,20 @@
     android:width="48dp"
     android:height="48dp"
     android:viewportHeight="44"
-    android:viewportWidth="44"
-    >
-  <group
-      android:name="Icons"
-      android:translateX="-336.000000"
-      android:translateY="-256.000000"
-      >
+    android:viewportWidth="44">
     <group
-        android:name="no-wifi-"
-        android:translateX="336.000000"
-        android:translateY="256.000000"
-        >
-      <path
-          android:name="Fill-1"
-          android:fillColor="#FFFFFF"
-          android:fillType="evenOdd"
-          android:pathData="M28.8626667,12.0092593 L25.6293333,15.5974074 C23.5106667,14.9633333
+        android:name="Icons"
+        android:translateX="-336.000000"
+        android:translateY="-256.000000">
+        <group
+            android:name="no-wifi-"
+            android:translateX="336.000000"
+            android:translateY="256.000000">
+            <path
+                android:name="Fill-1"
+                android:fillColor="#FFFFFF"
+                android:fillType="evenOdd"
+                android:pathData="M28.8626667,12.0092593 L25.6293333,15.5974074 C23.5106667,14.9633333
 22,14.9618519 22,14.9618519 C16.1553333,14.9618519 11.3286667,19.787037
 11.3286667,19.787037 L13.1073333,21.772963 C16.664,17.8003704 22,17.8003704
 22,17.8003704 C22.5326667,17.8003704 23.044,17.8455556 23.538,17.9181481
@@ -36,10 +33,9 @@ L23.8986667,23.7174074 Z M18.9506667,28.3003704 L22,31.9907407
 L25.0486667,28.3003704 C23.524,26.8825926 22,26.8825926 22,26.8825926
 C20.4753333,26.8825926 18.9506667,28.3003704 18.9506667,28.3003704
 L18.9506667,28.3003704 Z"
-          android:strokeWidth="1"
-          tools:ignore="InvalidVectorPath"
-          tools:targetApi="n"
-          />
+                android:strokeWidth="1"
+                tools:ignore="InvalidVectorPath"
+                tools:targetApi="n" />
+        </group>
     </group>
-  </group>
 </vector>

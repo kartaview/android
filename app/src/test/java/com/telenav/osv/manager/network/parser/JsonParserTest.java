@@ -7,10 +7,10 @@ import com.telenav.osv.MockUtil;
  */
 public abstract class JsonParserTest {
 
-  protected abstract String getFileName();
+    public String readJson() {
+        String filename = getFileName();
+        return MockUtil.getJsonFromFile(this, filename);
+    }
 
-  public String readJson() {
-    String filename = getFileName();
-    return MockUtil.getJsonFromFile(this, filename);
-  }
+    protected abstract String getFileName();
 }

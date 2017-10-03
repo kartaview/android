@@ -6,53 +6,53 @@ package com.telenav.osv.item.view.profile;
  */
 public class UserProfileData extends ProfileData {
 
-  private int score;
+    private int score;
 
-  private int rank;
+    private int rank;
 
-  private int level;
+    private int level;
 
-  private int xpTarget;
+    private int xpTarget;
 
-  private int xpProgress;
+    private int xpProgress;
 
-  public int getScore() {
-    return score;
-  }
+    public int getScore() {
+        return score;
+    }
 
-  public void setScore(int score) {
-    this.score = score;
-  }
+    public void setScore(int score) {
+        this.score = score;
+    }
 
-  public int getRank() {
-    return rank;
-  }
+    public int getRank() {
+        return rank;
+    }
 
-  public void setRank(int rank) {
-    this.rank = rank;
-  }
+    public void setRank(int rank) {
+        this.rank = rank;
+    }
 
-  public int getLevel() {
-    return level;
-  }
+    public int getLevel() {
+        return level;
+    }
 
-  public void setLevel(int level) {
-    this.level = level;
-  }
+    public void setLevel(int level) {
+        this.level = level;
+    }
 
-  public int getXpTarget() {
-    return xpTarget;
-  }
+    public int getXpTarget() {
+        return xpTarget;
+    }
 
-  public void setXpTarget(int xpTarget) {
-    this.xpTarget = xpTarget;
-  }
+    public void setXpTarget(int xpTarget) {
+        this.xpTarget = xpTarget;
+    }
 
-  public int getXpProgress() {
-    return xpProgress;
-  }
+    public int getXpProgress() {
+        return xpProgress;
+    }
 
-  public void setXpProgress(int xpProgress) {
-    this.xpProgress = xpProgress;
-  }
+    public void setXpProgress(int xpProgress) {
+        this.xpProgress = xpProgress;
+    }
 }

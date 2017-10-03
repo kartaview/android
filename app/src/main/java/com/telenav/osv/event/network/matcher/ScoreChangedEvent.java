@@ -7,15 +7,15 @@ import com.telenav.osv.event.OSVEvent;
  */
 public class ScoreChangedEvent extends OSVEvent {
 
-  public final float score;
+    public final float score;
 
-  public final int multiplier;
+    public final int multiplier;
 
-  private final boolean obd;
+    private final boolean obd;
 
-  public ScoreChangedEvent(float score, boolean obdConnected, int multiplier) {
-    this.score = score;
-    this.obd = obdConnected;
-    this.multiplier = multiplier;
-  }
+    public ScoreChangedEvent(float score, boolean obdConnected, int multiplier) {
+        this.score = score;
+        this.obd = obdConnected;
+        this.multiplier = multiplier;
+    }
 }

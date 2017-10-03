@@ -7,39 +7,39 @@ package com.telenav.osv.data;
 @SuppressWarnings({"SameParameterValue", "unused"})
 public interface UIPreferences {
 
-  boolean shouldShowTapToShoot();
+    boolean shouldShowTapToShoot();
 
-  void setShouldShowTapToShoot(boolean value);
+    void setShouldShowTapToShoot(boolean value);
 
-  boolean shouldShowBackgroundHint();
+    boolean shouldShowBackgroundHint();
 
-  void setShouldShowBackgroundHint(boolean value);
+    void setShouldShowBackgroundHint(boolean value);
 
-  boolean shouldShowRecordingSummary();
+    boolean shouldShowRecordingSummary();
 
-  void setShouldShowRecordingSummary(boolean value);
+    void setShouldShowRecordingSummary(boolean value);
 
-  boolean shouldShowClearRecentsWarning();
+    boolean shouldShowClearRecentsWarning();
 
-  void setShouldShowClearRecentsWarning(boolean value);
+    void setShouldShowClearRecentsWarning(boolean value);
 
-  boolean shouldShowWalkthrough();
+    boolean shouldShowWalkthrough();
 
-  void setShouldShowWalkthrough(boolean value);
+    void setShouldShowWalkthrough(boolean value);
 
-  boolean shouldShowSafeModeMessage();
+    boolean shouldShowSafeModeMessage();
 
-  void setShouldShowSafeModeMessage(boolean value);
+    void setShouldShowSafeModeMessage(boolean value);
 
-  boolean shouldShowDeleteConfirmation();
+    boolean shouldShowDeleteConfirmation();
 
-  void setShouldShowDeleteConfirmation(boolean value);
+    void setShouldShowDeleteConfirmation(boolean value);
 
-  boolean shouldShowTapOnMap();
+    boolean shouldShowTapOnMap();
 
-  void setShouldShowTapOnMap(boolean value);
+    void setShouldShowTapOnMap(boolean value);
 
-  boolean shouldShowDriverDialog();
+    boolean shouldShowDriverDialog();
 
-  void setShouldShowDriverDialog(boolean value);
+    void setShouldShowDriverDialog(boolean value);
 }

@@ -8,5 +8,4 @@
     android:gravity="center|start"
     android:text="@string/ble_devices"
     android:textSize="18sp"
-    android:textStyle="bold"
-    />
+    android:textStyle="bold" />

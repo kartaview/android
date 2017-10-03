@@ -8,17 +8,17 @@ import android.location.Location;
  */
 public interface MapPreferences {
 
-  public Location getLastLocation();
+    public Location getLastLocation();
 
-  public void saveLastLocation(Location loc);
+    public void saveLastLocation(Location loc);
 
-  public float getRecordingMapZoom();
+    public float getRecordingMapZoom();
 
-  public void setRecordingMapZoom(float value);
+    public void setRecordingMapZoom(float value);
 
-  public void postRecordingMapZoom(float value);
+    public void postRecordingMapZoom(float value);
 
-  public String getMapResourcesPath();
+    public String getMapResourcesPath();
 
-  public void setMapResourcesPath(String path);
+    public void setMapResourcesPath(String path);
 }

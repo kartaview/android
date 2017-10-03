@@ -1,127 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    >
-  <data>
-    <variable
-        name="viewModel"
-        type="com.telenav.osv.ui.binding.viewmodel.profile.newimpl.ProfileByodViewModel"
-        />
-  </data>
-  <LinearLayout
-      android:id="@+id/header_content_holder"
-      android:layout_width="360dp"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center_horizontal"
-      android:orientation="vertical"
-      tools:context=".activity.MainActivity"
-      tools:background="@color/action_bar_blue"
-      >
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="com.telenav.osv.ui.binding.viewmodel.profile.newimpl.ProfileByodViewModel" />
+    </data>
+
     <LinearLayout
+        android:id="@+id/header_content_holder"
         android:layout_width="360dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="55dp"
-        android:baselineAligned="false"
-        android:layout_marginTop="@dimen/action_bar_size"
-        android:orientation="horizontal"
-        >
-      <include
-          android:id="@+id/profile_picture_holder"
-          layout="@layout/partial_profile_picture_dynamic"
-          app:viewModel="@{viewModel}"
-          />
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/info_view"
-        android:layout_width="340dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="22dp"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:visibility="visible"
-        tools:visibility="visible"
-        app:layout_collapseMode="parallax"
-        >
-      <TextView
-          style="@style/textStyle.profileInfoTextLarge"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginBottom="25dp"
-          android:gravity="center"
-          android:text="@string/profile_byod_label_to_be_paid"
-          />
-      <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginBottom="10dp"
-          android:orientation="horizontal"
-          android:weightSum="3"
-          >
-        <TextView
-            style="@style/textStyle.profileInfoTextSmall"
-            android:layout_width="0dp"
+        tools:background="@color/action_bar_blue"
+        tools:context=".activity.MainActivity">
+
+        <LinearLayout
+            android:layout_width="360dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/profile_tbp_label_distance"
-            />
-        <TextView
-            style="@style/textStyle.profileInfoTextSmall"
-            android:layout_width="0dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="55dp"
+            android:layout_marginTop="@dimen/action_bar_size"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/profile_picture_holder"
+                layout="@layout/partial_profile_picture_dynamic"
+                app:viewModel="@{viewModel}" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/info_view"
+            android:layout_width="340dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/profile_tbp_label_pay_rate"
-            />
-        <TextView
-            style="@style/textStyle.profileInfoTextSmall"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/profile_tbp_label_value"
-            />
-      </LinearLayout>
-      <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal"
-          android:weightSum="3"
-          >
-        <TextView
-            android:id="@+id/profile_info_distance"
-            style="@style/textStyle.profileInfoTextLarge"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@{viewModel.distance, default=@string/profile_info_distance_default}"
-            />
-        <TextView
-            android:id="@+id/profile_info_rate"
-            style="@style/textStyle.profileInfoTextLarge"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@{viewModel.rate, default=@string/profile_info_rate_default}"
-            />
-        <TextView
-            android:id="@+id/profile_info_value"
-            style="@style/textStyle.profileInfoTextLarge"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@{viewModel.value, default=@string/profile_info_value_default}"
-            />
-      </LinearLayout>
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="22dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="25dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_collapseMode="parallax"
+            tools:visibility="visible">
+
+            <TextView
+                style="@style/textStyle.profileInfoTextLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="25dp"
+                android:gravity="center"
+                android:text="@string/profile_byod_label_to_be_paid" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <TextView
+                    style="@style/textStyle.profileInfoTextSmall"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/profile_tbp_label_distance" />
+
+                <TextView
+                    style="@style/textStyle.profileInfoTextSmall"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/profile_tbp_label_pay_rate" />
+
+                <TextView
+                    style="@style/textStyle.profileInfoTextSmall"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/profile_tbp_label_value" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <TextView
+                    android:id="@+id/profile_info_distance"
+                    style="@style/textStyle.profileInfoTextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@{viewModel.distance, default=@string/profile_info_distance_default}" />
+
+                <TextView
+                    android:id="@+id/profile_info_rate"
+                    style="@style/textStyle.profileInfoTextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@{viewModel.rate, default=@string/profile_info_rate_default}" />
+
+                <TextView
+                    android:id="@+id/profile_info_value"
+                    style="@style/textStyle.profileInfoTextLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@{viewModel.value, default=@string/profile_info_value_default}" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-  </LinearLayout>
 </layout>

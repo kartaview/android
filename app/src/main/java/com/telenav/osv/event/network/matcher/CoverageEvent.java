@@ -7,14 +7,14 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 public class CoverageEvent extends OSVStickyEvent {
 
-  public final boolean available;
+    public final boolean available;
 
-  public CoverageEvent(boolean available) {
-    this.available = available;
-  }
+    public CoverageEvent(boolean available) {
+        this.available = available;
+    }
 
-  @Override
-  public Class getStickyClass() {
-    return CoverageEvent.class;
-  }
+    @Override
+    public Class getStickyClass() {
+        return CoverageEvent.class;
+    }
 }

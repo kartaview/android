@@ -5,5 +5,5 @@ package com.telenav.osv.listener;
  */
 public interface ShutterCallback {
 
-  void onShutter();
+    void onShutter();
 }

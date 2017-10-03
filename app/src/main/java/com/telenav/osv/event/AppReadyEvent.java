@@ -7,10 +7,10 @@ package com.telenav.osv.event;
 
 public class AppReadyEvent extends OSVStickyEvent {
 
-  public static final String TAG = "AppReadyEvent";
+    public static final String TAG = "AppReadyEvent";
 
-  @Override
-  public Class getStickyClass() {
-    return AppReadyEvent.class;
-  }
+    @Override
+    public Class getStickyClass() {
+        return AppReadyEvent.class;
+    }
 }

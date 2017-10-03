@@ -1,12 +1,12 @@
 package com.telenav.osv.http;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.toolbox.StringRequest;
 import com.telenav.osv.listener.network.GenericResponseListener;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by adrianbostan on 22/07/16.
@@ -14,43 +14,43 @@ import java.util.Map;
 
 public class ProfileRequest extends StringRequest {
 
-  private static final String PARAM_USER_NAME = "username";
+    private static final String PARAM_USER_NAME = "username";
 
-  private final GenericResponseListener mListener;
+    private final GenericResponseListener mListener;
 
-  private final String mName;
+    private final String mName;
 
-  public ProfileRequest(String url, GenericResponseListener listener, String name) {
-    super(Request.Method.POST, url, listener, listener);
-    mName = name;
-    mListener = listener;
-  }
-
-  @Override
-  public Map<String, String> getHeaders() throws AuthFailureError {
-    Map<String, String> headers = super.getHeaders();
-
-    if (headers == null || headers.equals(Collections.emptyMap())) {
-      headers = new HashMap<>();
+    public ProfileRequest(String url, GenericResponseListener listener, String name) {
+        super(Request.Method.POST, url, listener, listener);
+        mName = name;
+        mListener = listener;
     }
 
-    headers.put("Accept", "application/json");
+    @Override
+    public Map<String, String> getHeaders() throws AuthFailureError {
+        Map<String, String> headers = super.getHeaders();
 
-    return headers;
-  }
+        if (headers == null || headers.equals(Collections.emptyMap())) {
+            headers = new HashMap<>();
+        }
 
-  @Override
-  protected Map<String, String> getParams() throws AuthFailureError {
-    Map<String, String> params = super.getParams();
-    if (params == null || params.equals(Collections.emptyMap())) {
-      params = new HashMap<>();
+        headers.put("Accept", "application/json");
+
+        return headers;
     }
-    params.put(PARAM_USER_NAME, mName);
-    return params;
-  }
 
-  @Override
-  protected void deliverResponse(String response) {
-    mListener.onResponse(response);
-  }
+    @Override
+    protected Map<String, String> getParams() throws AuthFailureError {
+        Map<String, String> params = super.getParams();
+        if (params == null || params.equals(Collections.emptyMap())) {
+            params = new HashMap<>();
+        }
+        params.put(PARAM_USER_NAME, mName);
+        return params;
+    }
+
+    @Override
+    protected void deliverResponse(String response) {
+        mListener.onResponse(response);
+    }
 }

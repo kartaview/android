@@ -10,58 +10,58 @@ import android.view.MotionEvent;
  */
 public class ScrollDisabledViewPager extends ViewPager {
 
-  private boolean mEnabledScroll = false;
+    private boolean mEnabledScroll = false;
 
-  public ScrollDisabledViewPager(Context context) {
-    super(context);
-  }
-
-  public ScrollDisabledViewPager(Context context, AttributeSet attrs) {
-    super(context, attrs);
-  }
-
-  public void setScrollEnabled(boolean enabled) {
-    mEnabledScroll = enabled;
-  }
-
-  @Override
-  public void setCurrentItem(int item) {
-    if (mEnabledScroll) {
-      super.setCurrentItem(item);
-    } else {
-      super.setCurrentItem(item, false);
+    public ScrollDisabledViewPager(Context context) {
+        super(context);
     }
-  }
 
-  @Override
-  public void setCurrentItem(int item, boolean smoothScroll) {
-
-    if (mEnabledScroll) {
-      super.setCurrentItem(item, smoothScroll);
-    } else {
-      super.setCurrentItem(item, false);
+    public ScrollDisabledViewPager(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
-  }
 
-  @Override
-  public boolean onInterceptTouchEvent(MotionEvent ev) {
-    if (mEnabledScroll) {
-      try {
-        return super.onInterceptTouchEvent(ev);
-      } catch (Exception e) {
-        //                Log.d(TAG, Log.getStackTraceString(e));
+    @Override
+    public void setCurrentItem(int item) {
+        if (mEnabledScroll) {
+            super.setCurrentItem(item);
+        } else {
+            super.setCurrentItem(item, false);
+        }
+    }
+
+    @Override
+    public void setCurrentItem(int item, boolean smoothScroll) {
+
+        if (mEnabledScroll) {
+            super.setCurrentItem(item, smoothScroll);
+        } else {
+            super.setCurrentItem(item, false);
+        }
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (mEnabledScroll) {
+            try {
+                return super.onInterceptTouchEvent(ev);
+            } catch (Exception e) {
+                //                Log.d(TAG, Log.getStackTraceString(e));
+                return false;
+            }
+        }
         return false;
-      }
     }
-    return false;
-  }
 
-  @Override
-  public boolean onTouchEvent(MotionEvent event) {
-    // Never allow swiping to switch between pages
-    if (mEnabledScroll) {
-      return super.onTouchEvent(event);
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // Never allow swiping to switch between pages
+        if (mEnabledScroll) {
+            return super.onTouchEvent(event);
+        }
+        return mEnabledScroll;
     }
-    return mEnabledScroll;
-  }
+
+    public void setScrollEnabled(boolean enabled) {
+        mEnabledScroll = enabled;
+    }
 }

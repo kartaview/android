@@ -12,16 +12,16 @@ import dagger.multibindings.IntoMap;
 @Module
 public abstract class ViewModelModule {
 
-  @Binds
-  @IntoMap
-  @ViewModelKey(SettingsViewModel.class)
-  abstract ViewModel bindSettingsViewModel(SettingsViewModel vm);
+    @Binds
+    @IntoMap
+    @ViewModelKey(SettingsViewModel.class)
+    abstract ViewModel bindSettingsViewModel(SettingsViewModel vm);
 
-  @Binds
-  @IntoMap
-  @ViewModelKey(ProfileByodViewModel.class)//todo only used in new profile fragment impl.
-  abstract ViewModel bindProfileByodViewModel(ProfileByodViewModel vm);
+    @Binds
+    @IntoMap
+    @ViewModelKey(ProfileByodViewModel.class)//todo only used in new profile fragment impl.
+    abstract ViewModel bindProfileByodViewModel(ProfileByodViewModel vm);
 
-  @Binds
-  abstract ViewModelProvider.Factory bindViewModelFactory(ViewModelFactory factory);
+    @Binds
+    abstract ViewModelProvider.Factory bindViewModelFactory(ViewModelFactory factory);
 }

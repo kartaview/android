@@ -5,5 +5,5 @@ package com.telenav.osv.ui.fragment;
  */
 public interface Displayable<T> {
 
-  void setDisplayData(T data);
+    void setDisplayData(T data);
 }

@@ -20,40 +20,40 @@ import me.tatarka.bindingcollectionadapter2.itembindings.OnItemBindClass;
  */
 public abstract class ProfileViewModel extends AbstractViewModel {
 
-  /**
-   * Custom adapter that logs calls.
-   */
-  public final BindingRecyclerAdapter<ListItemViewModel> adapter = new BindingRecyclerAdapter<>();
+    /**
+     * Custom adapter that logs calls.
+     */
+    public final BindingRecyclerAdapter<ListItemViewModel> adapter = new BindingRecyclerAdapter<>();
 
-  public final OnItemBindClass<ListItemViewModel> multipleItems = new OnItemBindClass<ListItemViewModel>()
-      .map(ByodTrackListHeaderViewModel.class, BR.item, R.layout.partial_track_list_header_byod)
-      .map(TrackListItemViewModel.class, BR.item, R.layout.item_sequence_card);
+    public final OnItemBindClass<ListItemViewModel> multipleItems = new OnItemBindClass<ListItemViewModel>()
+            .map(ByodTrackListHeaderViewModel.class, BR.item, R.layout.partial_track_list_header_byod)
+            .map(TrackListItemViewModel.class, BR.item, R.layout.item_sequence_card);
 
-  /**
-   * Custom view holders for RecyclerView
-   */
-  public final BindingRecyclerViewAdapter.ViewHolderFactory viewHolder = binding -> new ViewHolder(binding.getRoot());
+    /**
+     * Custom view holders for RecyclerView
+     */
+    public final BindingRecyclerViewAdapter.ViewHolderFactory viewHolder = binding -> new ViewHolder(binding.getRoot());
 
-  protected final ValueFormatter formatter;
+    protected final ValueFormatter formatter;
 
-  final ObservableOrderedSet<ByodTrackListHeaderViewModel> headerList = new ObservableOrderedSet<>();
+    final ObservableOrderedSet<ByodTrackListHeaderViewModel> headerList = new ObservableOrderedSet<>();
 
-  final ObservableOrderedSet<TrackListItemViewModel> trackList = new ObservableOrderedSet<>();
+    final ObservableOrderedSet<TrackListItemViewModel> trackList = new ObservableOrderedSet<>();
 
-  /**
-   * Items merged with a header on top and footer on bottom.
-   */
-  public final ObservableMergeList<ListItemViewModel> headerFooterItems = new ObservableMergeList<ListItemViewModel>()
-      .insertList(headerList)
-      .insertList(trackList);
+    /**
+     * Items merged with a header on top and footer on bottom.
+     */
+    public final ObservableMergeList<ListItemViewModel> headerFooterItems = new ObservableMergeList<ListItemViewModel>()
+            .insertList(headerList)
+            .insertList(trackList);
 
-  private final AccountPreferences prefs;
+    private final AccountPreferences prefs;
 
-  public ObservableBoolean refreshing = new ObservableBoolean();
+    public ObservableBoolean refreshing = new ObservableBoolean();
 
-  public ProfileViewModel(Application application, AccountPreferences prefs, ValueFormatter formatter) {
-    super(application);
-    this.formatter = formatter;
-    this.prefs = prefs;
-  }
+    public ProfileViewModel(Application application, AccountPreferences prefs, ValueFormatter formatter) {
+        super(application);
+        this.formatter = formatter;
+        this.prefs = prefs;
+    }
 }

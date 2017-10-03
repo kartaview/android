@@ -9,13 +9,13 @@ import android.arch.lifecycle.MutableLiveData;
 @SuppressWarnings({"SameParameterValue", "unused"})
 public interface GeneralPreferences {
 
-  boolean isDebugEnabled();
+    boolean isDebugEnabled();
 
-  MutableLiveData<Boolean> getDebugEnabledLive();
+    MutableLiveData<Boolean> getDebugEnabledLive();
 
-  MutableLiveData<Integer> getServerTypeLive();
+    MutableLiveData<Integer> getServerTypeLive();
 
-  int getServerType();
+    int getServerType();
 
-  void setServerType(int value);
+    void setServerType(int value);
 }

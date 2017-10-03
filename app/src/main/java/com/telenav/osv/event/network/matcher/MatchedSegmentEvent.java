@@ -9,14 +9,14 @@ import com.telenav.osv.item.Segment;
 
 public class MatchedSegmentEvent extends OSVStickyEvent {
 
-  public final Segment segment;
+    public final Segment segment;
 
-  public MatchedSegmentEvent(Segment matched) {
-    this.segment = matched;
-  }
+    public MatchedSegmentEvent(Segment matched) {
+        this.segment = matched;
+    }
 
-  @Override
-  public Class getStickyClass() {
-    return MatchedSegmentEvent.class;
-  }
+    @Override
+    public Class getStickyClass() {
+        return MatchedSegmentEvent.class;
+    }
 }

@@ -4,27 +4,24 @@
     android:width="12dp"
     android:height="24dp"
     android:viewportHeight="24"
-    android:viewportWidth="12"
-    >
-  <group
-      android:name="Icons"
-      android:pivotX="6"
-      android:pivotY="12"
-      android:rotation="180"
-      >
-    <path
-        android:name="triangle_ls"
-        android:fillColor="#FFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="
+    android:viewportWidth="12">
+    <group
+        android:name="Icons"
+        android:pivotX="6"
+        android:pivotY="12"
+        android:rotation="180">
+        <path
+            android:name="triangle_ls"
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="
             M 12           ,0.6862915
             L 6.972052  ,5.7142395
             L 0.686292  ,12
             L 12         ,23.313708
             L 12         ,0.6862915
             Z"
-        android:strokeWidth="1"
-        tools:targetApi="n"
-        />
-  </group>
+            android:strokeWidth="1"
+            tools:targetApi="n" />
+    </group>
 </vector>

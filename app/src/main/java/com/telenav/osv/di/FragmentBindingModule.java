@@ -31,63 +31,63 @@ import dagger.android.ContributesAndroidInjector;
 @Module
 public abstract class FragmentBindingModule {
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract SettingsFragment contributeSettingsFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract SettingsFragment contributeSettingsFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract HintsFragment contributeHintsFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract HintsFragment contributeHintsFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract IssueReportFragment contributeIssueReportFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract IssueReportFragment contributeIssueReportFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract LeaderboardFragment contributeLeaderboardFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract LeaderboardFragment contributeLeaderboardFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract UploadProgressFragment contributeUploadProgressFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract UploadProgressFragment contributeUploadProgressFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract WaitingFragment contributeWaitingFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract WaitingFragment contributeWaitingFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract WalkthroughSlideFragment contributeWalkthroughSlideFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract WalkthroughSlideFragment contributeWalkthroughSlideFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract CameraControlsFragment contributeCameraControlsFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract CameraControlsFragment contributeCameraControlsFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract CameraPreviewFragment contributeCameraPreviewFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract CameraPreviewFragment contributeCameraPreviewFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract MapFragment contributeMapFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract MapFragment contributeMapFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract ProfileByodFragment contributeProfileByodFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract ProfileByodFragment contributeProfileByodFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract ByodProfileFragment contributeByodProfileFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract ByodProfileFragment contributeByodProfileFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract UserProfileFragment contributeUserProfileFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract UserProfileFragment contributeUserProfileFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract SimpleProfileFragment contributeSimpleProfileFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract SimpleProfileFragment contributeSimpleProfileFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract RecordingSummaryFragment contributeRecordingSummaryFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract RecordingSummaryFragment contributeRecordingSummaryFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract TrackPreviewFragment contributeTrackPreviewFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract TrackPreviewFragment contributeTrackPreviewFragment();
 
-  @ContributesAndroidInjector(modules = ViewModelModule.class)
-  abstract FullscreenFragment contributeFullscreenFragment();
+    @ContributesAndroidInjector(modules = ViewModelModule.class)
+    abstract FullscreenFragment contributeFullscreenFragment();
 
-  @ContributesAndroidInjector()
-  abstract OBDDialogFragment contributeOdbDialogFragment();
+    @ContributesAndroidInjector()
+    abstract OBDDialogFragment contributeOdbDialogFragment();
 
-  @ContributesAndroidInjector()
-  abstract PictureSizeDialogFragment contributePictureSizeDialogFragment();
+    @ContributesAndroidInjector()
+    abstract PictureSizeDialogFragment contributePictureSizeDialogFragment();
 
-  @ContributesAndroidInjector()
-  abstract BTDialogFragment contributeBTDialogFragment();
+    @ContributesAndroidInjector()
+    abstract BTDialogFragment contributeBTDialogFragment();
 }

@@ -4,13 +4,12 @@
     android:width="35dp"
     android:height="29dp"
     android:viewportHeight="29"
-    android:viewportWidth="35"
-    >
-  <path
-      android:name="Fill-1"
-      android:fillColor="#FFFFFF"
-      android:fillType="evenOdd"
-      android:pathData="M29.7326,5.83358 L29.7326,0.0868239 L27.8126,0.0868239 L27.8126,5.83358
+    android:viewportWidth="35">
+    <path
+        android:name="Fill-1"
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M29.7326,5.83358 L29.7326,0.0868239 L27.8126,0.0868239 L27.8126,5.83358
 L22.0526,5.83358 L22.0526,7.74917 L27.8126,7.74917 L27.8126,13.4959
 L29.7326,13.4959 L29.7326,7.74917 L35.4926,7.74917 L35.4926,5.83358
 L29.7326,5.83358 Z M11.5806,11.8916 L11.7846,11.9515
@@ -39,7 +38,6 @@ C13.8406,11.9914,14.2406,11.5085,14.6166,11.309
 C14.6166,11.309,16.8766,9.52906,16.8966,7.05477
 C16.8966,7.05477,17.3286,2.96818,14.4286,1.44769 L16.7046,1.44769
 L19.1726,0.0948055 Z"
-      android:strokeWidth="1"
-      tools:targetApi="n"
-      />
+        android:strokeWidth="1"
+        tools:targetApi="n" />
 </vector>

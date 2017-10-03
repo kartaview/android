@@ -1,43 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
-  <data>
-    <import type="com.telenav.osv.ui.list.LayoutManagers"/>
-    <import type="android.view.View"/>
-    <import type="android.content.Context"/>
-    <variable
-        name="viewModel"
-        type="com.telenav.osv.ui.binding.viewmodel.profile.newimpl.ProfileViewModel"
-        />
-  </data>
-  <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto"
-      xmlns:tools="http://schemas.android.com/tools"
-      android:id="@+id/profile_swipe_refresh_layout"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:background="@color/background_material_light_1"
-      app:refreshing="@{viewModel.refreshing}"
-      app:layout_behavior="@string/appbar_scrolling_view_behavior"
-      >
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/profile_sequences_recycle_view"
+
+    <data>
+
+        <import type="com.telenav.osv.ui.list.LayoutManagers" />
+
+        <import type="android.view.View" />
+
+        <import type="android.content.Context" />
+
+        <variable
+            name="viewModel"
+            type="com.telenav.osv.ui.binding.viewmodel.profile.newimpl.ProfileViewModel" />
+    </data>
+
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/profile_swipe_refresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:clipToPadding="false"
-        android:scrollbars="none"
-        android:paddingBottom="@dimen/sequence_list_padding_bottom"
-        android:paddingStart="@dimen/sequence_list_padding_side_portrait"
-        android:paddingEnd="@dimen/sequence_list_padding_side_portrait"
-        tools:listitem="@layout/item_sequence_card"
-        tools:listheader="@layout/partial_track_list_header_user"
-        app:adapter="@{viewModel.adapter}"
-        app:itemBinding="@{viewModel.multipleItems}"
-        app:items="@{viewModel.headerFooterItems}"
-        app:viewHolder="@{viewModel.viewHolder}"
-        app:layoutManager="@{LayoutManagers.linear()}"
-        />
-  </android.support.v4.widget.SwipeRefreshLayout>
+        android:layout_height="match_parent"
+        android:background="@color/background_material_light_1"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:refreshing="@{viewModel.refreshing}">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/profile_sequences_recycle_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/sequence_list_padding_bottom"
+            android:paddingEnd="@dimen/sequence_list_padding_side_portrait"
+            android:paddingStart="@dimen/sequence_list_padding_side_portrait"
+            android:scrollbars="none"
+            app:adapter="@{viewModel.adapter}"
+            app:itemBinding="@{viewModel.multipleItems}"
+            app:items="@{viewModel.headerFooterItems}"
+            app:layoutManager="@{LayoutManagers.linear()}"
+            app:viewHolder="@{viewModel.viewHolder}"
+            tools:listheader="@layout/partial_track_list_header_user"
+            tools:listitem="@layout/item_sequence_card" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 </layout>

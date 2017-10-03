@@ -1,169 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.telenav.osv"
-    >
+    package="com.telenav.osv">
 
-  <uses-permission android:name="android.permission.CAMERA"/>
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-  <uses-permission android:name="android.permission.INTERNET"/>
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-  <uses-permission android:name="android.permission.BLUETOOTH"/>
-  <uses-permission android:name="android.permission.WAKE_LOCK"/>
-  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-  <uses-feature
-      android:name="android.hardware.camera"
-      android:required="true"
-      />
-  <uses-feature
-      android:name="android.hardware.location.gps"
-      android:required="true"
-      />
-  <uses-feature
-      android:name="android.hardware.sensor.gyroscope"
-      android:required="false"
-      />
-  <uses-feature
-      android:name="android.hardware.sensor.accelerometer"
-      android:required="false"
-      />
-  <uses-feature
-      android:name="android.hardware.sensor.barometer"
-      android:required="false"
-      />
-  <uses-feature
-      android:name="android.hardware.sensor.compass"
-      android:required="false"
-      />
-  <uses-feature
-      android:name="android.hardware.camera.autofocus"
-      android:required="false"
-      />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.sensor.gyroscope"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.sensor.accelerometer"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.sensor.barometer"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.sensor.compass"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
 
-  <application
-      android:name="com.telenav.osv.application.OSVApplication"
-      android:allowBackup="true"
-      android:icon="@drawable/ic_launcher"
-      android:label="@string/app_name"
-      android:largeHeap="true"
-      android:theme="@style/AppTheme"
-      android:fullBackupContent="false"
-      android:process="@string/main_process_name"
-      >
-    <meta-data
-        android:name="com.skobbler.ngx.API_KEY"
-        android:value="@string/skobbler_api_key"
-        />
-    <meta-data
-        android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
-        android:value="false"
-        />
-    <meta-data
-        android:name="com.facebook.sdk.ApplicationId"
-        android:value="@string/facebook_application_id"
-        />
-
-    <activity
-        android:name=".activity.SplashActivity"
-        android:configChanges="screenSize"
-        android:excludeFromRecents="true"
-        android:launchMode="singleTask"
-        android:screenOrientation="fullSensor"
-        >
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW"/>
-
-        <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="android.intent.category.BROWSABLE"/>
-
-        <data
-            android:scheme="http"
-            android:host="http://openstreetcam.org"
-            />
-      </intent-filter>
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
-        <category android:name="android.intent.category.LAUNCHER"/>
-      </intent-filter>
-    </activity>
-    <activity
-        android:name=".activity.WalkthroughActivity"
-        android:label="Intro"
-        android:theme="@style/AppTheme.NoSplash"
-        android:screenOrientation="portrait"
-        />
-    <activity
-        android:name=".activity.MainActivity"
-        android:configChanges="orientation|screenSize"
-        android:hardwareAccelerated="true"
-        android:label="@string/app_name"
-        android:launchMode="singleInstance"
-        android:screenOrientation="fullSensor"
-        android:windowSoftInputMode="adjustPan"
-        />
-    <activity
-        android:name=".activity.LoginActivity"
-        android:configChanges="orientation|screenSize"
-        android:excludeFromRecents="true"
-        android:label="@string/login_label"
-        android:screenOrientation="fullSensor"
-        android:theme="@style/AppThemeLogin"
-        android:windowSoftInputMode="adjustResize"
-        />
-
-    <service
-        android:name=".service.CameraHandlerService"
+    <application
+        android:name="com.telenav.osv.application.OSVApplication"
+        android:allowBackup="true"
+        android:fullBackupContent="false"
         android:icon="@drawable/ic_launcher"
-        android:label="OSV recording service"
-        android:stopWithTask="false"
-        />
-    <service
-        android:name=".service.UploadJobService"
-        android:exported="true"
-        android:permission="android.permission.BIND_JOB_SERVICE"
-        />
-    <service
-        android:name=".service.FirebaseService"
-        android:permission="android.permission.INTERNET"
-        >
-      <intent-filter>
-        <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
-      </intent-filter>
-    </service>
-    <service
-        android:name=".service.RecentClearedService"
-        android:exported="false"
-        android:stopWithTask="false"
-        />
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:process="@string/main_process_name"
+        android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.skobbler.ngx.API_KEY"
+            android:value="@string/skobbler_api_key" />
+        <meta-data
+            android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
+            android:value="false" />
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_application_id" />
+
+        <activity
+            android:name=".activity.SplashActivity"
+            android:configChanges="screenSize"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="fullSensor">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="http://openstreetcam.org"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.WalkthroughActivity"
+            android:label="Intro"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoSplash" />
+        <activity
+            android:name=".activity.MainActivity"
+            android:configChanges="orientation|screenSize"
+            android:hardwareAccelerated="true"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:screenOrientation="fullSensor"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".activity.LoginActivity"
+            android:configChanges="orientation|screenSize"
+            android:excludeFromRecents="true"
+            android:label="@string/login_label"
+            android:screenOrientation="fullSensor"
+            android:theme="@style/AppThemeLogin"
+            android:windowSoftInputMode="adjustResize" />
+
+        <service
+            android:name=".service.CameraHandlerService"
+            android:icon="@drawable/ic_launcher"
+            android:label="OSV recording service"
+            android:stopWithTask="false" />
+        <service
+            android:name=".service.UploadJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
+            android:name=".service.FirebaseService"
+            android:permission="android.permission.INTERNET">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".service.RecentClearedService"
+            android:exported="false"
+            android:stopWithTask="false" />
 
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="00000000000000000b0000000000000000000000"
-            />
-
-    <activity
-        android:name=".activity.PlayerActivity"
-        android:allowTaskReparenting="true"
-        android:autoRemoveFromRecents="true"
-        android:clearTaskOnLaunch="true"
-        android:configChanges="orientation|screenSize"
-        android:excludeFromRecents="true"
-        android:finishOnTaskLaunch="true"
-        android:hardwareAccelerated="true"
-        android:launchMode="singleInstance"
-        android:multiprocess="false"
-        android:theme="@style/AppTheme.NoSplash"
-        android:noHistory="true"
-        android:process="@string/playback_process_name"
-        android:screenOrientation="fullSensor"
-        android:taskAffinity="com.telenav.streetview.PlayerActivity"
-        tools:targetApi="lollipop"
-        />
-  </application>
+            android:value="00000000000000000b0000000000000000000000" />
+        <activity
+            android:name=".activity.PlayerActivity"
+            android:allowTaskReparenting="true"
+            android:autoRemoveFromRecents="true"
+            android:clearTaskOnLaunch="true"
+            android:configChanges="orientation|screenSize"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleInstance"
+            android:multiprocess="false"
+            android:noHistory="true"
+            android:process="@string/playback_process_name"
+            android:screenOrientation="fullSensor"
+            android:taskAffinity="com.telenav.streetview.PlayerActivity"
+            android:theme="@style/AppTheme.NoSplash"
+            tools:targetApi="lollipop" />
+    </application>
 </manifest>

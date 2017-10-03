@@ -1,8 +1,8 @@
 package com.telenav.osv.item.network;
 
+import java.util.ArrayList;
 import com.telenav.osv.item.ImageCoordinate;
 import com.telenav.osv.item.ImageFile;
-import java.util.ArrayList;
 
 /**
  * Class holding payment objects
@@ -10,15 +10,15 @@ import java.util.ArrayList;
  */
 public class PhotoCollection extends ApiResponse {
 
-  private ArrayList<ImageFile> nodes = new ArrayList<>();
+    private ArrayList<ImageFile> nodes = new ArrayList<>();
 
-  private ArrayList<ImageCoordinate> track = new ArrayList<>();
+    private ArrayList<ImageCoordinate> track = new ArrayList<>();
 
-  public ArrayList<ImageFile> getNodes() {
-    return nodes;
-  }
+    public ArrayList<ImageFile> getNodes() {
+        return nodes;
+    }
 
-  public ArrayList<ImageCoordinate> getTrack() {
-    return track;
-  }
+    public ArrayList<ImageCoordinate> getTrack() {
+        return track;
+    }
 }

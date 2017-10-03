@@ -8,14 +8,14 @@ import com.telenav.osv.event.OSVStickyEvent;
  */
 public class AccuracyEvent extends OSVStickyEvent {
 
-  public final int type;
+    public final int type;
 
-  public AccuracyEvent(int type) {
-    this.type = type;
-  }
+    public AccuracyEvent(int type) {
+        this.type = type;
+    }
 
-  @Override
-  public Class getStickyClass() {
-    return AccuracyEvent.class;
-  }
+    @Override
+    public Class getStickyClass() {
+        return AccuracyEvent.class;
+    }
 }

@@ -3,71 +3,70 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white"
-    >
-  <View
-      android:layout_width="match_parent"
-      android:layout_height="1dp"
-      android:background="#f8f8fa"
-      />
-  <TextView
-      android:id="@+id/address_text"
-      style="@style/textStyle"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center_vertical"
-      android:layout_marginTop="12dp"
-      android:adjustViewBounds="true"
-      android:drawablePadding="5dp"
-      android:ellipsize="end"
-      android:gravity="center_vertical"
-      android:maxLines="1"
-      android:paddingLeft="16dp"
-      tools:text="Strada Mihail Emil, Cluj-Napoca"
-      android:textColor="@color/md_grey_900"
-      android:textSize="16sp"
-      />
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_below="@id/address_text"
-      android:layout_marginTop="8dp"
-      android:gravity="center_horizontal"
-      android:weightSum="3"
-      >
+    android:background="@color/white">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#f8f8fa" />
+
     <TextView
-        android:id="@+id/total_images_text"
-        android:layout_width="0dp"
+        android:id="@+id/address_text"
+        style="@style/textStyle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:drawableLeft="@drawable/ic_camera_small_grey"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="12dp"
+        android:adjustViewBounds="true"
+        android:drawablePadding="5dp"
+        android:ellipsize="end"
         android:gravity="center_vertical"
+        android:maxLines="1"
         android:paddingLeft="16dp"
-        tools:text="0 IMG"
-        android:textColor="@color/md_grey_700"
-        android:textSize="14sp"
-        />
-    <TextView
-        android:id="@+id/total_distance_text"
-        android:layout_width="0dp"
+        android:textColor="@color/md_grey_900"
+        android:textSize="16sp"
+        tools:text="Strada Mihail Emil, Cluj-Napoca" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:drawableLeft="@drawable/ic_distance"
-        android:gravity="center_vertical"
-        android:paddingLeft="16dp"
-        tools:text="0 KM"
-        android:textColor="@color/md_grey_700"
-        android:textSize="14sp"
-        />
-    <TextView
-        android:id="@+id/date_time_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:paddingLeft="16dp"
-        tools:text="01.01.16 "
-        android:textColor="@color/md_grey_700"
-        android:textSize="14sp"
-        />
-  </LinearLayout>
+        android:layout_below="@id/address_text"
+        android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
+        android:weightSum="3">
+
+        <TextView
+            android:id="@+id/total_images_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_camera_small_grey"
+            android:gravity="center_vertical"
+            android:paddingLeft="16dp"
+            android:textColor="@color/md_grey_700"
+            android:textSize="14sp"
+            tools:text="0 IMG" />
+
+        <TextView
+            android:id="@+id/total_distance_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_distance"
+            android:gravity="center_vertical"
+            android:paddingLeft="16dp"
+            android:textColor="@color/md_grey_700"
+            android:textSize="14sp"
+            tools:text="0 KM" />
+
+        <TextView
+            android:id="@+id/date_time_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="16dp"
+            android:textColor="@color/md_grey_700"
+            android:textSize="14sp"
+            tools:text="01.01.16 " />
+    </LinearLayout>
 </RelativeLayout>

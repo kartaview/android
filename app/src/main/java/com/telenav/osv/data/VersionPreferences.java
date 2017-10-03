@@ -6,15 +6,15 @@ package com.telenav.osv.data;
  */
 public interface VersionPreferences {
 
-  String getVersionName();
+    String getVersionName();
 
-  void setVersionName(String versionName);
+    void setVersionName(String versionName);
 
-  int getVersionCode();
+    int getVersionCode();
 
-  void setVersionCode(int versionCode);
+    void setVersionCode(int versionCode);
 
-  int getVersionCodeForSdk();
+    int getVersionCodeForSdk();
 
-  void setVersionCodeForSdk(int version);
+    void setVersionCodeForSdk(int version);
 }

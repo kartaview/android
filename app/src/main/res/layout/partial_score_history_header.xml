@@ -4,41 +4,40 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
     android:layout_marginTop="10dp"
-    android:orientation="horizontal"
-    >
-  <TextView
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      android:layout_gravity="start"
-      android:layout_marginLeft="10dp"
-      android:layout_marginRight="10dp"
-      android:fontFamily="sans-serif"
-      android:gravity="center"
-      android:text="@string/score_history_header_pictures_label"
-      android:textColor="@color/white_transparent"
-      />
-  <TextView
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      android:layout_gravity="center"
-      android:layout_marginLeft="10dp"
-      android:layout_marginRight="10dp"
-      android:fontFamily="sans-serif"
-      android:text="@string/score_history_header_multiplier_label"
-      android:textColor="@color/white_transparent"
-      />
-  <TextView
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      android:layout_gravity="end"
-      android:layout_marginLeft="10dp"
-      android:layout_marginRight="10dp"
-      android:fontFamily="sans-serif"
-      android:gravity="center"
-      android:text="@string/score_history_header_points_label"
-      android:textColor="@color/white_transparent"
-      />
+    android:orientation="horizontal">
+
+    <TextView
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="@string/score_history_header_pictures_label"
+        android:textColor="@color/white_transparent" />
+
+    <TextView
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:text="@string/score_history_header_multiplier_label"
+        android:textColor="@color/white_transparent" />
+
+    <TextView
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="@string/score_history_header_points_label"
+        android:textColor="@color/white_transparent" />
 </FrameLayout>

@@ -6,121 +6,119 @@
     android:layout_height="match_parent"
     tools:context=".activity.MainActivity"
     tools:layout_height="match_parent"
-    tools:layout_width="match_parent"
-    >
-  <TextView
-      style="@style/textStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="top|start"
-      android:layout_marginLeft="15dp"
-      android:layout_marginRight="15dp"
-      android:layout_marginTop="15dp"
-      android:tag="top|start"
-      android:text="@string/fast_recording_mode_on"
-      android:textColor="#e16152"
-      android:textSize="25sp"
-      android:textStyle="bold"
-      android:visibility="gone"
-      />
-  <RelativeLayout
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="top|end"
-      android:tag="top|end"
-      >
-    <FrameLayout
-        android:id="@+id/obd_icon_holder"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
-        android:visibility="gone"
-        tools:visibility="visible"
-        >
-      <ImageView
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          app:srcCompat="@drawable/vector_ellipse_green"
-          tools:ignore="ContentDescription"
-          />
-      <LinearLayout
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:orientation="vertical"
-          >
-        <TextView
-            android:id="@+id/obd_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/default_value_0"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            />
-        <TextView
-            android:id="@+id/obd_icon_unit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/partial_kmh_label"
-            android:textSize="12sp"
-            />
-      </LinearLayout>
-    </FrameLayout>
-    <ImageView
-        android:id="@+id/gps_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_margin="5dp"
-        android:layout_toRightOf="@+id/obd_icon_holder"
-        app:srcCompat="@drawable/vector_gps_low"
-        tools:ignore="ContentDescription"
-        />
-  </RelativeLayout>
-  <FrameLayout
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="bottom|end"
-      android:layout_margin="5dp"
-      android:gravity="center"
-      android:minHeight="48dp"
-      android:minWidth="48dp"
-      android:tag="bottom|end"
-      >
-    <com.telenav.osv.ui.custom.ScoreView
-        android:id="@+id/score_text"
+    tools:layout_width="match_parent">
+
+    <TextView
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="top|start"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="15dp"
+        android:tag="top|start"
+        android:text="@string/fast_recording_mode_on"
+        android:textColor="#e16152"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:tag="top|end">
+
+        <FrameLayout
+            android:id="@+id/obd_icon_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/vector_ellipse_green"
+                tools:ignore="ContentDescription" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/obd_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/default_value_0"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/obd_icon_unit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/partial_kmh_label"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/gps_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="5dp"
+            android:layout_toRightOf="@+id/obd_icon_holder"
+            app:srcCompat="@drawable/vector_gps_low"
+            tools:ignore="ContentDescription" />
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="5dp"
         android:gravity="center"
-        android:lines="1"
         android:minHeight="48dp"
         android:minWidth="48dp"
-        android:textStyle="bold"
-        android:visibility="visible"
-        />
-  </FrameLayout>
-  <LinearLayout
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="bottom|start"
-      android:layout_margin="5dp"
-      android:orientation="vertical"
-      android:tag="bottom|start"
-      >
-  </LinearLayout>
-  <ImageView
-      android:layout_width="90dp"
-      android:layout_height="90dp"
-      android:layout_gravity="top|start"
-      android:tag="top|start"
-      android:visibility="gone"
-      tools:ignore="ContentDescription"
-      />
+        android:tag="bottom|end">
+
+        <com.telenav.osv.ui.custom.ScoreView
+            android:id="@+id/score_text"
+            style="@style/textStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:lines="1"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            android:textStyle="bold"
+            android:visibility="visible" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="5dp"
+        android:orientation="vertical"
+        android:tag="bottom|start"></LinearLayout>
+
+    <ImageView
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_gravity="top|start"
+        android:tag="top|start"
+        android:visibility="gone"
+        tools:ignore="ContentDescription" />
 </com.telenav.osv.ui.custom.FixedFrameLayout>

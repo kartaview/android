@@ -3,17 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clickable="true"
-    android:focusable="true"
     android:background="@drawable/splashscreen_background"
-    >
-  <ImageView
-      android:id="@+id/chess_board_background"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:alpha="0.5"
-      android:padding="50dp"
-      android:src="@drawable/ic_osc_logo"
-      tools:ignore="ContentDescription"
-      />
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/chess_board_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.5"
+        android:padding="50dp"
+        android:src="@drawable/ic_osc_logo"
+        tools:ignore="ContentDescription" />
 </FrameLayout>

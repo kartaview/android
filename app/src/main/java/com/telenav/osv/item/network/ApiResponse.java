@@ -6,49 +6,49 @@ package com.telenav.osv.item.network;
  */
 public class ApiResponse {
 
-  private int apiCode = -1;
+    private int apiCode = -1;
 
-  private String apiMessage = "Unknown";
+    private String apiMessage = "Unknown";
 
-  private int httpCode = -1;
+    private int httpCode = -1;
 
-  private String httpMessage = "Unknown";
+    private String httpMessage = "Unknown";
 
-  public int getApiCode() {
-    return apiCode;
-  }
+    @Override
+    public String toString() {
+        return "ApiResponse{" + "apiCode=" + apiCode + ", apiMessage='" + apiMessage + '\'' + ", httpCode=" + httpCode + ", httpMessage='" +
+                httpMessage + '\'' + '}';
+    }
 
-  public void setApiCode(int apiCode) {
-    this.apiCode = apiCode;
-  }
+    public int getApiCode() {
+        return apiCode;
+    }
 
-  public String getApiMessage() {
-    return apiMessage;
-  }
+    public void setApiCode(int apiCode) {
+        this.apiCode = apiCode;
+    }
 
-  public void setApiMessage(String apiMessage) {
-    this.apiMessage = apiMessage;
-  }
+    public String getApiMessage() {
+        return apiMessage;
+    }
 
-  public int getHttpCode() {
-    return httpCode;
-  }
+    public void setApiMessage(String apiMessage) {
+        this.apiMessage = apiMessage;
+    }
 
-  public void setHttpCode(int httpCode) {
-    this.httpCode = httpCode;
-  }
+    public int getHttpCode() {
+        return httpCode;
+    }
 
-  public String getHttpMessage() {
-    return httpMessage;
-  }
+    public void setHttpCode(int httpCode) {
+        this.httpCode = httpCode;
+    }
 
-  public void setHttpMessage(String httpMessage) {
-    this.httpMessage = httpMessage;
-  }
+    public String getHttpMessage() {
+        return httpMessage;
+    }
 
-  @Override
-  public String toString() {
-    return "ApiResponse{" + "apiCode=" + apiCode + ", apiMessage='" + apiMessage + '\'' + ", httpCode=" + httpCode + ", httpMessage='" +
-        httpMessage + '\'' + '}';
-  }
+    public void setHttpMessage(String httpMessage) {
+        this.httpMessage = httpMessage;
+    }
 }

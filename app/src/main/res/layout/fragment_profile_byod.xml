@@ -1,93 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?><!--todo used only in new profile impl.-->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    >
-  <data>
-    <import type="com.telenav.osv.ui.list.LayoutManagers"/>
-    <import type="android.view.View"/>
-    <import type="android.content.Context"/>
-    <variable
-        name="viewModel"
-        type="com.telenav.osv.ui.binding.viewmodel.profile.newimpl.ProfileByodViewModel"
-        />
-  </data>
-  <android.support.design.widget.CoordinatorLayout
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      tools:context=".activity.MainActivity"
-      >
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/profile_appbar"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.telenav.osv.ui.list.LayoutManagers" />
+
+        <import type="android.view.View" />
+
+        <import type="android.content.Context" />
+
+        <variable
+            name="viewModel"
+            type="com.telenav.osv.ui.binding.viewmodel.profile.newimpl.ProfileByodViewModel" />
+    </data>
+
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:stateListAnimator="@animator/appbar_always_elevated"
-        android:background="@color/action_bar_blue"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        tools:expanded="true"
-        tools:targetApi="lollipop"
-        >
-      <android.support.design.widget.CollapsingToolbarLayout
-          android:id="@+id/profile_collapsing_toolbar"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          app:collapsedTitleGravity="start|left"
-          app:expandedTitleGravity="center_horizontal|bottom"
-          app:expandedTitleMarginBottom="@dimen/profile_driver_header_title_margin_bottom"
-          app:expandedTitleTextAppearance="@style/textStyle.actionBarTitleExpanded"
-          app:collapsedTitleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
-          app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
-          >
+        android:layout_height="match_parent"
+        tools:context=".activity.MainActivity">
+
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/profile_appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/action_bar_blue"
+            android:stateListAnimator="@animator/appbar_always_elevated"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            tools:expanded="true"
+            tools:targetApi="lollipop">
+
+            <android.support.design.widget.CollapsingToolbarLayout
+                android:id="@+id/profile_collapsing_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:collapsedTitleGravity="start|left"
+                app:collapsedTitleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
+                app:expandedTitleGravity="center_horizontal|bottom"
+                app:expandedTitleMarginBottom="@dimen/profile_driver_header_title_margin_bottom"
+                app:expandedTitleTextAppearance="@style/textStyle.actionBarTitleExpanded"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+
+                <include
+                    android:id="@+id/profile_header"
+                    layout="@layout/partial_profile_header_byod"
+                    app:viewModel="@{viewModel}" />
+
+                <android.support.v7.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/action_bar_size"
+                    android:background="@null"
+                    app:layout_collapseMode="pin"
+                    app:navigationIcon="@drawable/vector_back_white"
+                    app:title="@{viewModel.name}" />
+            </android.support.design.widget.CollapsingToolbarLayout>
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/profile_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/action_bar_size"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/action_bar_blue"
+                android:visibility="visible"
+                app:layout_collapseMode="pin"
+                app:tabGravity="fill"
+                app:tabIndicatorColor="@color/white"
+                app:tabIndicatorHeight="2dp"
+                app:tabMaxWidth="0dp"
+                app:tabMode="fixed"
+                app:tabSelectedTextColor="@color/white"
+                app:tabTextAppearance="@style/textStyle.actionBarTabItem"
+                app:tabTextColor="@color/white_transparent"
+                tools:visibility="visible">
+
+                <android.support.design.widget.TabItem
+                    android:id="@+id/profile_tab_tracks"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/profile_byod_tab_uploaded_tracks" />
+
+                <android.support.design.widget.TabItem
+                    android:id="@+id/profile_tab_payments"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/profile_byod_tab_payments" />
+            </android.support.design.widget.TabLayout>
+        </android.support.design.widget.AppBarLayout>
+
         <include
-            android:id="@+id/profile_header"
-            layout="@layout/partial_profile_header_byod"
-            app:viewModel="@{viewModel}"
-            />
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/action_bar_size"
-            android:background="@null"
-            app:navigationIcon="@drawable/vector_back_white"
-            app:title="@{viewModel.name}"
-            app:layout_collapseMode="pin"
-            />
-      </android.support.design.widget.CollapsingToolbarLayout>
-      <android.support.design.widget.TabLayout
-          android:id="@+id/profile_tabs"
-          android:layout_width="match_parent"
-          android:layout_height="@dimen/action_bar_size"
-          android:background="@color/action_bar_blue"
-          android:layout_gravity="center_horizontal"
-          android:visibility="visible"
-          tools:visibility="visible"
-          app:layout_collapseMode="pin"
-          app:tabIndicatorColor="@color/white"
-          app:tabMode="fixed"
-          app:tabGravity="fill"
-          app:tabMaxWidth="0dp"
-          app:tabTextAppearance="@style/textStyle.actionBarTabItem"
-          app:tabTextColor="@color/white_transparent"
-          app:tabSelectedTextColor="@color/white"
-          app:tabIndicatorHeight="2dp"
-          >
-        <android.support.design.widget.TabItem
-            android:id="@+id/profile_tab_tracks"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/profile_byod_tab_uploaded_tracks"
-            />
-        <android.support.design.widget.TabItem
-            android:id="@+id/profile_tab_payments"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/profile_byod_tab_payments"
-            />
-      </android.support.design.widget.TabLayout>
-    </android.support.design.widget.AppBarLayout>
-    <include
-        layout="@layout/partial_track_list"
-        app:viewModel="@{viewModel}"
-        />
-  </android.support.design.widget.CoordinatorLayout>
+            layout="@layout/partial_track_list"
+            app:viewModel="@{viewModel}" />
+    </android.support.design.widget.CoordinatorLayout>
 </layout>

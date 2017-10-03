@@ -8,5 +8,5 @@ import android.location.Location;
  */
 public interface ImageReadyCallback {
 
-  void onPictureTaken(final byte[] jpegData, long timestamp, int sequenceId, String folderPath, Location location);
+    void onPictureTaken(final byte[] jpegData, long timestamp, int sequenceId, String folderPath, Location location);
 }

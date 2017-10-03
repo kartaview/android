@@ -8,74 +8,74 @@ import android.text.SpannableString;
  */
 public class StatsData {
 
-  private SpannableString distance;
+    private SpannableString distance;
 
-  private SpannableString acceptedDistance;
+    private SpannableString acceptedDistance;
 
-  private SpannableString rejectedDistance;
+    private SpannableString rejectedDistance;
 
-  private SpannableString obdDistance;
+    private SpannableString obdDistance;
 
-  private SpannableString totalPhotos;
+    private SpannableString totalPhotos;
 
-  private SpannableString totalTracks;
+    private SpannableString totalTracks;
 
-  public SpannableString getDistance() {
-    return distance;
-  }
+    @Override
+    public String toString() {
+        return "TrackCollectionStats{" +
+                "acceptedDistance=" + acceptedDistance +
+                ", rejectedDistance=" + rejectedDistance +
+                ", obdDistance=" + obdDistance +
+                ", totalPhotos=" + totalPhotos +
+                ", totalTracks=" + totalTracks +
+                '}';
+    }
 
-  public void setDistance(SpannableString distance) {
-    this.distance = distance;
-  }
+    public SpannableString getDistance() {
+        return distance;
+    }
 
-  public SpannableString getAcceptedDistance() {
-    return acceptedDistance;
-  }
+    public void setDistance(SpannableString distance) {
+        this.distance = distance;
+    }
 
-  public void setAcceptedDistance(SpannableString acceptedDistance) {
-    this.acceptedDistance = acceptedDistance;
-  }
+    public SpannableString getAcceptedDistance() {
+        return acceptedDistance;
+    }
 
-  public SpannableString getRejectedDistance() {
-    return rejectedDistance;
-  }
+    public void setAcceptedDistance(SpannableString acceptedDistance) {
+        this.acceptedDistance = acceptedDistance;
+    }
 
-  public void setRejectedDistance(SpannableString rejectedDistance) {
-    this.rejectedDistance = rejectedDistance;
-  }
+    public SpannableString getRejectedDistance() {
+        return rejectedDistance;
+    }
 
-  public SpannableString getObdDistance() {
-    return obdDistance;
-  }
+    public void setRejectedDistance(SpannableString rejectedDistance) {
+        this.rejectedDistance = rejectedDistance;
+    }
 
-  public void setObdDistance(SpannableString obdDistance) {
-    this.obdDistance = obdDistance;
-  }
+    public SpannableString getObdDistance() {
+        return obdDistance;
+    }
 
-  public SpannableString getTotalPhotos() {
-    return totalPhotos;
-  }
+    public void setObdDistance(SpannableString obdDistance) {
+        this.obdDistance = obdDistance;
+    }
 
-  public void setTotalPhotos(SpannableString totalPhotos) {
-    this.totalPhotos = totalPhotos;
-  }
+    public SpannableString getTotalPhotos() {
+        return totalPhotos;
+    }
 
-  public SpannableString getTotalTracks() {
-    return totalTracks;
-  }
+    public void setTotalPhotos(SpannableString totalPhotos) {
+        this.totalPhotos = totalPhotos;
+    }
 
-  public void setTotalTracks(SpannableString totalTracks) {
-    this.totalTracks = totalTracks;
-  }
+    public SpannableString getTotalTracks() {
+        return totalTracks;
+    }
 
-  @Override
-  public String toString() {
-    return "TrackCollectionStats{" +
-        "acceptedDistance=" + acceptedDistance +
-        ", rejectedDistance=" + rejectedDistance +
-        ", obdDistance=" + obdDistance +
-        ", totalPhotos=" + totalPhotos +
-        ", totalTracks=" + totalTracks +
-        '}';
-  }
+    public void setTotalTracks(SpannableString totalTracks) {
+        this.totalTracks = totalTracks;
+    }
 }

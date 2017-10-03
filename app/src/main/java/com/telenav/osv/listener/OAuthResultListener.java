@@ -5,5 +5,5 @@ package com.telenav.osv.listener;
  */
 public interface OAuthResultListener {
 
-  void onResult(String url);
+    void onResult(String url);
 }

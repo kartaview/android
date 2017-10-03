@@ -10,16 +10,16 @@ import android.view.ViewGroup;
  */
 public class BindingRecyclerAdapter<T> extends me.tatarka.bindingcollectionadapter2.BindingRecyclerViewAdapter<T> {
 
-  public static final String TAG = "BindingRecyclerAdapter";
+    public static final String TAG = "BindingRecyclerAdapter";
 
-  @Override
-  public ViewDataBinding onCreateBinding(LayoutInflater inflater, @LayoutRes int layoutId, ViewGroup viewGroup) {
-    ViewDataBinding binding = super.onCreateBinding(inflater, layoutId, viewGroup);
-    return binding;
-  }
+    @Override
+    public ViewDataBinding onCreateBinding(LayoutInflater inflater, @LayoutRes int layoutId, ViewGroup viewGroup) {
+        ViewDataBinding binding = super.onCreateBinding(inflater, layoutId, viewGroup);
+        return binding;
+    }
 
-  @Override
-  public void onBindBinding(ViewDataBinding binding, int variableId, @LayoutRes int layoutRes, int position, T item) {
-    super.onBindBinding(binding, variableId, layoutRes, position, item);
-  }
+    @Override
+    public void onBindBinding(ViewDataBinding binding, int variableId, @LayoutRes int layoutRes, int position, T item) {
+        super.onBindBinding(binding, variableId, layoutRes, position, item);
+    }
 }

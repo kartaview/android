@@ -2,31 +2,30 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
-  <android.support.v7.widget.RecyclerView
-      android:id="@+id/local_list"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_marginBottom="56dp"
-      android:layout_marginTop="@dimen/action_bar_size"
-      android:background="@color/background_material_light_1"
-      android:divider="@drawable/custom_list_divider"
-      android:fadeScrollbars="true"
-      android:overScrollFooter="@android:color/transparent"
-      android:scrollbars="vertical"
-      tools:listitem="@layout/item_local_sequence"
-      />
-  <Button
-      android:id="@+id/upload_button"
-      android:layout_width="match_parent"
-      android:layout_height="56dp"
-      android:layout_gravity="bottom"
-      android:background="@color/hint_purple"
-      android:gravity="center"
-      android:orientation="horizontal"
-      android:text="@string/upload_all_label"
-      android:textColor="@color/white"
-      android:textSize="18sp"
-      />
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/local_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="56dp"
+        android:layout_marginTop="@dimen/action_bar_size"
+        android:background="@color/background_material_light_1"
+        android:divider="@drawable/custom_list_divider"
+        android:fadeScrollbars="true"
+        android:overScrollFooter="@android:color/transparent"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/item_local_sequence" />
+
+    <Button
+        android:id="@+id/upload_button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:background="@color/hint_purple"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:text="@string/upload_all_label"
+        android:textColor="@color/white"
+        android:textSize="18sp" />
 </FrameLayout>

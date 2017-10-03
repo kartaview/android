@@ -10,8 +10,8 @@ import com.telenav.osv.http.VideoRequest;
  */
 public class UploadRequestFilter implements RequestQueue.RequestFilter {
 
-  @Override
-  public boolean apply(Request<?> request) {
-    return request instanceof VideoRequest || request instanceof PhotoRequest;
-  }
+    @Override
+    public boolean apply(Request<?> request) {
+        return request instanceof VideoRequest || request instanceof PhotoRequest;
+    }
 }

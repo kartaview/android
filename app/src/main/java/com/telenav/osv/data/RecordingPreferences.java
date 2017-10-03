@@ -1,9 +1,9 @@
 package com.telenav.osv.data;
 
+import java.util.List;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import com.telenav.osv.utils.Size;
-import java.util.List;
 
 /**
  * Class for handling preferences easily
@@ -11,37 +11,37 @@ import java.util.List;
  */
 public interface RecordingPreferences {
 
-  LiveData<Size> getResolutionLive();
+    LiveData<Size> getResolutionLive();
 
-  Size getResolution();
+    Size getResolution();
 
-  void setResolution(Size resolution);
+    void setResolution(Size resolution);
 
-  LiveData<Size> getPreviewResolutionLive();
+    LiveData<Size> getPreviewResolutionLive();
 
-  Size getPreviewResolution();
+    Size getPreviewResolution();
 
-  void setPreviewResolution(Size resolution);
+    void setPreviewResolution(Size resolution);
 
-  MutableLiveData<Boolean> getSafeModeLive();
+    MutableLiveData<Boolean> getSafeModeLive();
 
-  boolean isSafeMode();
+    boolean isSafeMode();
 
-  void setSafeMode(boolean value);
+    void setSafeMode(boolean value);
 
-  MutableLiveData<Boolean> getStaticFocusLive();
+    MutableLiveData<Boolean> getStaticFocusLive();
 
-  boolean isStaticFocus();
+    boolean isStaticFocus();
 
-  void setStaticFocus(boolean value);
+    void setStaticFocus(boolean value);
 
-  MutableLiveData<Boolean> getNewCameraApiLive();
+    MutableLiveData<Boolean> getNewCameraApiLive();
 
-  boolean isNewCameraApi();
+    boolean isNewCameraApi();
 
-  void setNewCameraApi(boolean value);
+    void setNewCameraApi(boolean value);
 
-  void setSupportedResolutions(List<Size> list);
+    List<Size> getSupportedResolutions();
 
-  List<Size> getSupportedResolutions();
+    void setSupportedResolutions(List<Size> list);
 }

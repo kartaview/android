@@ -7,10 +7,10 @@ import com.skobbler.ngx.SKCoordinate;
  */
 public class ImageCoordinate extends SKCoordinate {
 
-  public int index = 0;
+    public int index = 0;
 
-  public ImageCoordinate(double v, double v1, int index) {
-    super(v, v1);
-    this.index = index;
-  }
+    public ImageCoordinate(double v, double v1, int index) {
+        super(v, v1);
+        this.index = index;
+    }
 }

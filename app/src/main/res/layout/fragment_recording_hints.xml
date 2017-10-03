@@ -3,44 +3,43 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
-  <android.support.v4.view.ViewPager
-      android:id="@+id/hint_pager"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_centerHorizontal="true"
-      android:layout_gravity="center"
-      android:gravity="center"
-      android:orientation="vertical"
-      android:overScrollMode="never"
-      tools:listitem="@layout/item_hint_text"
-      />
-  <ImageView
-      android:id="@+id/close_button"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:layout_alignParentEnd="true"
-      android:layout_alignParentRight="true"
-      android:layout_alignParentTop="true"
-      android:layout_margin="15dp"
-      android:clickable="true"
-      android:scaleType="center"
-      app:srcCompat="@drawable/vector_close_white"
-      tools:ignore="ContentDescription"
-      />
-  <com.matthewtamlin.dotindicator.DotIndicator
-      android:id="@+id/hint_indicator"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_alignParentBottom="true"
-      android:layout_centerHorizontal="true"
-      android:layout_gravity="center|bottom"
-      android:gravity="center"
-      android:paddingBottom="5dp"
-      app:selectedDotColor="@color/md_grey_200"
-      app:selectedDotIndex="0"
-      app:unselectedDotColor="@color/md_grey_200"
-      tools:visibility="visible"
-      />
+    android:layout_height="match_parent">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/hint_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:overScrollMode="never"
+        tools:listitem="@layout/item_hint_text" />
+
+    <ImageView
+        android:id="@+id/close_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="15dp"
+        android:clickable="true"
+        android:scaleType="center"
+        app:srcCompat="@drawable/vector_close_white"
+        tools:ignore="ContentDescription" />
+
+    <com.matthewtamlin.dotindicator.DotIndicator
+        android:id="@+id/hint_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center|bottom"
+        android:gravity="center"
+        android:paddingBottom="5dp"
+        app:selectedDotColor="@color/md_grey_200"
+        app:selectedDotIndex="0"
+        app:unselectedDotColor="@color/md_grey_200"
+        tools:visibility="visible" />
 </RelativeLayout>

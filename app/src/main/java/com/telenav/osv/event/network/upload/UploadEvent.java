@@ -8,8 +8,8 @@ import com.telenav.osv.event.OSVStickyEvent;
 
 public abstract class UploadEvent extends OSVStickyEvent {
 
-  @Override
-  public Class getStickyClass() {
-    return UploadEvent.class;
-  }
+    @Override
+    public Class getStickyClass() {
+        return UploadEvent.class;
+    }
 }

@@ -13,37 +13,37 @@ import com.telenav.osv.utils.Utils;
  */
 public class PaymentItemViewModel extends BaseObservable {
 
-  private final ValueFormatter valueFormatter;
+    private final ValueFormatter valueFormatter;
 
-  private Payment payment;
+    private Payment payment;
 
-  public PaymentItemViewModel(ValueFormatter valueFormatter) {
-    this.valueFormatter = valueFormatter;
-  }
+    public PaymentItemViewModel(ValueFormatter valueFormatter) {
+        this.valueFormatter = valueFormatter;
+    }
 
-  public void setPayment(Payment payment) {
-    this.payment = payment;
-    notifyChange();
-  }
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+        notifyChange();
+    }
 
-  @SuppressLint("DefaultLocale")
-  @Bindable
-  public String getPaymentId() {
-    return String.format("%03d", payment.getId());
-  }
+    @SuppressLint("DefaultLocale")
+    @Bindable
+    public String getPaymentId() {
+        return String.format("%03d", payment.getId());
+    }
 
-  @Bindable
-  public String getPaymentDistance() {
-    return valueFormatter.formatDistanceFromKiloMeters(payment.getDistance())[0];
-  }
+    @Bindable
+    public String getPaymentDistance() {
+        return valueFormatter.formatDistanceFromKiloMeters(payment.getDistance())[0];
+    }
 
-  @Bindable
-  public String getPaymentValue() {
-    return valueFormatter.formatMoney(payment.getValue());
-  }
+    @Bindable
+    public String getPaymentValue() {
+        return valueFormatter.formatMoney(payment.getValue());
+    }
 
-  @Bindable
-  public String getPaymentDate() {
-    return Utils.numericPaymentDateFormat.format(payment.getDate());
-  }
+    @Bindable
+    public String getPaymentDate() {
+        return Utils.numericPaymentDateFormat.format(payment.getDate());
+    }
 }

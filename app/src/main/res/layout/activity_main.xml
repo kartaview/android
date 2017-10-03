@@ -4,147 +4,145 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
-  <!--tools:openDrawer="start"-->
-  <!--&gt;-->
-  <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto"
-      xmlns:tools="http://schemas.android.com/tools"
-      android:id="@+id/main"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      >
-    <FrameLayout
+    android:layout_height="match_parent">
+    <!--tools:openDrawer="start"-->
+    <!--&gt;-->
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
-      <FrameLayout
-          android:id="@+id/content_frame_camera"
-          android:layout_width="match_parent"
-          android:layout_height="500dp"
-          android:tag="bottom|start"
-          />
-      <FrameLayout
-          android:id="@+id/content_frame_controls"
-          android:layout_width="match_parent"
-          android:layout_height="200dp"
-          tools:visibility="visible"
-          />
-      <FrameLayout
-          android:id="@+id/content_frame_map"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:clipChildren="false"
-          />
-      <FrameLayout
-          android:id="@+id/content_frame_large"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          tools:visibility="visible"
-          />
-    </FrameLayout>
-    <include
-        android:id="@+id/recording_feedback_layout"
-        layout="@layout/partial_recording_info_layer"
-        android:visibility="gone"
-        tools:visibility="visible"
-        />
-    <ProgressBar
-        android:id="@+id/progressbar"
-        style="@style/Base.Widget.AppCompat.ProgressBar"
-        android:layout_width="65dp"
-        android:layout_height="65dp"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        tools:visibility="visible"
-        />
-    <LinearLayout
-        android:id="@+id/record_hint_layout_landscape"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|left"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="invisible"
-        tools:ignore="UseCompoundDrawables"
-        >
-      <TextView
-          style="@style/textStyle"
-          android:layout_width="wrap_content"
-          android:layout_height="36dp"
-          android:background="@drawable/custom_bg_white_rounded_hint"
-          android:fontFamily="sans-serif"
-          android:gravity="center"
-          android:paddingEnd="30dp"
-          android:paddingLeft="30dp"
-          android:paddingRight="30dp"
-          android:paddingStart="30dp"
-          android:text="@string/tap_to_start_recording_hint"
-          android:textColor="@color/darker_grey"
-          />
-      <ImageView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          app:srcCompat="@drawable/vector_triangle_ls"
-          tools:ignore="ContentDescription"
-          />
-    </LinearLayout>
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/transparent"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:visibility="visible"
-        app:elevation="8dp"
-        tools:visibility="visible"
-        >
-      <com.telenav.osv.ui.custom.AppToolbar
-          android:id="@+id/app_toolbar"
-          android:layout_width="match_parent"
-          android:layout_height="@dimen/action_bar_size"
-          app:titleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
-          android:clickable="true"
-          android:focusable="true"
-          tools:title="OSC"
-          tools:visibility="visible"
-          tools:background="@color/profile_header_blue_text"
-          >
-        <TextView
-            android:id="@+id/signature_action_bar_text"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <FrameLayout
+                android:id="@+id/content_frame_camera"
+                android:layout_width="match_parent"
+                android:layout_height="500dp"
+                android:tag="bottom|start" />
+
+            <FrameLayout
+                android:id="@+id/content_frame_controls"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                tools:visibility="visible" />
+
+            <FrameLayout
+                android:id="@+id/content_frame_map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipChildren="false" />
+
+            <FrameLayout
+                android:id="@+id/content_frame_large"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:visibility="visible" />
+        </FrameLayout>
+
+        <include
+            android:id="@+id/recording_feedback_layout"
+            layout="@layout/partial_recording_info_layer"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            style="@style/Base.Widget.AppCompat.ProgressBar"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <LinearLayout
+            android:id="@+id/record_hint_layout_landscape"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginRight="15dp"
-            android:gravity="end"
-            tools:text="0"
-            android:textColor="#B7BAC5"
-            android:textSize="22sp"
-            android:visibility="gone"
-            />
-        <ImageView
-            android:id="@+id/issue_report_send_button"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="end"
-            android:layout_marginRight="15dp"
-            android:gravity="end"
-            android:visibility="gone"
-            app:srcCompat="@drawable/vector_send_report"
-            tools:ignore="ContentDescription"
-            tools:visibility="visible"
-            />
-      </com.telenav.osv.ui.custom.AppToolbar>
-    </android.support.design.widget.AppBarLayout>
-  </FrameLayout>
-  <android.support.design.widget.NavigationView
-      android:id="@+id/navigation_view"
-      android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      android:layout_gravity="start"
-      android:background="@color/darker_grey"
-      app:headerLayout="@layout/partial_drawer_header"
-      app:menu="@menu/menu_navigation"
-      />
+            android:layout_gravity="center_vertical|left"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="invisible"
+            tools:ignore="UseCompoundDrawables">
+
+            <TextView
+                style="@style/textStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:background="@drawable/custom_bg_white_rounded_hint"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:paddingEnd="30dp"
+                android:paddingLeft="30dp"
+                android:paddingRight="30dp"
+                android:paddingStart="30dp"
+                android:text="@string/tap_to_start_recording_hint"
+                android:textColor="@color/darker_grey" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/vector_triangle_ls"
+                tools:ignore="ContentDescription" />
+        </LinearLayout>
+
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            android:visibility="visible"
+            app:elevation="8dp"
+            tools:visibility="visible">
+
+            <com.telenav.osv.ui.custom.AppToolbar
+                android:id="@+id/app_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/action_bar_size"
+                android:clickable="true"
+                android:focusable="true"
+                app:titleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
+                tools:background="@color/profile_header_blue_text"
+                tools:title="OSC"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/signature_action_bar_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginRight="15dp"
+                    android:gravity="end"
+                    android:textColor="#B7BAC5"
+                    android:textSize="22sp"
+                    android:visibility="gone"
+                    tools:text="0" />
+
+                <ImageView
+                    android:id="@+id/issue_report_send_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="end"
+                    android:layout_marginRight="15dp"
+                    android:gravity="end"
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/vector_send_report"
+                    tools:ignore="ContentDescription"
+                    tools:visibility="visible" />
+            </com.telenav.osv.ui.custom.AppToolbar>
+        </android.support.design.widget.AppBarLayout>
+    </FrameLayout>
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/darker_grey"
+        app:headerLayout="@layout/partial_drawer_header"
+        app:menu="@menu/menu_navigation" />
 </com.telenav.osv.ui.custom.CustomDrawerLayout>

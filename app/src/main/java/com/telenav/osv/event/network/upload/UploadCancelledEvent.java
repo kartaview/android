@@ -5,12 +5,12 @@ package com.telenav.osv.event.network.upload;
  */
 public class UploadCancelledEvent extends UploadEvent {
 
-  private long total;
+    private long total;
 
-  private long remaining;
+    private long remaining;
 
-  public UploadCancelledEvent(long total, long remaining) {
-    this.total = total;
-    this.remaining = remaining;
-  }
+    public UploadCancelledEvent(long total, long remaining) {
+        this.total = total;
+        this.remaining = remaining;
+    }
 }

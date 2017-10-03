@@ -5,18 +5,18 @@ package com.telenav.osv.item;
  */
 public class ScoreHistory {
 
-  public int coverage;
+    public int coverage;
 
-  public int photoCount;
+    public int photoCount;
 
-  public int obdPhotoCount;
+    public int obdPhotoCount;
 
-  public int detectedSigns;
+    public int detectedSigns;
 
-  public ScoreHistory(int coverage, int photoCount, int obdPhotoCount) {
-    this.coverage = coverage;
-    this.photoCount = photoCount;
-    this.obdPhotoCount = obdPhotoCount;
-    this.detectedSigns = 0;
-  }
+    public ScoreHistory(int coverage, int photoCount, int obdPhotoCount) {
+        this.coverage = coverage;
+        this.photoCount = photoCount;
+        this.obdPhotoCount = obdPhotoCount;
+        this.detectedSigns = 0;
+    }
 }

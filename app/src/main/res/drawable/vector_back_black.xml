@@ -4,26 +4,22 @@
     android:width="24dp"
     android:height="24dp"
     android:viewportHeight="24"
-    android:viewportWidth="24"
-    >
-  <group
-      android:name="Icons"
-      android:translateX="-84.000000"
-      android:translateY="-25.000000"
-      >
+    android:viewportWidth="24">
     <group
-        android:name="back"
-        android:translateX="84.000000"
-        android:translateY="25.000000"
-        >
-      <path
-          android:name="Shape"
-          android:fillColor="#1B1B1F"
-          android:fillType="evenOdd"
-          android:pathData="M 20 11 L 7.83 11 L 13.42 5.41 L 12 4 L 4 12 L 12 20 L 13.41 18.59 L 7.83 13 L 20 13 Z"
-          android:strokeWidth="1"
-          tools:targetApi="n"
-          />
+        android:name="Icons"
+        android:translateX="-84.000000"
+        android:translateY="-25.000000">
+        <group
+            android:name="back"
+            android:translateX="84.000000"
+            android:translateY="25.000000">
+            <path
+                android:name="Shape"
+                android:fillColor="#1B1B1F"
+                android:fillType="evenOdd"
+                android:pathData="M 20 11 L 7.83 11 L 13.42 5.41 L 12 4 L 4 12 L 12 20 L 13.41 18.59 L 7.83 13 L 20 13 Z"
+                android:strokeWidth="1"
+                tools:targetApi="n" />
+        </group>
     </group>
-  </group>
 </vector>

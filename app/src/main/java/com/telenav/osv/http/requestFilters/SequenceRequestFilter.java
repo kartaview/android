@@ -9,8 +9,8 @@ import com.telenav.osv.http.SequenceRequest;
  */
 public class SequenceRequestFilter implements RequestQueue.RequestFilter {
 
-  @Override
-  public boolean apply(Request<?> request) {
-    return request instanceof SequenceRequest;
-  }
+    @Override
+    public boolean apply(Request<?> request) {
+        return request instanceof SequenceRequest;
+    }
 }

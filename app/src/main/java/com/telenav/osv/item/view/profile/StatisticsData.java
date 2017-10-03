@@ -6,74 +6,74 @@ package com.telenav.osv.item.view.profile;
  */
 public class StatisticsData {
 
-  private double distance;
+    private double distance;
 
-  private double acceptedDistance;
+    private double acceptedDistance;
 
-  private double rejectedDistance;
+    private double rejectedDistance;
 
-  private double obdDistance;
+    private double obdDistance;
 
-  private int totalPhotos;
+    private int totalPhotos;
 
-  private int totalTracks;
+    private int totalTracks;
 
-  public double getDistance() {
-    return distance;
-  }
+    @Override
+    public String toString() {
+        return "TrackCollectionStats{" +
+                "acceptedDistance=" + acceptedDistance +
+                ", rejectedDistance=" + rejectedDistance +
+                ", obdDistance=" + obdDistance +
+                ", totalPhotos=" + totalPhotos +
+                ", totalTracks=" + totalTracks +
+                '}';
+    }
 
-  public void setDistance(double distance) {
-    this.distance = distance;
-  }
+    public double getDistance() {
+        return distance;
+    }
 
-  public double getAcceptedDistance() {
-    return acceptedDistance;
-  }
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
 
-  public void setAcceptedDistance(double acceptedDistance) {
-    this.acceptedDistance = acceptedDistance;
-  }
+    public double getAcceptedDistance() {
+        return acceptedDistance;
+    }
 
-  public double getRejectedDistance() {
-    return rejectedDistance;
-  }
+    public void setAcceptedDistance(double acceptedDistance) {
+        this.acceptedDistance = acceptedDistance;
+    }
 
-  public void setRejectedDistance(double rejectedDistance) {
-    this.rejectedDistance = rejectedDistance;
-  }
+    public double getRejectedDistance() {
+        return rejectedDistance;
+    }
 
-  public double getObdDistance() {
-    return obdDistance;
-  }
+    public void setRejectedDistance(double rejectedDistance) {
+        this.rejectedDistance = rejectedDistance;
+    }
 
-  public void setObdDistance(double obdDistance) {
-    this.obdDistance = obdDistance;
-  }
+    public double getObdDistance() {
+        return obdDistance;
+    }
 
-  public int getTotalPhotos() {
-    return totalPhotos;
-  }
+    public void setObdDistance(double obdDistance) {
+        this.obdDistance = obdDistance;
+    }
 
-  public void setTotalPhotos(int totalPhotos) {
-    this.totalPhotos = totalPhotos;
-  }
+    public int getTotalPhotos() {
+        return totalPhotos;
+    }
 
-  public int getTotalTracks() {
-    return totalTracks;
-  }
+    public void setTotalPhotos(int totalPhotos) {
+        this.totalPhotos = totalPhotos;
+    }
 
-  public void setTotalTracks(int totalTracks) {
-    this.totalTracks = totalTracks;
-  }
+    public int getTotalTracks() {
+        return totalTracks;
+    }
 
-  @Override
-  public String toString() {
-    return "TrackCollectionStats{" +
-        "acceptedDistance=" + acceptedDistance +
-        ", rejectedDistance=" + rejectedDistance +
-        ", obdDistance=" + obdDistance +
-        ", totalPhotos=" + totalPhotos +
-        ", totalTracks=" + totalTracks +
-        '}';
-  }
+    public void setTotalTracks(int totalTracks) {
+        this.totalTracks = totalTracks;
+    }
 }

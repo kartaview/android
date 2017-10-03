@@ -1,13 +1,5 @@
 package com.telenav.osv.http;
 
-import android.os.Handler;
-import com.android.volley.AuthFailureError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.StringRequest;
-import com.telenav.osv.item.OSVFile;
-import com.telenav.osv.listener.network.GenericResponseListener;
-import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Utils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -18,118 +10,126 @@ import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import android.os.Handler;
+import com.android.volley.AuthFailureError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.item.OSVFile;
+import com.telenav.osv.listener.network.GenericResponseListener;
+import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.Utils;
 
 /**
  * Created by Kalman on 10/6/2015.
  */
 public class PhotoRequest<T> extends StringRequest {
 
-  private static final String FILE_PART_NAME = "photo";
+    private static final String FILE_PART_NAME = "photo";
 
-  private static final String TAG = "PhotoRequest";
+    private static final String TAG = "PhotoRequest";
 
-  private static final String PARAM_TOKEN = "access_token";
+    private static final String PARAM_TOKEN = "access_token";
 
-  private final int mSequenceId;
+    private final int mSequenceId;
 
-  private final int mSequenceIndex;
+    private final int mSequenceIndex;
 
-  private final GenericResponseListener mListener;
+    private final GenericResponseListener mListener;
 
-  private final OSVFile mImageFile;
+    private final OSVFile mImageFile;
 
-  private final double mLat;
+    private final double mLat;
 
-  private final double mLon;
+    private final double mLon;
 
-  private final String mToken;
+    private final String mToken;
 
-  protected Map<String, String> headers;
+    protected Map<String, String> headers;
 
-  private MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
+    private MultipartEntityBuilder mBuilder = MultipartEntityBuilder.create();
 
-  private float mAccuracy;
+    private float mAccuracy;
 
-  private ProgressiveEntity mProgressiveEntity;
+    private ProgressiveEntity mProgressiveEntity;
 
-  private ProgressiveEntity.DataProgressListener mDataProgressListener;
+    private ProgressiveEntity.DataProgressListener mDataProgressListener;
 
-  private Handler mResponseHandler;
+    private Handler mResponseHandler;
 
-  public PhotoRequest(String url, GenericResponseListener listener, ProgressiveEntity.DataProgressListener dataProgressListener,
-                      String token, OSVFile imageFile, int sequenceID, int sequenceIndex, double lat, double lon, float accuracy,
-                      Handler responseHandler) {
-    super(Method.POST, url, listener, listener);
+    public PhotoRequest(String url, GenericResponseListener listener, ProgressiveEntity.DataProgressListener dataProgressListener,
+                        String token, OSVFile imageFile, int sequenceID, int sequenceIndex, double lat, double lon, float accuracy,
+                        Handler responseHandler) {
+        super(Method.POST, url, listener, listener);
 
-    mListener = listener;
-    mImageFile = imageFile;
-    mSequenceId = sequenceID;
-    mSequenceIndex = sequenceIndex;
-    mLat = lat;
-    mLon = lon;
-    mAccuracy = accuracy;
+        mListener = listener;
+        mImageFile = imageFile;
+        mSequenceId = sequenceID;
+        mSequenceIndex = sequenceIndex;
+        mLat = lat;
+        mLon = lon;
+        mAccuracy = accuracy;
 
-    mToken = token;
-    mDataProgressListener = dataProgressListener;
-    mResponseHandler = responseHandler;
-    buildMultipartEntity();
-  }
-
-  @Override
-  public Map<String, String> getHeaders() throws AuthFailureError {
-    Map<String, String> headers = super.getHeaders();
-
-    if (headers == null || headers.equals(Collections.emptyMap())) {
-      headers = new HashMap<>();
+        mToken = token;
+        mDataProgressListener = dataProgressListener;
+        mResponseHandler = responseHandler;
+        buildMultipartEntity();
     }
 
-    headers.put("Accept", "application/json");
+    @Override
+    public Map<String, String> getHeaders() throws AuthFailureError {
+        Map<String, String> headers = super.getHeaders();
 
-    return headers;
-  }
+        if (headers == null || headers.equals(Collections.emptyMap())) {
+            headers = new HashMap<>();
+        }
 
-  @Override
-  public String getBodyContentType() {
-    return mProgressiveEntity.getContentType().getValue();
-  }
+        headers.put("Accept", "application/json");
 
-  @Override
-  public byte[] getBody() throws AuthFailureError {//todo this should not be called, but lets leave it to be sure
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    try {
-      mProgressiveEntity.writeTo(bos);
-    } catch (IOException e) {
-      VolleyLog.e("IOException writing to ByteArrayOutputStream bos, building the multipart request.");
+        return headers;
     }
 
-    return bos.toByteArray();
-  }
-
-  @Override
-  public HttpEntity getMultipartEntity() {
-    return mProgressiveEntity;
-  }
-
-  private void buildMultipartEntity() {
-    mBuilder.addTextBody(PARAM_TOKEN, mToken);
-    mBuilder.addTextBody("coordinate", mLat + "," + mLon);
-    mBuilder.addTextBody("sequenceId", "" + mSequenceId);
-    mBuilder.addTextBody("sequenceIndex", "" + mSequenceIndex);
-    mBuilder.addTextBody("gpsAccuracy", "" + mAccuracy);
-    if (!mImageFile.exists()) {
-      Log.d(TAG, "buildMultipartEntity: image doesn't exist");
+    @Override
+    public String getBodyContentType() {
+        return mProgressiveEntity.getContentType().getValue();
     }
-    mBuilder.addBinaryBody(FILE_PART_NAME, mImageFile, ContentType.create("image/jpeg"), mImageFile.getName());
-    Log.d(TAG, "buildMultipartEntity: sending request: " + " " + PARAM_TOKEN + " " + mToken + " coordinate " + mLat + "," + mLon +
-        " sequenceId " + mSequenceId + " sequenceIndex " + mSequenceIndex + " gpsAccuracy " + mAccuracy);
-    mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-    mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
-    HttpEntity mEntity = mBuilder.build();
-    mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener, Utils.fileSize(mImageFile), mResponseHandler);
-  }
 
-  @Override
-  protected void deliverResponse(String response) {
-    mListener.onResponse(response);
-  }
+    @Override
+    public byte[] getBody() throws AuthFailureError {//todo this should not be called, but lets leave it to be sure
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            mProgressiveEntity.writeTo(bos);
+        } catch (IOException e) {
+            VolleyLog.e("IOException writing to ByteArrayOutputStream bos, building the multipart request.");
+        }
+
+        return bos.toByteArray();
+    }
+
+    @Override
+    public HttpEntity getMultipartEntity() {
+        return mProgressiveEntity;
+    }
+
+    @Override
+    protected void deliverResponse(String response) {
+        mListener.onResponse(response);
+    }
+
+    private void buildMultipartEntity() {
+        mBuilder.addTextBody(PARAM_TOKEN, mToken);
+        mBuilder.addTextBody("coordinate", mLat + "," + mLon);
+        mBuilder.addTextBody("sequenceId", "" + mSequenceId);
+        mBuilder.addTextBody("sequenceIndex", "" + mSequenceIndex);
+        mBuilder.addTextBody("gpsAccuracy", "" + mAccuracy);
+        if (!mImageFile.exists()) {
+            Log.d(TAG, "buildMultipartEntity: image doesn't exist");
+        }
+        mBuilder.addBinaryBody(FILE_PART_NAME, mImageFile, ContentType.create("image/jpeg"), mImageFile.getName());
+        Log.d(TAG, "buildMultipartEntity: sending request: " + " " + PARAM_TOKEN + " " + mToken + " coordinate " + mLat + "," + mLon +
+                " sequenceId " + mSequenceId + " sequenceIndex " + mSequenceIndex + " gpsAccuracy " + mAccuracy);
+        mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
+        HttpEntity mEntity = mBuilder.build();
+        mProgressiveEntity = new ProgressiveEntity(mEntity, mDataProgressListener, Utils.fileSize(mImageFile), mResponseHandler);
+    }
 }
