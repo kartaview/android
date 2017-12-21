@@ -1,8 +1,8 @@
 package com.telenav.osv.activity;
 
 import java.util.ArrayList;
-import javax.inject.Inject;
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.support.annotation.StringRes;
 import android.support.v4.app.ActivityCompat;
@@ -10,30 +10,25 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import com.telenav.osv.R;
+import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.data.Preferences;
-import com.telenav.osv.di.Injectable;
-import com.telenav.osv.ui.Navigator;
+import com.telenav.osv.manager.network.UploadManager;
+import com.telenav.osv.manager.network.UserDataManager;
 import com.telenav.osv.utils.Log;
 
 /**
  * Abstract activity used in the project
  * Created by Kalman on 26/09/16.
  */
-public abstract class OSVActivity extends AppCompatActivity implements Navigator, Injectable {
+public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListener*/ {
 
     private static final String TAG = "OSVActivity";
 
-    @Inject
-    Preferences appPrefs;
+    public UploadManager mUploadManager;
 
-    public abstract void openScreen(int screenNearby, Object extra);
+    ApplicationPreferences appPrefs;
 
-    public void openScreen(int screen) {
-        openScreen(screen, null);
-    }
-
-    public abstract int getCurrentScreen();
+    UserDataManager mUserDataManager;
 
     @Override
     public void onLowMemory() {
@@ -71,22 +66,10 @@ public abstract class OSVActivity extends AppCompatActivity implements Navigator
         Log.d(TAG, "onTrimMemory: --------------------------- level " + levelRepr);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
     public abstract OSVApplication getApp();
 
-    /**
-     * used when gps not enabled, no permission etc
-     * @param b
-     */
+    public abstract int getCurrentScreen();
+
     public abstract void resolveLocationProblem(boolean b);
 
     public abstract void hideSnackBar();
@@ -110,6 +93,12 @@ public abstract class OSVActivity extends AppCompatActivity implements Navigator
     public abstract void enableProgressBar(boolean b);
 
     public abstract boolean isPortrait();
+
+    public void openScreen(int screen) {
+        openScreen(screen, null);
+    }
+
+    public abstract void openScreen(int screenNearby, Object extra);
 
     public boolean checkPermissionsForRecording() {
         Log.d(TAG, "checkPermissionsForRecording: ");
@@ -164,11 +153,15 @@ public abstract class OSVActivity extends AppCompatActivity implements Navigator
         if (needed.size() > 0) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, needed.get(0))) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog);
-                AlertDialog dialog =
-                        builder.setMessage(message).setTitle(R.string.permission_request).setNeutralButton(R.string.ok_label, (dialog1, which) -> {
-                            String[] array = new String[needed.size()];
-                            needed.toArray(array);
-                            ActivityCompat.requestPermissions(OSVActivity.this, array, OSVApplication.LOCATION_PERMISSION_BT);
+                AlertDialog dialog = builder.setMessage(message).setTitle(R.string.permission_request)
+                        .setNeutralButton(R.string.ok_label, new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String[] array = new String[needed.size()];
+                                needed.toArray(array);
+                                ActivityCompat.requestPermissions(OSVActivity.this, array, OSVApplication.LOCATION_PERMISSION_BT);
+                            }
                         }).create();
                 dialog.show();
                 return false;
@@ -180,6 +173,13 @@ public abstract class OSVActivity extends AppCompatActivity implements Navigator
             }
         }
         return true;
+    }
+
+    public UserDataManager getUserDataManager() {
+        if (mUserDataManager == null) {
+            mUserDataManager = new UserDataManager(this);
+        }
+        return mUserDataManager;
     }
 
     public abstract boolean hasPosition();

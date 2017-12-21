@@ -1,7 +1,6 @@
 package com.telenav.osv.item.network;
 
 /**
- * Abstract api response containing generic details like error code and message
  * Created by kalmanb on 8/3/17.
  */
 public class ApiResponse {

@@ -50,7 +50,7 @@ public class ListPhotosRequest extends StringRequest {
             params = new HashMap<>();
         }
         params.put(PARAM_SEQUENCE_ID, mSequenceId + "");
-        if (mToken != null && !"".equals(mToken)) {
+        if (mToken != null && !mToken.equals("")) {
             params.put(PARAM_TOKEN, mToken);
         }
         return params;

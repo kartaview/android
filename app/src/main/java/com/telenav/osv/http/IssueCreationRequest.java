@@ -53,7 +53,7 @@ public class IssueCreationRequest extends StringRequest {
         if (params == null || params.equals(Collections.emptyMap())) {
             params = new HashMap<>();
         }
-        if (mToken != null && !"".equals(mToken)) {
+        if (mToken != null && !mToken.equals("")) {
             params.put(PARAM_TOKEN, mToken);
         }
         params.put(PARAM_DETAILS, mDetails);

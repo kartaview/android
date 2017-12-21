@@ -9,14 +9,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import com.telenav.osv.item.network.OsmProfileData;
-import com.telenav.osv.utils.Log;
 
 /**
  * Created by kalmanb on 8/3/17.
  */
 public class OsmProfileDataParser {
-
-    private static final String TAG = "OsmProfileDataParser";
 
     public OsmProfileData parse(String xml) {
         OsmProfileData profileData = new OsmProfileData();
@@ -39,7 +36,7 @@ public class OsmProfileDataParser {
                 }
             }
         } catch (Exception e) {
-            Log.d(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
 
         return profileData;

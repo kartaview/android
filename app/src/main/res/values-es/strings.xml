@@ -72,6 +72,7 @@
     <string name="no_local_recordings_message">No tienes grabaciones locales.</string>
     <string name="exit_app_message">Estas seguro que quieres salir de la aplicación?</string>
     <string name="exit_label">Salir</string>
+    <string name="hey_label">Ei</string>
     <string name="uploading_track_label">Subiendo traza</string>
     <string name="nearby_label">Cerca</string>
     <string name="nearby_no_result_label">No hay nada</string>
@@ -80,6 +81,7 @@
     <string name="account_distance_label">Distancia:</string>
     <string name="debug_settings_notification">Una opción de depuración ha aparecido!</string>
     <string name="not_allowed_while_upload">No permitido durante una subida!</string>
+    <string name="resolution_selection_not_available">La selección de la resolución no esta disponible mientras la grabación rápida esta activa.</string>
     <string name="ble_android_not_supported">Desafortunadamente el OBD Bluetooth Low Energy funciona en Lollipop o superiores ahora mismo.</string>
     <string name="connecting_label">Conectando…</string>
     <string name="no_obd_detected_message">No se ha detectado OBD! Comprueba tu conexión.</string>
@@ -99,6 +101,7 @@
     <string name="track_upload_resuming">Retomando la subida de las trazas…</string>
     <string name="track_upload_cancelled">Subida de trazas cancelada.</string>
     <string name="uploading_images">Subiendo imágenes…</string>
+    <string name="error_creating_sequence">Error creando secuencia.</string>
     <string name="not_logged_in">No has iniciado sesión.</string>
     <string name="pause_caps_label">PAUSAR</string>
     <string name="continue_caps_label">CONTINUAR</string>
@@ -111,6 +114,8 @@
     <string name="fast_recording_mode_on">Modo grabación rápida ON</string>
     <string name="focus_locked">Bloqueado</string>
     <string name="stop_caps_label">PARAR</string>
+    <string name="fast_recording_mode">Modo grabación rápida</string>
+    <string name="fast_recording_text">Mientras se graba, la aplicación tomara ~5 fotos por segundo a baja resolución.</string>
     <string name="resolution_label">Resolución</string>
     <string name="resolution_text">Selecciona la resolución para tomar las fotos</string>
     <string name="connection_type">Tipo de conexión</string>
@@ -127,6 +132,7 @@
     <string name="remember_login_credentials_text">Recuerda las credenciales después de la sesion después del pimer inicio. Limplia las credenciales después de ponerlo a off.</string>
     <string name="ble_not_supported">BLE no soportado</string>
     <string name="error_bluetooth_not_supported">Bluetooth no soporado</string>
+    <string name="unknown_device">Dispositivo desconocido</string>
     <string name="connected">Conectado</string>
     <string name="ble_devices">dispositivos BLE</string>
 </resources>

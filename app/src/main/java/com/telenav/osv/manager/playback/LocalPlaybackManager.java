@@ -2,11 +2,11 @@ package com.telenav.osv.manager.playback;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import android.content.Context;
 import android.database.Cursor;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
@@ -16,6 +16,7 @@ import android.widget.SeekBar;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.ffmpeg.FFMPEGTrackPlayer;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.item.OSVFile;
 import com.telenav.osv.item.Sequence;
@@ -28,13 +29,15 @@ import com.telenav.streetview.scalablevideoview.ScalableVideoView;
  * Created by Kalman on 30/06/16.
  */
 
-public class LocalPlaybackManager
-        implements PlaybackManager, FFMPEGTrackPlayer.OnSeekCompleteListener, FFMPEGTrackPlayer.OnBufferingUpdateListener,
+public class LocalPlaybackManager extends PlaybackManager
+        implements FFMPEGTrackPlayer.OnSeekCompleteListener, FFMPEGTrackPlayer.OnBufferingUpdateListener,
         FFMPEGTrackPlayer.OnCompletionListener, FFMPEGTrackPlayer.OnErrorListener, FFMPEGTrackPlayer.OnInfoListener,
         FFMPEGTrackPlayer.OnPreparedListener, SeekBar.OnSeekBarChangeListener, FFMPEGTrackPlayer.OnVideoSizeChangedListener,
         FFMPEGTrackPlayer.OnPlaybackListener {
 
     private static final String TAG = "LocalPlaybackManager";
+
+    private final OSVActivity activity;
 
     private final ThreadPoolExecutor mThreadPoolExec;
 
@@ -48,6 +51,8 @@ public class LocalPlaybackManager
 
     private FFMPEGTrackPlayer mCurrentPlayer = null;
 
+    private int mTotalDuration;
+
     private boolean mPrepared = false;
 
     private boolean mTouching = false;
@@ -58,10 +63,10 @@ public class LocalPlaybackManager
 
     private boolean mSeekComplete = true;
 
-    private SequenceDB mSequenceDB;
-
-    public LocalPlaybackManager(Context context, SequenceDB db) {
-        mSequenceDB = db;
+    public LocalPlaybackManager(OSVActivity context, Sequence sequence) {
+        activity = context;
+        this.mSequence = sequence;
+        mTotalDuration = 0;
         mCurrentPlayer = new FFMPEGTrackPlayer();
         mCurrentPlayer.setOnSeekCompleteListener(LocalPlaybackManager.this);
         mCurrentPlayer.setOnVideoSizeChangedListener(LocalPlaybackManager.this);
@@ -80,58 +85,60 @@ public class LocalPlaybackManager
         mThreadPoolExec = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, workQueue,
                 new ThreadFactoryBuilder().setDaemon(false).setNameFormat("PlaybackThreadPool")
                         .setPriority(Thread.NORM_PRIORITY).build());
-    }
+        mThreadPoolExec.execute(new Runnable() {
 
-    @Override
-    public void setSource(Sequence sequence) {
-        mSequence = sequence;
-        mThreadPoolExec.execute(() -> {
-            videoFiles = new ArrayList<>();
-            for (PlaybackListener pl : mPlaybackListeners) {
-                pl.onPreparing();
-            }
-            try {
-                Cursor records = mSequenceDB.getVideos(mSequence.getId());
-                if (records != null && records.getCount() > 0) {
-                    while (!records.isAfterLast()) {
-                        try {
-                            String path = records.getString(records.getColumnIndex(SequenceDB.VIDEO_FILE_PATH));
-                            int index = records.getInt(records.getColumnIndex(SequenceDB.VIDEO_INDEX));
-                            int count = records.getInt(records.getColumnIndex(SequenceDB.VIDEO_FRAME_COUNT));
-                            OSVFile video = new OSVFile(path);
-                            videoFiles.add(new VideoFile(video, index, count));
-                        } catch (Exception e) {
-                            Log.w(TAG, "LocalPlaybackManager: " + Log.getStackTraceString(e));
+            @Override
+            public void run() {
+                videoFiles = new ArrayList<>();
+                activity.enableProgressBar(true);
+                try {
+                    Cursor records = SequenceDB.instance.getVideos(mSequence.getId());
+                    if (records != null && records.getCount() > 0) {
+                        while (!records.isAfterLast()) {
+                            try {
+                                String path = records.getString(records.getColumnIndex(SequenceDB.VIDEO_FILE_PATH));
+                                int index = records.getInt(records.getColumnIndex(SequenceDB.VIDEO_INDEX));
+                                int count = records.getInt(records.getColumnIndex(SequenceDB.VIDEO_FRAME_COUNT));
+                                OSVFile video = new OSVFile(path);
+                                videoFiles.add(new VideoFile(video, index, count));
+                            } catch (Exception e) {
+                                Log.w(TAG, "LocalPlaybackManager: " + Log.getStackTraceString(e));
+                            }
+                            records.moveToNext();
                         }
-                        records.moveToNext();
-                    }
-                    Collections.sort(videoFiles, (lhs, rhs) -> lhs.fileIndex - rhs.fileIndex);
-                    String[] paths = new String[videoFiles.size()];
-                    for (int i = 0; i < videoFiles.size(); i++) {
-                        try {
-                            paths[i] = videoFiles.get(i).link;
-                        } catch (Exception e) {
-                            Log.w(TAG, "LocalPlaybackManager: " + Log.getStackTraceString(e));
-                        }
-                    }
-                    mCurrentPlayer.setDataSource(paths);
-                    mPrepared = true;
-                    for (PlaybackListener pl : mPlaybackListeners) {
-                        pl.onPrepared(true);
-                    }
-                    if (mVideoView != null) {
-                        play();
-                    }
-                } else {
-                    Log.w(TAG, "displaySequence: cursor has 0 elements");
-                }
-                if (records != null) {
-                    records.close();
-                }
-                mTrack = new ArrayList<>(mSequence.getPolyline().getNodes());
-            } catch (Exception e) {
+                        Collections.sort(videoFiles, new Comparator<VideoFile>() {
 
-                Log.w(TAG, "displaySequence: " + e.getLocalizedMessage());
+                            @Override
+                            public int compare(VideoFile lhs, VideoFile rhs) {
+                                return lhs.fileIndex - rhs.fileIndex;
+                            }
+                        });
+                        String[] paths = new String[videoFiles.size()];
+                        for (int i = 0; i < videoFiles.size(); i++) {
+                            try {
+                                paths[i] = videoFiles.get(i).link;
+                            } catch (Exception e) {
+                                Log.w(TAG, "LocalPlaybackManager: " + Log.getStackTraceString(e));
+                            }
+                        }
+                        mCurrentPlayer.setDataSource(paths);
+                        mPrepared = true;
+                        activity.enableProgressBar(false);
+                        if (mVideoView != null) {
+                            play();
+                        }
+                    } else {
+                        Log.w(TAG, "displaySequence: cursor has 0 elements");
+                    }
+                    if (records != null) {
+                        records.close();
+                    }
+                    mTrack = new ArrayList<>(mSequence.getPolyline().getNodes());
+                } catch (Exception e) {
+
+                    Log.w(TAG, "displaySequence: " + e.getLocalizedMessage());
+                }
+                activity.enableProgressBar(false);
             }
         });
     }
@@ -148,10 +155,14 @@ public class LocalPlaybackManager
 
             @Override
             public void onSurfaceTextureAvailable(final SurfaceTexture surface, int width, int height) {
-                mThreadPoolExec.execute(() -> {
-                    if (mCurrentPlayer != null) {
-                        mCurrentPlayer.setSurface(new Surface(surface));
-                        play();
+                mThreadPoolExec.execute(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (mCurrentPlayer != null) {
+                            mCurrentPlayer.setSurface(new Surface(surface));
+                            play();
+                        }
                     }
                 });
             }
@@ -181,14 +192,26 @@ public class LocalPlaybackManager
     @Override
     public void next() {
         if (mCurrentPlayer != null) {
-            mThreadPoolExec.execute(() -> mCurrentPlayer.stepFrame(true));
+            mThreadPoolExec.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    mCurrentPlayer.stepFrame(true);
+                }
+            });
         }
     }
 
     @Override
     public void previous() {
         if (mCurrentPlayer != null) {
-            mThreadPoolExec.execute(() -> mCurrentPlayer.stepFrame(false));
+            mThreadPoolExec.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    mCurrentPlayer.stepFrame(false);
+                }
+            });
         }
     }
 
@@ -196,12 +219,22 @@ public class LocalPlaybackManager
     public void play() {
         if (mCurrentPlayer != null && mPrepared) {
             if (!mCurrentPlayer.isPlaying()) {
-                mThreadPoolExec.execute(() -> {
-                    mCurrentPlayer.setFPSDelay(false);
-                    mCurrentPlayer.start();
+                mThreadPoolExec.execute(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mCurrentPlayer.setFPSDelay(false);
+                        mCurrentPlayer.start();
+                    }
                 });
             } else {
-                mThreadPoolExec.execute(() -> mCurrentPlayer.setFPSDelay(false));
+                mThreadPoolExec.execute(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mCurrentPlayer.setFPSDelay(false);
+                    }
+                });
             }
         }
     }
@@ -209,7 +242,13 @@ public class LocalPlaybackManager
     @Override
     public void pause() {
         if (mCurrentPlayer != null) {
-            mThreadPoolExec.execute(() -> mCurrentPlayer.pause());
+            mThreadPoolExec.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    mCurrentPlayer.pause();
+                }
+            });
         }
     }
 
@@ -217,20 +256,29 @@ public class LocalPlaybackManager
     public void stop() {
         try {
             if (mCurrentPlayer != null) {
-                mThreadPoolExec.execute(() -> mCurrentPlayer.stop());
+                mThreadPoolExec.execute(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mCurrentPlayer.stop();
+                    }
+                });
             }
         } catch (Exception ignored) {
-            Log.d(TAG, Log.getStackTraceString(ignored));
         }
     }
 
     @Override
     public void fastForward() {
         if (mCurrentPlayer != null) {
-            mThreadPoolExec.execute(() -> {
-                mCurrentPlayer.setFPSDelay(true);
-                mCurrentPlayer.setBackwards(false);
-                mCurrentPlayer.start();
+            mThreadPoolExec.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    mCurrentPlayer.setFPSDelay(true);
+                    mCurrentPlayer.setBackwards(false);
+                    mCurrentPlayer.start();
+                }
             });
         }
     }
@@ -238,10 +286,14 @@ public class LocalPlaybackManager
     @Override
     public void fastBackward() {
         if (mCurrentPlayer != null) {
-            mThreadPoolExec.execute(() -> {
-                mCurrentPlayer.setFPSDelay(true);
-                mCurrentPlayer.setBackwards(true);
-                mCurrentPlayer.start();
+            mThreadPoolExec.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    mCurrentPlayer.setFPSDelay(true);
+                    mCurrentPlayer.setBackwards(true);
+                    mCurrentPlayer.start();
+                }
             });
         }
     }
@@ -253,12 +305,18 @@ public class LocalPlaybackManager
 
     @Override
     public void setSeekBar(final SeekBar seekBar) {
-        mThreadPoolExec.execute(() -> {
-            mSeekBar = seekBar;
-            mSeekBar.setOnSeekBarChangeListener(LocalPlaybackManager.this);
-            mSeekBar.setMax(mTrack.size());
-            for (PlaybackListener pl : mPlaybackListeners) {
-                pl.onPrepared(true);
+        mThreadPoolExec.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                mSeekBar = seekBar;
+                mSeekBar.setOnSeekBarChangeListener(LocalPlaybackManager.this);
+                mSeekBar.setMax(mTrack.size());
+                for (PlaybackListener pl : mPlaybackListeners) {
+                    pl.onPrepared();
+                }
+                //                mSeekBar.setMax(mTotalDuration);
+                //                Log.d(TAG, "setSeekBar: total duration = " + mTotalDuration);
             }
         });
     }
@@ -266,29 +324,34 @@ public class LocalPlaybackManager
     @Override
     public int getLength() {
         return mTrack.size();
+        //        return mCurrentPlayer.getDuration();
     }
 
     @Override
     public void destroy() {
-        mThreadPoolExec.execute(() -> {
-            if (mCurrentPlayer != null) {
-                try {
-                    if (mCurrentPlayer.isPlaying()) {
-                        mCurrentPlayer.stop();
+        mThreadPoolExec.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                if (mCurrentPlayer != null) {
+                    try {
+                        if (mCurrentPlayer.isPlaying()) {
+                            mCurrentPlayer.stop();
+                        }
+                    } catch (Exception e) {
+
                     }
-                } catch (Exception e) {
-                    Log.d(TAG, "destroy: " + Log.getStackTraceString(e));
+                    try {
+                        mCurrentPlayer.release();
+                    } catch (Exception e) {
+
+                    }
                 }
-                try {
-                    mCurrentPlayer.release();
-                } catch (Exception e) {
-                    Log.d(TAG, "destroy: " + Log.getStackTraceString(e));
+                for (PlaybackListener pl : mPlaybackListeners) {
+                    pl.onExit();
                 }
+                mPlaybackListeners.clear();
             }
-            for (PlaybackListener pl : mPlaybackListeners) {
-                pl.onExit();
-            }
-            mPlaybackListeners.clear();
         });
         mThreadPoolExec.shutdown();
     }
@@ -302,7 +365,7 @@ public class LocalPlaybackManager
 
     @Override
     public void removePlaybackListener(PlaybackListener playbackListener) {
-        mPlaybackListeners.remove(playbackListener);
+
     }
 
     @Override
@@ -327,12 +390,27 @@ public class LocalPlaybackManager
     @Override
     public void onSeekComplete(final FFMPEGTrackPlayer mp) {
         mSeekComplete = true;
+        //        mThreadPoolExec.post(new Runnable() {
+        //            @Override
+        //            public void run() {
+        //                Log.d(TAG, "onSeekComplete: " + mp.getCurrentPosition());
+        //                if (mCurrentPlayer != null) {
+        //                    mCurrentPlayer.pause();
+        //                }
+        //            }
+        //        });
     }
 
     @Override
     public void onVideoSizeChanged(FFMPEGTrackPlayer mp, final int width, final int height) {
         if (mVideoView != null) {
-            mVideoView.post(() -> mVideoView.onVideoSizeChanged(width, height));
+            mVideoView.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    mVideoView.onVideoSizeChanged(width, height);
+                }
+            });
         }
     }
 
@@ -346,6 +424,26 @@ public class LocalPlaybackManager
         for (PlaybackListener pl : mPlaybackListeners) {
             pl.onStopped();
         }
+        mThreadPoolExec.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                Log.d(TAG, "onCompletion: ");
+                //                    if (mSeekBar != null) {
+                //                        mSeekBar.setProgress(0);
+                //                    }
+                //                if (mp.getNextPlayer() != null){
+                //                    FFMPEGTrackPlayer player = mp.getNextPlayer();
+                //                    if (mp.isPlaying()) {
+                //                        player.setSurface(null);
+                //                        mp.reset();
+                //                        mp.stop();
+                //                    }
+                //                    player.setSurface(mVideoView);
+                //                    player.prepareAsync();
+                //                }
+            }
+        });
     }
 
     @Override
@@ -362,10 +460,11 @@ public class LocalPlaybackManager
 
     @Override
     public void onPrepared(FFMPEGTrackPlayer mp) {
+        //        mp.pause();
         mCurrentPlayer = mp;
         mPrepared = true;
         for (PlaybackListener pl : mPlaybackListeners) {
-            pl.onPrepared(true);
+            pl.onPrepared();
         }
     }
 
@@ -374,6 +473,11 @@ public class LocalPlaybackManager
         for (PlaybackListener pl : mPlaybackListeners) {
             pl.onProgressChanged(progress);
         }
+
+        if (progress >= mSequence.getFrameCount() - 1) {
+            pause();
+        }
+
         if (!mPrepared || !fromUser) {
             return;
         }
@@ -392,7 +496,11 @@ public class LocalPlaybackManager
             return;
         }
         mTouching = true;
+        //        if (isPlaying()) {
+        //            pause();
+        //        }
         Log.d(TAG, "onStartTrackingTouch: ");
+        //        mCurrentPlayer.start();
         if (mCurrentPlayer != null) {
             mCurrentPlayer.seeking(true);
         }
@@ -449,11 +557,15 @@ public class LocalPlaybackManager
     }
 
     private void seekTo(final int milliseconds) {
-        mThreadPoolExec.execute(() -> {
-            if (!mCurrentPlayer.isPlaying()) {
-                mCurrentPlayer.start();
+        mThreadPoolExec.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                if (!mCurrentPlayer.isPlaying()) {
+                    mCurrentPlayer.start();
+                }
+                mCurrentPlayer.seekTo(milliseconds);
             }
-            mCurrentPlayer.seekTo(milliseconds);
         });
     }
 }

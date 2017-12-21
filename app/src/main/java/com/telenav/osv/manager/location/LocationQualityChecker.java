@@ -8,14 +8,14 @@ import com.telenav.osv.event.hardware.gps.AccuracyEvent;
 import com.telenav.osv.utils.Log;
 
 /**
- * Component handling quality changes in the gps location, besides accuracy, it checks for 5s timeout
+ * Component handling quality changes in the gps location
  * Created by Kalman on 15/05/2017.
  */
-public class LocationQualityChecker {
+class LocationQualityChecker {
 
     private static final String TAG = "LocationQualityChecker";
 
-    private LocationManager.LocationEventListener mListener;
+    private final LocationManager.LocationEventListener mListener;
 
     private int mCurrentAccuracyType = -1;
 
@@ -23,25 +23,22 @@ public class LocationQualityChecker {
 
     private Runnable mTimeoutRunnable;
 
-    public LocationQualityChecker() {
-        mTimeoutRunnable = () -> {
-            if (mListener != null) {
-                mListener.onLocationTimedOut();
-            }
-            Log.d(TAG, "mTimeoutRunnable: no location received for 5 seconds");
-            onAccuracyChanged(1000);
-        };
-    }
+    LocationQualityChecker(LocationManager.LocationEventListener listener) {
+        mListener = listener;
+        mTimeoutRunnable = new Runnable() {
 
-    public void setListener(LocationManager.LocationEventListener listener) {
-        this.mListener = listener;
+            @Override
+            public void run() {
+                mListener.onLocationTimedOut();
+                Log.d(TAG, "mTimeoutRunnable: no location received for 5 seconds");
+                onAccuracyChanged(1000);
+            }
+        };
     }
 
     public void onLocationChanged(Location location, boolean shouldCenter) {
         onAccuracyChanged(location.getAccuracy());
-        if (mListener != null) {
-            mListener.onLocationChanged(location, shouldCenter);
-        }
+        mListener.onLocationChanged(location, shouldCenter);
         //timeout detector
         Log.d(TAG, "onLocationChanged: ACC = " + location.getAccuracy());
         mTimerHandler.removeCallbacks(mTimeoutRunnable);
@@ -55,9 +52,7 @@ public class LocationQualityChecker {
             mCurrentAccuracyType = accuracyType;
             EventBus.postSticky(new AccuracyEvent(accuracyType));
         }
-        if (mListener != null) {
-            mListener.onGpsAccuracyChanged(mCurrentAccuracyType);
-        }
+        mListener.onGpsAccuracyChanged(mCurrentAccuracyType);
     }
 
     private int getAccuracyType(float accuracy) {

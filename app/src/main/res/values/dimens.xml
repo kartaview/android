@@ -1,34 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="action_bar_size">56dp</dimen>
+
+    <dimen name="horizontal_image_item_width">70dp</dimen>
+
     <dimen name="onebox_list_divider_height">1dp</dimen>
+
     <dimen name="text_size_default">20sp</dimen>
-    <dimen name="text_size_hidden">-5sp</dimen>
+
     <dimen name="tap_to_focus_view">60dp</dimen>
+
     <dimen name="text_size_profile_title_expanded">20sp</dimen>
+
     <dimen name="text_size_profile_title_collapsed">20sp</dimen>
+
     <dimen name="text_size_profile_tab_item">12sp</dimen>
+
     <dimen name="sequence_list_padding_side_portrait">10dp</dimen>
+
     <dimen name="sequence_list_padding_side_landscape">29dp</dimen>
+
     <dimen name="sequence_list_padding_bottom">45dp</dimen>
+
     <dimen name="sequence_list_item_margin_side">6dp</dimen>
+
     <dimen name="payment_list_text_inset">5dp</dimen>
+
     <dimen name="sequence_list_item_margin_top">15dp</dimen>
+
     <dimen name="sequence_list_item_margin_bottom">10dp</dimen>
+
     <dimen name="track_preview_card_margin_sides">16dp</dimen>
+
     <dimen name="track_preview_card_margin_top">5dp</dimen>
+
     <dimen name="track_preview_card_margin_bottom">5dp</dimen>
+
     <dimen name="track_preview_card_padding_top">11dp</dimen>
+
     <dimen name="track_preview_card_padding_sides">0dp</dimen>
+
     <dimen name="track_preview_card_padding_bottom">11dp</dimen>
+
     <dimen name="track_preview_card_additional_padding_top">40dp</dimen>
-    <dimen name="track_preview_score_button_margin">10dp</dimen>
+
+    <dimen name="track_preview_score_button_margin">13.5dp</dimen>
+
     <dimen name="profile_user_header_title_margin_bottom">25dp</dimen>
+
     <dimen name="profile_driver_header_title_margin_bottom">168dp</dimen>
+
     <dimen name="text_size_profile_header_info_small">12sp</dimen>
-    <dimen name="text_size_profile_header_info_large">17sp</dimen>
-    <dimen name="hidden_view_height">0dp</dimen>
-    <dimen name="settings_row_padding">20dp</dimen>
-    <dimen name="settings_row_padding_hidden">0dp</dimen>
-    <dimen name="divider_height">1dp</dimen>
+
+    <dimen name="text_size_profile_header_info_large">15sp</dimen>
+
+    <dimen name="text_size_byod_pay_rate_details_item">16sp</dimen>
+
+    <dimen name="text_size_profile_header_title">17sp</dimen>
+
+    <dimen name="text_size_track_breakdown">19dp</dimen>
+
+    <dimen name="text_size_track_breakdown_total_value">23dp</dimen>
 </resources>

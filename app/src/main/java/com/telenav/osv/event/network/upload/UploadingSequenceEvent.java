@@ -10,13 +10,10 @@ public class UploadingSequenceEvent extends OSVEvent {
 
     public int remainingSequences;
 
-    public int numberOfSequences;
-
     private Sequence sequence;
 
-    public UploadingSequenceEvent(Sequence sequence, int remainingRecordings, int numberOfSequences) {
+    public UploadingSequenceEvent(Sequence sequence, int remainingRecordings) {
         this.remainingSequences = remainingRecordings;
         this.sequence = sequence;
-        this.numberOfSequences = numberOfSequences;
     }
 }

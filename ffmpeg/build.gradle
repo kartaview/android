@@ -1,149 +1,151 @@
 apply plugin: 'com.android.model.library'
 
 model {
-  android {
-    def globalConfiguration = rootProject.ext.config
+    android {
+        compileSdkVersion 25
+        buildToolsVersion '25.0.2'
 
-    compileSdkVersion globalConfiguration.androidCompileSdkVersion
-    buildToolsVersion globalConfiguration.androidBuildToolsVersion
+        defaultConfig {
+            minSdkVersion.apiLevel 16
+            targetSdkVersion.apiLevel 24
+            versionCode 1
+            versionName "1.0"
+        }
+        buildTypes {
+            release {
+                debuggable true
+                //                minifyEnabled false
+                //                proguardFiles('proguard-android.txt'), 'proguard-rules.pro'
+            }
+        }
+        ndk {
+            debuggable true
+            platformVersion "android-16"
+            moduleName "encode"
+            cppFlags.add('-I' + file("src/main/include").absolutePath)
+            cppFlags.add('-fexceptions')
+            ldLibs.add("android")
+            ldLibs.add("log")
+            ldLibs.add("m")
+            ldLibs.add("jnigraphics")
+            ldLibs.add("OpenSLES")
+            ldLibs.add("GLESv1_CM")
+            ldLibs.add("GLESv2")
+            abiFilters.clear()
+            abiFilters.add("armeabi")
+            abiFilters.add("armeabi-v7a")
+            abiFilters.add("x86")
+            //            abiFilters.add("mips")
+            stl "gnustl_static"
+            toolchain "clang"
+        }
 
-    defaultConfig {
-      minSdkVersion.apiLevel globalConfiguration.androidMinSdkVersion
-      targetSdkVersion.apiLevel globalConfiguration.androidTargetSdkVersion
-      versionCode globalConfiguration.ffmpegVersionCode
-      versionName globalConfiguration.ffmpegVersion
+        task buildFFMPEG(type: Exec) {
+            commandLine 'sh', '-c', 'src/main/ffmpeg/init_build_android.sh'
+            //            crashlyticsUploadSymbolsRelease
+        }
     }
-    buildTypes {
-      release {
-        debuggable true
-        //                minifyEnabled false
-        //                proguardFiles('proguard-android.txt'), 'proguard-rules.pro'
-      }
-    }
-    ndk {
-      debuggable true
-      platformVersion "android-16"
-      moduleName "encode"
-      cppFlags.add('-I' + file("src/main/include").absolutePath)
-      cppFlags.add('-fexceptions')
-      ldLibs.add("android")
-      ldLibs.add("log")
-      ldLibs.add("m")
-      ldLibs.add("jnigraphics")
-      ldLibs.add("OpenSLES")
-      ldLibs.add("GLESv1_CM")
-      ldLibs.add("GLESv2")
-      abiFilters.clear()
-      abiFilters.add("armeabi")
-      abiFilters.add("armeabi-v7a")
-      abiFilters.add("x86")
-      //            abiFilters.add("mips")
-      stl "gnustl_static"
-      toolchain "clang"
+    //    android.productFlavors {
+    //        create ("fat"){
+    //            ndk.abiFilters.add("armeabi-v7a-neon")
+    //            ndk.abiFilters.add("armeabi-v7a")
+    //            ndk.abiFilters.add("x86")
+    //            ndk.abiFilters.add("mips")
+    //            versionCode = 1 * 1000000 + 1
+    //        }
+    //        create ("armv7neon"){
+    //            ndk.abiFilters.add("armeabi-v7a-neon")
+    //            versionCode = 9 * 1000000 + 1
+    //        }
+    //        create ("armv7"){
+    //            ndk.abiFilters.add("armeabi-v7a")
+    //            versionCode = 5 * 1000000 + 1
+    //        }
+    //        create ("x86"){
+    //            ndk.abiFilters.add("x86")
+    //            versionCode = 7 * 1000000 + 1
+    //        }
+    //        create ("mips"){
+    //            ndk.abiFilters.add("mips")
+    //            versionCode = 3 * 1000000 + 1
+    //        }
+    //    }
+    android.sources.main {
+        jni {
+            exportedHeaders {
+                srcDir "src/main/include"
+            }
+            source {
+                srcDir "src/main/jni"
+            }
+            dependencies {
+                library "avcodec" linkage "shared"
+                library "avfilter" linkage "shared"
+                library "avformat" linkage "shared"
+                library "avutil" linkage "shared"
+                library "SDL2" linkage "shared"
+                library "swresample" linkage "shared"
+                library "swscale" linkage "shared"
+            }
+        }
     }
 
-    task buildFFMPEG(type: Exec) {
-      commandLine 'sh', '-c', 'src/main/ffmpeg/init_build_android.sh'
-      //            crashlyticsUploadSymbolsRelease
+    repositories {
+        libs(PrebuiltLibraries) {
+            avcodec {
+                headers.srcDir "src/main/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavcodec.so")
+                }
+            }
+            avfilter {
+                headers.srcDir "src/main/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavfilter.so")
+                }
+            }
+            avformat {
+                headers.srcDir "src/main/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavformat.so")
+                }
+            }
+            avutil {
+                headers.srcDir "src/main/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavutil.so")
+                }
+            }
+            SDL2 {
+                headers.srcDir "src/main/include/SDL"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libSDL2.so")
+                }
+            }
+            swresample {
+                headers.srcDir "src/main/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libswresample.so")
+                }
+            }
+            swscale {
+                headers.srcDir "src/main/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libswscale.so")
+                }
+            }
+        }
     }
-  }
-  //    android.productFlavors {
-  //        create ("fat"){
-  //            ndk.abiFilters.add("armeabi-v7a-neon")
-  //            ndk.abiFilters.add("armeabi-v7a")
-  //            ndk.abiFilters.add("x86")
-  //            ndk.abiFilters.add("mips")
-  //            versionCode = 1 * 1000000 + 1
-  //        }
-  //        create ("armv7neon"){
-  //            ndk.abiFilters.add("armeabi-v7a-neon")
-  //            versionCode = 9 * 1000000 + 1
-  //        }
-  //        create ("armv7"){
-  //            ndk.abiFilters.add("armeabi-v7a")
-  //            versionCode = 5 * 1000000 + 1
-  //        }
-  //        create ("x86"){
-  //            ndk.abiFilters.add("x86")
-  //            versionCode = 7 * 1000000 + 1
-  //        }
-  //        create ("mips"){
-  //            ndk.abiFilters.add("mips")
-  //            versionCode = 3 * 1000000 + 1
-  //        }
-  //    }
-  android.sources.main {
-    jni {
-      exportedHeaders {
-        srcDir "src/main/include"
-      }
-      source {
-        srcDir "src/main/jni"
-      }
-      dependencies {
-        library "avcodec" linkage "shared"
-        library "avfilter" linkage "shared"
-        library "avformat" linkage "shared"
-        library "avutil" linkage "shared"
-        library "SDL2" linkage "shared"
-        library "swresample" linkage "shared"
-        library "swscale" linkage "shared"
-      }
-    }
-  }
+}
 
-  repositories {
-    libs(PrebuiltLibraries) {
-      avcodec {
-        headers.srcDir "src/main/include"
-        binaries.withType(SharedLibraryBinary) {
-          sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavcodec.so")
-        }
-      }
-      avfilter {
-        headers.srcDir "src/main/include"
-        binaries.withType(SharedLibraryBinary) {
-          sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavfilter.so")
-        }
-      }
-      avformat {
-        headers.srcDir "src/main/include"
-        binaries.withType(SharedLibraryBinary) {
-          sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavformat.so")
-        }
-      }
-      avutil {
-        headers.srcDir "src/main/include"
-        binaries.withType(SharedLibraryBinary) {
-          sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libavutil.so")
-        }
-      }
-      SDL2 {
-        headers.srcDir "src/main/include/SDL"
-        binaries.withType(SharedLibraryBinary) {
-          sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libSDL2.so")
-        }
-      }
-      swresample {
-        headers.srcDir "src/main/include"
-        binaries.withType(SharedLibraryBinary) {
-          sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libswresample.so")
-        }
-      }
-      swscale {
-        headers.srcDir "src/main/include"
-        binaries.withType(SharedLibraryBinary) {
-          sharedLibraryFile = file("src/main/jniLibs/${targetPlatform.getName()}/libswscale.so")
-        }
-      }
-    }
-  }
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 ext {
-  PUBLISH_GROUP_ID = 'com.telenav.ffmpeg'
-  PUBLISH_ARTIFACT_ID = 'ffmpeg'
-  PUBLISH_VERSION = rootProject.ext.config.ffmpegVersion
+    PUBLISH_GROUP_ID = 'com.telenav.ffmpeg'
+    PUBLISH_ARTIFACT_ID = 'ffmpeg'
+    PUBLISH_VERSION = '1.0.4'
 }
 
 apply from: 'buildRelease.gradle'

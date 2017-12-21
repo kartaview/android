@@ -18,6 +18,8 @@ public class GpsShutterLogic extends ShutterLogic {
 
     @Override
     public void onLocationChanged(Location reference, Location location) {
+        Log.d(TAG, "onLocationChanged");
+
         if (!location.hasSpeed()) {
             Log.d(TAG, "onLocationChanged: mActualLocation has no speed");
             double dist = reference.distanceTo(location);
@@ -31,8 +33,10 @@ public class GpsShutterLogic extends ShutterLogic {
         if (location.hasAccuracy() && location.getAccuracy() < LocationManager.ACCURACY_MEDIUM) {
             double dist = ComputingDistance
                     .distanceBetween(reference.getLongitude(), reference.getLatitude(), location.getLongitude(), location.getLatitude());
+            Log.d(TAG, "onLocationChanged: location has speed: " + dist);
+
             if (dist >= mSpeedCategory.getDistance()) {
-                mShutterListener.takeSnapshot((float) dist);
+                mShutterListener.requestTakeSnapshot((float) dist);
                 Log.d(TAG, "onLocationChanged: image taken");
             }
         } else {

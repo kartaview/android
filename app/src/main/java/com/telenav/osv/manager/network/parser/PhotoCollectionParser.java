@@ -1,6 +1,7 @@
 package com.telenav.osv.manager.network.parser;
 
 import java.util.Collections;
+import java.util.Comparator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.telenav.osv.item.ImageCoordinate;
@@ -44,15 +45,27 @@ public class PhotoCollectionParser extends ApiResponseParser<PhotoCollection> {
                     double lon = array.getJSONObject(i).getDouble("lng");
                     if (lat != 0.0 && lon != 0.0) {
                         ImageCoordinate coord = new ImageCoordinate(lat, lon, index);
-                        collectionData.getNodes().add(new ImageFile(link, thumbLink, index, coord));
+                        collectionData.getNodes().add(new ImageFile(sequenceId, link, thumbLink, id, index, coord, false));
                         collectionData.getTrack().add(coord);
                     }
                 }
-                Collections.sort(collectionData.getNodes(), (lhs, rhs) -> lhs.index - rhs.index);
-                Collections.sort(collectionData.getTrack(), (lhs, rhs) -> lhs.index - rhs.index);
+                Collections.sort(collectionData.getNodes(), new Comparator<ImageFile>() {
+
+                    @Override
+                    public int compare(ImageFile lhs, ImageFile rhs) {
+                        return lhs.index - rhs.index;
+                    }
+                });
+                Collections.sort(collectionData.getTrack(), new Comparator<ImageCoordinate>() {
+
+                    @Override
+                    public int compare(ImageCoordinate lhs, ImageCoordinate rhs) {
+                        return lhs.index - rhs.index;
+                    }
+                });
                 Log.d(TAG, "listImages: id=" + sequenceId + " length=" + collectionData.getNodes().size());
             } catch (Exception e) {
-                Log.e(TAG, "parse: ", e);
+                e.printStackTrace();
             }
         }
         return collectionData;

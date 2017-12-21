@@ -28,7 +28,7 @@ public class AutoShutterLogic extends ShutterLogic {
             if (mAutoShutterHandler != null) {
                 try {
                     Log.d(TAG, "run: mAutoShutterRunnable");
-                    mShutterListener.takeSnapshot(0);
+                    mShutterListener.requestTakeSnapshot(0);
                     mAutoShutterHandler.postDelayed(mAutoShutterRunnable, SHUTTER_DELAY);
                 } catch (Exception e) {
                     Log.d(TAG, "mAutoShutterRunnable: " + Log.getStackTraceString(e));
@@ -40,6 +40,7 @@ public class AutoShutterLogic extends ShutterLogic {
     @Override
     public void onLocationChanged(Location reference, Location location) {
         //no need, as auto shutter uses time periods
+        Log.d(TAG, "#onLocationChanged");
     }
 
     @Override
@@ -77,7 +78,6 @@ public class AutoShutterLogic extends ShutterLogic {
                 try {
                     mAutoShutterThread.quit();
                 } catch (Exception ignored) {
-                    Log.d(TAG, Log.getStackTraceString(ignored));
                 }
             }
             mAutoShutterThread = null;
@@ -96,7 +96,6 @@ public class AutoShutterLogic extends ShutterLogic {
             try {
                 mAutoShutterThread.quit();
             } catch (Exception ignored) {
-                Log.d(TAG, Log.getStackTraceString(ignored));
             }
             mAutoShutterThread = null;
         }

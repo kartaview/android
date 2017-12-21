@@ -1,14 +1,18 @@
 package com.telenav.osv.listener.network;
 
+
 import com.android.volley.VolleyError;
 import com.telenav.osv.item.network.ApiResponse;
 import com.telenav.osv.manager.network.parser.ApiResponseParser;
+import com.telenav.osv.utils.Log;
 
 /**
  * Combined response listener which auto parser status messages
  * Created by kalmanb on 8/3/17.
  */
 public abstract class OsvRequestResponseListener<T extends ApiResponseParser<G>, G extends ApiResponse> extends GenericResponseListener {
+
+    private static final String TAG = "OsvRequestResponseListener";
 
     private final T parser;
 
@@ -18,6 +22,7 @@ public abstract class OsvRequestResponseListener<T extends ApiResponseParser<G>,
 
     @Override
     public void onErrorResponse(final VolleyError error) {
+        Log.d(TAG, "Volley error on request. Error: " + Log.getStackTraceString(error));
         G g = parser.parse(error);
         onFailure(g.getHttpCode(), g);
     }

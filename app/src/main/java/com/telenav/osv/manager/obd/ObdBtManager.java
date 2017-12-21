@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import android.app.Activity;
-import android.arch.lifecycle.MutableLiveData;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -18,6 +17,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
 import com.telenav.osv.R;
@@ -51,16 +51,53 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
 
     private ScheduledFuture<?> mCollectTask;
 
+    private Runnable mRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            SpeedData speed = new SpeedData("NULL");
+            try {
+                speed = getSpeed();
+            } catch (SocketException se) {
+                se.printStackTrace();
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException ignored) {
+                }
+                reconnect();
+            } catch (InterruptedException ie) {
+                reset();
+                ie.printStackTrace();
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException ignored) {
+                }
+                reconnect();
+            } catch (Exception xe) {
+                xe.printStackTrace();
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException ignored) {
+                }
+                reconnect();
+            }
+            onSpeedObtained(speed);
+        }
+    };
+
     private Runnable mConnectRunnable = new Runnable() {
 
         @Override
         public void run() {
             try {
                 BluetoothAdapter bluetoothAdapter;
-                final android.bluetooth.BluetoothManager bluetoothManager =
-                        (android.bluetooth.BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-                bluetoothAdapter = bluetoothManager.getAdapter();
-
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    final android.bluetooth.BluetoothManager bluetoothManager =
+                            (android.bluetooth.BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
+                    bluetoothAdapter = bluetoothManager.getAdapter();
+                } else {
+                    bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                }
                 // Ensures Bluetooth is available on the device and it is enabled. If not,
                 // displays a dialog requesting user permission to enable Bluetooth.
                 if (!bluetoothAdapter.isEnabled()) {
@@ -86,13 +123,15 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
                     return;
                 }
                 BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
-                try {
-                    int state = device.getBondState();
-                    if (state == BluetoothDevice.BOND_NONE) {
-                        device.createBond();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    try {
+                        int state = device.getBondState();
+                        if (state == BluetoothDevice.BOND_NONE) {
+                            device.createBond();
+                        }
+                    } catch (Exception e) {
+                        Log.w(TAG, "connect: " + Log.getStackTraceString(e));
                     }
-                } catch (Exception e) {
-                    Log.w(TAG, "connect: " + Log.getStackTraceString(e));
                 }
 
                 // Get a BluetoothSocket for a connection with the
@@ -106,30 +145,30 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    Log.d(TAG, Log.getStackTraceString(e));
+                    e.printStackTrace();
                 }
                 fastInit();
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    Log.d(TAG, Log.getStackTraceString(e));
+                    e.printStackTrace();
                 }
                 reset();
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    Log.d(TAG, Log.getStackTraceString(e));
+                    e.printStackTrace();
                 }
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    Log.d(TAG, Log.getStackTraceString(e));
+                    e.printStackTrace();
                 }
                 describe();
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    Log.d(TAG, Log.getStackTraceString(e));
+                    e.printStackTrace();
                 }
                 mConnecting = false;
                 sConnected = true;
@@ -143,7 +182,7 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
                 startRunnable();
                 return;
             } catch (IOException e) {
-                Log.d(TAG, Log.getStackTraceString(e));
+                e.printStackTrace();
                 sConnected = false;
                 if (mConnectionListener != null) {
                     mConnectionListener.onObdDisconnected();
@@ -151,39 +190,6 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
             }
             mConnecting = false;
         }
-    };
-
-    private Runnable mRunnable = () -> {
-        SpeedData speed = new SpeedData("NULL");
-        try {
-            speed = getSpeed();
-        } catch (SocketException se) {
-            Log.d(TAG, Log.getStackTraceString(se));
-            try {
-                Thread.sleep(800);
-            } catch (InterruptedException ignored) {
-                Log.d(TAG, Log.getStackTraceString(ignored));
-            }
-            reconnect();
-        } catch (InterruptedException ie) {
-            reset();
-            Log.d(TAG, Log.getStackTraceString(ie));
-            try {
-                Thread.sleep(800);
-            } catch (InterruptedException ignored) {
-                Log.d(TAG, Log.getStackTraceString(ignored));
-            }
-            reconnect();
-        } catch (Exception xe) {
-            Log.d(TAG, Log.getStackTraceString(xe));
-            try {
-                Thread.sleep(800);
-            } catch (InterruptedException ignored) {
-                Log.d(TAG, Log.getStackTraceString(ignored));
-            }
-            reconnect();
-        }
-        onSpeedObtained(speed);
     };
 
     private final BroadcastReceiver mBluetoothBroadcastReceiver = new BroadcastReceiver() {
@@ -200,8 +206,8 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
         }
     };
 
-    ObdBtManager(Context context, MutableLiveData<Integer> obdStatusLive, ConnectionListener listener) {
-        super(context, obdStatusLive, listener);
+    ObdBtManager(Context context, ConnectionListener listener) {
+        super(context, listener);
         preferences = mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
     }
 
@@ -226,9 +232,13 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
         }
 
         BluetoothAdapter bluetoothAdapter;
-        final android.bluetooth.BluetoothManager bluetoothManager =
-                (android.bluetooth.BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            final android.bluetooth.BluetoothManager bluetoothManager =
+                    (android.bluetooth.BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
+            bluetoothAdapter = bluetoothManager.getAdapter();
+        } else {
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        }
 
         // Checks if Bluetooth is supported on the device.
         if (bluetoothAdapter == null) {
@@ -271,20 +281,24 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
         mThreadPoolExecutor.remove(mConnectRunnable);
         mConnecting = false;
         mRunning = false;
-        mThreadPoolExecutor.execute(() -> {
-            if (mSocket != null && mSocket.isConnected()) {
-                try {
-                    reset();
-                    mSocket.close();
-                    mSocket = null;
-                    Log.d(TAG, "disconnect: OBD disconnected.");
-                } catch (Exception e) {
-                    Log.w(TAG, "disconnect: " + Log.getStackTraceString(e));
+        mThreadPoolExecutor.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                if (mSocket != null && mSocket.isConnected()) {
+                    try {
+                        reset();
+                        mSocket.close();
+                        mSocket = null;
+                        Log.d(TAG, "disconnect: OBD disconnected.");
+                    } catch (Exception e) {
+                        Log.w(TAG, "disconnect: " + Log.getStackTraceString(e));
+                    }
                 }
-            }
-            sConnected = false;
-            if (mConnectionListener != null) {
-                mConnectionListener.onObdDisconnected();
+                sConnected = false;
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdDisconnected();
+                }
             }
         });
     }
@@ -316,38 +330,45 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
     }
 
     void setAuto() {
-        mThreadPoolExecutor.execute(() -> {
-            try {
-                if (mSocket != null && mSocket.isConnected()) {
-                    Log.d(TAG, "setAuto: ");
-                    runCommand(OBDHelper.CMD_SET_AUTO);
-                    runCommand("AT SS");
+        mThreadPoolExecutor.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    if (mSocket != null && mSocket.isConnected()) {
+                        Log.d(TAG, "setAuto: ");
+                        runCommand(OBDHelper.CMD_SET_AUTO);
+                        runCommand("AT SS");
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, Log.getStackTraceString(e));
                 }
-            } catch (Exception e) {
-                Log.w(TAG, Log.getStackTraceString(e));
             }
         });
     }
 
     void reset() {
-        mThreadPoolExecutor.execute(() -> {
-            try {
-                if (mSocket != null && mSocket.isConnected()) {
-                    Log.d(TAG, "reset: ");
-                    runCommand("AT D");//set Default
-                    runCommand("AT Z");//reset
-                    runCommand("AT E0");//echo off/on *1
-                    runCommand("AT L0");//linefeeds off
-                    runCommand("AT S0");//spaces off/on *1
-                    try {
-                        Thread.sleep(500);
-                    } catch (Exception ignored) {
-                        Log.d(TAG, Log.getStackTraceString(ignored));
+        mThreadPoolExecutor.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    if (mSocket != null && mSocket.isConnected()) {
+                        Log.d(TAG, "reset: ");
+                        runCommand("AT D");//set Default
+                        runCommand("AT Z");//reset
+                        runCommand("AT E0");//echo off/on *1
+                        runCommand("AT L0");//linefeeds off
+                        runCommand("AT S0");//spaces off/on *1
+                        try {
+                            Thread.sleep(500);
+                        } catch (Exception ignored) {
+                        }
+                        setAuto();
                     }
-                    setAuto();
+                } catch (Exception e) {
+                    Log.w(TAG, Log.getStackTraceString(e));
                 }
-            } catch (Exception e) {
-                Log.w(TAG, Log.getStackTraceString(e));
             }
         });
     }
@@ -454,28 +475,36 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
     }
 
     private void fastInit() {
-        mThreadPoolExecutor.execute(() -> {
-            try {
-                if (mSocket != null && mSocket.isConnected()) {
-                    Log.d(TAG, "fastInit: ");
-                    runCommand(OBDHelper.CMD_FAST_INIT);
+        mThreadPoolExecutor.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    if (mSocket != null && mSocket.isConnected()) {
+                        Log.d(TAG, "fastInit: ");
+                        runCommand(OBDHelper.CMD_FAST_INIT);
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, Log.getStackTraceString(e));
                 }
-            } catch (Exception e) {
-                Log.w(TAG, Log.getStackTraceString(e));
             }
         });
     }
 
     private void describe() {
-        mThreadPoolExecutor.execute(() -> {
-            try {
-                if (mSocket != null && mSocket.isConnected()) {
-                    Log.d(TAG, "describe: ");
-                    runCommand(OBDHelper.CMD_DEVICE_DESCRIPTION);
-                    runCommand(OBDHelper.CMD_DESCRIBE_PROTOCOL);
+        mThreadPoolExecutor.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    if (mSocket != null && mSocket.isConnected()) {
+                        Log.d(TAG, "describe: ");
+                        runCommand(OBDHelper.CMD_DEVICE_DESCRIPTION);
+                        runCommand(OBDHelper.CMD_DESCRIBE_PROTOCOL);
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, Log.getStackTraceString(e));
                 }
-            } catch (Exception e) {
-                Log.w(TAG, Log.getStackTraceString(e));
             }
         });
     }
@@ -498,22 +527,26 @@ class ObdBtManager extends ObdManager implements BTDialogFragment.OnDeviceSelect
         mThreadPoolExecutor.remove(mConnectRunnable);
         mConnecting = false;
         mRunning = false;
-        mThreadPoolExecutor.execute(() -> {
-            if (mSocket != null && mSocket.isConnected()) {
-                try {
-                    reset();
-                    mSocket.close();
-                    mSocket = null;
-                    Log.d(TAG, "reconnect: OBD disconnected.");
-                } catch (Exception e) {
-                    Log.w(TAG, "reconnect: " + Log.getStackTraceString(e));
+        mThreadPoolExecutor.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                if (mSocket != null && mSocket.isConnected()) {
+                    try {
+                        reset();
+                        mSocket.close();
+                        mSocket = null;
+                        Log.d(TAG, "reconnect: OBD disconnected.");
+                    } catch (Exception e) {
+                        Log.w(TAG, "reconnect: " + Log.getStackTraceString(e));
+                    }
                 }
+                sConnected = false;
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdDisconnected();
+                }
+                connect();
             }
-            sConnected = false;
-            if (mConnectionListener != null) {
-                mConnectionListener.onObdDisconnected();
-            }
-            connect();
         });
     }
 }

@@ -15,25 +15,38 @@ public class ImageFile extends RecordingFile {
 
     public String link;
 
+    public boolean isChecked;
+
     public OSVFile file;
 
     public String thumb = "";
 
-    public ImageFile(String link, String thumbLink, int index, SKCoordinate skCoordinate) {
+    private int sequenceId;
+
+    private int id;
+
+    private boolean isPano = false;
+
+    public ImageFile(int sequenceId, String link, String thumbLink, int id, int index, SKCoordinate skCoordinate, boolean pano) {
+        this.sequenceId = sequenceId;
+        this.id = id;
         this.index = index;
         this.link = link;
         this.coords = skCoordinate;
         this.thumb = thumbLink;
-        if ("".equals(thumb)) {
+        this.isPano = pano;
+        if (thumb.equals("")) {
             thumb = link;
         }
     }
 
-    public ImageFile(OSVFile photo, int index, SKCoordinate skCoordinate) {
+    public ImageFile(OSVFile photo, int index, SKCoordinate skCoordinate, boolean panorama) {
+        this.sequenceId = LocalSequence.getSequenceId(photo.getParentFile());
         this.file = photo;
         this.index = index;
         link = "file:///" + photo.getPath();
         thumb = link;
         coords = skCoordinate;
+        this.isPano = panorama;
     }
 }

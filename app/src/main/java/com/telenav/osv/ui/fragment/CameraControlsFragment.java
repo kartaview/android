@@ -1,12 +1,11 @@
 package com.telenav.osv.ui.fragment;
 
 import java.text.DecimalFormat;
-import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jetbrains.annotations.NonNls;
 import android.animation.Animator;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,7 +13,6 @@ import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.animation.BounceInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -23,15 +21,15 @@ import android.widget.TextView;
 import com.pnikosis.materialishprogress.ProgressWheel;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.application.ValueFormatter;
-import com.telenav.osv.data.Preferences;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.camera.ImageSavedEvent;
 import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.ui.RecordingVisibleEvent;
 import com.telenav.osv.event.ui.ShutterPressEvent;
 import com.telenav.osv.manager.Recorder;
-import com.telenav.osv.ui.Navigator;
+import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
@@ -40,18 +38,9 @@ import com.telenav.osv.utils.Utils;
  * Created by Kalman on 14/07/16.
  */
 
-public class CameraControlsFragment extends OSVFragment implements View.OnClickListener {
+public class CameraControlsFragment extends FunctionalFragment implements View.OnClickListener {
 
     public static final String TAG = "CameraControlsFragment";
-
-    @Inject
-    Preferences appPrefs;
-
-    @Inject
-    Recorder mRecorder;
-
-    @Inject
-    ValueFormatter valueFormatter;
 
     private View view;
 
@@ -77,15 +66,25 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
+    private ApplicationPreferences appPrefs;
+
     private View mControlsView;
 
     private View mControlsViewH;
+
+    private Recorder mRecorder;
 
     private LinearLayout mHintLayout;
 
     private ProgressWheel mShutterProgress;
 
-    private View.OnClickListener shutterListener = v -> pressShutterButton(null);
+    private View.OnClickListener shutterListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            pressShutterButton(null);
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -94,8 +93,7 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
         mControlsView = inflater.inflate(R.layout.partial_camera_controls, null);
         mControlsViewH = inflater.inflate(R.layout.partial_camera_controls_landscape, null);
 
-        //the scope of this fragment is activity scope (it is attached all the time just like preview and map)
-        // and we need to observe changes happening in lower scopes like settings fragment
+        appPrefs = activity.getApp().getAppPrefs();
         boolean portrait = activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
         initLayouts(portrait);
         return view;
@@ -105,6 +103,11 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
     public void onStart() {
         super.onStart();
         EventBus.register(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -119,9 +122,29 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
     public void onStop() {
         EventBus.unregister(this);
         super.onStop();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
     }
 
     @Override
@@ -129,7 +152,7 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
 
         switch (v.getId()) {
             case (R.id.cancel_text_camera_preview):
-                activity.openScreen(Navigator.SCREEN_MAP);
+                activity.openScreen(ScreenComposer.SCREEN_MAP);
                 if (mRecorder != null && mRecorder.isRecording()) {
                     mRecorder.stopRecording();
                 }
@@ -137,11 +160,16 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
         }
     }
 
+    @Override
+    public void setRecorder(Recorder recorder) {
+        this.mRecorder = recorder;
+    }
+
     private static String[] formatSize(double value) {
-        @NonNls String[] sizeText = new String[]{"0", " MB"};
+        String[] sizeText = new String[]{"0", " MB"};
         if (value > 0) {
             double size = value / (double) 1024 / (double) 1024;
-            @NonNls String type = " MB";
+            String type = " MB";
             DecimalFormat df2 = new DecimalFormat("#.#");
             if (size > 1024) {
                 size = (size / (double) 1024);
@@ -215,21 +243,31 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
     public void refreshDetails(final float spaceOccupied, final int distance, final int imageCount) {
         if (view != null && mRecorder != null) {
 
-            activity.runOnUiThread(() -> {
-                if (mDistanceText != null && mDistanceUnitText != null && mSizeText != null && mPicturesText != null && mSizeUnitText != null) {
-                    String[] dist = valueFormatter.formatDistanceFromMeters(distance);
-                    String[] size = formatSize(spaceOccupied);
-                    mDistanceText.setText(dist[0]);
-                    mDistanceUnitText.setText(dist[1]);
-                    mSizeText.setText(size[0]);
-                    mSizeUnitText.setText(size[1]);
-                    mPicturesText.setText(imageCount + "");
-                }
+            activity.runOnUiThread(new Runnable() {
 
-                if (imageCount == 5 && appPrefs.shouldShowTapToShoot()) {
-                    Snackbar snack = Snackbar.make(view, R.string.tap_to_shoot_hint, Snackbar.LENGTH_LONG);
-                    snack.setAction(R.string.got_it_label, view -> appPrefs.setShouldShowTapToShoot(false));
-                    snack.show();
+                @Override
+                public void run() {
+                    if (mDistanceText != null && mDistanceUnitText != null && mSizeText != null && mPicturesText != null && mSizeUnitText != null) {
+                        String[] dist = Utils.formatDistanceFromMeters(activity, distance);
+                        String[] size = formatSize(spaceOccupied);
+                        mDistanceText.setText(dist[0]);
+                        mDistanceUnitText.setText(dist[1]);
+                        mSizeText.setText(size[0]);
+                        mSizeUnitText.setText(size[1]);
+                        mPicturesText.setText(imageCount + "");
+                    }
+
+                    if (imageCount == 5 && !appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_TAP_TO_SHOOT, false)) {
+                        Snackbar snack = Snackbar.make(view, R.string.tap_to_shoot_hint, Snackbar.LENGTH_LONG);
+                        snack.setAction(R.string.got_it_label, new View.OnClickListener() {
+
+                            @Override
+                            public void onClick(View view) {
+                                appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_TAP_TO_SHOOT, true);
+                            }
+                        });
+                        snack.show();
+                    }
                 }
             });
         }
@@ -241,12 +279,24 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
         boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
         if (event.started) {
             showDetails(portrait);
-            if (appPrefs.shouldShowBackgroundHint()) {
+            if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, false)) {
                 final Snackbar snack = Snackbar.make(view, R.string.turn_off_screen_hint, Snackbar.LENGTH_INDEFINITE);
 
-                snack.setAction(R.string.got_it_label, v -> appPrefs.setShouldShowBackgroundHint(false));
+                snack.setAction(R.string.got_it_label, new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, true);
+                    }
+                });
                 snack.show();
-                mHandler.postDelayed(snack::dismiss, 5000);
+                mHandler.postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        snack.dismiss();
+                    }
+                }, 5000);
             }
             float space = 0;
             if (event.sequence != null) {
@@ -305,55 +355,77 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
         }
         ((ViewGroup) view).removeAllViews();
         final boolean finalFinishing = finishing;
-        view.post(() -> {
-            ViewParent viewGroup = current.getParent();
-            if (viewGroup != null) {
-                ((ViewGroup) viewGroup).removeAllViews();
-            }
-            ((ViewGroup) view).addView(current);
-            // Setup shutter button
+        view.post(new Runnable() {
 
-            mRecordingDetailsLayout = current.findViewById(R.id.track_details);
-            if (portrait) {
-                mHintLayout = current.findViewById(R.id.record_hint_layout);
-            }
-            mPicturesText = current.findViewById(R.id.images_recorded_value);
-            mDistanceText = current.findViewById(R.id.distance_covered_value);
-            mDistanceUnitText = current.findViewById(R.id.distance_covered_text);
-            mSizeText = current.findViewById(R.id.size_recorder_images_value);
-            mSizeUnitText = current.findViewById(R.id.size_recorder_images_text);
-            mInfoButton = current.findViewById(R.id.info_button_layout);
-            mInfoButton.setOnClickListener(v -> activity.openScreen(Navigator.SCREEN_RECORDING_HINTS));
-            mInfoButton.clearAnimation();
-            mShutterButton = current.findViewById(R.id.btn_shutter);
-            mShutterProgress = current.findViewById(R.id.shutter_progress);
-            mShutterButton.setOnClickListener(shutterListener);
-            mCancelAndHomeText = current.findViewById(R.id.cancel_text_camera_preview);
+            @Override
+            public void run() {
+                try {
+                    ((ViewGroup) current.getParent()).removeAllViews();
+                } catch (Exception ignored) {
+                }
+                ((ViewGroup) view).addView(current);
+                // Setup shutter button
 
-            mCancelAndHomeText.setOnClickListener(CameraControlsFragment.this);
-            mShutterButton.setOnClickListener(shutterListener);
+                mRecordingDetailsLayout = current.findViewById(R.id.track_details);
+                if (portrait) {
+                    mHintLayout = current.findViewById(R.id.record_hint_layout);
+                }
+                mPicturesText = current.findViewById(R.id.images_recorded_value);
+                mDistanceText = current.findViewById(R.id.distance_covered_value);
+                mDistanceUnitText = current.findViewById(R.id.distance_covered_text);
+                mSizeText = current.findViewById(R.id.size_recorder_images_value);
+                mSizeUnitText = current.findViewById(R.id.size_recorder_images_text);
+                mInfoButton = current.findViewById(R.id.info_button_layout);
+                mInfoButton.setOnClickListener(new View.OnClickListener() {
 
-            displayProgress(finalFinishing);
-
-            if (mRecordingDetailsLayout != null && mCancelAndHomeText != null) {
-                if (mRecorder != null && (mRecorder.isRecording() || finalFinishing)) {
-                    showDetails(portrait);
-                    if (appPrefs.shouldShowBackgroundHint()) {
-                        final Snackbar snack = Snackbar.make(view, R.string.turn_off_screen_hint, Snackbar.LENGTH_INDEFINITE);
-
-                        snack.setAction(R.string.got_it_label, v -> appPrefs.setShouldShowBackgroundHint(false));
-                        snack.show();
-                        mHandler.postDelayed(snack::dismiss, 5000);
+                    @Override
+                    public void onClick(View v) {
+                        activity.openScreen(ScreenComposer.SCREEN_RECORDING_HINTS);
                     }
-                    if (mCancelAndHomeText instanceof TextView) {
-                        ((TextView) mCancelAndHomeText).setText(R.string.home_label);
+                });
+                mInfoButton.clearAnimation();
+                mShutterButton = current.findViewById(R.id.btn_shutter);
+                mShutterProgress = current.findViewById(R.id.shutter_progress);
+                mShutterButton.setOnClickListener(shutterListener);
+                mCancelAndHomeText = current.findViewById(R.id.cancel_text_camera_preview);
+
+                mCancelAndHomeText.setOnClickListener(CameraControlsFragment.this);
+                mShutterButton.setOnClickListener(shutterListener);
+
+                displayProgress(finalFinishing);
+
+                if (mRecordingDetailsLayout != null && mCancelAndHomeText != null) {
+                    if (mRecorder != null && (mRecorder.isRecording() || finalFinishing)) {
+                        showDetails(portrait);
+                        if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, false)) {
+                            final Snackbar snack = Snackbar.make(view, R.string.turn_off_screen_hint, Snackbar.LENGTH_INDEFINITE);
+
+                            snack.setAction(R.string.got_it_label, new View.OnClickListener() {
+
+                                @Override
+                                public void onClick(View v) {
+                                    appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_BACKGROUND, true);
+                                }
+                            });
+                            snack.show();
+                            mHandler.postDelayed(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    snack.dismiss();
+                                }
+                            }, 5000);
+                        }
+                        if (mCancelAndHomeText instanceof TextView) {
+                            ((TextView) mCancelAndHomeText).setText(R.string.home_label);
+                        }
+                    } else {
+                        hideDetails(portrait);
+                        if (mCancelAndHomeText instanceof TextView) {
+                            ((TextView) mCancelAndHomeText).setText(R.string.cancel_label);
+                        }
+                        refreshDetails(0, 0, 0);
                     }
-                } else {
-                    hideDetails(portrait);
-                    if (mCancelAndHomeText instanceof TextView) {
-                        ((TextView) mCancelAndHomeText).setText(R.string.cancel_label);
-                    }
-                    refreshDetails(0, 0, 0);
                 }
             }
         });
@@ -394,10 +466,20 @@ public class CameraControlsFragment extends OSVFragment implements View.OnClickL
     }
 
     private void started() {
-        mShutterButton.setImageDrawable(activity.getDrawable(R.drawable.vector_stop_recording));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mShutterButton.setImageDrawable(activity.getDrawable(R.drawable.vector_stop_recording));
+        } else {
+            mShutterButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_stop_recording));
+        }
     }
 
     private void stopped() {
-        mShutterButton.setImageDrawable(activity.getDrawable(R.drawable.vector_button_record_inactive_2));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mShutterButton.setImageDrawable(activity.getDrawable(R.drawable.vector_button_record_inactive_2));
+        } else {
+            mShutterButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_button_record_inactive_2));
+        }
     }
+
+
 }

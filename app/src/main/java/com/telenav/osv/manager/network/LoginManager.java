@@ -4,13 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import javax.inject.Inject;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import com.android.volley.DefaultRetryPolicy;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
@@ -42,22 +44,33 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.data.AccountPreferences;
-import com.telenav.osv.data.Preferences;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.command.LogoutCommand;
 import com.telenav.osv.event.EventBus;
+import com.telenav.osv.event.network.LoginChangedEvent;
+import com.telenav.osv.event.ui.GamificationSettingEvent;
+import com.telenav.osv.event.ui.UserTypeChangedEvent;
 import com.telenav.osv.http.AuthRequest;
 import com.telenav.osv.item.AccountData;
 import com.telenav.osv.item.network.ApiResponse;
 import com.telenav.osv.item.network.AuthData;
+import com.telenav.osv.item.network.DriverData;
 import com.telenav.osv.item.network.OsmProfileData;
+import com.telenav.osv.listener.OAuthResultListener;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.listener.network.OsmAuthDataListener;
 import com.telenav.osv.listener.network.OsvRequestResponseListener;
@@ -71,8 +84,6 @@ import com.telenav.osv.utils.Utils;
 import io.fabric.sdk.android.Fabric;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
-import static com.telenav.osv.data.Preferences.URL_ENV;
-import static com.telenav.osv.item.network.UserData.TYPE_UNKNOWN;
 
 /**
  * component responsible for logging in using several accounts
@@ -86,7 +97,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
     public static final String LOGIN_TYPE_FACEBOOK = "facebook";
 
-    private static final String TAG = "LoginManager";
+    private final static String TAG = "LoginManager";
 
     private static final int REQUEST_CODE_LOGIN_GOOGLE = 10001;
 
@@ -101,13 +112,17 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
     private static String URL_AUTH_FACEBOOK = "http://" + "&&" + "auth/facebook/client_auth";
 
-    private final Context mContext;
+    private final OSVApplication mContext;
 
     private final GoogleApiClient mGoogleApiClient;
 
     private final CallbackManager mFacebookCallbackManager;
 
-    private Preferences prefs;
+    private final UserDataManager userDataManager;
+
+    private final SharedPreferences profilePrefs;
+
+    private ApplicationPreferences appPrefs;
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -115,43 +130,57 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
     private AuthDataParser mAuthDataParser = new AuthDataParser();
 
-    @Inject
-    public LoginManager(Context context, Preferences preferences, AccountPreferences accountPreferences) {
-        super(context, accountPreferences);
-        this.prefs = preferences;
+    public LoginManager(final OSVApplication context) {
+        super(context);
         this.mContext = context;
+        appPrefs = context.getAppPrefs();
+        profilePrefs = context.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
         mAuth = FirebaseAuth.getInstance();
+        setEnvironment();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().requestProfile()
                 .requestIdToken(context.getString(R.string.google_client_id))
                 .requestScopes(new Scope(Scopes.PROFILE), new Scope("https://www.googleapis.com/auth/contacts.readonly")).build();
         mGoogleApiClient = new GoogleApiClient.Builder(context).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
         mGoogleApiClient.registerConnectionFailedListener(this);
         mGoogleApiClient.connect();
-        FirebaseAuth.AuthStateListener mAuthListener = firebaseAuth -> {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
-            if (user != null) {//user signed in
-                Log.d(TAG, "onAuthStateChanged: user is from " + user.getProviderId());
-                String imgLink = null;
-                Uri url = user.getPhotoUrl();
-                if (url != null) {
-                    imgLink = url.toString();
-                }
-                final String finalImgLink = imgLink;
-                appPrefs.setUserPhotoUrl(finalImgLink);
-                final String id = appPrefs.getUserId();
-                final String userName = appPrefs.getUserName();
-                final String displayName = appPrefs.getUserDisplayName();
-                final int type = appPrefs.getUserType();
-                final int loginType = appPrefs.getLoginType();
-                mHandler.post(() -> {
-                    if (!appPrefs.isLoggedIn()) {
-                        logout();
-                    } else {
-                        onLoggedIn(new AccountData(id, userName, displayName, finalImgLink, type, loginType));
+        userDataManager = new UserDataManager(context);
+
+        FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
+
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {//user signed in
+                    Log.d(TAG, "onAuthStateChanged: user is from " + user.getProviderId());
+                    String imgLink = null;
+                    Uri url = user.getPhotoUrl();
+                    if (url != null) {
+                        imgLink = url.toString();
                     }
-                });
-            } else {//user signed out
-                Log.d(TAG, "onAuthStateChanged:signed_out");
+                    final String finalImgLink = imgLink;
+                    appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, finalImgLink);
+                    final String id = appPrefs.getStringPreference(PreferenceTypes.K_USER_ID);
+                    final String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
+                    final String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
+                    final String displayName = appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME);
+                    final int type = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
+                    final String loginType = appPrefs.getStringPreference(PreferenceTypes.K_LOGIN_TYPE);
+                    mHandler.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (userName.equals("") || token.equals("")) {
+                                EventBus.postSticky(new LoginChangedEvent(false, null));
+                                EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
+                            } else {
+                                onLoginSuccessful(new AccountData(id, userName, displayName, finalImgLink, type,
+                                        AccountData.getAccountTypeForString(loginType)));
+                            }
+                        }
+                    });
+                } else {//user signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                }
             }
         };
         mAuth.addAuthStateListener(mAuthListener);
@@ -180,7 +209,8 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
     }
 
     @Override
-    protected void setupUrls() {
+    protected void setEnvironment() {
+        super.setEnvironment();
         URL_AUTH_OSM = URL_AUTH_OSM.replace("&&", URL_ENV[mCurrentServer]);
         URL_AUTH_FACEBOOK = URL_AUTH_FACEBOOK.replace("&&", URL_ENV[mCurrentServer]);
         URL_AUTH_GOOGLE = URL_AUTH_GOOGLE.replace("&&", URL_ENV[mCurrentServer]);
@@ -209,7 +239,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
                     handleGoogleLoginResult(result);
                 } else {
                     Log.d(TAG, "onActivityResult: Google Sign In was unsuccessfull, rollback login");
-                    logout();
+                    EventBus.postSticky(new LogoutCommand());
                 }
             }
         } else {
@@ -233,26 +263,87 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
         }
     }
 
-    public void logout() {
-        appPrefs.setUserId("");
-        appPrefs.setLoginType(AccountData.ACCOUNT_TYPE_NONE);
-        appPrefs.setUserName("");
-        appPrefs.setUserDisplayName("");
-        appPrefs.setUserPhotoUrl("");
-        appPrefs.setUserType(TYPE_UNKNOWN);
-        appPrefs.saveAuthToken("");
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onLogoutCommand(LogoutCommand command) {
+        appPrefs.saveStringPreference(PreferenceTypes.K_USER_ID, "");
+        appPrefs.saveStringPreference(PreferenceTypes.K_ACCESS_TOKEN, "");
+        appPrefs.saveStringPreference(PreferenceTypes.K_LOGIN_TYPE, "");
+        appPrefs.saveStringPreference(PreferenceTypes.K_USER_NAME, "");
+        appPrefs.saveStringPreference(PreferenceTypes.K_DISPLAY_NAME, "");
+        appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, "");
+        appPrefs.saveIntPreference(PreferenceTypes.K_USER_TYPE, -1);
+        EventBus.postSticky(new LoginChangedEvent(false, null));
+        EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
         logoutFirebase();
-        SharedPreferences profilePrefs = mContext.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
-        profilePrefs.edit().clear().apply();
-        if (!Utils.DEBUG || !prefs.getSaveAuth()) {
-            final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
-            editor.clear();
-            editor.apply();
-            CookieManager.getInstance().removeAllCookies(value -> Log.d(TAG, "logout: removed cookies = " + value));
-        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public void onLoginChanged(LoginChangedEvent event) {
+        Log.d(TAG, "onLoginChanged: logged=" + event.logged + " " + event.accountData);
         if (Fabric.isInitialized()) {
-            Crashlytics.setString(Log.USER_TYPE, "");
+            if (event.logged) {
+                String method = appPrefs.getStringPreference(PreferenceTypes.K_LOGIN_TYPE);
+                int type = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
+                Answers.getInstance().logLogin(new LoginEvent().putSuccess(true).putMethod(method).putCustomAttribute("userType", type));
+                Crashlytics.setInt(Log.USER_TYPE, type);
+            } else {
+                Crashlytics.setString(Log.USER_TYPE, "");
+            }
         }
+        if (!event.logged) {
+            SharedPreferences prefs = mContext.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
+            prefs.edit().clear().apply();
+            if (!Utils.DEBUG || !appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_SAVE_AUTH)) {
+                final SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+                editor.clear();
+                editor.apply();
+                //noinspection deprecation
+                CookieSyncManager.createInstance(mContext);
+                //noinspection deprecation
+                CookieManager.getInstance().removeAllCookie();
+            }
+        } else {
+            if (event.accountData.isDriver()) {
+                appPrefs.saveBooleanPreference(PreferenceTypes.K_GAMIFICATION, false);
+                EventBus.post(new GamificationSettingEvent(false));
+
+            }
+        }
+    }
+
+    private void onLoginSuccessful(final AccountData accountData) {
+        Log.w(TAG, "onLoginSuccessful for account.");
+        if (accountData.isDriver()) {
+            userDataManager.getDriverProfileDetails(new NetworkResponseDataListener<DriverData>() {
+                @Override
+                public void requestFailed(int status, DriverData details) {
+                    Log.w(TAG, "driver getDriverProfileDetails failed...assume payment model 10.");
+
+                    if (!ProfileFragment.PAYMENT_MODEL_VERSION_20.equals(profilePrefs.getString(ProfileFragment.K_DRIVER_PAYMENT_MODEL_VERSION, ProfileFragment
+                            .PAYMENT_MODEL_VERSION_10))) {
+                        //there wasn't a previous value which indicated that the current user uses the 2.0 payment model....save value representing 1.0 payment model
+                        profilePrefs.edit().putString(ProfileFragment.K_DRIVER_PAYMENT_MODEL_VERSION, ProfileFragment.PAYMENT_MODEL_VERSION_10).apply();
+                    }
+                    //notify right away...
+                    notifyAppOfSuccessfulLogin(accountData);
+                }
+
+                @Override
+                public void requestFinished(int status, DriverData details) {
+                    profilePrefs.edit().putString(ProfileFragment.K_DRIVER_PAYMENT_MODEL_VERSION, details.getPaymentModelVersion()).apply();
+                    notifyAppOfSuccessfulLogin(accountData);
+                }
+            });
+        } else {
+            notifyAppOfSuccessfulLogin(accountData);
+
+        }
+    }
+
+    private void notifyAppOfSuccessfulLogin(AccountData accountData) {
+        //notify right away...
+        EventBus.postSticky(new LoginChangedEvent(true, accountData));
+        EventBus.postSticky(new UserTypeChangedEvent(accountData.getUserType()));
     }
 
     private void showOSMLoginScreen(final OSVActivity activity) {
@@ -270,7 +361,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
                 @Override
                 public void requestFinished(int status, OsmProfileData osmProfileData) {
                     if (osmProfileData != null) {
-                        appPrefs.setUserPhotoUrl(osmProfileData.getProfilePictureUrl());
+                        appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, osmProfileData.getProfilePictureUrl());
                         mProfilePictureUrl = osmProfileData.getProfilePictureUrl();
                     }
                     activity.enableProgressBar(false);
@@ -284,20 +375,32 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
                     final String token = userData.getAccessToken();
                     final String userName = userData.getUsername();
                     final int type = userData.getUserType();
-                    final int loginType = userData.getLoginType();
+                    final String loginType = userData.getLoginType();
                     final String finalImgLink = mProfilePictureUrl;
-                    activity.runOnUiThread(() -> {
+                    activity.runOnUiThread(new Runnable() {
 
-                        if ("".equals(userName) || "".equals(token)) {
-                            logout();
-                        } else {
-                            onLoggedIn(new AccountData(id, userName, displayName, finalImgLink, type, loginType));
+                        @Override
+                        public void run() {
+
+                            if (userName.equals("") || token.equals("")) {
+                                EventBus.postSticky(new LoginChangedEvent(false, null));
+                                EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
+                            } else {
+                                onLoginSuccessful(new AccountData(id, userName, displayName, finalImgLink, type,
+                                        AccountData.getAccountTypeForString(loginType)));
+                            }
+                            activity.enableProgressBar(false);
+                            activity.finish();
                         }
-                        activity.enableProgressBar(false);
-                        activity.finish();
                     });
                 }
-            }, () -> activity.enableProgressBar(false));
+            }, new OAuthDialogFragment.OnDetachListener() {
+
+                @Override
+                public void onDetach() {
+                    activity.enableProgressBar(false);
+                }
+            });
         } else {
             activity.showSnackBar(R.string.no_internet_connection_label, Snackbar.LENGTH_SHORT);
         }
@@ -330,69 +433,83 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
      */
     private void showOSMLoginDialog(final FragmentActivity activity, final OsmAuthDataListener listener,
                                     final OAuthDialogFragment.OnDetachListener onDetachListener) {
-        runInBackground(() -> {
-            try {
-                final CommonsHttpOAuthConsumer consumer;
-                final CommonsHttpOAuthProvider provider;
-                consumer =
-                        new CommonsHttpOAuthConsumer(activity.getString(R.string.osm_consumer_key),
-                                activity.getString(R.string.osm_consumer_secret_key));
+        new Thread(new Runnable() {
 
-                provider = new CommonsHttpOAuthProvider("https://www.openstreetmap.org/oauth/request_token",
-                        "https://www.openstreetmap.org/oauth/access_token",
-                        "https://www.openstreetmap.org/oauth/authorize");
-                provider.setOAuth10a(true);
-                String authUrl = provider.retrieveRequestToken(consumer, "osmlogin://telenav?");
-                OAuthDialogFragment newFragment = new OAuthDialogFragment();
-                newFragment.setOnDetachListener(onDetachListener);
-                newFragment.setURL(authUrl);
-                newFragment.setResultListener(url -> runInBackground(() -> {
-                    try {
-                        Uri uri = Uri.parse(url);
-                        String oauthVerifier = uri.getQueryParameter("oauth_verifier");
-                        provider.retrieveAccessToken(consumer, oauthVerifier);
-                        String requestToken = consumer.getToken();
-                        String secretToken = consumer.getTokenSecret();
+            @Override
+            public void run() {
+                try {
+                    final CommonsHttpOAuthConsumer consumer;
+                    final CommonsHttpOAuthProvider provider;
+                    consumer = new CommonsHttpOAuthConsumer(activity.getString(R.string.osm_consumer_key),
+                            activity.getString(R.string.osm_consumer_secret_key));
 
-                        //get user details like username and profile picture url
-                        HttpGet request = new HttpGet(URL_USER_DETAILS);
-                        consumer.sign(request);
-                        HttpClient httpclient = new DefaultHttpClient();
-                        HttpResponse httpResponse;
-                        final String response;
-                        httpResponse = httpclient.execute(request);
-                        StatusLine statusLine = httpResponse.getStatusLine();
-                        if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
-                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            httpResponse.getEntity().writeTo(out);
-                            response = out.toString();
-                            out.close();
-                        } else {
-                            //Closes the connection.
-                            httpResponse.getEntity().getContent().close();
-                            throw new IOException(statusLine.getReasonPhrase());
+                    provider = new CommonsHttpOAuthProvider("https://www.openstreetmap.org/oauth/request_token",
+                            "https://www.openstreetmap.org/oauth/access_token",
+                            "https://www.openstreetmap.org/oauth/authorize");
+                    provider.setOAuth10a(true);
+                    String authUrl = provider.retrieveRequestToken(consumer, "osmlogin://telenav?");
+                    OAuthDialogFragment newFragment = new OAuthDialogFragment();
+                    newFragment.setOnDetachListener(onDetachListener);
+                    newFragment.setURL(authUrl);
+                    newFragment.setResultListener(new OAuthResultListener() {
+
+                        @Override
+                        public void onResult(final String url) {
+                            new Thread(new Runnable() {
+
+                                @SuppressWarnings("deprecation")
+                                @Override
+                                public void run() {
+                                    try {
+                                        Uri uri = Uri.parse(url);
+                                        String oauthVerifier = uri.getQueryParameter("oauth_verifier");
+                                        provider.retrieveAccessToken(consumer, oauthVerifier);
+                                        String requestToken = consumer.getToken();
+                                        String secretToken = consumer.getTokenSecret();
+
+                                        //get user details like username and profile picture url
+                                        HttpGet request = new HttpGet(URL_USER_DETAILS);
+                                        consumer.sign(request);
+                                        HttpClient httpclient = new DefaultHttpClient();
+                                        HttpResponse httpResponse;
+                                        final String response;
+                                        httpResponse = httpclient.execute(request);
+                                        StatusLine statusLine = httpResponse.getStatusLine();
+                                        if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+                                            ByteArrayOutputStream out = new ByteArrayOutputStream();
+                                            httpResponse.getEntity().writeTo(out);
+                                            response = out.toString();
+                                            out.close();
+                                        } else {
+                                            //Closes the connection.
+                                            httpResponse.getEntity().getContent().close();
+                                            throw new IOException(statusLine.getReasonPhrase());
+                                        }
+                                        listener.requestFinished(statusLine.getStatusCode(), new OsmProfileDataParser().parse(response));
+                                        authenticate(URL_AUTH_OSM, requestToken, secretToken, listener);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        ApiResponse response = new ApiResponse();
+                                        response.setHttpCode(403);
+                                        response.setHttpMessage(e.getMessage());
+                                        listener.requestFailed(NetworkResponseDataListener.HTTP_BAD_REQUEST, new AuthData());
+                                    }
+                                }
+                            }).start();
                         }
-                        listener.requestFinished(statusLine.getStatusCode(), new OsmProfileDataParser().parse(response));
-                        authenticate(URL_AUTH_OSM, requestToken, secretToken, listener);
-                    } catch (Exception e) {
-                        Log.d(TAG, Log.getStackTraceString(e));
-                        ApiResponse response = new ApiResponse();
-                        response.setHttpCode(403);
-                        response.setHttpMessage(e.getMessage());
-                        listener.requestFailed(NetworkResponseDataListener.HTTP_BAD_REQUEST, new AuthData());
-                    }
-                }));
-                FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
-                ft.addToBackStack("OAuthDialogFragment.TAG");
-                newFragment.show(ft, OAuthDialogFragment.TAG);
-            } catch (Exception e) {
-                Log.e(TAG, "showOSMLoginDialog: logging in failed " + e.toString());
-                ApiResponse response = new ApiResponse();
-                response.setHttpCode(403);
-                response.setHttpMessage(e.getMessage());
-                listener.requestFailed(NetworkResponseDataListener.HTTP_BAD_REQUEST, new AuthData());
+                    });
+                    FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
+                    ft.addToBackStack("OAuthDialogFragment.TAG");
+                    newFragment.show(ft, OAuthDialogFragment.TAG);
+                } catch (Exception e) {
+                    Log.e(TAG, "showOSMLoginDialog: logging in failed " + e.toString());
+                    ApiResponse response = new ApiResponse();
+                    response.setHttpCode(403);
+                    response.setHttpMessage(e.getMessage());
+                    listener.requestFailed(NetworkResponseDataListener.HTTP_BAD_REQUEST, new AuthData());
+                }
             }
-        });
+        }).start();
     }
 
     /**
@@ -406,23 +523,26 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
             @Override
             public void onSuccess(final int status, final AuthData authData) {
-                runInBackground(() -> {
-                    int loginType = AccountData.ACCOUNT_TYPE_OSM;
-                    if (url.contains("facebook")) {
-                        loginType = AccountData.ACCOUNT_TYPE_FACEBOOK;
-                    } else if (url.contains("google")) {
-                        loginType = AccountData.ACCOUNT_TYPE_GOOGLE;
-                    }
-                    authData.setLoginType(loginType);
-                    appPrefs.setUserId(authData.getId());
-                    appPrefs.setUserName(authData.getUsername());
-                    appPrefs.setUserDisplayName(authData.getDisplayName());
-                    appPrefs.setUserType(authData.getUserType());
-                    appPrefs.setLoginType(authData.getLoginType());
-                    appPrefs.saveAuthToken(authData.getAccessToken());
+                runInBackground(new Runnable() {
 
-                    listener.requestFinished(status, authData);
-                    Log.d(TAG, "authenticate: success");
+                    @Override
+                    public void run() {
+                        String loginType = "OSM";
+                        if (url.contains("facebook")) {
+                            loginType = "FACEBOOK";
+                        } else if (url.contains("google")) {
+                            loginType = "GOOGLE";
+                        }
+                        authData.setLoginType(loginType);
+                        appPrefs.saveStringPreference(PreferenceTypes.K_ACCESS_TOKEN, authData.getAccessToken());
+                        appPrefs.saveStringPreference(PreferenceTypes.K_USER_ID, authData.getId());
+                        appPrefs.saveStringPreference(PreferenceTypes.K_USER_NAME, authData.getUsername());
+                        appPrefs.saveStringPreference(PreferenceTypes.K_DISPLAY_NAME, authData.getDisplayName());
+                        appPrefs.saveIntPreference(PreferenceTypes.K_USER_TYPE, authData.getUserType());
+                        appPrefs.saveStringPreference(PreferenceTypes.K_LOGIN_TYPE, authData.getLoginType());
+                        listener.requestFinished(status, authData);
+                        Log.d(TAG, "authenticate: success");
+                    }
                 });
             }
 
@@ -436,50 +556,62 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
     }
 
     private void handleGoogleLoginResult(final GoogleSignInResult result) {
-        BackgroundThreadPool.post(() -> {
-            try {
-                Log.d(TAG, "handleSignInResult: success = " + result.isSuccess());
-                GoogleSignInAccount acct = result.getSignInAccount();
-                if (acct == null) {
-                    Log.d(TAG, "handleGoogleLoginResult: GoogleSignInAccount is null, rolling back login");
-                    logout();
-                    return;
-                }
-                final AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-                GoogleAccountCredential credential2 = GoogleAccountCredential.usingOAuth2(mContext, Collections.singleton(Scopes.PROFILE));
-                credential2.setSelectedAccount(acct.getAccount());
-                String token = null;
+        BackgroundThreadPool.post(new Runnable() {
+
+            @Override
+            public void run() {
                 try {
-                    token = credential2.getToken();
-                } catch (IOException | GoogleAuthException e) {
+                    Log.d(TAG, "handleSignInResult: success = " + result.isSuccess());
+                    GoogleSignInAccount acct = result.getSignInAccount();
+                    if (acct == null) {
+                        Log.d(TAG, "handleGoogleLoginResult: GoogleSignInAccount is null, rolling back login");
+                        EventBus.postSticky(new LogoutCommand());
+                        return;
+                    }
+                    final AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+                    GoogleAccountCredential credential2 = GoogleAccountCredential.usingOAuth2(mContext, Collections.singleton(Scopes.PROFILE));
+                    credential2.setSelectedAccount(acct.getAccount());
+                    String token = null;
+                    try {
+                        token = credential2.getToken();
+                    } catch (IOException | GoogleAuthException e) {
+                        Log.d(TAG, "handleGoogleLoginResult: " + Log.getStackTraceString(e));
+                    }
+                    authenticate(URL_AUTH_GOOGLE, token, null, new NetworkResponseDataListener<AuthData>() {
+
+                        @Override
+                        public void requestFailed(int status, AuthData details) {
+                            Log.d(TAG, "handleGoogleLoginResult requestFinished: rolling back login");
+                            EventBus.postSticky(new LogoutCommand());
+                        }
+
+                        @Override
+                        public void requestFinished(int status, AuthData userData) {
+                            Log.d(TAG, "handleGoogleLoginResult requestFinished: API token received, signing in with firebase as well");
+                            mAuth.signInWithCredential(credential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
+                                    if (!task.isSuccessful()) {
+                                        EventBus.postSticky(new LogoutCommand());
+                                    }
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d(TAG, "signInWithCredential:onFailure:" + Log.getStackTraceString(e));
+                                    EventBus.postSticky(new LogoutCommand());
+                                }
+                            });
+                        }
+                    });
+                } catch (Exception e) {
                     Log.d(TAG, "handleGoogleLoginResult: " + Log.getStackTraceString(e));
+                    Log.d(TAG, "handleGoogleLoginResult: rolling back login");
+                    EventBus.postSticky(new LogoutCommand());
                 }
-                authenticate(URL_AUTH_GOOGLE, token, null, new NetworkResponseDataListener<AuthData>() {
-
-                    @Override
-                    public void requestFailed(int status, AuthData details) {
-                        Log.d(TAG, "handleGoogleLoginResult requestFinished: rolling back login");
-                        logout();
-                    }
-
-                    @Override
-                    public void requestFinished(int status, AuthData userData) {
-                        Log.d(TAG, "handleGoogleLoginResult requestFinished: API token received, signing in with firebase as well");
-                        mAuth.signInWithCredential(credential).addOnCompleteListener(task -> {
-                            Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
-                            if (!task.isSuccessful()) {
-                                logout();
-                            }
-                        }).addOnFailureListener(e -> {
-                            Log.d(TAG, "signInWithCredential:onFailure:" + Log.getStackTraceString(e));
-                            logout();
-                        });
-                    }
-                });
-            } catch (Exception e) {
-                Log.d(TAG, "handleGoogleLoginResult: " + Log.getStackTraceString(e));
-                Log.d(TAG, "handleGoogleLoginResult: rolling back login");
-                logout();
             }
         });
     }
@@ -493,18 +625,22 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
             @Override
             public void requestFailed(int status, AuthData details) {
                 Log.d(TAG, "handleFacebookAccessToken requestFinished: API call failed, rolling back login");
-                logout();
+                EventBus.postSticky(new LogoutCommand());
             }
 
             @Override
             public void requestFinished(int status, AuthData userData) {
                 Log.d(TAG, "handleFacebookAccessToken requestFinished: API token received, signing in with firebase as well");
-                mAuth.signInWithCredential(credential).addOnCompleteListener(task -> {
-                    Log.d(TAG, "handleFacebookAccessToken signInWithCredential:onComplete:" + task.isSuccessful());
+                mAuth.signInWithCredential(credential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
 
-                    if (!task.isSuccessful()) {
-                        Log.d(TAG, "handleFacebookAccessTokenonComplete: unsuccessful, rolling back login");
-                        logout();
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "handleFacebookAccessToken signInWithCredential:onComplete:" + task.isSuccessful());
+
+                        if (!task.isSuccessful()) {
+                            Log.d(TAG, "handleFacebookAccessTokenonComplete: unsuccessful, rolling back login");
+                            EventBus.postSticky(new LogoutCommand());
+                        }
                     }
                 });
             }
@@ -537,18 +673,6 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
             com.facebook.login.LoginManager.getInstance().logOut();
         } catch (Exception e) {
             Log.d(TAG, "signOutFacebook: " + Log.getStackTraceString(e));
-        }
-    }
-
-    private void onLoggedIn(AccountData accountData) {
-        if (accountData.isDriver()) {
-            prefs.setGamificationEnabled(false);
-        }
-        if (Fabric.isInitialized()) {
-            int loginType = appPrefs.getLoginType();
-            int type = appPrefs.getUserType();
-            Answers.getInstance().logLogin(new LoginEvent().putSuccess(true).putMethod("" + loginType).putCustomAttribute("userType", type));
-            Crashlytics.setInt(Log.USER_TYPE, type);
         }
     }
 }

@@ -21,38 +21,38 @@ package org.greenrobot.eventbus.util;
  */
 public class ThrowableFailureEvent implements HasExecutionScope {
 
-  protected final Throwable throwable;
+    protected final Throwable throwable;
 
-  protected final boolean suppressErrorUi;
+    protected final boolean suppressErrorUi;
 
-  private Object executionContext;
+    private Object executionContext;
 
-  public ThrowableFailureEvent(Throwable throwable) {
-    this.throwable = throwable;
-    suppressErrorUi = false;
-  }
+    public ThrowableFailureEvent(Throwable throwable) {
+        this.throwable = throwable;
+        suppressErrorUi = false;
+    }
 
-  /**
-   * @param suppressErrorUi true indicates to the receiver that no error UI (e.g. dialog) should now displayed.
-   */
-  public ThrowableFailureEvent(Throwable throwable, boolean suppressErrorUi) {
-    this.throwable = throwable;
-    this.suppressErrorUi = suppressErrorUi;
-  }
+    /**
+     * @param suppressErrorUi true indicates to the receiver that no error UI (e.g. dialog) should now displayed.
+     */
+    public ThrowableFailureEvent(Throwable throwable, boolean suppressErrorUi) {
+        this.throwable = throwable;
+        this.suppressErrorUi = suppressErrorUi;
+    }
 
-  public Throwable getThrowable() {
-    return throwable;
-  }
+    public Throwable getThrowable() {
+        return throwable;
+    }
 
-  public boolean isSuppressErrorUi() {
-    return suppressErrorUi;
-  }
+    public boolean isSuppressErrorUi() {
+        return suppressErrorUi;
+    }
 
-  public Object getExecutionScope() {
-    return executionContext;
-  }
+    public Object getExecutionScope() {
+        return executionContext;
+    }
 
-  public void setExecutionScope(Object executionContext) {
-    this.executionContext = executionContext;
-  }
+    public void setExecutionScope(Object executionContext) {
+        this.executionContext = executionContext;
+    }
 }

@@ -11,7 +11,7 @@ import android.view.animation.Transformation;
  */
 class ResizeAnimation extends Animation {
 
-    public static final String TAG = "ResizeAnimation";
+    public final static String TAG = "ResizeAnimation";
 
     private final float mToHeight;
 

@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import javax.inject.Inject;
-import javax.inject.Named;
+import java.util.List;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -35,11 +36,12 @@ import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.data.Preferences;
-import com.telenav.osv.di.PlaybackModule;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.FullscreenEvent;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
+import com.telenav.osv.item.DriverOnlineSequence;
+import com.telenav.osv.item.DriverPayRateBreakdownCoverageItem;
 import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.NearbySequence;
 import com.telenav.osv.item.ScoreHistory;
@@ -47,41 +49,21 @@ import com.telenav.osv.item.ScoreItem;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.item.network.ApiResponse;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
-import com.telenav.osv.manager.network.UserDataManager;
-import com.telenav.osv.manager.playback.JpegPlaybackManager;
 import com.telenav.osv.manager.playback.PlaybackManager;
+import com.telenav.osv.manager.playback.SafePlaybackManager;
 import com.telenav.osv.ui.custom.RevealRelativeLayout;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
 import com.telenav.osv.ui.fragment.transition.ScaleFragmentTransition;
+import com.telenav.osv.ui.list.PayRateBreakdownAdapter;
 import com.telenav.osv.ui.list.ScoreHistoryAdapter;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 import com.telenav.streetview.scalablevideoview.ScalableVideoView;
-import dagger.Lazy;
 import io.fabric.sdk.android.Fabric;
 
-public class TrackPreviewFragment extends OSVFragment
-        implements Displayable<Sequence>, View.OnClickListener, PlaybackManager.PlaybackListener {
+public class TrackPreviewFragment extends DisplayFragment implements View.OnClickListener, PlaybackManager.PlaybackListener {
 
     public static final String TAG = "TrackPreviewFragment";
-
-    @Inject
-    @Named(PlaybackModule.SCOPE_JPEG_ONLINE)
-    Lazy<PlaybackManager> mOnlinePlayerInjector;
-
-    @Inject
-    @Named(PlaybackModule.SCOPE_JPEG_LOCAL)
-    Lazy<PlaybackManager> mLocalPlayerInjector;
-
-    @Inject
-    @Named(PlaybackModule.SCOPE_MP4_LOCAL)
-    Lazy<PlaybackManager> mLocalMp4PlayerInjector;
-
-    @Inject
-    UserDataManager mUserDataManager;
-
-    @Inject
-    Preferences appPrefs;
 
     private PlaybackManager mPlayer;
 
@@ -115,17 +97,17 @@ public class TrackPreviewFragment extends OSVFragment
 
     private ImageView mPointsBackground;
 
+    private SeekBar mSeekBar;
+
     private ImageView mMaximizeButton;
 
-    private PlaybackManager.PlaybackListener listener;
-
-    private boolean mSafe;
+    private SharedPreferences profilePrefs;
 
     @Override
-    public void setDisplayData(Sequence extra) {
-        mSequence = extra;
-        mOnline = mSequence.isOnline();
-        mSafe = mSequence.isSafe();
+    public void setSource(Object extra) {
+        mPlayer = (PlaybackManager) extra;
+        mSequence = mPlayer.getSequence();
+        mOnline = mPlayer.isSafe();
         hideDelete(mSequence instanceof NearbySequence);
     }
 
@@ -151,33 +133,30 @@ public class TrackPreviewFragment extends OSVFragment
     }
 
     @Override
-    public void onPreparing() {
-        activity.enableProgressBar(true);
-    }
-
-    @Override
-    public void onPrepared(boolean success) {
+    public void onPrepared() {
         mPrepared = true;
         activity.enableProgressBar(false);
     }
 
     @Override
     public void onProgressChanged(int index) {
-        if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
-            mScoreVisible = false;
-            float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
-            mScoreLayout.reveal(
-                    new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)),
-                    500);
-        }
-        if (mCurrentImageText != null) {
-            mCurrentImageText.setText(getSpannable(String.valueOf(index), "/" + mPlayer.getLength() + " IMG"));
+        if (mPlayer != null) {
+            if (mScoreVisible && mScoreLayout != null && mPointsText != null) {
+                mScoreVisible = false;
+                float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+                mScoreLayout.reveal(
+                        new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)), (int) (mPointsText.getWidth() / 2 + tenDp)),
+                        500);
+            }
+            if (mCurrentImageText != null) {
+                mCurrentImageText.setText(getSpannable("" + index, "/" + mPlayer.getLength() + " IMG"));
+            }
         }
     }
 
     @Override
     public void onExit() {
-        //nothing
+
     }
 
     @Override
@@ -189,46 +168,69 @@ public class TrackPreviewFragment extends OSVFragment
         }
         switch (v.getId()) {
             case R.id.previous_button:
-                mPlayer.previous();
+                if (mPlayer != null) {
+                    mPlayer.previous();
+                }
                 break;
             case R.id.fast_backward_button:
-                mPlayer.fastBackward();
+                if (mPlayer != null) {
+                    mPlayer.fastBackward();
+                }
                 break;
             case R.id.play_button:
-                if (mPlayer.isPlaying()) {
-                    mPlayer.pause();
-                } else {
-                    mPlayer.play();
+                if (mPlayer != null) {
+                    if (mPlayer.isPlaying()) {
+                        mPlayer.pause();
+                    } else {
+                        mPlayer.play();
+                    }
                 }
                 break;
             case R.id.fast_forward_button:
-                mPlayer.fastForward();
+                if (mPlayer != null) {
+                    mPlayer.fastForward();
+                }
                 break;
             case R.id.next_button:
-                mPlayer.next();
+                if (mPlayer != null) {
+                    mPlayer.next();
+                }
                 break;
             case R.id.delete_button:
-                if (mPlayer.isPlaying()) {
-                    mPlayer.pause();
-                }
-                final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
-                if (mSequence.isOnline()) {
-                    builder.setMessage(activity.getString(R.string.delete_online_track));
-                } else {
-                    builder.setMessage(activity.getString(R.string.delete_local_track));
-                }
-                builder.setTitle(activity.getString(R.string.delete_track_title)).setNegativeButton(R.string.no, (dialog, which) -> {
-
-                }).setPositiveButton(R.string.yes, (dialog, which) -> {
-                    if (mSequence.isOnline()) {
-                        deleteOnlineTrack();
-                    } else {
-                        deleteLocalTrack((LocalSequence) mSequence);
+                if (mPlayer != null) {
+                    if (mPlayer.isPlaying()) {
+                        mPlayer.pause();
                     }
-                }).create().show();
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
+                    if (mSequence.isOnline()) {
+                        builder.setMessage(activity.getString(R.string.delete_online_track));
+                    } else {
+                        builder.setMessage(activity.getString(R.string.delete_local_track));
+                    }
+                    builder.setTitle(activity.getString(R.string.delete_track_title))
+                            .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            }).setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (mSequence.isOnline()) {
+                                deleteOnlineTrack();
+                            } else {
+                                deleteLocalTrack((LocalSequence) mSequence);
+                            }
+                        }
+                    }).create().show();
+                }
                 break;
             case R.id.maximize_button:
-                toggleMaximize();
+                if (mPrepared) {
+                    toggleMaximize();
+                }
                 break;
         }
     }
@@ -237,6 +239,9 @@ public class TrackPreviewFragment extends OSVFragment
     public void onAttach(Context context) {
         super.onAttach(context);
         activity = (OSVActivity) context;
+        if (mPlayer != null) {
+            mPlayer.addPlaybackListener(this);
+        }
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -245,18 +250,7 @@ public class TrackPreviewFragment extends OSVFragment
         super.onCreate(savedInstanceState);
         setSharedElementEnterTransition(new ScaleFragmentTransition());
         setSharedElementReturnTransition(new ScaleFragmentTransition());
-        if (mSafe) {
-            if (mOnline) {
-                mPlayer = mOnlinePlayerInjector.get();
-            } else {
-                mPlayer = mLocalPlayerInjector.get();
-            }
-        } else {
-            mPlayer = mLocalMp4PlayerInjector.get();
-        }
-        mPlayer.addPlaybackListener(this);
-        mPlayer.addPlaybackListener(listener);
-        mPlayer.setSource(mSequence);
+        this.profilePrefs = getContext().getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
     }
 
     @Nullable
@@ -265,12 +259,14 @@ public class TrackPreviewFragment extends OSVFragment
         View view = inflater.inflate(R.layout.fragment_track_details, null);
         activity = (OSVActivity) getActivity();
         mFrameHolder = view.findViewById(R.id.image_holder);
-        SeekBar mSeekBar = view.findViewById(R.id.seek_bar_for_preview);
+        mSeekBar = view.findViewById(R.id.seek_bar_for_preview);
         mSeekBar.setProgress(0);
         if (!mPrepared) {
             activity.enableProgressBar(true);
         }
-        mPlayer.setSeekBar(mSeekBar);
+        if (mPlayer != null) {
+            mPlayer.setSeekBar(mSeekBar);
+        }
         ImageView mPreviousButton = view.findViewById(R.id.previous_button);
         ImageView mFastBackwardButton = view.findViewById(R.id.fast_backward_button);
         mPlayButton = view.findViewById(R.id.play_button);
@@ -308,7 +304,31 @@ public class TrackPreviewFragment extends OSVFragment
                 mImageDateText.setText(getSpannable(parts[0], parts[1]));
             }
         }
-        if (mSequence.getScore() > 0 && appPrefs.isGamificationEnabled()) {
+        if (mSequence instanceof DriverOnlineSequence) {
+            boolean byod20 = profilePrefs.getString(ProfileFragment.K_DRIVER_PAYMENT_MODEL_VERSION, ProfileFragment.PAYMENT_MODEL_VERSION_10)
+                    .equals(ProfileFragment.PAYMENT_MODEL_VERSION_20);
+            if (byod20) {
+                List<DriverPayRateBreakdownCoverageItem> payRateItems = ((DriverOnlineSequence) mSequence).getDriverPayRateBreakdownCoverage();
+                filterRedundantValues(payRateItems);
+                Collections.sort(payRateItems, (rhs, lhs) -> rhs.passes - lhs.passes);
+                mPointsDetails.setLayoutManager(new LinearLayoutManager(activity));
+                mPointsDetails.setAdapter(new PayRateBreakdownAdapter(payRateItems, mSequence.getCurrency(), activity));
+
+                String monetaryValue;
+                if (mSequence.getValue() > 1000) {
+                    monetaryValue = Utils.formatMoneyConstrained(mSequence.getValue() / 1000) + "K\n";
+                } else {
+                    monetaryValue = Utils.formatMoneyConstrained(mSequence.getValue()) + "\n";
+                }
+                String currency = mSequence.getCurrency();
+
+                setupBreakdownTextsAndClickListeners(mTotalPointsText, mPointsText, mScoreClose, getString(R.string.total_value) + currency + Utils.formatMoneyConstrained(mSequence
+                        .getValue()), monetaryValue, currency);
+            } else {
+                //byod 1.0, do not show any score indicator
+                hideTrackValueIndicator();
+            }
+        } else if (mSequence.getScore() > 0 && activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
             ArrayList<ScoreHistory> array = new ArrayList<>(mSequence.getScoreHistories().values());
             Iterator<ScoreHistory> iter = array.iterator();
             while (iter.hasNext()) {
@@ -342,6 +362,7 @@ public class TrackPreviewFragment extends OSVFragment
             Collections.sort(scores, (rhs, lhs) -> rhs.value - lhs.value);
             mPointsDetails.setLayoutManager(new LinearLayoutManager(activity));
             mPointsDetails.setAdapter(new ScoreHistoryAdapter(scores, activity));
+
             String first;
             if (mSequence.getScore() > 10000) {
                 first = mSequence.getScore() / 1000 + "K\n";
@@ -349,34 +370,10 @@ public class TrackPreviewFragment extends OSVFragment
                 first = mSequence.getScore() + "\n";
             }
             String second = "pts";
-            SpannableString styledString = new SpannableString(first + second);
-            styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, first.length(), 0);
-            styledString.setSpan(new StyleSpan(Typeface.NORMAL), first.length(), second.length() + first.length(), 0);
-            styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
-            styledString.setSpan(new AbsoluteSizeSpan(12, true), first.length(), second.length() + first.length(), 0);
-            mTotalPointsText.setText(getString(R.string.partial_total_points_label) + " " + mSequence.getScore());
-            mPointsText.setText(styledString);
-            mPointsText.setOnClickListener(v -> {
-                mPlayer.pause();
-                mScoreVisible = true;
-                float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
-                mScoreLayout
-                        .reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)),
-                                (int) (mPointsText.getWidth() / 2 + tenDp)), 500);
-            });
-            mScoreClose.setOnClickListener(v -> {
-                mScoreVisible = false;
-                float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
-                mScoreLayout
-                        .reveal(new Point((int) (mScoreLayout.getWidth() - (mPointsText.getWidth() / 2 + tenDp)),
-                                (int) (mPointsText.getWidth() / 2 + tenDp)), 500);
-            });
+
+            setupBreakdownTextsAndClickListeners(mTotalPointsText, mPointsText, mScoreClose, "Total Points: " + mSequence.getScore(), first, second);
         } else {
-            mPointsBackground.setVisibility(View.GONE);
-            mPointsText.setVisibility(View.GONE);
-            mPointsBackground = null;
-            mPointsText = null;
-            mScoreLayout = null;
+            hideTrackValueIndicator();
         }
 
         mPreviousButton.setOnClickListener(this);
@@ -387,7 +384,7 @@ public class TrackPreviewFragment extends OSVFragment
         mDeleteButton.setOnClickListener(this);
         mMaximizeButton.setOnClickListener(this);
 
-        if (!appPrefs.isMapEnabled()) {
+        if (activity.getApp().getAppPrefs().getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
             mMaximizeButton.setVisibility(View.GONE);
         }
 
@@ -400,17 +397,32 @@ public class TrackPreviewFragment extends OSVFragment
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-        if (mPlayer.isPlaying()) {
-            onPlaying();
-        } else {
-            onPaused();
+        if (mPlayer != null) {
+            if (mPlayer.isPlaying()) {
+                onPlaying();
+            } else {
+                onPaused();
+            }
         }
         if (mFrameHolder != null) {
             mFrameHolder.removeAllViews();
-            if (mSafe) {
-                //online or local jpeg
+            if (!mOnline) {
+                ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
+                mSurfaceView
+                        .setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
+                mFrameHolder.addView(mSurfaceView);
+                if (mPlayer != null) {
+                    mPlayer.setSurface(mSurfaceView);
+                }
+            } else {
                 ScrollDisabledViewPager mPager = new ScrollDisabledViewPager(activity);
 
                 FrameLayout.LayoutParams lp =
@@ -422,15 +434,9 @@ public class TrackPreviewFragment extends OSVFragment
                 lp.rightMargin = -fiveDp;
                 mPager.setLayoutParams(lp);
                 mFrameHolder.addView(mPager);
-                mPlayer.setSurface(mPager);
-            } else {
-                //else local mp4
-                ScalableVideoView mSurfaceView = new ScalableVideoView(activity);
-                mSurfaceView
-                        .setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-                mSurfaceView.setScalableType(ScalableVideoView.ScalableType.FIT_CENTER);
-                mFrameHolder.addView(mSurfaceView);
-                mPlayer.setSurface(mSurfaceView);
+                if (mPlayer != null) {
+                    mPlayer.setSurface(mPager);
+                }
             }
         }
         if (Fabric.isInitialized() && mPlayer != null) {
@@ -441,7 +447,7 @@ public class TrackPreviewFragment extends OSVFragment
 
                 @Override
                 public void onAnimationStart(Animator animation) {
-                    //nothing
+
                 }
 
                 @Override
@@ -452,7 +458,6 @@ public class TrackPreviewFragment extends OSVFragment
 
                                 @Override
                                 public void onAnimationStart(Animator animation) {
-                                    //nothing
 
                                 }
 
@@ -463,13 +468,11 @@ public class TrackPreviewFragment extends OSVFragment
 
                                 @Override
                                 public void onAnimationCancel(Animator animation) {
-                                    //nothing
 
                                 }
 
                                 @Override
                                 public void onAnimationRepeat(Animator animation) {
-                                    //nothing
 
                                 }
                             }).start();
@@ -477,13 +480,11 @@ public class TrackPreviewFragment extends OSVFragment
 
                 @Override
                 public void onAnimationCancel(Animator animation) {
-                    //nothing
 
                 }
 
                 @Override
                 public void onAnimationRepeat(Animator animation) {
-                    //nothing
 
                 }
             }).start();
@@ -492,6 +493,9 @@ public class TrackPreviewFragment extends OSVFragment
 
     @Override
     public void onPause() {
+        //        if (mPlayer != null){
+        //            mPlayer.pause();
+        //        }
         if (Fabric.isInitialized()) {
             Crashlytics.setString(Log.PLAYBACK, "none");
         }
@@ -499,12 +503,23 @@ public class TrackPreviewFragment extends OSVFragment
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-        mPlayer.stop();
-        mPlayer.destroy();
-        mPlayer.removePlaybackListener(this);
-        mPlayer = null;
+        if (mPlayer != null) {
+            mPlayer.stop();
+            mPlayer.destroy();
+            mPlayer = null;
+        }
         if (activity != null) {
             if (!activity.getApp().isMainProcess()) {
                 activity.finish();
@@ -515,6 +530,11 @@ public class TrackPreviewFragment extends OSVFragment
 
     @Override
     public void onDetach() {
+        if (mPlayer != null) {
+            mPlayer.stop();
+            mPlayer.destroy();
+            mPlayer.removePlaybackListener(this);
+        }
         activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.onDetach();
     }
@@ -527,6 +547,11 @@ public class TrackPreviewFragment extends OSVFragment
             mScoreLayout.reveal();
             return true;
         } else {
+            if (mPlayer != null) {
+                mPlayer.stop();
+                mPlayer.destroy();
+                mPlayer = null;
+            }
             if (activity != null) {
                 if (!activity.getApp().isMainProcess()) {
                     activity.finish();
@@ -562,8 +587,51 @@ public class TrackPreviewFragment extends OSVFragment
         }
     }
 
-    public void setListener(PlaybackManager.PlaybackListener listener) {
-        this.listener = listener;
+    private void hideTrackValueIndicator() {
+        mPointsBackground.setVisibility(View.GONE);
+        mPointsText.setVisibility(View.GONE);
+        mPointsBackground = null;
+        mPointsText = null;
+        mScoreLayout = null;
+    }
+
+    private void setupBreakdownTextsAndClickListeners(TextView mTotalPointsTextView, TextView pointsTextView, ImageView mScoreCloseImageView, String totalValueText, String
+            first, String second) {
+        SpannableString styledString = new SpannableString(first + second);
+        styledString.setSpan(new StyleSpan(Typeface.BOLD), 0, first.length(), 0);
+        styledString.setSpan(new StyleSpan(Typeface.NORMAL), first.length(), second.length() + first.length(), 0);
+        styledString.setSpan(new AbsoluteSizeSpan(16, true), 0, first.length(), 0);
+        styledString.setSpan(new AbsoluteSizeSpan(12, true), first.length(), second.length() + first.length(), 0);
+
+        mTotalPointsTextView.setText(totalValueText);
+        pointsTextView.setText(styledString);
+        pointsTextView.setOnClickListener((View v) -> {
+            if (mPlayer != null) {
+                mPlayer.pause();
+            }
+            mScoreVisible = true;
+            float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+            mScoreLayout.reveal(
+                    new Point((int) (mScoreLayout.getWidth() - (pointsTextView.getWidth() / 2 + tenDp)), (int) (pointsTextView.getWidth() / 2 + tenDp)),
+                    500);
+        });
+        mScoreCloseImageView.setOnClickListener((View v) -> {
+            mScoreVisible = false;
+            float tenDp = activity.getResources().getDimension(R.dimen.track_preview_score_button_margin);
+            mScoreLayout.reveal(
+                    new Point((int) (mScoreLayout.getWidth() - (pointsTextView.getWidth() / 2 + tenDp)), (int) (pointsTextView.getWidth() / 2 + tenDp)),
+                    500);
+        });
+    }
+
+    private void filterRedundantValues(List<DriverPayRateBreakdownCoverageItem> payrateItems) {
+        Iterator<DriverPayRateBreakdownCoverageItem> iter = payrateItems.iterator();
+        while (iter.hasNext()) {
+            DriverPayRateBreakdownCoverageItem item = iter.next();
+            if (item == null || item.receivedMoney <= 0) {
+                iter.remove();
+            }
+        }
     }
 
     private SpannableString getSpannable(String first, String second) {
@@ -575,6 +643,20 @@ public class TrackPreviewFragment extends OSVFragment
     }
 
     private void toggleMaximize() {
+        //        ViewCompat.setTransitionName(mPlayer.getSurface(), activity.getString(R.string.transition_name_fullscreen_preview));
+        ////        Bitmap bitmap = ((GlideBitmapDrawable)((ImageView)((ScrollDisabledViewPager)mPlayer.getSurface()).getChildAt(0))
+        /// .getDrawable()).getBitmap();
+        //        mPlayer.pause();
+        //        activity.openScreen(ScreenComposer.SCREEN_PREVIEW_FULLSCREEN, mSequence);
+        //        mFrameHolder.post(new Runnable() {
+        //            @Override
+        //            public void run() {
+        //                if (mPlayer != null) {
+        //                    mPlayer.onSizeChanged();
+        //                }
+        //            }
+        //        });
+
         if (mMaximized) {
             mMaximized = false;
             mMaximizeButton.setImageDrawable(activity.getResources().getDrawable(R.drawable.vector_maximize));
@@ -598,12 +680,20 @@ public class TrackPreviewFragment extends OSVFragment
             }
             EventBus.post(new FullscreenEvent(true));
         }
-        mFrameHolder.post(() -> mPlayer.onSizeChanged());
+        mFrameHolder.post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (mPlayer != null) {
+                    mPlayer.onSizeChanged();
+                }
+            }
+        });
     }
 
     private void deleteOnlineTrack() {
         activity.enableProgressBar(true);
-        mUserDataManager.deleteSequence(mSequence.getId(), new NetworkResponseDataListener<ApiResponse>() {
+        activity.getUserDataManager().deleteSequence(mSequence.getId(), new NetworkResponseDataListener<ApiResponse>() {
 
             @Override
             public void requestFailed(int status, ApiResponse details) {
@@ -612,15 +702,25 @@ public class TrackPreviewFragment extends OSVFragment
 
             @Override
             public void requestFinished(int status, final ApiResponse details) {
-                activity.runOnUiThread(() -> {
-                    activity.enableProgressBar(false);
-                    if (mScoreLayout != null && mScoreVisible) {
-                        mScoreVisible = false;
-                        mScoreLayout.reveal();
+                activity.runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        activity.enableProgressBar(false);
+                        if (mScoreLayout != null && mScoreVisible) {
+                            mScoreVisible = false;
+                            mScoreLayout.reveal();
+                        }
+                        activity.onBackPressed();
+                        EventBus.post(new SequencesChangedEvent(true));
+                        mHandler.postDelayed(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
+                            }
+                        }, 250);
                     }
-                    activity.onBackPressed();
-                    EventBus.post(new SequencesChangedEvent(true));
-                    mHandler.postDelayed(() -> activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT), 250);
                 });
             }
         });
@@ -636,18 +736,22 @@ public class TrackPreviewFragment extends OSVFragment
                 mSequence.getFolder().delete();
             }
             activity.enableProgressBar(false);
-            mHandler.postDelayed(() -> {
-                activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
-                if (mPlayer instanceof JpegPlaybackManager && !mSequence.isOnline()) {
-                    if (mScoreLayout != null && mScoreVisible) {
-                        mScoreVisible = false;
-                        mScoreLayout.reveal();
+            mHandler.postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    activity.showSnackBar(R.string.recording_deleted, Snackbar.LENGTH_SHORT);
+                    if (mPlayer instanceof SafePlaybackManager) {
+                        if (mScoreLayout != null && mScoreVisible) {
+                            mScoreVisible = false;
+                            mScoreLayout.reveal();
+                        }
+                        activity.onBackPressed();
+                        EventBus.postSticky(new SequencesChangedEvent(false, sequenceId));
+                    } else {
+                        EventBus.post(new SequencesChangedEvent(false, sequenceId));
+                        activity.finish();
                     }
-                    activity.onBackPressed();
-                    EventBus.postSticky(new SequencesChangedEvent(false, sequenceId));
-                } else {
-                    EventBus.post(new SequencesChangedEvent(false, sequenceId));
-                    activity.finish();
                 }
             }, 250);
         }

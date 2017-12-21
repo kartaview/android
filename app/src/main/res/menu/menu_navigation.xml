@@ -12,6 +12,10 @@
         android:icon="@drawable/vector_tracks_gray"
         android:title="@string/upload_label" />
     <item
+        android:id="@+id/menu_driver_guide"
+        android:icon="@drawable/guide_icon"
+        android:title="@string/guide" />
+    <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/vector_settings_gray"
         android:title="@string/settings" />

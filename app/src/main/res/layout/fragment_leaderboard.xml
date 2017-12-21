@@ -21,12 +21,13 @@
         <android.support.design.widget.TabItem
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="@string/all_world_label" />
+            android:text="All World" />
 
         <android.support.design.widget.TabItem
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="@string/region_label" />
+            android:text="Region" />
+
     </android.support.design.widget.TabLayout>
 
     <android.support.v4.widget.SwipeRefreshLayout
@@ -46,7 +47,10 @@
             android:layout_marginTop="100dp"
             android:background="@color/white"
             android:minHeight="1000dp"
-            tools:listitem="@layout/item_leaderboard" />
+            tools:listitem="@layout/item_leaderboard">
+
+        </android.support.v7.widget.RecyclerView>
+
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <FrameLayout

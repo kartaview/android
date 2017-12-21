@@ -5,6 +5,7 @@
     android:height="162dp"
     android:viewportHeight="162"
     android:viewportWidth="162">
+
     <clip-path
         android:name="Mask"
         android:fillColor="#00A75A"

@@ -4,57 +4,64 @@ import java.util.ArrayList;
 import android.view.View;
 import android.widget.SeekBar;
 import com.skobbler.ngx.SKCoordinate;
+import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.item.Sequence;
 
 /**
  * abstract playback manager
  * Created by Kalman on 27/07/16.
  */
-public interface PlaybackManager {
+public abstract class PlaybackManager {
 
-    void setSource(Sequence sequence);
+    public static PlaybackManager get(OSVActivity activity, Sequence sequence) {
+        if (!sequence.isOnline()) {
+            return sequence.isSafe() ? new SafePlaybackManager(activity, sequence) : new LocalPlaybackManager(activity, sequence);
+        } else {
+            return new OnlinePlaybackManager(activity, sequence);
+        }
+    }
 
-    View getSurface();
+    public abstract View getSurface();
 
-    void setSurface(View surface);
+    public abstract void setSurface(View surface);
 
-    void prepare();
+    public abstract void prepare();
 
-    void next();
+    public abstract void next();
 
-    void previous();
+    public abstract void previous();
 
-    void play();
+    public abstract void play();
 
-    void pause();
+    public abstract void pause();
 
-    void stop();
+    public abstract void stop();
 
-    void fastForward();
+    public abstract void fastForward();
 
-    void fastBackward();
+    public abstract void fastBackward();
 
-    boolean isPlaying();
+    public abstract boolean isPlaying();
 
-    void setSeekBar(SeekBar seekBar);
+    public abstract void setSeekBar(SeekBar seekBar);
 
-    int getLength();
+    public abstract int getLength();
 
-    void destroy();
+    public abstract void destroy();
 
-    void addPlaybackListener(PlaybackListener playbackListener);
+    public abstract void addPlaybackListener(PlaybackListener playbackListener);
 
-    void removePlaybackListener(PlaybackListener playbackListener);
+    public abstract void removePlaybackListener(PlaybackListener playbackListener);
 
-    boolean isSafe();
+    public abstract boolean isSafe();
 
-    Sequence getSequence();
+    public abstract Sequence getSequence();
 
-    ArrayList<SKCoordinate> getTrack();
+    public abstract ArrayList<SKCoordinate> getTrack();
 
-    void onSizeChanged();
+    public abstract void onSizeChanged();
 
-    interface PlaybackListener {
+    public interface PlaybackListener {
 
         void onPlaying();
 
@@ -62,9 +69,7 @@ public interface PlaybackManager {
 
         void onStopped();
 
-        void onPreparing();
-
-        void onPrepared(boolean success);
+        void onPrepared();
 
         void onProgressChanged(int index);
 

@@ -16,8 +16,8 @@ public class NetworkUtils {
     /**
      * checks if there is WI-FI or network connection available
      */
-    public static boolean isInternetAvailable(Context context) {
-        final ConnectivityManager conectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    public static boolean isInternetAvailable(Context currentActivity) {
+        final ConnectivityManager conectivityManager = (ConnectivityManager) currentActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkInfo networkInfo = conectivityManager.getActiveNetworkInfo();
         if (networkInfo != null) {
             if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
@@ -45,8 +45,8 @@ public class NetworkUtils {
     /**
      * checks if there is WI-FI connection available
      */
-    public static boolean isWifiInternetAvailable(Context context) {
-        final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    public static boolean isWifiInternetAvailable(Context currentActivity) {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) currentActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo != null) {
             if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {

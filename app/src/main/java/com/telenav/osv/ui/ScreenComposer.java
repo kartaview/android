@@ -5,6 +5,7 @@ import java.util.Stack;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -27,8 +28,9 @@ import android.widget.Toast;
 import com.crashlytics.android.Crashlytics;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
+import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.data.Preferences;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.camera.CameraInfoEvent;
 import com.telenav.osv.event.hardware.camera.CameraInitEvent;
@@ -36,13 +38,17 @@ import com.telenav.osv.event.ui.FullscreenEvent;
 import com.telenav.osv.event.ui.PreviewSwitchEvent;
 import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.item.network.TrackCollection;
 import com.telenav.osv.manager.Recorder;
-import com.telenav.osv.manager.network.LoginManager;
+import com.telenav.osv.manager.playback.LocalPlaybackManager;
+import com.telenav.osv.manager.playback.OnlinePlaybackManager;
+import com.telenav.osv.manager.playback.PlaybackManager;
+import com.telenav.osv.manager.playback.SafePlaybackManager;
 import com.telenav.osv.ui.custom.FixedFrameLayout;
 import com.telenav.osv.ui.fragment.ByodProfileFragment;
 import com.telenav.osv.ui.fragment.CameraControlsFragment;
 import com.telenav.osv.ui.fragment.CameraPreviewFragment;
+import com.telenav.osv.ui.fragment.DisplayFragment;
+import com.telenav.osv.ui.fragment.DriverGuideFragment;
 import com.telenav.osv.ui.fragment.FullscreenFragment;
 import com.telenav.osv.ui.fragment.HintsFragment;
 import com.telenav.osv.ui.fragment.IssueReportFragment;
@@ -62,21 +68,47 @@ import com.telenav.osv.utils.DimenUtils;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 import io.fabric.sdk.android.Fabric;
-import static com.telenav.osv.item.network.UserData.TYPE_BAU;
-import static com.telenav.osv.item.network.UserData.TYPE_BYOD;
-import static com.telenav.osv.item.network.UserData.TYPE_CONTRIBUTOR;
-import static com.telenav.osv.item.network.UserData.TYPE_DEDICATED;
-import static com.telenav.osv.item.network.UserData.TYPE_QA;
 
 /**
  * The class responsible for displaying the different screens
  * Created by Kalman on 17/01/2017.
- * todo onBackPressed takes too much time on UiThread
  */
-//@DebugLog //todo enable this to see method run time
-public class ScreenComposer implements Navigator {
+public class ScreenComposer implements ScreenDecorator.OnNavigationListener {
 
-    private static final String TAG = "ScreenComposer";
+    //  ==========================SCREENS==============================
+
+    public static final int SCREEN_MAP = 0;
+
+    public static final int SCREEN_RECORDING = 1;
+
+    public static final int SCREEN_MY_PROFILE = 2;
+
+    @SuppressWarnings("WeakerAccess")
+    public static final int SCREEN_SETTINGS = 3;
+
+    public static final int SCREEN_PREVIEW = 4;
+
+    public static final int SCREEN_UPLOAD_PROGRESS = 5;
+
+    @SuppressWarnings("WeakerAccess")
+    public static final int SCREEN_WAITING = 6;
+
+    public static final int SCREEN_RECORDING_HINTS = 8;
+
+    public static final int SCREEN_NEARBY = 9;
+
+    public static final int SCREEN_LEADERBOARD = 10;
+
+    public static final int SCREEN_SUMMARY = 11;
+
+    public static final int SCREEN_REPORT = 12;
+
+    @SuppressWarnings("WeakerAccess")
+    public static final int SCREEN_PREVIEW_FULLSCREEN = 13;
+
+    public static final int SCREEN_DRIVER_GUIDE = 14;
+
+    private final static String TAG = "ScreenComposer";
 
     //  ==========================STATES==============================
 
@@ -103,7 +135,7 @@ public class ScreenComposer implements Navigator {
     private final FrameLayout.LayoutParams fullScreenLP =
             new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-    private MapFragment mapFragment;
+    private DisplayFragment mapFragment;
 
     private Stack<Integer> mScreenStack = new Stack<>();
 
@@ -147,7 +179,7 @@ public class ScreenComposer implements Navigator {
 
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
-    private Preferences appPrefs;
+    private ApplicationPreferences appPrefs;
 
     private ProgressBar progressBar;
 
@@ -155,13 +187,13 @@ public class ScreenComposer implements Navigator {
 
     private int mCurrentState = STATE_MAP;
 
-    public ScreenComposer(OSVActivity activity, Recorder recorder, Preferences prefs) {
+    public ScreenComposer(OSVActivity activity) {
         this.activity = activity;
-        appPrefs = prefs;
-        mRecorder = recorder;
+        appPrefs = getApp().getAppPrefs();
+        mRecorder = getApp().getRecorder();
         mFragmentManager = activity.getSupportFragmentManager();
-        mDecorator = new ScreenDecorator(activity, recorder, prefs);
-        mDecorator.setNavigator(this);
+        mDecorator = new ScreenDecorator(activity);
+        mDecorator.setBackListener(this);
         progressBar = activity.findViewById(R.id.progressbar);
         //noinspection deprecation
         progressBar.getIndeterminateDrawable()
@@ -178,6 +210,47 @@ public class ScreenComposer implements Navigator {
         }
     }
 
+    public void onBackPressed() {
+        mHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (mDecorator.closeDrawerIfOpen()) {
+                    return;
+                }
+                cancelAction();
+                int screen = getCurrentScreen();
+
+                Log.d(TAG, "onBackPressed: " + screen);
+                if (screen == SCREEN_MAP) {
+                    showExitDialog();
+                    return;
+                } else if (screen == SCREEN_RECORDING) {
+                    if (mRecorder.isRecording()) {
+                        showRecordingDialog();
+                    } else {
+                        openScreen(SCREEN_MAP);
+                    }
+                    return;
+                } else if (screen == SCREEN_DRIVER_GUIDE) {
+                    DriverGuideFragment driverGuideFragment = (DriverGuideFragment) mFragmentManager.findFragmentByTag(DriverGuideFragment.TAG);
+                    if (driverGuideFragment != null) {
+                        if (driverGuideFragment.onBackPressed()) {
+                            return;
+                        }
+                    }
+                }
+                try {
+                    mFragmentManager.popBackStackImmediate();
+                    mScreenStack.pop();
+                    onScreenChanged(getCurrentScreen());
+                } catch (Exception e) {
+                    Log.w(TAG, "error: popBackStackImmediate failed");
+                }
+            }
+        });
+    }
+
     public void openScreen(final int screen, final Object extra) {
         if (getCurrentScreen() == screen) {
             return;
@@ -191,18 +264,16 @@ public class ScreenComposer implements Navigator {
             mDecorator.hideSnackBar();
             Log.d(TAG, "openScreen: " + screen);
             switch (screen) {
-                default:
                 case SCREEN_MAP:
                     removeUpperFragments();
-                    while (!mScreenStack.isEmpty()) {
+                    while (mScreenStack.size() > 0) {
                         mScreenStack.pop();
                     }
                     break;
                 case SCREEN_RECORDING:
                     int cameraPermitted = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA);
-                    if (
-                            cameraPermitted == PackageManager.PERMISSION_DENIED) {
-                        showSnackBar(activity.getString(R.string.camera_permission_warning), Snackbar.LENGTH_LONG, null, null);
+                    if (cameraPermitted == PackageManager.PERMISSION_DENIED) {
+                        showSnackBar("Camera permission was denied, please grant access to camera.", Snackbar.LENGTH_LONG, null, null);
                         return;
                     }
                     removeUpperFragments();
@@ -212,7 +283,7 @@ public class ScreenComposer implements Navigator {
                     break;
                 case SCREEN_MY_PROFILE:
                     tag = ProfileFragment.TAG;
-                    int userType = appPrefs.getUserType();
+                    int userType = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
                     fragment = getProfileFragmentForType(userType);
                     break;
                 case SCREEN_LEADERBOARD:
@@ -221,14 +292,25 @@ public class ScreenComposer implements Navigator {
                     break;
                 case SCREEN_SETTINGS:
                     tag = SettingsFragment.TAG;
-                    fragment = new SettingsFragment();
+                    SettingsFragment settingsfragment = new SettingsFragment();
+                    settingsfragment.setRecorder(getApp().getRecorder());
+                    fragment = settingsfragment;
                     break;
                 case SCREEN_PREVIEW:
                     animate = false;
-                    mapFragment.setDisplayData((Sequence) extra);
+                    PlaybackManager player;
+                    if (((Sequence) extra).isOnline()) {
+                        player = new OnlinePlaybackManager(activity, (Sequence) extra);
+                    } else {
+                        if (((LocalSequence) extra).isSafe()) {
+                            player = new SafePlaybackManager(activity, (Sequence) extra);
+                        } else {
+                            player = new LocalPlaybackManager(activity, (Sequence) extra);
+                        }
+                    }
+                    mapFragment.setSource(player);
                     TrackPreviewFragment trackPreviewFragment = new TrackPreviewFragment();
-                    trackPreviewFragment.setDisplayData((Sequence) extra);
-                    trackPreviewFragment.setListener(mapFragment);
+                    trackPreviewFragment.setSource(player);
                     tag = TrackPreviewFragment.TAG;
                     fragment = trackPreviewFragment;
                     break;
@@ -236,7 +318,7 @@ public class ScreenComposer implements Navigator {
                     tag = FullscreenFragment.TAG;
                     FullscreenFragment fullscreenFragment = new FullscreenFragment();
                     fragment = fullscreenFragment;
-                    fullscreenFragment.setDisplayData((Sequence) extra);
+                    fullscreenFragment.setSource(extra);
                     break;
                 case SCREEN_WAITING:
                     tag = WaitingFragment.TAG;
@@ -252,9 +334,8 @@ public class ScreenComposer implements Navigator {
                     break;
                 case SCREEN_SUMMARY:
                     tag = RecordingSummaryFragment.TAG;
-                    RecordingSummaryFragment recordingSummaryFragment =
-                            new RecordingSummaryFragment();
-                    recordingSummaryFragment.setDisplayData((LocalSequence) extra);
+                    RecordingSummaryFragment recordingSummaryFragment = new RecordingSummaryFragment();
+                    recordingSummaryFragment.setSource(extra);
                     fragment = recordingSummaryFragment;
                     break;
                 case SCREEN_REPORT:
@@ -268,9 +349,15 @@ public class ScreenComposer implements Navigator {
                 case SCREEN_NEARBY:
                     tag = NearbyFragment.TAG;
                     NearbyFragment nearbyFragment = new NearbyFragment();
-                    fragment =
-                            nearbyFragment;
-                    nearbyFragment.setDisplayData((TrackCollection) extra);
+                    fragment = nearbyFragment;
+                    nearbyFragment.setSource(extra);
+                    break;
+                case SCREEN_DRIVER_GUIDE:
+                    while (mScreenStack.size() > 1) {
+                        mScreenStack.pop();
+                    }
+                    tag = DriverGuideFragment.TAG;
+                    fragment = DriverGuideFragment.newInstance(appPrefs.getIntPreference(PreferenceTypes.K_DEBUG_SERVER_TYPE));
                     break;
             }
             try {
@@ -282,49 +369,17 @@ public class ScreenComposer implements Navigator {
                 Log.d(TAG, "openScreen: " + Log.getStackTraceString(e));
             }
         });
-        mHandler.post(() -> onScreenChanged(getCurrentScreen()));
+        mHandler.post(() -> {
+            onScreenChanged(getCurrentScreen());
+        });
     }
 
     public void openScreen(final int screen) {
         openScreen(screen, null);
     }
 
-    public void onBackPressed() {
-        mHandler.post(() -> {
-            if (mDecorator.closeDrawerIfOpen()) {
-                return;
-            }
-            cancelAction();
-            int screen = getCurrentScreen();
-
-            Log.d(TAG, "onBackPressed: " + screen);
-            if (screen == SCREEN_MAP) {
-                showExitDialog();
-                return;
-            } else if (screen == SCREEN_RECORDING) {
-                if (mRecorder.isRecording()) {
-                    showRecordingDialog();
-                } else {
-                    openScreen(SCREEN_MAP);
-                }
-                return;
-            }
-            try {
-                mFragmentManager.popBackStackImmediate();
-                mScreenStack.pop();
-                onScreenChanged(getCurrentScreen());
-            } catch (Exception e) {
-                Log.w(TAG, "error: popBackStackImmediate failed " + Log.getStackTraceString(e));
-            }
-        });
-    }
-
     public int getCurrentScreen() {
         return mScreenStack.peek();
-    }
-
-    public void setLoginManager(LoginManager loginManager) {
-        mDecorator.setLoginManager(loginManager);
     }
 
     public void onStart() {
@@ -348,7 +403,7 @@ public class ScreenComposer implements Navigator {
 
     @Subscribe
     public void onFullscreenRequest(FullscreenEvent event) {
-        if (appPrefs.isMapEnabled()) {
+        if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
             if (event.fullscreen) {
                 transitionToState(mCurrentState, STATE_SPLIT_FULLSCREEN);
             } else {
@@ -370,33 +425,56 @@ public class ScreenComposer implements Navigator {
     }
 
     public void enableProgressBar(final boolean enable) {
-        mHandler.post(() -> {
-            if (progressBar != null) {
-                progressBar.setVisibility(enable ? View.VISIBLE : View.GONE);
+        mHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (progressBar != null) {
+                    progressBar.setVisibility(enable ? View.VISIBLE : View.GONE);
+                }
             }
         });
     }
 
     public void onConfigurationChanged(final Configuration newConfig) {
-        mHandler.post(() -> {
-            int orientation = newConfig.orientation;
-            boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
-            setupLayoutBoundaries(portrait);
-            setPaddingToHolder(largeHolder, mCurrentState);
-            mRecordingFeedbackLayout.requestLayout();
-            previewHolder.requestLayout();
-            controlsHolder.requestLayout();
-            mapHolder.requestLayout();
-            largeHolder.requestLayout();
-            if (mRecordingFeedbackLayout != null) {
-                mRecordingFeedbackLayout.refreshChildren(portrait);
+        mHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+                int orientation = newConfig.orientation;
+                boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
+                setupLayoutBoundaries(portrait);
+                setPaddingToHolder(largeHolder, mCurrentState);
+                mRecordingFeedbackLayout.requestLayout();
+                previewHolder.requestLayout();
+                controlsHolder.requestLayout();
+                mapHolder.requestLayout();
+                largeHolder.requestLayout();
+                if (mRecordingFeedbackLayout != null) {
+                    mRecordingFeedbackLayout.refreshChildren(portrait);
+                }
             }
         });
+        if (getCurrentScreen() == SCREEN_RECORDING || getCurrentScreen() == SCREEN_RECORDING_HINTS) {
+            mHandler.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    mDecorator.startImmersiveMode();
+                }
+            });
+        }
         mDecorator.onConfigurationChanged(newConfig);
     }
 
     public void onHomePressed() {
         mDecorator.onHomePressed();
+    }
+
+    public void onWindowFocusChanged(boolean hasFocus) {
+        if (hasFocus && (getCurrentScreen() == SCREEN_RECORDING || getCurrentScreen() == SCREEN_RECORDING_HINTS)) {
+            mDecorator.startImmersiveMode();
+        }
     }
 
     public void showSnackBar(CharSequence text, int duration, CharSequence button, Runnable onClick) {
@@ -454,8 +532,6 @@ public class ScreenComposer implements Navigator {
                 case NearbyFragment.TAG:
                     mScreenStack.add(SCREEN_NEARBY);
                     break;
-                default:
-                    break;
             }
         }
     }
@@ -465,7 +541,9 @@ public class ScreenComposer implements Navigator {
             mapFragment = new MapFragment();
         }
         CameraPreviewFragment cameraPreviewFragment = new CameraPreviewFragment();
+        cameraPreviewFragment.setRecorder(getApp().getRecorder());
         CameraControlsFragment cameraControlsFragment = new CameraControlsFragment();
+        cameraControlsFragment.setRecorder(getApp().getRecorder());
         FragmentTransaction ft = mFragmentManager.beginTransaction();
         ft.add(R.id.content_frame_map, mapFragment, MapFragment.TAG);
         ft.add(R.id.content_frame_camera, cameraPreviewFragment, CameraPreviewFragment.TAG);
@@ -479,18 +557,18 @@ public class ScreenComposer implements Navigator {
     private OSVFragment getProfileFragmentForType(int userType) {
         Log.d(TAG, "getProfileFragmentForType: " + userType);
         switch (userType) {
-            case TYPE_BYOD:
-                return new ByodProfileFragment();
-            //return new ProfileByodFragment();//todo only used in new profile fragment impl.
-            case TYPE_CONTRIBUTOR:
-            case TYPE_QA:
-                if (appPrefs.isGamificationEnabled()) {
-                    return new UserProfileFragment();
-                }
-                //no break, we default to simple profile fragment
-            case TYPE_DEDICATED:
-            case TYPE_BAU:
             default:
+            case PreferenceTypes.USER_TYPE_BYOD:
+                return new ByodProfileFragment();
+            case PreferenceTypes.USER_TYPE_CONTRIBUTOR:
+            case PreferenceTypes.USER_TYPE_QA:
+                if (appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true)) {
+                    return new UserProfileFragment();
+                } else {
+                    return new SimpleProfileFragment();
+                }
+            case PreferenceTypes.USER_TYPE_DEDICATED:
+            case PreferenceTypes.USER_TYPE_BAU:
                 return new SimpleProfileFragment();
         }
     }
@@ -600,7 +678,7 @@ public class ScreenComposer implements Navigator {
             case SCREEN_PREVIEW:
                 //            case SCREEN_PREVIEW_FULLSCREEN:
                 transitionToState(mCurrentState, STATE_SPLIT);
-                if (!appPrefs.isMapEnabled()) {
+                if (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED)) {
                     transitionToState(mCurrentState, STATE_SPLIT_FULLSCREEN);
                 }
                 break;
@@ -625,10 +703,16 @@ public class ScreenComposer implements Navigator {
                 animateToFullscreen(mapHolder, fullScreenLP);
                 break;
             case STATE_MAP << STATE_RECORDING:
+                //                FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)recordLargeLP);
+                //                copy.gravity = recordLargeLP.gravity;
                 previewHolder.setLayoutParams(recordLargeLP);
                 previewHolder.requestLayout();
+                //                copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)recordLargeLP);
+                //                copy.gravity = recordLargeLP.gravity;
                 mRecordingFeedbackLayout.setLayoutParams(recordLargeLP);
                 previewHolder.requestLayout();
+                //                copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)controlsHolderLP);
+                //                copy.gravity = controlsHolderLP.gravity;
                 controlsHolder.setLayoutParams(controlsHolderLP);
                 controlsHolder.requestLayout();
                 if (isMinimapAvailable()) {
@@ -644,6 +728,8 @@ public class ScreenComposer implements Navigator {
             case STATE_MAP << STATE_SPLIT:
                 mapHolder.bringToFront();
                 largeHolder.bringToFront();
+                //                copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)splitFourLP);
+                //                copy.gravity = splitFourLP.gravity;
                 animateToSplitRatioSmall(mapHolder, splitFourLP);
                 mapHolder.requestLayout();
                 animateToSplitRatioLarge(largeHolder, splitSixLP);
@@ -712,37 +798,47 @@ public class ScreenComposer implements Navigator {
     }
 
     private void animateToLarge(FrameLayout holder, FrameLayout.LayoutParams lp) {
-        //animate to lp, right now its disabled so we set it directly
+        //        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
+        //        copy.gravity = lp.gravity;
         holder.setLayoutParams(lp);
     }
 
     private void animateToSplitRatioLarge(FrameLayout holder, FrameLayout.LayoutParams lp) {
-        //animate to lp, right now its disabled so we set it directly
+        //        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
+        //        copy.gravity = lp.gravity;
         holder.setLayoutParams(lp);
     }
 
     private void animateToSplitRatioSmall(FrameLayout holder, FrameLayout.LayoutParams lp) {
-        //animate to lp, right now its disabled so we set it directly
+        //        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
+        //        copy.gravity = lp.gravity;
         holder.setLayoutParams(lp);
     }
 
     private void animateToHidden(FrameLayout holder, FrameLayout.LayoutParams lp) {
-        //animate to lp, right now its disabled so we set it directly
+        //        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
+        //        copy.gravity = lp.gravity;
         holder.setLayoutParams(lp);
     }
 
     private void animateToSmall(FrameLayout holder, FrameLayout.LayoutParams lp) {
-        //animate to lp, right now its disabled so we set it directly
+        //        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
+        //        copy.gravity = lp.gravity;
         holder.setLayoutParams(lp);
     }
 
     private void animateToFullscreen(FrameLayout holder, FrameLayout.LayoutParams lp) {
-        //animate to lp, right now its disabled so we set it directly
+        //        FrameLayout.LayoutParams copy = new FrameLayout.LayoutParams((ViewGroup.MarginLayoutParams)lp);
+        //        copy.gravity = lp.gravity;
         holder.setLayoutParams(lp);
     }
 
     private boolean isMinimapAvailable() {
-        return appPrefs.isMapEnabled() && appPrefs.isMiniMapEnabled();
+        return isMapEnabled() && appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true);
+    }
+
+    private boolean isMapEnabled() {
+        return !appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false);
     }
 
     private void displayFragment(OSVFragment fragment, String tag, boolean animate) {
@@ -802,8 +898,17 @@ public class ScreenComposer implements Navigator {
         if (mExitDialog == null) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
             mExitDialog = builder.setMessage(R.string.exit_app_message).setTitle(R.string.app_name_formatted)
-                    .setPositiveButton(R.string.exit_label, (dialog, which) -> activity.finish())
-                    .setNegativeButton(R.string.cancel_label, (dialog, which) -> {
+                    .setPositiveButton(R.string.exit_label, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            activity.finish();
+                        }
+                    }).setNegativeButton(R.string.cancel_label, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
                     }).create();
         }
         mExitDialog.show();
@@ -812,15 +917,23 @@ public class ScreenComposer implements Navigator {
     private void showRecordingDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialog);
         builder.setMessage(R.string.stop_recording_warning_message).setTitle(R.string.stop_recording_warning_title)
-                .setNegativeButton(R.string.stop_value_string, (dialog, which) -> {
-                    mRecorder.stopRecording();
-                    openScreen(SCREEN_MAP);
-                }).setPositiveButton(R.string.keep_value_string, (dialog, which) -> {
-            Toast.makeText(activity, R.string.recording_in_background_toast_message, Toast.LENGTH_SHORT).show();
-            Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-            homeIntent.addCategory(Intent.CATEGORY_HOME);
-            homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity.startActivity(homeIntent);
+                .setNegativeButton(R.string.stop_value_string, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mRecorder.stopRecording();
+                        openScreen(SCREEN_MAP);
+                    }
+                }).setPositiveButton(R.string.keep_value_string, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(activity, R.string.recording_in_background_toast_message, Toast.LENGTH_SHORT).show();
+                Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                homeIntent.addCategory(Intent.CATEGORY_HOME);
+                homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(homeIntent);
+            }
         }).create().show();
     }
 

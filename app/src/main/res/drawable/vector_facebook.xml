@@ -5,6 +5,7 @@
     android:height="30dp"
     android:viewportHeight="30"
     android:viewportWidth="14">
+
     <path
         android:name="facebook"
         android:fillColor="#FFFFFF"

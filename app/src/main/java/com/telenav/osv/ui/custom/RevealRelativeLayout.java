@@ -43,6 +43,8 @@ public class RevealRelativeLayout extends RelativeLayout {
 
     private Point point;
 
+    private boolean animating;
+
     {
         point = new Point(-1, -1);
         mPath = new Path();
@@ -93,7 +95,11 @@ public class RevealRelativeLayout extends RelativeLayout {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         if (changed) {
-            invalidate();
+            if (animating) {
+                invalidate();
+            } else {
+                updateCircle(point, mState == STATE_HIDDEN ? 1f : 0f);
+            }
         }
         super.onLayout(changed, l, t, r, b);
     }
@@ -143,22 +149,31 @@ public class RevealRelativeLayout extends RelativeLayout {
         ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
         animator.setDuration(duration);
-        animator.addUpdateListener(valueAnimator -> updateCircle(point, valueAnimator.getAnimatedFraction()));
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                float f = valueAnimator.getAnimatedFraction();
+                updateCircle(point, mState == STATE_HIDDEN ? f : 1 - f);
+            }
+        });
         animator.addListener(new Animator.AnimatorListener() {
 
             @Override
             public void onAnimationStart(Animator animator) {
+                animating = true;
                 setVisibility(VISIBLE);
             }
 
             @Override
             public void onAnimationEnd(Animator animator) {
+                animating = false;
                 setVisibility(mState == STATE_HIDDEN ? VISIBLE : GONE);
             }
 
             @Override
             public void onAnimationCancel(Animator animator) {
-
+                animating = false;
             }
 
             @Override
@@ -176,23 +191,33 @@ public class RevealRelativeLayout extends RelativeLayout {
         ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
         animator.setDuration(duration);
-        animator.addUpdateListener(valueAnimator -> updateCircle(point, valueAnimator.getAnimatedFraction()));
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                float f = valueAnimator.getAnimatedFraction();
+                updateCircle(point, mState == STATE_HIDDEN ? f : 1 - f);
+            }
+        });
         animator.addListener(new Animator.AnimatorListener() {
 
             @Override
             public void onAnimationStart(Animator animator) {
                 setVisibility(VISIBLE);
+                animating = true;
             }
 
             @Override
             public void onAnimationEnd(Animator animator) {
+                animating = false;
+
                 setVisibility(mState == STATE_HIDDEN ? VISIBLE : GONE);
                 reveal(new Point(0, 0), duration);
             }
 
             @Override
             public void onAnimationCancel(Animator animator) {
-
+                animating = false;
             }
 
             @Override
@@ -218,9 +243,9 @@ public class RevealRelativeLayout extends RelativeLayout {
     }
 
     private void updateCircle(Point point, float fraction) {
-        float f = mState == STATE_HIDDEN ? fraction : 1 - fraction;
-        float diffX = Math.max(getWidth() - point.x, point.x), diffY = Math.max(getHeight() - point.y, point.y);
-        float mRadius = (float) (Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2)) * f);
+        float diffX = Math.max(getWidth() - point.x, point.x);
+        float diffY = Math.max(getHeight() - point.y, point.y);
+        float mRadius = (float) (Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2)) * fraction);
         mPath.reset();
         mPath.addCircle(point.x, point.y, mRadius, Path.Direction.CW);
         invalidate();

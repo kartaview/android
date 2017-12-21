@@ -1,7 +1,6 @@
 package com.telenav.osv.ui.fragment;
 
 import java.util.ArrayList;
-import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import android.Manifest;
@@ -9,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -24,6 +22,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import com.skobbler.ngx.SKCoordinate;
 import com.skobbler.ngx.SKMaps;
+import com.skobbler.ngx.SKMapsInitializationListener;
 import com.skobbler.ngx.map.SKAnimationSettings;
 import com.skobbler.ngx.map.SKAnnotation;
 import com.skobbler.ngx.map.SKAnnotationView;
@@ -42,12 +41,17 @@ import com.skobbler.ngx.map.SKScreenPoint;
 import com.skobbler.ngx.positioner.SKPosition;
 import com.skobbler.ngx.positioner.SKPositionerManager;
 import com.telenav.osv.R;
+import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.activity.SplashActivity;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.command.BroadcastSegmentsCommand;
 import com.telenav.osv.command.PhotoCommand;
-import com.telenav.osv.data.Preferences;
+import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.event.EventBus;
+import com.telenav.osv.event.SdkEnabledEvent;
 import com.telenav.osv.event.hardware.camera.RecordingEvent;
 import com.telenav.osv.event.hardware.gps.LocationEvent;
 import com.telenav.osv.event.hardware.gps.TrackChangedEvent;
@@ -67,7 +71,7 @@ import com.telenav.osv.item.network.TrackCollection;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.manager.network.GeometryRetriever;
 import com.telenav.osv.manager.playback.PlaybackManager;
-import com.telenav.osv.ui.Navigator;
+import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.DimenUtils;
 import com.telenav.osv.utils.Log;
@@ -77,9 +81,9 @@ import com.telenav.osv.utils.Utils;
  * Fragment holding the map or the placeholder
  * Created by Kalman on 11/9/15.
  */
-public class MapFragment extends OSVFragment implements Displayable<Sequence>, SKMapSurfaceListener, PlaybackManager.PlaybackListener {
+public class MapFragment extends DisplayFragment implements SKMapSurfaceListener, PlaybackManager.PlaybackListener {
 
-    public static final String TAG = "MapFragment";
+    public final static String TAG = "MapFragment";
 
     /**
      * id for selected image marker annotation
@@ -95,15 +99,6 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     private static final int TRACK_POLYLINE_ID = 10000156;
 
     private static final int MATCHED_SEGMENT_POLYLINE_ID = 10000157;
-
-    /**
-     * the app prefs
-     */
-    @Inject
-    Preferences appPrefs;
-
-    @Inject
-    GeometryRetriever mGeometryRetriever;
 
     private Sequence mCurrentSequence;
 
@@ -127,6 +122,11 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     private SKMapSurfaceView mapView;
 
     /**
+     * the app prefs
+     */
+    private ApplicationPreferences appPrefs;
+
+    /**
      * the list of images with coordinates used for previewing a sequence
      */
     private ArrayList<ImageCoordinate> mPreviewNodes;
@@ -147,6 +147,8 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
 
     private boolean noPositionYet = true;
 
+    private PlaybackManager mPlayer;
+
     private int mCurrentMode = MODE_IDLE;
 
     private Polyline mMatchedPolyline;
@@ -155,16 +157,24 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
 
     private View chessBackground;
 
+    private GeometryRetriever mGeometryRetriever;
+
     private SegmentsReceivedEvent mLastSegmentsDisplayed;
 
-    private Runnable mDisplayLocalSequencesRunnable = () -> {
-        synchronized (LocalSequence.getStaticSequences()) {
-            for (LocalSequence sequence : LocalSequence.getStaticSequences().values()) {
-                if (sequence.getOriginalFrameCount() > 0) {
-                    try {
-                        displayPolyline(sequence.getPolyline());
-                    } catch (NumberFormatException e) {
-                        Log.d(TAG, "diplayLocalSequences: " + e.getLocalizedMessage());
+    private Runnable mDisplayLocalSequencesRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            if (SequenceDB.instance != null) {
+                synchronized (LocalSequence.getStaticSequences()) {
+                    for (LocalSequence sequence : LocalSequence.getStaticSequences().values()) {
+                        if (sequence.getOriginalFrameCount() > 0) {
+                            try {
+                                displayPolyline(sequence.getPolyline());
+                            } catch (NumberFormatException e) {
+                                Log.d(TAG, "diplayLocalSequences: " + e.getLocalizedMessage());
+                            }
+                        }
                     }
                 }
             }
@@ -179,45 +189,74 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         activity = (OSVActivity) getActivity();
-        mMapEnabled = appPrefs.isMapEnabled();
+        appPrefs = ((OSVApplication) activity.getApplication()).getAppPrefs();
+        mMapEnabled = !appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED);
+        mGeometryRetriever = new GeometryRetriever(activity);
         view = inflater.inflate(R.layout.fragment_map, null);
         recordButton = view.findViewById(R.id.record_button);
-        recordButton.setOnClickListener(v -> {
-            int cameraPermitted = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA);
-            if (cameraPermitted == PackageManager.PERMISSION_GRANTED) {
-                if (appPrefs.isMapEnabled() &&
-                        appPrefs.isMiniMapEnabled()) {
-                    recordButton.setVisibility(View.INVISIBLE);
-                    positionButton.setVisibility(View.INVISIBLE);
+        recordButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                int cameraPermitted = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA);
+                if (cameraPermitted == PackageManager.PERMISSION_GRANTED) {
+                    if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED) &&
+                            appPrefs.getBooleanPreference(PreferenceTypes.K_RECORDING_MAP_ENABLED, true)) {
+                        recordButton.setVisibility(View.INVISIBLE);
+                        positionButton.setVisibility(View.INVISIBLE);
+                    }
+                }
+                if (activity instanceof MainActivity) {
+                    ((MainActivity) activity).goToRecordingScreen();
                 }
             }
-            activity.openScreen(Navigator.SCREEN_RECORDING);
         });
         positionButton = view.findViewById(R.id.position_button);
         recordButton.setVisibility(View.INVISIBLE);
         positionButton.setVisibility(View.INVISIBLE);
         if (mMapEnabled) {
-            final Runnable addMapRunnable = () -> {
-                View map;
-                map = inflater.inflate(R.layout.partial_map, null);
-                FrameLayout holder = view.findViewById(R.id.frameLayout);
-                holder.addView(map);
-                mapViewGroup = map.findViewById(R.id.view_group_map);
-                mapViewGroup.setMapSurfaceListener(MapFragment.this);
-                mapViewGroup.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                    if (v instanceof SKMapViewHolder) {
-                        onViewChanged((SKMapViewHolder) v, right, bottom);
+            final Runnable addMapRunnable = new Runnable() {
+
+                @Override
+                public void run() {
+                    View map;
+                    map = inflater.inflate(R.layout.partial_map, null);
+                    FrameLayout holder = view.findViewById(R.id.frameLayout);
+                    holder.addView(map);
+                    mapViewGroup = map.findViewById(R.id.view_group_map);
+                    mapViewGroup.setMapSurfaceListener(MapFragment.this);
+                    mapViewGroup.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+
+                        @Override
+                        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight,
+                                                   int oldBottom) {
+                            if (v instanceof SKMapViewHolder) {
+                                onViewChanged((SKMapViewHolder) v, right, bottom);
+                            }
+                        }
+                    });
+                    mapViewGroup.onResume();
+                }
+            };
+            if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED) && !SKMaps.getInstance().isSKMapsInitialized()) {
+                Log.d(TAG, "onCreateView: needs to initialize skmaps");
+                Utils.initializeLibrary(activity, new SKMapsInitializationListener() {
+
+                    @Override
+                    public void onLibraryInitialized(boolean b) {
+                        addMapRunnable.run();
                     }
                 });
-                mapViewGroup.onResume();
-            };
-            if (appPrefs.isMapEnabled() && !SKMaps.getInstance().isSKMapsInitialized()) {
-                Log.d(TAG, "onCreateView: needs to initialize skmaps");
-                Utils.initializeLibrary(activity, appPrefs, b -> addMapRunnable.run());
             } else {
                 addMapRunnable.run();
             }
-            positionButton.setOnClickListener(v -> onPositionerClicked(null));
+            positionButton.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    onPositionerClicked(null);
+                }
+            });
             boundingBoxUS = new SKBoundingBox(new SKCoordinate(49.384358, -124.848974), new SKCoordinate(24.396308, -66.885444));
         } else {
             View map;
@@ -229,6 +268,11 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
         }
         Log.d(TAG, "onCreateView: ");
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
@@ -271,6 +315,29 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (mapViewGroup != null && mMapEnabled) {
+            if (mapView == null) {
+                view.postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mapViewGroup.onResume();
+                    }
+                }, 300);
+            } else {
+                mapViewGroup.onResume();
+            }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
     public void onStop() {
         if (mMapEnabled) {
             if (mapViewGroup != null) {
@@ -297,17 +364,21 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
         super.onDestroyView();
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
     // map interaction callbacks ...
     @Override
     public void onActionPan() {
-        //nothing
     }
 
     @Override
     public void onActionZoom() {
         if (mapView != null && mCurrentMode == MODE_RECORDING_SCREEN) {
             float zoom = mapView.getZoomLevel();
-            appPrefs.postRecordingMapZoom(zoom);
+            appPrefs.saveFloatPreference(PreferenceTypes.K_RECORDING_MAP_ZOOM, zoom, true);
             Log.d(TAG, "onActionZoom: " + zoom);
         }
     }
@@ -332,28 +403,41 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
         mapView.getMapSettings().setMapPoiIconsShown(false);
         mapView.getMapSettings().setHouseNumbersShown(false);
         mapView.setZOrderMediaOverlay(true);
-        if (activity.getCurrentScreen() == Navigator.SCREEN_MAP) {
-            mapView.postDelayed(() -> {
-                Location loc = appPrefs.getLastLocation();
-                if (loc != null) {
-                    SKPosition skpos = new SKPosition(loc);
-                    Log.d(TAG, "run: location = " + loc);
-                    SKPositionerManager.getInstance().reportNewGPSPosition(skpos);
-                    mapView.setPositionAsCurrent(new SKCoordinate(loc.getLatitude(), loc.getLongitude()), 20, true);
-                    mapView.centerOnCurrentPosition(16, true, 1000);//zoomlevel, anim time
-                } else {
-                    mapView.setZoom(1);
-                    mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
-                }
-                mapView.postDelayed(() -> {
-                    diplayLocalSequences();
-                    if (activity.getCurrentScreen() == Navigator.SCREEN_MAP) {
-                        if (appPrefs.shouldShowTapOnMap()) {
-                            activity.showSnackBar(R.string.tip_map_screen, Snackbar.LENGTH_LONG,
-                                    R.string.got_it_label, () -> appPrefs.setShouldShowTapOnMap(false));
-                        }
+        if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MAP) {
+            mapView.postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    final double lat = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LAT);
+                    final double lon = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LON);
+                    if (lat != 0 && lon != 0) {
+                        Log.d(TAG, "run: lat lon = " + lat + ", " + lon);
+                        SKPositionerManager.getInstance().reportNewGPSPosition(new SKPosition(lat, lon));
+                        mapView.setPositionAsCurrent(new SKCoordinate(lat, lon), 20, true);
+                        mapView.centerOnCurrentPosition(16, true, 1000);//zoomlevel, anim time
+                    } else if (lat == 0 && lon == 0) {
+                        mapView.setZoom(1);
+                        mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
                     }
-                }, 1040);
+                    mapView.postDelayed(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            diplayLocalSequences();
+                            if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MAP) {
+                                if (!appPrefs.getBooleanPreference(PreferenceTypes.K_HINT_TAP_ON_MAP, false)) {
+                                    activity.showSnackBar(R.string.tip_map_screen, Snackbar.LENGTH_LONG, R.string.got_it_label, new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            appPrefs.saveBooleanPreference(PreferenceTypes.K_HINT_TAP_ON_MAP, true);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }, 1040);
+                }
             }, 1000);
         }
         resizeStopped();
@@ -365,11 +449,9 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     }
 
     public void onMapRegionChanged(SKCoordinateRegion skCoordinateRegion) {
-        //nothing
     }
 
     public void onMapRegionChangeStarted(SKCoordinateRegion skCoordinateRegion) {
-        //nothing
     }
 
     @Override
@@ -394,7 +476,7 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
             return;
         }
 
-        if (activity.getCurrentScreen() == Navigator.SCREEN_MAP) {
+        if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MAP) {
             activity.enableProgressBar(true);
             SKCoordinate tappedCoords = mapView.pointToCoordinate(skScreenPoint);
             mGeometryRetriever.nearby(new NetworkResponseDataListener<TrackCollection>() {
@@ -409,17 +491,16 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                 public void requestFinished(int status, TrackCollection collection) {
                     activity.enableProgressBar(false);
                     if (collection.getTrackList().size() > 0) {
-                        activity.openScreen(Navigator.SCREEN_NEARBY, collection);
+                        activity.openScreen(ScreenComposer.SCREEN_NEARBY, collection);
                     } else {
                         activity.showSnackBar(getString(R.string.nearby_no_result_label), Snackbar.LENGTH_SHORT);
                     }
                 }
-            }, String.valueOf(tappedCoords.getLatitude()), String.valueOf(tappedCoords.getLongitude()));
+            }, "" + tappedCoords.getLatitude(), "" + tappedCoords.getLongitude());
         }
     }
 
     public void onRotateMap() {
-        //nothing
     }
 
     @Override
@@ -435,7 +516,6 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     }
 
     public void onMapActionDown(SKScreenPoint skScreenPoint) {
-        //nothing
     }
 
     @Override
@@ -479,7 +559,6 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     }
 
     public void onCompassSelected() {
-        //nothing
     }
 
     @Override
@@ -493,54 +572,46 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     }
 
     public void onInternationalisationCalled(int i) {
-        //nothing
     }
 
     public void onDebugInfo(double v, float v1, double v2) {
-        //nothing
     }
 
     public void onBoundingBoxImageRendered(int i) {
-        //nothing
     }
 
     public void onGLInitializationError(String s) {
-        //nothing
     }
 
     public void onScreenshotReady(Bitmap bitmap) {
-        //nothing
     }
 
     @Override
-    public void setDisplayData(Sequence extra) {
-        mCurrentSequence = extra;
+    public void setSource(Object extra) {
+        mPlayer = (PlaybackManager) extra;
+        mPlayer.addPlaybackListener(this);
     }
 
     public void onPlaying() {
-        //nothing
     }
 
     public void onPaused() {
-        //nothing
     }
 
     public void onStopped() {
-        //nothing
     }
 
     @Override
-    public void onPreparing() {
-    }
-
-    @Override
-    public void onPrepared(boolean success) {
+    public void onPrepared() {
         Log.d(TAG, "onPrepared: ");
         if (mapView != null) {
-            mapView.post(() -> {
-                if (mCurrentSequence != null) {
-                    displaySequence((ArrayList<SKCoordinate>) mCurrentSequence.getPolyline().getNodes(), !mCurrentSequence.isSafe(),
-                            mCurrentSequence.getRequestedFrameIndex());
+            mapView.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (mPlayer != null) {
+                        displaySequence(mPlayer.getTrack(), !mPlayer.isSafe(), mPlayer.getSequence().getRequestedFrameIndex());
+                    }
                 }
             });
         }
@@ -549,9 +620,13 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     @Override
     public void onProgressChanged(final int index) {
         if (mapView != null) {
-            mapView.post(() -> {
-                Log.d(TAG, "onProgressChanged: " + index);
-                viewFrame(index);
+            mapView.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    Log.d(TAG, "onProgressChanged: " + index);
+                    viewFrame(index);
+                }
             });
         }
     }
@@ -560,7 +635,7 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     public void onExit() {
         removeSequence();
         onPositionerClicked(null);
-        mCurrentSequence = null;
+        mPlayer = null;
     }
 
     public void cancelAction() {
@@ -576,11 +651,11 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                 if (!Utils.isGPSEnabled(activity)) {
                     activity.resolveLocationProblem(false);
                 } else {
-                    //EventBus.postSticky(new GpsCommand(true, true/* request single position*/)); todo for power optimisation
+                    //                    EventBus.postSticky(new GpsCommand(true, true)); todo for power optimisation
                     if (activity.hasPosition()) {
                         mapView.centerOnCurrentPosition(16, true, 1000);//zoomlevel, anim time
                     } else {
-                        activity.showSnackBar(getString(R.string.warning_waiting_for_location_message), Snackbar.LENGTH_SHORT);
+                        activity.showSnackBar("Waiting for GPS position...", Snackbar.LENGTH_SHORT);
                     }
                 }
             }
@@ -605,17 +680,24 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                 noPositionYet = false;
                 final double latitude = event.location.getLatitude();
                 final double longitude = event.location.getLongitude();
-                if (!appPrefs.isFirstRun()) {
+                if (!appPrefs.getBooleanPreference(PreferenceTypes.K_RUN_COUNTER)) {
+                    appPrefs.saveBooleanPreference(PreferenceTypes.K_RUN_COUNTER, true);
                     setMetrics(latitude, longitude);
                 }
-                appPrefs.saveLastLocation(event.location);
+                appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) latitude);
+                appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LON, (float) longitude);
+                setSignDetectionRegion(latitude, longitude);
                 if (mapView != null) {
-                    mapView.post(() -> {
-                        if (mapView != null && mCurrentMode == MODE_IDLE) {
-                            if (latitude <= 0 && longitude <= 0) {
-                                mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
-                            } else {
-                                mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+                    mapView.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (mapView != null && mCurrentMode == MODE_IDLE) {
+                                if (latitude == 0 && longitude == 0) {
+                                    mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
+                                } else {
+                                    mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+                                }
                             }
                         }
                     });
@@ -625,6 +707,75 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                 mapView.centerOnCurrentPosition(16, true, 1000);
             }
         }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
+    public void onSdkEnabled(final SdkEnabledEvent event) {
+        BackgroundThreadPool.post(new Runnable() {
+
+            @Override
+            public void run() {
+                mMapEnabled = event.enabled;
+                final LayoutInflater inflater = activity.getLayoutInflater();
+                if (mMapEnabled) {
+                    if (!SKMaps.getInstance().isSKMapsInitialized()) {
+                        Utils.initializeLibrary(getActivity(), null);
+                    }
+                    boundingBoxUS = new SKBoundingBox(new SKCoordinate(49.384358, -124.848974), new SKCoordinate(24.396308, -66.885444));
+                    activity.runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            View map = inflater.inflate(R.layout.partial_map, null);
+                            final FrameLayout holder = view.findViewById(R.id.frameLayout);
+                            holder.removeAllViews();
+                            holder.addView(map);
+                            mapViewGroup = map.findViewById(R.id.view_group_map);
+                            mapViewGroup.setMapSurfaceListener(MapFragment.this);
+                            mapViewGroup.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+
+                                @Override
+                                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight,
+                                                           int oldBottom) {
+                                    if (v instanceof SKMapViewHolder) {
+                                        onViewChanged((SKMapViewHolder) v, right, bottom);
+                                    }
+                                }
+                            });
+
+                            recordButton.setVisibility(View.VISIBLE);
+                            positionButton.setVisibility(View.VISIBLE);
+                            positionButton.setOnClickListener(new View.OnClickListener() {
+
+                                @Override
+                                public void onClick(View v) {
+                                    onPositionerClicked(null);
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    SKMaps.getInstance().destroySKMaps();
+                    activity.runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            View map = inflater.inflate(R.layout.partial_map_placeholder, null);
+                            FrameLayout holder = view.findViewById(R.id.frameLayout);
+                            holder.removeAllViews();
+                            holder.addView(map);
+                            recordButton.setVisibility(View.VISIBLE);
+                            positionButton.setVisibility(View.INVISIBLE);
+                            if (mapViewGroup != null) {
+                                mapViewGroup.setMapSurfaceListener(null);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        EventBus.clear(SdkEnabledEvent.class);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
@@ -714,6 +865,7 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                 SKAnnotation annot = new SKAnnotation(MATCHED_SEGMENT_POLYLINE_ID + 1);
                 annot.setLocation(ref);
                 annot.setAnnotationType(SKAnnotation.SK_ANNOTATION_TYPE_RED);
+                //                annot.setAnnotationView(blueAnnotationView);
                 mapView.addAnnotation(annot, SKAnimationSettings.ANIMATION_NONE);
             }
         }
@@ -725,14 +877,22 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
             return;
         }
         if (mapView == null) {
-            mHandler.postDelayed(() -> EventBus.postSticky(event), 500);
+            mHandler.postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    EventBus.postSticky(event);
+                }
+            }, 500);
             return;
         }
         Log.d(TAG, "onSegmentsReceived: from " + (event.matcher ? "matcher" : "map"));
         if (event.all != null) {
+            //            synchronized (event.syncObject) {
             for (Polyline poly : event.all) {
                 displayPolyline(poly);
             }
+            //            }
             mLastSegmentsDisplayed = event;
         }
     }
@@ -766,11 +926,11 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
         }
         int screen = activity.getCurrentScreen();
         boolean isSmall = (width < point.x / 2) && (height < point.y / 2) &&
-                (screen == Navigator.SCREEN_RECORDING || screen == Navigator.SCREEN_RECORDING_HINTS);
+                (screen == ScreenComposer.SCREEN_RECORDING || screen == ScreenComposer.SCREEN_RECORDING_HINTS);
         boolean maximized = (width >= point.x / 10 * 9) && (height >= point.y / 10 * 9);
         if (maximized) {
             enterMode(MODE_IDLE);
-        } else if (screen == Navigator.SCREEN_RECORDING || screen == Navigator.SCREEN_RECORDING_HINTS) {
+        } else if (screen == ScreenComposer.SCREEN_RECORDING || screen == ScreenComposer.SCREEN_RECORDING_HINTS) {
             enterMode(MODE_RECORDING_SCREEN);
         } else {
             enterMode(MODE_TRACK_PREVIEW);
@@ -793,24 +953,29 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                 positionButton.setVisibility(View.VISIBLE);
             }
             applySettingsOnMapView(true);
-            Location loc = appPrefs.getLastLocation();
-            if (loc != null) {
-                if (noPositionYet) {
-                    SKPositionerManager.getInstance().reportNewGPSPosition(new SKPosition(loc));
-                }
-            } else {
+            final double lat = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LAT);
+            final double lon = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LON);
+            if (lat == 0 && lon == 0) {
                 if (mapView != null) {
                     mapView.setZoom(1);
                     mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
                 }
+            } else {
+                if (noPositionYet) {
+                    SKPositionerManager.getInstance().reportNewGPSPosition(new SKPosition(lat, lon));
+                }
             }
             if (mapView != null) {
                 mapView.clearOverlay(TRACK_POLYLINE_ID);
-                mapView.post(() -> {
-                    if (loc == null) {
-                        mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
-                    } else {
-                        mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+                mapView.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (lat == 0 && lon == 0) {
+                            mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
+                        } else {
+                            mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_BLUE_DOT);
+                        }
                     }
                 });
             }
@@ -826,18 +991,25 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                 BackgroundThreadPool.cancelTask(mDisplayLocalSequencesRunnable);
                 BackgroundThreadPool.cancelTask(mDisplayTracksRunnable);
                 if (mapView != null) {
-                    mapView.setZoom(appPrefs.getRecordingMapZoom());
+                    mapView.setZoom(appPrefs.getFloatPreference(PreferenceTypes.K_RECORDING_MAP_ZOOM, 16));
                     applySettingsOnMapView(false);
                     mapView.setZOrderMediaOverlay(true);
-                    mapView.post(() -> mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_ARROW_SMALL));
+                    mapView.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_ARROW_SMALL);
+                        }
+                    });
                 }
-            } else if (mCurrentMode == MODE_TRACK_PREVIEW && mCurrentSequence != null) {
+            } else if (mCurrentMode == MODE_TRACK_PREVIEW && mPlayer != null) {
                 if (mapView != null) {
                     applySettingsOnMapView(true);
                     mapView.setCurrentPositionIcon(SKMapSurfaceView.SKCurrentPositionIconArrowType.CCP_NONE);
                 }
-                displaySequence((ArrayList<SKCoordinate>) mCurrentSequence.getPolyline().getNodes(), !mCurrentSequence.isSafe(),
-                        mCurrentSequence.getRequestedFrameIndex());
+                if (mPlayer != null) {
+                    displaySequence(mPlayer.getTrack(), !mPlayer.isSafe(), mPlayer.getSequence().getRequestedFrameIndex());
+                }
             } else {
                 Log.d(TAG, "setup: player is null");
             }
@@ -880,27 +1052,31 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
             skCoordinateRegion.setZoomLevel(zoom - 1f);
             BackgroundThreadPool.cancelTask(mDisplayLocalSequencesRunnable);
             BackgroundThreadPool.cancelTask(mDisplayTracksRunnable);
-            mDisplayTracksRunnable = () -> {
-                if (mapView != null) {
-                    Log.d(TAG, "refreshDisplayedSequences: sending request");
-                    mGeometryRetriever.listSegments(new NetworkResponseDataListener<GeometryCollection>() {
+            mDisplayTracksRunnable = new Runnable() {
 
-                                                        @Override
-                                                        public void requestFailed(int status, GeometryCollection details) {
-                                                            Log.d(TAG, "requestFinished: " + details);
-                                                        }
+                @Override
+                public void run() {
+                    if (mapView != null) {
+                        Log.d(TAG, "refreshDisplayedSequences: sending request");
+                        mGeometryRetriever.listSegments(new NetworkResponseDataListener<GeometryCollection>() {
 
-                                                        @Override
-                                                        public void requestFinished(int status, GeometryCollection collectionData) {
-                                                            if (mCurrentMode == MODE_IDLE) {
-                                                                EventBus.postSticky(
-                                                                        new SegmentsReceivedEvent(collectionData.getSegmentList(), new Object(), false,
-                                                                                boundingBox, zoomForRequest));
+                                                            @Override
+                                                            public void requestFailed(int status, GeometryCollection details) {
+                                                                Log.d(TAG, "requestFinished: " + details);
                                                             }
-                                                        }
-                                                    }, boundingBox.getTopLeft().getLatitude() + "," + boundingBox.getTopLeft().getLongitude(),
-                            boundingBox.getBottomRight().getLatitude() + "," + boundingBox.getBottomRight().getLongitude(),
-                            zoomForRequest);
+
+                                                            @Override
+                                                            public void requestFinished(int status, GeometryCollection collectionData) {
+                                                                if (mCurrentMode == MODE_IDLE) {
+                                                                    EventBus.postSticky(
+                                                                            new SegmentsReceivedEvent(collectionData.getSegmentList(), new Object(), false,
+                                                                                    boundingBox, zoomForRequest));
+                                                                }
+                                                            }
+                                                        }, boundingBox.getTopLeft().getLatitude() + "," + boundingBox.getTopLeft().getLongitude(),
+                                boundingBox.getBottomRight().getLatitude() + "," + boundingBox.getBottomRight().getLongitude(),
+                                zoomForRequest);
+                    }
                 }
             };
             BackgroundThreadPool.post(mDisplayTracksRunnable);
@@ -982,7 +1158,7 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
         if (enabled) {
             mapView.getMapSettings().setFollowPositions(true);
             mapView.getMapSettings().setHeadingMode(SKMapSettings.SKHeadingMode.ROUTE);
-            mapView.centerOnCurrentPosition(appPrefs.getRecordingMapZoom(), true, 1000);
+            mapView.centerOnCurrentPosition(appPrefs.getFloatPreference(PreferenceTypes.K_RECORDING_MAP_ZOOM, 16), true, 1000);
         } else {
             mapView.getMapSettings().setFollowPositions(false);
             mapView.getMapSettings().setHeadingMode(SKMapSettings.SKHeadingMode.NONE);
@@ -992,9 +1168,19 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     private void setMetrics(double latitude, double longitude) {
         if (Utils.isInsideBoundingBox(latitude, longitude, boundingBoxUS.getTopLeft().getLatitude(), boundingBoxUS.getTopLeft().getLongitude(),
                 boundingBoxUS.getBottomRight().getLatitude(), boundingBoxUS.getBottomRight().getLongitude())) {
-            appPrefs.setUsingMetricUnits(false);
+            appPrefs.saveBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC, false);
         } else {
-            appPrefs.setUsingMetricUnits(true);
+            appPrefs.saveBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC, true);
+        }
+    }
+
+    private void setSignDetectionRegion(double latitude, double longitude) {
+        //TODOdo reinitialize sign detection
+        if (Utils.isInsideBoundingBox(latitude, longitude, boundingBoxUS.getTopLeft().getLatitude(), boundingBoxUS.getTopLeft().getLongitude(),
+                boundingBoxUS.getBottomRight().getLatitude(), boundingBoxUS.getBottomRight().getLongitude())) {
+            appPrefs.saveBooleanPreference(PreferenceTypes.K_REGION_US, true);
+        } else {
+            appPrefs.saveBooleanPreference(PreferenceTypes.K_REGION_US, false);
         }
     }
 
@@ -1006,7 +1192,8 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
     private void displaySequence(final ArrayList<SKCoordinate> nodes, boolean isLocal, int startIndex) {
         Log.d(TAG, "displaySequence: ");
         // set the nodes on the polyline
-        if (nodes != null && nodes.size() != 0 && mapView != null && mCurrentSequence != null) {
+        if (nodes != null && nodes.size() != 0 && mapView != null && mPlayer != null) {
+            mCurrentSequence = mPlayer.getSequence();
             int sequenceId = mCurrentSequence.getId();
             mapView.clearAllOverlays();
             mLastSegmentsDisplayed = null;
@@ -1053,9 +1240,6 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
         }
 
         SKBoundingBox boundingBox = new SKBoundingBox(new SKCoordinate(northLat, westLon), new SKCoordinate(southLat, eastLon));
-        //int height = (int) (Utils.dpToPx(activity, activity.getResources().getConfiguration().screenHeightDp) * 0.64f)
-        //mapView.fitBoundingBox(boundingBox, paddingX, paddingY, paddingY / 2 + height, paddingY / 2)
-        ////todo uncomment for when, sdk method for fit bb is fixed and track preview card will have no background only map
         mapView.fitBoundingBox(boundingBox, paddingX, paddingY, paddingY / 2, paddingY / 2);
     }
 
@@ -1064,6 +1248,7 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
      */
     private void displayPolyline(Polyline polyline) {
         if (mapView != null && polyline != null && polyline.getNodes().size() > 0) {
+            //            Log.d(TAG, "displayPolyline: " + polyline.getIdentifier() + ", size " + polyline.getNodes().size());
             // set polyline color
             int outlineSize = 3;
             if (polyline.isLocal) {
@@ -1107,6 +1292,7 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                             color[2] = 0f;
                             break;
                     }
+                    //                    outlineSize = new Random().nextInt(5);
                     polyline.setColor(color);
                     polyline.setOutlineColor(color);
                 } else {
@@ -1175,7 +1361,6 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
                 if (mLastSegmentsDisplayed == null || !mLastSegmentsDisplayed.matcher) {
                     EventBus.post(new BroadcastSegmentsCommand());
                 }
-                break;
             case MODE_TRACK_PREVIEW:
                 break;
         }
@@ -1185,24 +1370,28 @@ public class MapFragment extends OSVFragment implements Displayable<Sequence>, S
         if (mapViewGroup != null) {
             mapViewGroup.setVisibility(View.VISIBLE);
         }
-        view.postDelayed(() -> {
-            if (chessBackground != null) {
-                chessBackground.setVisibility(View.GONE);
-            }
-            switch (mCurrentMode) {
-                case MODE_IDLE:
-                    if (recordButton != null && positionButton != null) {
-                        recordButton.setVisibility(View.VISIBLE);
-                        positionButton.setVisibility(View.VISIBLE);
-                    }
-                    break;
-                case MODE_RECORDING_SCREEN:
-                case MODE_TRACK_PREVIEW:
-                    if (recordButton != null && positionButton != null) {
-                        recordButton.setVisibility(View.INVISIBLE);
-                        positionButton.setVisibility(View.INVISIBLE);
-                    }
-                    break;
+        view.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                if (chessBackground != null) {
+                    chessBackground.setVisibility(View.GONE);
+                }
+                switch (mCurrentMode) {
+                    case MODE_IDLE:
+                        if (recordButton != null && positionButton != null) {
+                            recordButton.setVisibility(View.VISIBLE);
+                            positionButton.setVisibility(View.VISIBLE);
+                        }
+                        break;
+                    case MODE_RECORDING_SCREEN:
+                    case MODE_TRACK_PREVIEW:
+                        if (recordButton != null && positionButton != null) {
+                            recordButton.setVisibility(View.INVISIBLE);
+                            positionButton.setVisibility(View.INVISIBLE);
+                        }
+                        break;
+                }
             }
         }, 300);
     }

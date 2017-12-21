@@ -24,6 +24,7 @@
             android:layout_width="400dp"
             android:layout_height="400dp">
 
+
             <com.pnikosis.materialishprogress.ProgressWheel
                 android:id="@+id/upload_total_progress"
                 android:layout_width="match_parent"
@@ -79,6 +80,7 @@
                     android:textSize="30sp"
                     tools:ignore="HardcodedText" />
 
+
                 <RelativeLayout
                     android:id="@+id/size_details_holder"
                     android:layout_width="match_parent"
@@ -119,7 +121,9 @@
                         android:textSize="12sp"
                         tools:ignore="HardcodedText" />
                 </RelativeLayout>
+
             </RelativeLayout>
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -223,4 +227,5 @@
                 android:textSize="19sp" />
         </LinearLayout>
     </android.support.percent.PercentRelativeLayout>
+
 </RelativeLayout>

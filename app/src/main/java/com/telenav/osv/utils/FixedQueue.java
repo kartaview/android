@@ -29,7 +29,7 @@ public class FixedQueue {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder("[");
+        StringBuffer sb = new StringBuffer("[");
         for (int i = index, n = 0; n < ring.length; i = nextIndex(i), n++) {
             sb.append(ring[i]);
             if (n + 1 < ring.length) {

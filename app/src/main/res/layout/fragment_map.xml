@@ -8,7 +8,9 @@
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+    </FrameLayout>
 
     <View
         android:layout_width="1dp"
@@ -23,6 +25,7 @@
         android:layout_gravity="top|start"
         android:background="@color/transparent"
         android:visibility="visible" />
+
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/record_button"

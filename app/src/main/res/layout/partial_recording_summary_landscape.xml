@@ -30,49 +30,51 @@
         android:weightSum="100">
 
         <RelativeLayout
-            android:id="@+id/estimated_points_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="20dp"
             android:layout_weight="50"
             android:gravity="center">
 
-            <TextView
-                android:id="@+id/points_label"
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:id="@+id/estimated_points_container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/points_label"
-                android:textColor="@color/gray_summary_secondary_text"
-                android:textSize="36sp" />
+                android:layout_margin="20dp">
 
-            <TextView
-                android:id="@+id/estimated_label"
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/points_label"
-                android:layout_toEndOf="@+id/points_label"
-                android:layout_toRightOf="@+id/points_label"
-                android:text="@string/partial_estimated"
-                android:textColor="@color/gray_summary_secondary_text"
-                android:textSize="17sp" />
+                <TextView
+                    android:id="@+id/points_label"
+                    style="@style/textStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/points_label"
+                    android:textColor="@color/gray_summary_secondary_text"
+                    android:textSize="36sp" />
 
-            <TextView
-                android:id="@+id/summary_points_text"
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_toEndOf="@+id/estimated_label"
-                android:layout_toRightOf="@+id/estimated_label"
-                android:fontFamily="sans-serif"
-                android:textColor="@color/gray_summary_primary_text"
-                android:textSize="36sp"
-                android:textStyle="normal"
-                tools:text="372" />
+                <TextView
+                    style="@style/textStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/points_label"
+                    android:layout_toEndOf="@+id/points_label"
+                    android:layout_toRightOf="@+id/points_label"
+                    android:text="@string/partial_estimated"
+                    android:textColor="@color/gray_summary_secondary_text"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/summary_points_text"
+                    style="@style/textStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/gray_summary_primary_text"
+                    android:textSize="36sp"
+                    android:textStyle="normal"
+                    tools:text="372" />
+            </RelativeLayout>
         </RelativeLayout>
 
         <View
@@ -83,46 +85,56 @@
             android:layout_marginTop="20dp"
             android:background="#31333b" />
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
             android:layout_gravity="center"
-            android:layout_marginEnd="20dp"
-            android:layout_marginStart="20dp"
             android:layout_weight="50"
-            android:orientation="vertical">
+            android:background="@color/gray_summary_background">
 
-            <TextView
-                android:id="@+id/summary_images_text"
-                style="@style/textStyle"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
-                tools:text="Photos 943" />
+                android:layout_centerInParent="true"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/summary_distance_text"
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="15dp"
-                tools:text="Distance 19.3 km" />
+                <TextView
+                    android:id="@+id/summary_images_text"
+                    style="@style/textStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp"
+                    tools:text="Photos 943" />
 
-            <TextView
-                android:id="@+id/summary_size_text"
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="Disk size 216 mb" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/summary_distance_text"
+                    style="@style/textStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="15dp"
+                    tools:text="Distance 19.3 km" />
+
+                <TextView
+                    android:id="@+id/summary_size_text"
+                    style="@style/textStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Disk size 216 mb" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
     </LinearLayout>
+
 
     <CheckBox
         android:id="@+id/dont_show_checkbox"
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
         android:layout_marginBottom="78dp"
         android:layout_marginLeft="10dp"
@@ -134,6 +146,7 @@
         android:id="@+id/buttons_layout"
         android:layout_width="match_parent"
         android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
         android:background="#1B1C1F"
         android:padding="10dp">

@@ -8,9 +8,6 @@ import com.skobbler.ngx.SKCoordinate;
  * abstract sequence base class
  * Created by Kalman on 11/18/15.
  */
-//todo break down the sequence class into must have info and lazily instantiated extension data like:
-// * scoreInfo(basic info about score) containing scoreHistory (the breakdown of the score value)
-// * trackData (coordinates list) and frameData (individual frame related info like frame url)
 public abstract class Sequence {
 
     private static final String TAG = "Sequence";
@@ -25,7 +22,7 @@ public abstract class Sequence {
 
     String mAddress = "";
 
-    Polyline mPolyline = new Polyline(0);
+    Polyline mPolyline;
 
     int mId = -1;
 
@@ -37,7 +34,7 @@ public abstract class Sequence {
 
     String mAppVersion = "";
 
-    double value = -1;
+    double value;
 
     HashMap<Integer, ScoreHistory> mScoreHistory = new HashMap<>();
 
@@ -126,6 +123,14 @@ public abstract class Sequence {
         return mScoreHistory;
     }
 
+    public String getPlatform() {
+        return mPlatform;
+    }
+
+    public String getPlatformVersion() {
+        return mPlatformVersion;
+    }
+
     public String getServerStatus() {
         return mServerStatus;
     }
@@ -177,12 +182,4 @@ public abstract class Sequence {
     }
 
     public abstract boolean isSafe();
-
-    public boolean isUserTrack() {
-        return true;
-    }
-
-    public boolean hasValue() {
-        return value >= 0;
-    }
 }

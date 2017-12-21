@@ -1,49 +1,1450 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<com.telenav.osv.ui.custom.ScrollViewImpl xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_material_light_1"
+    android:clipToPadding="true"
+    android:overScrollFooter="@android:color/transparent"
+    tools:ignore="KeyboardInaccessibleWidget">
 
-    <data>
-
-        <import type="com.telenav.osv.ui.list.LayoutManagers" />
-
-        <variable
-            name="viewModel"
-            type="com.telenav.osv.ui.binding.viewmodel.settings.SettingsViewModel" />
-    </data>
-
-    <android.support.design.widget.CoordinatorLayout xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        style="@style/AppTheme"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/action_bar_size">
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/app_bar"
+        <TextView
+            style="@style/textStyle.Light"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:elevation="4dp">
+            android:layout_marginTop="20dp"
+            android:gravity="bottom"
+            android:paddingEnd="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingStart="20dp"
+            android:text="@string/account_label"
+            android:textColor="@color/accent_material_dark_1" />
 
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
+        <TextView
+            android:id="@+id/login_button"
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/custom_ripple"
+            android:gravity="center_vertical"
+            android:paddingEnd="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingStart="20dp"
+            android:text="@string/log_in" />
+
+        <TextView
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="bottom"
+            android:paddingEnd="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingStart="20dp"
+            android:text="@string/general_settings_label"
+            android:textColor="@color/accent_material_dark_1" />
+
+
+        <RelativeLayout
+            android:id="@+id/data_setting_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                app:navigationIcon="@drawable/vector_back_black"
-                app:title="@string/settings"
-                app:titleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
-                app:titleTextColor="@color/black" />
-        </android.support.design.widget.AppBarLayout>
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/data_switch"
+                android:layout_toStartOf="@+id/data_switch"
+                android:orientation="vertical">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/list"
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/upload_on_data_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/data_setting_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/data_switch"
+                style="@style/AppTheme.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <RelativeLayout
+            android:id="@+id/auto_setting_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:background="@drawable/custom_ripple"
-            app:adapter="@{viewModel.adapter}"
-            app:itemBinding="@{viewModel.multipleItems}"
-            app:items="@{viewModel.headerFooterItems}"
-            app:layoutManager="@{LayoutManagers.linear()}"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:viewHolder="@{viewModel.viewHolder}"
-            tools:listitem="@layout/item_settings_switch" />
-    </android.support.design.widget.CoordinatorLayout>
-</layout>
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/auto_upload_switch"
+                android:layout_toStartOf="@+id/auto_upload_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/upload_automatically_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/auto_setting_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/auto_upload_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/charging_setting_separator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300"
+            android:visibility="gone" />
+
+        <RelativeLayout
+            android:id="@+id/charging_setting_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/charging_upload_switch"
+                android:layout_toStartOf="@+id/charging_upload_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/upload_charging_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/charging_setting_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/charging_upload_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/storage_separator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300"
+            android:visibility="gone" />
+
+        <RelativeLayout
+            android:id="@+id/storage_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/storage_switch"
+                android:layout_toStartOf="@+id/storage_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/storage_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/storage_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/storage_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <RelativeLayout
+            android:id="@+id/metric_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/metric_switch"
+                android:layout_toStartOf="@+id/metric_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/metric_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/metric_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/metric_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300"
+            android:visibility="visible" />
+
+        <RelativeLayout
+            android:id="@+id/map_sdk_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/map_sdk_switch"
+                android:layout_toStartOf="@+id/map_sdk_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/map_sdk_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/map_sdk_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/map_sdk_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/map_visibility_separator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <RelativeLayout
+            android:id="@+id/map_visibility_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/map_visibility_switch"
+                android:layout_toStartOf="@+id/map_visibility_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/map_visibility_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/map_visibility_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/map_visibility_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:id="@+id/gamification_separator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <RelativeLayout
+            android:id="@+id/gamification_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/gamification_switch"
+                android:layout_toStartOf="@+id/gamification_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/gamification_title" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/gamification_sub_title"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/gamification_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <TextView
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="bottom"
+            android:paddingEnd="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingStart="20dp"
+            android:text="@string/camera_label"
+            android:textColor="@color/accent_material_dark_1" />
+
+        <RelativeLayout
+            android:id="@+id/sensor_lib_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/sensor_switch"
+                android:layout_toStartOf="@+id/sensor_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/sensorlib_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/sensorlib_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/sensor_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="false"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300"
+            android:visibility="gone" />
+
+
+        <LinearLayout
+            android:id="@+id/picture_size_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/resolution_label" />
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/resolution_text"
+                android:textColor="@color/text_colour_secondary_light"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <RelativeLayout
+            android:id="@+id/safe_mode_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/safe_mode_switch"
+                android:layout_toStartOf="@+id/safe_mode_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/safe_mode_title" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/safe_mode_sub_title"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/safe_mode_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <RelativeLayout
+            android:id="@+id/focus_mode_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/focus_mode_switch"
+                android:layout_toStartOf="@+id/focus_mode_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/focus_mode_title" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/focus_mode_sub_title"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/focus_mode_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300"
+            android:visibility="gone" />
+
+        <RelativeLayout
+            android:id="@+id/api_mode_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/api_mode_switch"
+                android:layout_toStartOf="@+id/api_mode_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/api_mode_title" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/api_mode_sub_title"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/api_mode_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <TextView
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="bottom"
+            android:paddingEnd="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingStart="20dp"
+            android:text="@string/obd_label"
+            android:textColor="@color/accent_material_dark_1" />
+
+        <RelativeLayout
+            android:id="@+id/obd_selector_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/obd_selector_button"
+                android:layout_toStartOf="@+id/obd_selector_button"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/connection_type" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="10dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="10dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/obd_selector_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/obd_selector_button"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/wifi_label"
+                android:textColor="@color/accent_material_dark_1" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <RelativeLayout
+            android:id="@+id/obd_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/obd_button"
+                android:layout_toStartOf="@+id/obd_button"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/obd_title"
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/not_connected_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="10dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="10dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/obd_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/obd_progressbar"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="true"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/obd_button"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="20dp"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/connect"
+                android:textColor="@color/accent_material_dark_1" />
+        </RelativeLayout>
+
+        <TextView
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="bottom"
+            android:paddingEnd="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingStart="20dp"
+            android:text="@string/improve_text"
+            android:textColor="@color/accent_material_dark_1" />
+
+        <LinearLayout
+            android:id="@+id/issue_report_setting_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/issue_report_label" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <LinearLayout
+            android:id="@+id/feedback_setting_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/feedback_label" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <LinearLayout
+            android:id="@+id/tips_setting_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/tips_label" />
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/tips_message"
+                android:textColor="@color/text_colour_secondary_light"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <LinearLayout
+            android:id="@+id/walkthrough_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/walkthrough_label" />
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/walkthrough_message"
+                android:textColor="@color/text_colour_secondary_light"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/aboutText"
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="bottom"
+            android:paddingEnd="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingStart="20dp"
+            android:text="@string/about_label"
+            android:textColor="@color/accent_material_dark_1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp">
+
+            <TextView
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:text="@string/application_version_label" />
+
+            <TextView
+                android:id="@+id/version_text"
+                style="@style/textStyle.Light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp"
+                android:text=""
+                android:textColor="@color/text_colour_secondary_light"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <TextView
+            android:id="@+id/terms_holder"
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:text="@string/terms_text" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <TextView
+            android:id="@+id/policy_holder"
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:text="@string/policy_text" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/md_grey_300" />
+
+        <TextView
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:orientation="vertical"
+            android:paddingBottom="20dp"
+            android:paddingLeft="20dp"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:text="@string/copyright_text" />
+
+        <TextView
+            android:id="@+id/debugText"
+            style="@style/textStyle.Light"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="bottom"
+            android:paddingEnd="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingStart="20dp"
+            android:text="@string/debug_label"
+            android:textColor="@color/accent_material_dark_1"
+            android:visibility="gone" />
+
+        <RelativeLayout
+            android:id="@+id/debug_setting_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_ripple"
+            android:clickable="true"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/debug_switch"
+                android:layout_toStartOf="@+id/debug_switch"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/debug_features_label" />
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/debug_switch_subtitle"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/debug_switch"
+                style="@style/textStyle.Light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:checked="false"
+                android:gravity="center_vertical"
+                android:paddingEnd="20dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingStart="20dp" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/debug_options_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/md_grey_300" />
+
+            <LinearLayout
+                android:id="@+id/debug_server_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/custom_ripple"
+                android:clickable="true"
+                android:orientation="vertical"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp">
+
+                <TextView
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/current_server_label" />
+
+                <TextView
+                    android:id="@+id/server_text"
+                    style="@style/textStyle.Light"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="20dp"
+                    android:paddingStart="20dp"
+                    android:textColor="@color/text_colour_secondary_light"
+                    android:textSize="14sp"
+                    tools:text="openstreetcam.org" />
+            </LinearLayout>
+
+            <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:background="@color/md_grey_300" />-->
+
+            <!--<RelativeLayout-->
+            <!--android:id="@+id/debug_hdr_container"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@drawable/custom_ripple"-->
+            <!--android:clickable="true"-->
+            <!--android:paddingBottom="20dp"-->
+            <!--android:paddingTop="20dp">-->
+
+            <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:layout_toLeftOf="@+id/debug_hdr_switch"-->
+            <!--android:layout_toStartOf="@+id/debug_hdr_switch"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<TextView-->
+            <!--style="@style/textStyle.Light"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:paddingLeft="20dp"-->
+            <!--android:paddingStart="20dp"-->
+            <!--android:text="@string/hdr_recording_label" />-->
+
+            <!--<TextView-->
+            <!--style="@style/textStyle.Light"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:paddingLeft="20dp"-->
+            <!--android:paddingStart="20dp"-->
+            <!--android:text="@string/hdr_recording_text"-->
+            <!--android:textColor="@color/text_colour_secondary_light"-->
+            <!--android:textSize="14sp" />-->
+            <!--</LinearLayout>-->
+
+            <!--<android.support.v7.widget.SwitchCompat-->
+            <!--android:id="@+id/debug_hdr_switch"-->
+            <!--style="@style/textStyle.Light"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentEnd="true"-->
+            <!--android:layout_alignParentRight="true"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:checked="false"-->
+            <!--android:gravity="center_vertical"-->
+            <!--android:paddingEnd="20dp"-->
+            <!--android:paddingLeft="20dp"-->
+            <!--android:paddingRight="20dp"-->
+            <!--android:paddingStart="20dp" />-->
+            <!--</RelativeLayout>-->
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/md_grey_300" />
+
+            <RelativeLayout
+                android:id="@+id/debug_speed_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/custom_ripple"
+                android:clickable="true"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/debug_speed_switch"
+                    android:layout_toStartOf="@+id/debug_speed_switch"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/textStyle.Light"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="20dp"
+                        android:paddingStart="20dp"
+                        android:text="@string/debug_speed_label" />
+
+                    <TextView
+                        style="@style/textStyle.Light"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="20dp"
+                        android:paddingStart="20dp"
+                        android:text="@string/debug_speed_text"
+                        android:textColor="@color/text_colour_secondary_light"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/debug_speed_switch"
+                    style="@style/textStyle.Light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:checked="false"
+                    android:gravity="center_vertical"
+                    android:paddingEnd="20dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:paddingStart="20dp" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/md_grey_300" />
+
+            <RelativeLayout
+                android:id="@+id/debug_auth_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/custom_ripple"
+                android:clickable="true"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/debug_auth_switch"
+                    android:layout_toStartOf="@+id/debug_auth_switch"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/textStyle.Light"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="20dp"
+                        android:paddingStart="20dp"
+                        android:text="@string/remember_login_credentials_label" />
+
+                    <TextView
+                        style="@style/textStyle.Light"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="20dp"
+                        android:paddingStart="20dp"
+                        android:text="@string/remember_login_credentials_text"
+                        android:textColor="@color/text_colour_secondary_light"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/debug_auth_switch"
+                    style="@style/textStyle.Light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:checked="false"
+                    android:gravity="center_vertical"
+                    android:paddingEnd="20dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:paddingStart="20dp" />
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.telenav.osv.ui.custom.ScrollViewImpl>

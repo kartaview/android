@@ -29,7 +29,7 @@ public class CustomDrawerLayout extends DrawerLayout {
             return super.onInterceptTouchEvent(ev);
         } catch (Exception e) {
             //uncomment if you really want to see these errors
-            //Log.d(TAG, Log.getStackTraceString(e));
+            //e.printStackTrace();
             return false;
         }
     }

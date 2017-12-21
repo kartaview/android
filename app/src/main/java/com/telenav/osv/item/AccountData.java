@@ -1,21 +1,35 @@
 package com.telenav.osv.item;
 
-import com.telenav.osv.item.network.UserData;
+import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.item.network.ApiResponse;
 
 /**
  * Holder class for user account info
  * Created by kalmanb on 7/5/17.
  */
-@SuppressWarnings("unused")
-public class AccountData extends UserData {
+public class AccountData extends ApiResponse {
 
-    public static final int ACCOUNT_TYPE_NONE = 0;
+    public static final int ACCOUNT_TYPE_OSM = 0;
 
-    public static final int ACCOUNT_TYPE_OSM = 1;
+    public static final int ACCOUNT_TYPE_GOOGLE = 1;
 
-    public static final int ACCOUNT_TYPE_GOOGLE = 2;
+    public static final int ACCOUNT_TYPE_FACEBOOK = 2;
 
-    public static final int ACCOUNT_TYPE_FACEBOOK = 3;
+    private static final String KEY_USER_TYPE_DEDICATED = "DEDICATED";
+
+    private static final String KEY_USER_TYPE_BYOD = "BYOD";
+
+    private static final String KEY_USER_TYPE_BAU = "BAU";
+
+    private static final String KEY_USER_TYPE_USER = "user";
+
+    private static final String KEY_USER_TYPE_QA = "qa";
+
+    private static final String KEY_LOGIN_TYPE_GOOGLE = "GOOGLE";
+
+    private static final String KEY_LOGIN_TYPE_FACEBOOK = "FACEBOOK";
+
+    private static final String KEY_LOGIN_TYPE_OSM = "OSM";
 
     private String id;
 
@@ -38,28 +52,32 @@ public class AccountData extends UserData {
         this.accountType = accountType;
     }
 
-    public String getUserName() {
-        return userName;
+    public static int getUserTypeForString(String type) {
+        switch (type) {
+            case KEY_USER_TYPE_DEDICATED:
+                return PreferenceTypes.USER_TYPE_DEDICATED;
+            case KEY_USER_TYPE_BYOD:
+                return PreferenceTypes.USER_TYPE_BYOD;
+            case KEY_USER_TYPE_BAU:
+                return PreferenceTypes.USER_TYPE_BAU;
+            default:
+            case KEY_USER_TYPE_USER:
+                return PreferenceTypes.USER_TYPE_CONTRIBUTOR;
+            case KEY_USER_TYPE_QA:
+                return PreferenceTypes.USER_TYPE_QA;
+        }
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public int getUserType() {
-        return userType;
-    }
-
-    public void setUserType(int userType) {
-        this.userType = userType;
+    public static int getAccountTypeForString(String type) {
+        switch (type) {
+            default:
+            case KEY_LOGIN_TYPE_OSM:
+                return ACCOUNT_TYPE_OSM;
+            case KEY_LOGIN_TYPE_GOOGLE:
+                return ACCOUNT_TYPE_GOOGLE;
+            case KEY_LOGIN_TYPE_FACEBOOK:
+                return ACCOUNT_TYPE_FACEBOOK;
+        }
     }
 
     @Override
@@ -76,12 +94,36 @@ public class AccountData extends UserData {
         this.id = id;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
     public String getProfilePictureUrl() {
         return profilePictureUrl;
     }
 
     public void setProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public int getUserType() {
+        return userType;
+    }
+
+    public void setUserType(int userType) {
+        this.userType = userType;
     }
 
     public int getAccountType() {
@@ -93,7 +135,7 @@ public class AccountData extends UserData {
     }
 
     public boolean isDriver() {
-        return userType == TYPE_BYOD || userType == TYPE_DEDICATED ||
-                userType == TYPE_BAU;
+        return userType == PreferenceTypes.USER_TYPE_BYOD || userType == PreferenceTypes.USER_TYPE_DEDICATED ||
+                userType == PreferenceTypes.USER_TYPE_BAU;
     }
 }

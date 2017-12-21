@@ -5,6 +5,7 @@
     android:height="29dp"
     android:viewportHeight="29"
     android:viewportWidth="35">
+
     <path
         android:name="Fill-1"
         android:fillColor="#FFFFFF"

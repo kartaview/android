@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.telenav.osv">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -41,7 +40,6 @@
     <application
         android:name="com.telenav.osv.application.OSVApplication"
         android:allowBackup="true"
-        android:fullBackupContent="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
@@ -64,25 +62,17 @@
             android:launchMode="singleTask"
             android:screenOrientation="fullSensor">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="http://openstreetcam.org"
-                    android:scheme="http" />
-            </intent-filter>
-            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activity.WalkthroughActivity"
             android:label="Intro"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoSplash" />
+            android:screenOrientation="portrait" />
+
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="orientation|screenSize"
@@ -91,6 +81,7 @@
             android:launchMode="singleInstance"
             android:screenOrientation="fullSensor"
             android:windowSoftInputMode="adjustPan" />
+
         <activity
             android:name=".activity.LoginActivity"
             android:configChanges="orientation|screenSize"
@@ -105,10 +96,24 @@
             android:icon="@drawable/ic_launcher"
             android:label="OSV recording service"
             android:stopWithTask="false" />
+
         <service
             android:name=".service.UploadJobService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver android:name=".service.ConnectivityBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.intent.action.BATTERY_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".service.UploadHandlerService"
+            android:icon="@drawable/ic_launcher"
+            android:label="OSV uploading service"
+            android:stopWithTask="false" />
         <service
             android:name=".service.FirebaseService"
             android:permission="android.permission.INTERNET">
@@ -116,14 +121,20 @@
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
+
         <service
             android:name=".service.RecentClearedService"
             android:exported="false"
-            android:stopWithTask="false" />
+            android:stopWithTask="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
 
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="00000000000000000b0000000000000000000000" />
+
         <activity
             android:name=".activity.PlayerActivity"
             android:allowTaskReparenting="true"
@@ -138,8 +149,7 @@
             android:noHistory="true"
             android:process="@string/playback_process_name"
             android:screenOrientation="fullSensor"
-            android:taskAffinity="com.telenav.streetview.PlayerActivity"
-            android:theme="@style/AppTheme.NoSplash"
-            tools:targetApi="lollipop" />
+            android:taskAffinity="com.telenav.streetview.PlayerActivity" />
     </application>
+
 </manifest>

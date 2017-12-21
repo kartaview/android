@@ -1,16 +1,11 @@
 package com.telenav.osv.service;
 
-import javax.inject.Inject;
-import org.greenrobot.eventbus.Subscribe;
 import android.annotation.TargetApi;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.job.JobInfo;
 import android.app.job.JobParameters;
-import android.app.job.JobScheduler;
 import android.app.job.JobService;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -18,17 +13,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.os.Build;
-import android.os.PersistableBundle;
 import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 import com.crashlytics.android.Crashlytics;
 import com.facebook.network.connectionclass.ConnectionQuality;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.command.UploadCancelCommand;
-import com.telenav.osv.command.UploadPauseCommand;
-import com.telenav.osv.data.DynamicPreferences;
-import com.telenav.osv.data.Preferences;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.db.SequenceDB;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.network.upload.UploadBandwidthEvent;
@@ -41,12 +33,10 @@ import com.telenav.osv.event.network.upload.UploadingSequenceEvent;
 import com.telenav.osv.item.LocalSequence;
 import com.telenav.osv.item.Sequence;
 import com.telenav.osv.listener.UploadProgressListener;
-import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.manager.network.UploadManager;
 import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.NetworkUtils;
-import dagger.android.AndroidInjection;
 import io.fabric.sdk.android.Fabric;
 
 /**
@@ -56,19 +46,15 @@ import io.fabric.sdk.android.Fabric;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class UploadJobService extends JobService implements UploadProgressListener {
 
+    public static final String FLAG_NETWORK = "eventNetwork";
+
+    public static final int UPLOAD_JOB_ID = 116119;
+
     private static final String TAG = "UploadJobService";
-
-    private static final int UPLOAD_JOB_ID = 116119;
-
-    private static final String INVOCATION_TYPE = "invocationType";
-
-    private static final int UPLOAD_AUTO = 0;
-
-    private static final int UPLOAD_ON_DEMAND = 1;
 
     private static final String FLAG_PAUSE = "pause";
 
-    //private static final String FLAG_CANCEL = "cancel";
+    private static final String FLAG_CANCEL = "cancel";
 
     private static final int NOTIFICATION_ID = 113;
 
@@ -78,176 +64,51 @@ public class UploadJobService extends JobService implements UploadProgressListen
 
     private final Object notificationSyncObject = new Object();
 
-    @Inject
-    Recorder mRecorder;
-
-    @Inject
-    UploadManager mUploadManager;
-
-    @Inject
-    Preferences appPrefs;
-
-    @Inject
-    SequenceDB db;
-
-    @Inject
-    NetworkBroadcastReceiver mNetworkBroadcastReceiver;
+    private UploadManager mUploadManager;
 
     private NotificationCompat.Builder mNotification;
 
     private NotificationManager mNotificationManager;
 
+    private ApplicationPreferences appPrefs;
+
     private int mLastProgress = -1;
+
+    private NetworkBroadcastReceiver mNetworkBroadcastReceiver;
 
     private JobParameters mParameters;
 
     private long mLastUpdate = System.currentTimeMillis();
 
-    public static void cancelAutoUpload(Context context) {
-        JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        if (jobScheduler == null) {
-            return;
-        }
-        jobScheduler.cancel(UploadJobService.UPLOAD_JOB_ID);
-    }
-
-    public static int scheduleAutoUpload(Context context, DynamicPreferences prefs) {
-        int result = JobScheduler.RESULT_FAILURE;
-        try {
-            PersistableBundle bundle = new PersistableBundle();
-            bundle.putInt(UploadJobService.INVOCATION_TYPE, UploadJobService.UPLOAD_AUTO);
-            final boolean autoSet = prefs.isAutoUploadEnabled();
-            final boolean dataEnabled = prefs.isDataUploadEnabled();
-            if (autoSet) {
-                JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-                if (jobScheduler == null) {
-                    return result;
-                }
-                jobScheduler.cancel(UploadJobService.UPLOAD_JOB_ID);
-                JobInfo.Builder builder = new JobInfo.Builder(UploadJobService.UPLOAD_JOB_ID, new ComponentName(context, UploadJobService.class))
-                        .setRequiredNetworkType(dataEnabled ? JobInfo.NETWORK_TYPE_ANY : JobInfo.NETWORK_TYPE_UNMETERED)
-                        .setPersisted(true)
-                        .setExtras(bundle)
-                        .setRequiresCharging(prefs.isChargingUploadEnabled());
-                result = jobScheduler.schedule(builder.build());
-                Log.d(TAG, "scheduleAutoUpload: scheduled upload task, result = " + result);
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "scheduleAutoUpload: " + Log.getStackTraceString(e));
-        }
-        return result;
-    }
-
-    public static int scheduleImmediateUpload(Context context) {
-        int result = JobScheduler.RESULT_FAILURE;
-        try {
-            PersistableBundle bundle = new PersistableBundle();
-            bundle.putInt(UploadJobService.INVOCATION_TYPE, UploadJobService.UPLOAD_ON_DEMAND);
-            JobScheduler jobScheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-            if (jobScheduler == null) {
-                return result;
-            }
-            jobScheduler.cancel(UploadJobService.UPLOAD_JOB_ID);
-            JobInfo.Builder builder = new JobInfo.Builder(UploadJobService.UPLOAD_JOB_ID, new ComponentName(context, UploadJobService.class))
-                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                    .setPersisted(false)
-                    .setExtras(bundle)
-                    .setRequiresCharging(false);
-            result = jobScheduler.schedule(builder.build());
-            Log.d(TAG, "scheduleImmediateUpload: scheduled upload task, result = " + result);
-        } catch (Exception e) {
-            Log.d(TAG, "scheduleImmediateUpload: " + Log.getStackTraceString(e));
-        }
-        return result;
-    }
-
-    //@Override
-    //public int onStartCommand(Intent intent, int flags, int startId) {
-    //  super.onStartCommand(intent, flags, startId);
-    //  Log.d(TAG, "onStartCommand: ");
-    //  int flag = START_NOT_STICKY;
-    //  appPrefs = ((OSVApplication) getApplication()).getAppPrefs();
-    //  OSVApplication app = ((OSVApplication) getApplication());
-    //  while (!app.isReady()) {
-    //    try {
-    //      Thread.sleep(5);
-    //    } catch (InterruptedException e) {
-    //      Log.d(TAG, "onStartCommand: " + Log.getStackTraceString(e));
-    //    }
-    //  }
-    //  mUploadManager = ((OSVApplication) getApplication()).getUploadManager();
-    //  if (mUploadManager == null) {
-    //    return flag;
-    //  }
-    //  mUploadManager.setUploadProgressListener(UploadJobService.this);
-    //  if (intent != null) {
-    //    if (intent.getBooleanExtra(FLAG_CANCEL, false)) {
-    //      Log.d(TAG, "Upload cancelled.");
-    //      mUploadManager.cancelUploadTasks();
-    //    } else if (intent.getBooleanExtra(FLAG_PAUSE, false)) {
-    //      Log.d(TAG, "Upload paused.");
-    //      if (mUploadManager.isPaused()) {
-    //        mUploadManager.resumeUpload();
-    //      } else {
-    //        mUploadManager.pauseUpload();
-    //      }
-    //    }
-    //    if (intent.getBooleanExtra(FLAG_NETWORK, false)) {
-    //      final boolean autoSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO, false);
-    //      final boolean dataSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED, false);
-    //      final boolean localFilesExist = LocalSequence.getStaticSequences().size() != 0;
-    //      boolean isWifi = NetworkUtils.isWifiInternetAvailable(UploadJobService.this);
-    //      boolean isNet = NetworkUtils.isInternetAvailable(UploadJobService.this);
-    //      if (isNet && autoSet && (dataSet || isWifi)) {
-    //        if (localFilesExist && !((OSVApplication) getApplication()).getRecorder().isRecording()) {
-    //          mUploadManager.uploadCache(LocalSequence.getStaticSequences().values());
-    //        }
-    //      }
-    //    }
-    //  }
-    //  return flag;
-    //}
-
-    @Override
-    public void onCreate() {
-        AndroidInjection.inject(this);
-        super.onCreate();
-        EventBus.register(this);
-        mUploadManager.setUploadProgressListener(UploadJobService.this);
-        Log.d(TAG, "onCreate: ");
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "onDestroy: ");
-        mUploadManager.setUploadProgressListener(null);
-        mUploadManager.destroy();
-        mUploadManager = null;
-        super.onDestroy();
-    }
-
     @Override
     public boolean onStartJob(JobParameters params) {
         mParameters = params;
-        Log.d(TAG, "onStartJob: ");
-        BackgroundThreadPool.post(() -> {
-            final boolean autoSet = appPrefs.isAutoUploadEnabled();
-            final boolean dataSet = appPrefs.isDataUploadEnabled();
+        BackgroundThreadPool.post(new Runnable() {
 
-            final boolean localFilesExist = LocalSequence.getStaticSequences().size() != 0;
-            boolean isWifi = NetworkUtils.isWifiInternetAvailable(UploadJobService.this);
-            boolean isNet = NetworkUtils.isInternetAvailable(UploadJobService.this);
-            boolean isrecording = mRecorder.isRecording();
-            Log.d(TAG, "onStartJob: isnet " + isNet +
-                    " iswifi " + isWifi + " localfiles " + localFilesExist + " dataset " + dataSet + " autoset " + autoSet + " isrec " + isrecording);
-            if (isNet
-                    && (autoSet || params.getExtras().getInt(INVOCATION_TYPE) == UPLOAD_ON_DEMAND)
-                    && (dataSet || isWifi)) {
-                if (localFilesExist && !isrecording) {
-                    mUploadManager.uploadCache(LocalSequence.getStaticSequences().values());
+            @Override
+            public void run() {
+                SequenceDB.instantiate(getApplicationContext());
+                mUploadManager = new UploadManager(getApplicationContext());
+                mUploadManager.setUploadProgressListener(UploadJobService.this);
+                appPrefs = new ApplicationPreferences(getApplicationContext());
+                final boolean autoSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO, false);
+                final boolean dataSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED, false);
+
+                final boolean localFilesExist = LocalSequence.getStaticSequences().size() != 0;
+                boolean isWifi = NetworkUtils.isWifiInternetAvailable(UploadJobService.this);
+                boolean isNet = NetworkUtils.isInternetAvailable(UploadJobService.this);
+                boolean isrecording = ((OSVApplication) getApplication()).getRecorder().isRecording();
+                Log.d(TAG,
+                        "onStartJob: isnet " + isNet + " iswifi " + isWifi + " localfiles " + localFilesExist + " dataset " + dataSet + " autoset " +
+                                autoSet + " isrec " + isrecording);
+                if (isNet && autoSet && (dataSet || isWifi)) {
+                    if (localFilesExist && !isrecording) {
+                        mUploadManager.uploadCache(LocalSequence.getStaticSequences().values());
+                    }
                 }
+                mNetworkBroadcastReceiver = new NetworkBroadcastReceiver(UploadJobService.this, appPrefs, mUploadManager);
+                registerReceiver(mNetworkBroadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
             }
-            registerReceiver(mNetworkBroadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         });
 
         return true;
@@ -255,18 +116,65 @@ public class UploadJobService extends JobService implements UploadProgressListen
 
     @Override
     public boolean onStopJob(JobParameters params) {
-        Log.d(TAG, "onStopJob: ");
-        finishTasks();
+        if (mNetworkBroadcastReceiver != null) {
+            unregisterReceiver(mNetworkBroadcastReceiver);
+        }
         return false;
     }
 
     @Override
-    public void onUploadStarted(final long mTotalSize, final int remainingSequences, final int numberOfSequences) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+        int flag = START_NOT_STICKY;
+        appPrefs = ((OSVApplication) getApplication()).getAppPrefs();
+        OSVApplication app = ((OSVApplication) getApplication());
+        while (!app.isReady()) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                Log.d(TAG, "onStartCommand: " + Log.getStackTraceString(e));
+            }
+        }
+        mUploadManager = ((OSVApplication) getApplication()).getUploadManager();
+        if (mUploadManager == null) {
+            return flag;
+        }
+        mUploadManager.setUploadProgressListener(UploadJobService.this);
+        if (intent != null) {
+            if (intent.getBooleanExtra(FLAG_CANCEL, false)) {
+                Log.d(TAG, "Upload cancelled.");
+                mUploadManager.cancelUploadTasks();
+            } else if (intent.getBooleanExtra(FLAG_PAUSE, false)) {
+                Log.d(TAG, "Upload paused.");
+                if (mUploadManager.isPaused()) {
+                    mUploadManager.resumeUpload();
+                } else {
+                    mUploadManager.pauseUpload();
+                }
+            }
+            if (intent.getBooleanExtra(FLAG_NETWORK, false)) {
+                final boolean autoSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_AUTO, false);
+                final boolean dataSet = appPrefs.getBooleanPreference(PreferenceTypes.K_UPLOAD_DATA_ENABLED, false);
+                final boolean localFilesExist = LocalSequence.getStaticSequences().size() != 0;
+                boolean isWifi = NetworkUtils.isWifiInternetAvailable(UploadJobService.this);
+                boolean isNet = NetworkUtils.isInternetAvailable(UploadJobService.this);
+                if (isNet && autoSet && (dataSet || isWifi)) {
+                    if (localFilesExist && !((OSVApplication) getApplication()).getRecorder().isRecording()) {
+                        mUploadManager.uploadCache(LocalSequence.getStaticSequences().values());
+                    }
+                }
+            }
+        }
+        return flag;
+    }
+
+    @Override
+    public void onUploadStarted(final long mTotalSize, final int remainingSequences) {
         if (Fabric.isInitialized()) {
             Crashlytics.setBool(Log.UPLOAD_STATUS, true);
         }
         uploadStarted();
-        EventBus.postSticky(new UploadStartedEvent(mTotalSize, remainingSequences, numberOfSequences));
+        EventBus.postSticky(new UploadStartedEvent(mTotalSize, remainingSequences));
     }
 
     @Override
@@ -321,7 +229,6 @@ public class UploadJobService extends JobService implements UploadProgressListen
             mNotification.setOngoing(false);
         }
         EventBus.postSticky(new UploadCancelledEvent(total, remaining));
-        finishTasks();
         jobFinished(mParameters, true);
     }
 
@@ -335,9 +242,13 @@ public class UploadJobService extends JobService implements UploadProgressListen
         mLastProgress = -1;
         EventBus.postSticky(new UploadFinishedEvent());
         mUploadManager.resetUploadStats();
-        finishTasks();
         jobFinished(mParameters, false);
     }
+
+    //    @Override
+    //    public void onImageUploaded(int sequenceID, int numberOfImages, int fileIndex, boolean fromError) {
+    //
+    //    }
 
     @Override
     public void onProgressChanged(long totalSize, final long remainingSize) {
@@ -362,45 +273,16 @@ public class UploadJobService extends JobService implements UploadProgressListen
     }
 
     @Override
-    public void onIndexingSequence(final Sequence sequence, final int remainingUploads, final int numberOfSequences) {
-        EventBus.post(new UploadingSequenceEvent(sequence, remainingUploads, numberOfSequences));
+    public void onIndexingSequence(final Sequence sequence, final int remainingUploads) {
+        EventBus.post(new UploadingSequenceEvent(sequence, remainingUploads));
     }
 
     @Override
     public void onBandwidthStateChange(final ConnectionQuality bandwidthState, final double bandwidth) {
         if (UploadManager.sUploadStatus == UploadManager.STATUS_IDLE || UploadManager.sUploadStatus == UploadManager.STATUS_PAUSED) {
-            EventBus.post(new UploadBandwidthEvent(ConnectionQuality.UNKNOWN, 0, mUploadManager.getRemainingSizeValue()));
+            EventBus.post(new UploadBandwidthEvent(ConnectionQuality.UNKNOWN, 0));
         } else {
-            EventBus.post(new UploadBandwidthEvent(bandwidthState, bandwidth, mUploadManager.getRemainingSizeValue()));
-        }
-    }
-
-    @Subscribe
-    public void onUploadCancelled(UploadCancelCommand command) {
-        if (mUploadManager != null) {
-            if (UploadManager.isUploading()) {
-                mUploadManager.cancelUploadTasks();
-            }
-        }
-    }
-
-    @Subscribe
-    public void onUploadPause(UploadPauseCommand command) {
-        final boolean dataSet = appPrefs.isDataUploadEnabled();
-        if (UploadManager.isUploading()) {
-            if (mUploadManager.isPaused()) {
-                if (NetworkUtils.isInternetAvailable(this)) {
-                    if (dataSet || NetworkUtils.isWifiInternetAvailable(this)) {
-                        mUploadManager.resumeUpload();
-                    } else {
-                        Toast.makeText(this, R.string.no_wifi_label, Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    Toast.makeText(this, R.string.no_internet_connection_label, Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                mUploadManager.pauseUpload();
-            }
+            EventBus.post(new UploadBandwidthEvent(bandwidthState, bandwidth));
         }
     }
 
@@ -416,13 +298,6 @@ public class UploadJobService extends JobService implements UploadProgressListen
                 NotificationManager.IMPORTANCE_DEFAULT);
         channel.setDescription("Channel used for the upload progress notification.");
         mNotificationManager.createNotificationChannel(channel);
-    }
-
-    private void finishTasks() {
-        if (mNetworkBroadcastReceiver != null) {
-            unregisterReceiver(mNetworkBroadcastReceiver);
-        }
-        EventBus.unregister(this);
     }
 
     private void uploadStarted() {
@@ -522,6 +397,6 @@ public class UploadJobService extends JobService implements UploadProgressListen
     }
 
     private boolean isUploading() {
-        return mUploadManager != null && UploadManager.isUploading();
+        return mUploadManager != null && mUploadManager.isUploading();
     }
 }

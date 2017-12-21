@@ -2,11 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingTop="17dp"
+    android:paddingBottom="17dp"
     android:orientation="horizontal">
 
     <TextView
-        android:id="@+id/distance"
-        style="@style/textStyle"
+        android:id="@+id/text_track_breakdown_column1"
+        style="@style/trackBreakdownItemStyleStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
@@ -18,8 +20,8 @@
         android:textColor="@color/white" />
 
     <TextView
-        android:id="@+id/multiplier"
-        style="@style/textStyle"
+        android:id="@+id/text_track_breakdown_column2"
+        style="@style/trackBreakdownItemStyleStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="center"
@@ -30,8 +32,8 @@
         android:textColor="@color/white" />
 
     <TextView
-        android:id="@+id/points"
-        style="@style/textStyle"
+        android:id="@+id/text_track_breakdown_column3"
+        style="@style/trackBreakdownItemStyleStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="end"

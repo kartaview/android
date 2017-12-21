@@ -8,8 +8,6 @@ import java.util.HashMap;
  */
 public class CameraParamParser {
 
-    private static final String TAG = "CameraParamParser";
-
     public static HashMap<String, String> parse(String flat) {
         HashMap<String, String> result = new HashMap<>();
         String[] params = flat.split(";");
@@ -20,7 +18,6 @@ public class CameraParamParser {
                 String value = items[1];
                 result.put(key, value);
             } catch (Exception ignored) {
-                Log.d(TAG, Log.getStackTraceString(ignored));
             }
         }
         return result;

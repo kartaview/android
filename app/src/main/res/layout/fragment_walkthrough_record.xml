@@ -37,6 +37,7 @@
             android:textColor="@color/white"
             android:textSize="24sp" />
 
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -50,5 +51,8 @@
             android:text="@string/walkthrough_record_text"
             android:textColor="@color/white_transparent"
             android:textSize="18sp" />
+
+
     </LinearLayout>
+
 </RelativeLayout>

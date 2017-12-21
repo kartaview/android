@@ -51,6 +51,8 @@
                 android:text="@string/partial_img_label"
                 android:textColor="#6E707B"
                 android:textSize="18sp" />
+
+
         </LinearLayout>
 
         <View
@@ -58,7 +60,9 @@
             android:layout_height="18dp"
             android:layout_gravity="center"
             android:layout_weight="0.01"
-            android:background="#6E707B" />
+            android:background="#6E707B">
+
+        </View>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -94,6 +98,7 @@
                 android:text="@string/partial_mb_label"
                 android:textColor="#6E707B"
                 android:textSize="18sp" />
+
         </LinearLayout>
 
         <View
@@ -101,7 +106,9 @@
             android:layout_height="18dp"
             android:layout_gravity="center"
             android:layout_weight="0.01"
-            android:background="#6E707B" />
+            android:background="#6E707B">
+
+        </View>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -137,7 +144,9 @@
                 android:text="@string/partial_km_label"
                 android:textColor="#6E707B"
                 android:textSize="18sp" />
+
         </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout
@@ -163,6 +172,7 @@
             android:layout_height="wrap_content"
             app:srcCompat="@drawable/vector_triangle"
             tools:ignore="ContentDescription" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -189,6 +199,8 @@
                 android:layout_centerVertical="true"
                 app:srcCompat="@drawable/vector_info_white"
                 tools:ignore="ContentDescription" />
+
+
         </RelativeLayout>
 
         <FrameLayout
@@ -226,6 +238,7 @@
                 app:matProg_rimColor="#ffffff"
                 app:matProg_spinSpeed="0.45"
                 tools:visibility="visible" />
+
         </FrameLayout>
 
         <FrameLayout

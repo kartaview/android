@@ -5,6 +5,7 @@
     android:height="24dp"
     android:viewportHeight="24"
     android:viewportWidth="24">
+
     <group
         android:name="Icons"
         android:translateX="-294.000000"

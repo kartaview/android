@@ -1,5 +1,6 @@
 package com.telenav.osv.ui.custom;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -8,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
@@ -26,14 +28,15 @@ import com.telenav.osv.R;
  *         Licensed under the Apache License 2.0 license see:
  *         http://www.apache.org/licenses/LICENSE-2.0
  */
-@SuppressWarnings({"SameParameterValue", "unused"})
 public class ProgressImageView extends CircleImageView {
 
-    private static final int BAR_LENGTH = 16;
+    private static final String TAG = ProgressImageView.class.getSimpleName();
 
-    private static final int BAR_MAX_LENGTH = 270;
+    private final int barLength = 16;
 
-    private static final long PAUSE_GROWING_TIME = 200;
+    private final int barMaxLength = 270;
+
+    private final long pauseGrowingTime = 200;
 
     /**
      * *********
@@ -84,6 +87,7 @@ public class ProgressImageView extends CircleImageView {
     //The amount of degrees per second
     private float spinSpeed = 230.0f;
 
+    //private float spinSpeed = 120.0f;
     // The last time the spinner was animated
     private long lastTimeAnimated = 0;
 
@@ -204,7 +208,7 @@ public class ProgressImageView extends CircleImageView {
             lastTimeAnimated = SystemClock.uptimeMillis();
 
             float from = mProgress - 90;
-            float length = BAR_LENGTH + barExtraLength;
+            float length = barLength + barExtraLength;
 
             if (isInEditMode()) {
                 from = 0;
@@ -215,7 +219,7 @@ public class ProgressImageView extends CircleImageView {
         } else {
             float oldProgress = mProgress;
 
-            if ((int) (mProgress * 100) != (int) (mTargetProgress * 100)) {
+            if (mProgress != mTargetProgress) {
                 //We smoothly increase the progress bar
                 mustInvalidate = true;
 
@@ -226,7 +230,7 @@ public class ProgressImageView extends CircleImageView {
                 lastTimeAnimated = SystemClock.uptimeMillis();
             }
 
-            if ((int) (oldProgress * 100) != (int) (mProgress * 100)) {
+            if (oldProgress != mProgress) {
                 runCallback();
             }
 
@@ -244,11 +248,11 @@ public class ProgressImageView extends CircleImageView {
 
             if (level != 0) {
                 canvas.drawArc(circleBounds, 135 + offset - 90, progress, false, barPaint);
-                float width = levelPaint.measureText(String.valueOf(level));
+                float width = levelPaint.measureText("" + level);
                 float height = levelPaint.ascent();
 
                 canvas.drawPath(hexagonPath, badgePaint);
-                canvas.drawText(String.valueOf(level), badgeCenterX - width / 2f, badgeCenterY - height / 3, levelPaint);
+                canvas.drawText("" + level, badgeCenterX - width / 2f, badgeCenterY - height / 3, levelPaint);
             }
         }
 
@@ -383,18 +387,17 @@ public class ProgressImageView extends CircleImageView {
             isSpinning = false;
         }
 
-        float prog = progress;
         if (progress > 1.0f) {
-            prog = progress - 1.0f;
+            progress -= 1.0f;
         } else if (progress < 0) {
-            prog = 0;
+            progress = 0;
         }
 
-        if ((int) (prog * 100) == (int) (mTargetProgress * 100)) {
+        if (progress == mTargetProgress) {
             return;
         }
 
-        mTargetProgress = Math.min(prog * 360.0f, 360.0f);
+        mTargetProgress = Math.min(progress * 360.0f, 360.0f);
         mProgress = mTargetProgress;
         lastTimeAnimated = SystemClock.uptimeMillis();
         invalidate();
@@ -429,25 +432,24 @@ public class ProgressImageView extends CircleImageView {
             runCallback();
         }
 
-        float prog = progress;
         if (progress > 1.0f) {
-            prog = progress - 1.0f;
+            progress -= 1.0f;
         } else if (progress < 0) {
-            prog = 0;
+            progress = 0;
         }
 
-        if ((int) (prog * 100) == (int) (mTargetProgress * 100)) {
+        if (progress == mTargetProgress) {
             return;
         }
 
         // If we are currently in the right position
         // we set again the last time animated so the
         // animation starts smooth from here
-        if ((int) (mProgress * 100) == (int) (mTargetProgress * 100)) {
+        if (mProgress == mTargetProgress) {
             lastTimeAnimated = SystemClock.uptimeMillis();
         }
 
-        mTargetProgress = Math.min(prog * 360.0f, 360.0f);
+        mTargetProgress = Math.min(progress * 360.0f, 360.0f);
 
         invalidate();
     }
@@ -578,9 +580,16 @@ public class ProgressImageView extends CircleImageView {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void setAnimationEnabled() {
+        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+
         float animationValue;
-        animationValue = Settings.Global.getFloat(getContext().getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE, 1);
+        if (currentApiVersion >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            animationValue = Settings.Global.getFloat(getContext().getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE, 1);
+        } else {
+            animationValue = Settings.System.getFloat(getContext().getContentResolver(), Settings.System.ANIMATOR_DURATION_SCALE, 1);
+        }
 
         shouldAnimate = animationValue != 0;
     }
@@ -614,7 +623,7 @@ public class ProgressImageView extends CircleImageView {
     /**
      * Set the bounds of the component
      */
-    private void setupBounds(int layoutWidth, int layoutHeight) {
+    private void setupBounds(int layout_width, int layout_height) {
         int paddingTop = getPaddingTop();
         int paddingBottom = getPaddingBottom();
         int paddingLeft = getPaddingLeft();
@@ -622,24 +631,24 @@ public class ProgressImageView extends CircleImageView {
 
         if (!fillRadius) {
             // Width should equal to Height, find the min value to setup the circle
-            int minValue = Math.min(layoutWidth - paddingLeft - paddingRight, layoutHeight - paddingBottom - paddingTop);
+            int minValue = Math.min(layout_width - paddingLeft - paddingRight, layout_height - paddingBottom - paddingTop);
 
             int circleDiameter = Math.min(minValue, circleRadius * 2 - barWidth * 2);
 
             // Calc the Offset if needed for centering the wheel in the available space
-            int xOffset = (layoutWidth - paddingLeft - paddingRight - circleDiameter) / 2 + paddingLeft;
-            int yOffset = (layoutHeight - paddingTop - paddingBottom - circleDiameter) / 2 + paddingTop;
+            int xOffset = (layout_width - paddingLeft - paddingRight - circleDiameter) / 2 + paddingLeft;
+            int yOffset = (layout_height - paddingTop - paddingBottom - circleDiameter) / 2 + paddingTop;
 
             circleBounds =
                     new RectF(xOffset + barWidth, yOffset + barWidth, xOffset + circleDiameter - barWidth, yOffset + circleDiameter - barWidth);
         } else {
-            circleBounds = new RectF(paddingLeft + barWidth, paddingTop + barWidth, layoutWidth - paddingRight - barWidth,
-                    layoutHeight - paddingBottom - barWidth);
+            circleBounds = new RectF(paddingLeft + barWidth, paddingTop + barWidth, layout_width - paddingRight - barWidth,
+                    layout_height - paddingBottom - barWidth);
         }
         badgeCenterX = circleRadius - badgeWidth / 6 * 2 + (int) (-circleRadius * Math.cos(Math.toRadians(135)));
         badgeCenterY = circleRadius - badgeWidth / 6 * 2 + (int) (circleRadius * Math.sin(Math.toRadians(135)));
         hexagonPath = new Path();
-        float radius = badgeWidth / 2f;
+        float radius = badgeWidth / 2;
         float triangleHeight = (float) (Math.sqrt(3) * radius / 2);
         hexagonPath.moveTo(badgeCenterX, badgeCenterY + radius);
         hexagonPath.lineTo(badgeCenterX - triangleHeight, badgeCenterY + radius / 2);
@@ -696,19 +705,21 @@ public class ProgressImageView extends CircleImageView {
     }
 
     private void updateBarLength(long deltaTimeInMilliSeconds) {
-        if (pausedTimeWithoutGrowing >= PAUSE_GROWING_TIME) {
+        if (pausedTimeWithoutGrowing >= pauseGrowingTime) {
             timeStartGrowing += deltaTimeInMilliSeconds;
 
             if (timeStartGrowing > barSpinCycleTime) {
                 // We completed a size change cycle
                 // (growing or shrinking)
                 timeStartGrowing -= barSpinCycleTime;
+                //if(barGrowingFromFront) {
                 pausedTimeWithoutGrowing = 0;
+                //}
                 barGrowingFromFront = !barGrowingFromFront;
             }
 
             float distance = (float) Math.cos((timeStartGrowing / barSpinCycleTime + 1) * Math.PI) / 2 + 0.5f;
-            float destLength = (BAR_MAX_LENGTH - BAR_LENGTH);
+            float destLength = (barMaxLength - barLength);
 
             if (barGrowingFromFront) {
                 barExtraLength = distance * destLength;
@@ -746,7 +757,7 @@ public class ProgressImageView extends CircleImageView {
          * the wheel completes an animation cycle, with, the progress value is -1.0f
          * @param progress a double value between 0.00 and 1.00 both included
          */
-        void onProgressUpdate(float progress);
+        public void onProgressUpdate(float progress);
     }
 
     static class WheelSavedState extends BaseSavedState {

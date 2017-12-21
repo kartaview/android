@@ -35,5 +35,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:src="@drawable/custom_circle_tap_to_lock_focus" />
+
     </FrameLayout>
 </FrameLayout>

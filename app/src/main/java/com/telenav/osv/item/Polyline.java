@@ -1,6 +1,7 @@
 package com.telenav.osv.item;
 
 import java.util.ArrayList;
+import com.skobbler.ngx.SKCoordinate;
 import com.skobbler.ngx.map.SKPolyline;
 
 /**
@@ -16,6 +17,6 @@ public class Polyline extends SKPolyline {
     public Polyline(int identifier) {
         super();
         setIdentifier(identifier);
-        setNodes(new ArrayList<>());
+        setNodes(new ArrayList<SKCoordinate>());
     }
 }

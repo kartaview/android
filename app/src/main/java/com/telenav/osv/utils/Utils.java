@@ -5,15 +5,20 @@ import java.io.File;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Map;
 import javax.security.auth.x500.X500Principal;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -21,24 +26,30 @@ import android.content.pm.Signature;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.OrientationEventListener;
+import android.view.Surface;
 import android.view.WindowManager;
 import com.crashlytics.android.Crashlytics;
+import com.faraji.environment3.Environment3;
+import com.faraji.environment3.NoSecondaryStorageException;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.skobbler.ngx.SKDeveloperKeyException;
 import com.skobbler.ngx.SKMaps;
 import com.skobbler.ngx.SKMapsInitSettings;
 import com.skobbler.ngx.SKMapsInitializationListener;
 import com.skobbler.ngx.map.SKMapViewStyle;
 import com.telenav.osv.R;
-import com.telenav.osv.data.DynamicPreferences;
-import com.telenav.osv.data.MapPreferences;
+import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.item.OSVFile;
 import io.fabric.sdk.android.Fabric;
 
@@ -71,11 +82,17 @@ public class Utils {
 
     private static final long UNKNOWN_SIZE = -3L;
 
+    private static final float METER_TO_FEET = 3.28084f;
+
     private static final int[] SCORES = new int[]{10, 5, 5, 3, 3, 2, 2, 2, 2, 2, 1};
+
+    private static final float KILOMETER_TO_MILE = 0.621371f;
 
     private static final String TAG = "Utils";
 
     private static final X500Principal DEBUG_DN = new X500Principal("CN=Android Debug,O=Android,C=US");
+
+    public static String EXTERNAL_STORAGE_PATH = "no external";
 
     /**
      * true if multiple map instances can be created
@@ -84,7 +101,41 @@ public class Utils {
 
     public static boolean DEBUG = false;
 
-    private static String sExternalStoragePath = "";
+    /**
+     * Formats a given distance value (given in meters)
+     * @param distInMeters dist
+     * @return strings, value/unit
+     */
+    public static String[] formatDistanceFromMeters(Context context, int distInMeters) {
+        boolean isUS =
+                !((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC);
+        if (isUS) {
+            distInMeters = (int) (distInMeters * METER_TO_FEET);
+        }
+        DecimalFormat df2 = new DecimalFormat("#.#");
+        if (distInMeters < 500) {
+            return new String[]{distInMeters + "", (isUS ? " ft" : " m")};
+        } else {
+            return new String[]{df2.format((double) distInMeters / (isUS ? 5280 : 1000)) + "", (isUS ? " mi" : " km")};
+        }
+    }
+
+    /**
+     * Formats a given distance value (given in meters)
+     * @param dist dist
+     * @return value/unit
+     */
+    public static String[] formatDistanceFromKiloMeters(Context context, double dist) {
+        boolean isUS =
+                !((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC);
+        if (isUS) {
+            dist = (int) (dist * KILOMETER_TO_MILE);
+        }
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator(' ');
+        DecimalFormat df2 = new DecimalFormat("#,###,###,###.#", symbols);
+        return new String[]{df2.format(dist) + "", (isUS ? " mi" : " km")};
+    }
 
     /**
      * Tells if internet is currently available on the device
@@ -92,18 +143,16 @@ public class Utils {
      * @return a
      */
     public static boolean isInternetAvailable(Context currentContext) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) currentContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager != null) {
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            if (networkInfo != null) {
-                if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-                    if (networkInfo.isConnected()) {
-                        return true;
-                    }
-                } else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
-                    if (networkInfo.isConnected()) {
-                        return true;
-                    }
+        ConnectivityManager conectivityManager = (ConnectivityManager) currentContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = conectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                if (networkInfo.isConnected()) {
+                    return true;
+                }
+            } else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                if (networkInfo.isConnected()) {
+                    return true;
                 }
             }
         }
@@ -114,12 +163,13 @@ public class Utils {
      * Initializes the SKMaps framework
      */
     @SuppressWarnings("UnusedReturnValue")
-    public static boolean initializeLibrary(final Activity context, MapPreferences prefs, SKMapsInitializationListener initListener) {
+    public static boolean initializeLibrary(final Activity context, SKMapsInitializationListener initListener) {
 
         // get object holding map initialization settings
         SKMapsInitSettings initMapSettings = new SKMapsInitSettings();
 
-        final String mapResourcesPath = prefs.getMapResourcesPath();
+        final String mapResourcesPath =
+                ((OSVApplication) context.getApplicationContext()).getAppPrefs().getStringPreference("mapResourcesPath");
         // set path to map resources and initial map style
         initMapSettings.setMapResourcesPath(mapResourcesPath);
         initMapSettings.setCurrentMapViewStyle(new SKMapViewStyle(mapResourcesPath + "grayscalestyle/", "grayscalestyle.json"));
@@ -129,7 +179,7 @@ public class Utils {
                 SKMaps.getInstance().initializeSKMaps((Application) context.getApplicationContext(), initListener, initMapSettings);
                 return true;
             } catch (SKDeveloperKeyException exception) {
-                Log.e("initializeLibrary:", Log.getStackTraceString(exception));
+                exception.printStackTrace();
                 showApiKeyErrorDialog(context);
                 return false;
             }
@@ -162,9 +212,72 @@ public class Utils {
         return debug;
     }
 
+    public static boolean isDebugEnabled(Context ctx) {
+        DEBUG = false;
+        if (ctx != null) {
+            DEBUG = ((OSVApplication) ctx.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED);
+        }
+        return DEBUG;
+    }
+
+    public static int getExactScreenOrientation(Context context) {
+        Display defaultDisplay = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        int rotation = defaultDisplay.getRotation();
+        DisplayMetrics dm = new DisplayMetrics();
+        defaultDisplay.getMetrics(dm);
+        int width = dm.widthPixels;
+        int height = dm.heightPixels;
+        int orientation;
+        // if the device's natural orientation is portrait:
+        if ((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) && height > width ||
+                (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) && width > height) {
+            switch (rotation) {
+                case Surface.ROTATION_0:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    break;
+                case Surface.ROTATION_90:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    break;
+                case Surface.ROTATION_180:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+                    break;
+                case Surface.ROTATION_270:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                    break;
+                default:
+                    // Logging.writeLog(TAG, "Unknown screen orientation. Defaulting to " + "portrait.", Logging.LOG_DEBUG);
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    break;
+            }
+        }
+        // if the device's natural orientation is landscape or if the device
+        // is square:
+        else {
+            switch (rotation) {
+                case Surface.ROTATION_0:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    break;
+                case Surface.ROTATION_90:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+                    break;
+                case Surface.ROTATION_180:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+                    break;
+                case Surface.ROTATION_270:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+                    break;
+                default:
+                    orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+                    break;
+            }
+        }
+
+        return orientation;
+    }
+
     public static int getScreenOrientation(Context context) {
-        WindowManager windowManager = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE));
-        return windowManager != null ? windowManager.getDefaultDisplay().getRotation() : -1;
+        Display defaultDisplay = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        return defaultDisplay.getRotation();
     }
 
     /**
@@ -175,7 +288,7 @@ public class Utils {
         if (file.isDirectory()) {
             String[] children = file.list();
             for (String aChildren : children) {
-                if (new OSVFile(file, aChildren).isDirectory() && !"PreinstalledMaps".equals(aChildren) && !"Maps".equals(aChildren)) {
+                if (new OSVFile(file, aChildren).isDirectory() && !aChildren.equals("PreinstalledMaps") && !aChildren.equals("Maps")) {
                     deleteFileOrDirectory(new OSVFile(file, aChildren));
                 } else {
                     new OSVFile(file, aChildren).delete();
@@ -217,32 +330,46 @@ public class Utils {
         return (int) ((dp * displayMetrics.density) + 0.5);
     }
 
-    public static OSVFile generateOSVFolder(Context context, DynamicPreferences prefs) {
-        OSVFile osv = new OSVFile(getSelectedStorage(context, prefs).getPath() + "/OSV");
+    public static OSVFile generateOSVFolder(Context context) {
+        OSVFile osv = new OSVFile(getSelectedStorage(context).getPath() + "/OSV");
         if (!osv.exists()) {
             osv.mkdir();
         }
         return osv;
     }
 
-    public static File getSelectedStorage(Context context, DynamicPreferences prefs) {
+    public static File getSelectedStorage(Context context) {
+        if (Build.VERSION.SDK_INT < 19 && Environment3.isSecondaryExternalStorageAvailable()) {
+            try {
+                return Environment3.getSecondaryExternalFilesDir(context, null);
+            } catch (NoSecondaryStorageException e) {
+                Log.w(TAG, "getSelectedStorage: " + Log.getStackTraceString(e));
+            }
+        }
         File[] storages = ContextCompat.getExternalFilesDirs(context, null);
         if (storages.length > 1) {
             File file = storages[1];
             if (file != null) {
-                sExternalStoragePath = file.getPath();
+                EXTERNAL_STORAGE_PATH = file.getPath();
             }
         }
-        boolean external = prefs.isUsingExternalStorage();
+        //        Log.d(TAG, "getSelectedStorage: " + Arrays.toString(storages));
+        boolean external =
+                ((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE);
         if (storages.length > 1 && external && storages[1] != null) {
+            //            Log.d(TAG, "getSelectedStorage: external");
             return storages[1];
         }
         if (external) {
-            prefs.setUsingExternalStorage(false);
+            ((OSVApplication) context.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, false);
         }
+        //        Log.d(TAG, "getSelectedStorage: internal");
         File result = storages[0];
         if (result == null) {
             result = context.getExternalFilesDir(null);
+        }
+        if (result == null) {
+            return Environment3.getInternalStorage().getFile();
         }
         return result;
     }
@@ -266,6 +393,70 @@ public class Utils {
         return length;
     }
 
+    //    /**
+    //     * used on the older version upgrade
+    //     * @param context a
+    //     * @param delete a
+    //     */
+    //    public static void moveToPublic(final Context context, final boolean delete) {
+    //        new Thread(new Runnable() {
+    //            @Override
+    //            public void run() {
+    //                OSVFile osvOld = new OSVFile(context.getFilesDir().getPath(), "OSV");
+    //                if (!osvOld.exists()) {
+    //                    osvOld.mkdir();
+    //                }
+    //
+    //                OSVFile osv = new OSVFile(getSelectedStorage(context).getPath() + "/OSV");
+    //                if (!osv.exists()) {
+    //                    osv.mkdir();
+    //                }
+    //                for (OSVFile folder : osvOld.listFiles()) {
+    //                    OSVFile fileTo = new OSVFile(getSelectedStorage(context).getPath() + "/OSV", folder.getName());
+    //                    if (!fileTo.exists()) {
+    //                        fileTo.mkdir();
+    //                    }
+    //                    FileChannel source = null;
+    //                    FileChannel destination = null;
+    //                    for (OSVFile img : folder.listFiles()) {
+    //                        try {
+    //                            try {
+    //                                source = new FileInputStream(img).getChannel();
+    //                                destination = new FileOutputStream(new OSVFile(fileTo, img.getName())).getChannel();
+    //                                destination.transferFrom(source, 0, source.size());
+    //                                if (delete) {
+    //                                    Log.d(TAG, "moveToPublic: deleted " + folder.getName() + "/" + img.getName() + " : " + img.delete
+    // ());
+    //                                }
+    //                            } catch (Exception e) {
+    //                                Log.w(TAG, "moveToPublic: " + e.getLocalizedMessage());
+    //                            } finally {
+    //                                if (source != null) {
+    //                                    source.close();
+    //                                }
+    //                                if (destination != null) {
+    //                                    destination.close();
+    //                                }
+    //                            }
+    //                        } catch (Exception e) {
+    //                            Log.w(TAG, "moveToPublic: " + e.getLocalizedMessage());
+    //                        }
+    //
+    //                        Log.d(TAG, "moveToPublic: copied " + folder.getName() + "/" + img.getName());
+    //                    }
+    //                    if (folder.listFiles().length == 0 && delete) {
+    //                        folder.delete();
+    //                    }
+    //                }
+    //                if (delete) {
+    //                    osvOld.delete();
+    //                }
+    //                Log.d(TAG, "moveToPublic: copy done");
+    //            }
+    //        }).start();
+    //
+    //    }
+
     public static long fileSize(OSVFile file) {
         if (file == null || !file.exists()) {
             return 0;
@@ -283,7 +474,7 @@ public class Utils {
         return length;
     }
 
-    public static long getAvailableSpace(Context mContext, DynamicPreferences prefs) {
+    public static long getAvailableSpace(Context mContext) {
         String state = Environment.getExternalStorageState();
         //        Log.d(TAG, "External storage state=" + state);
         if (Environment.MEDIA_CHECKING.equals(state)) {
@@ -292,7 +483,7 @@ public class Utils {
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
             return UNAVAILABLE;
         }
-        String path = getSelectedStorage(mContext, prefs).getPath();
+        String path = getSelectedStorage(mContext).getPath();
         OSVFile dir = new OSVFile(path);
         dir.mkdirs();
         if (!dir.isDirectory() || !dir.canWrite()) {
@@ -301,8 +492,13 @@ public class Utils {
 
         try {
             StatFs stat = new StatFs(path);
-            Log.d(TAG, "getStorageSpace: " + ((stat.getAvailableBlocksLong() * stat.getBlockSizeLong()) / 1024 / 1024));
-            return (stat.getAvailableBlocksLong() * stat.getBlockSizeLong()) / 1024 / 1024;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                Log.d(TAG, "getStorageSpace: " + ((stat.getAvailableBlocksLong() * stat.getBlockSizeLong()) / 1024 / 1024));
+                return (stat.getAvailableBlocksLong() * stat.getBlockSizeLong()) / 1024 / 1024;
+            } else {
+                Log.d(TAG, "getStorageSpace: " + ((long) (stat.getAvailableBlocks() * stat.getBlockSize()) / 1024 / 1024));
+                return (stat.getAvailableBlocks() * stat.getBlockSize()) / 1024 / 1024;
+            }
         } catch (Exception e) {
             Log.i(TAG, "Fail to access external storage", e);
 
@@ -313,10 +509,75 @@ public class Utils {
         return UNKNOWN_SIZE;
     }
 
+    public static String formatNumber(double value) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator(' ');
+        DecimalFormat formatter = new DecimalFormat("#,###,###,###", symbols);
+        return formatter.format(value);
+    }
+
+    public static String formatSize(double value) {
+        String[] sizeText = formatSizeDetailed(value);
+        return sizeText[0] + sizeText[1];
+    }
+
+    //    public static float getPictureSize(Context context) {
+    //        if (mImageSize == -1 || mImageSize == 0) {
+    //            OSVFile[] folderList = generateOSVFolder(context).listFiles();
+    //            if (folderList.length > 0) {
+    //                long total = 0;
+    //                float nr = folderList[0].listFiles().length;
+    //                for (OSVFile img : folderList[0].listFiles()) {
+    //                    total = total + img.length();
+    //                }
+    //                if (nr > 0) {
+    //                    mImageSize = (float) total / nr / 1024f / 1024f;
+    //                    context.getSharedPreferences("osvAppPrefs", Context.MODE_PRIVATE).edit().putFloat(PreferenceTypes.K_IMAGE_SIZE,
+    // mImageSize).commit();
+    //                }
+    //            }
+    //            mImageSize = context.getSharedPreferences("osvAppPrefs", Context.MODE_PRIVATE).getFloat(PreferenceTypes.K_IMAGE_SIZE, 2);
+    //        }
+    //        return mImageSize;
+    //    }
+
+    public static String[] formatSizeDetailed(double value) {
+        String[] sizeText = new String[]{"0", " MB"};
+        if (value > 0) {
+            double size = value / (double) 1024 / (double) 1024;
+            String type = " MB";
+            DecimalFormat df2 = new DecimalFormat("#.#");
+            if (size > 1024) {
+                size = (size / (double) 1024);
+                type = " GB";
+                sizeText = new String[]{"" + df2.format(size), type};
+            } else {
+                sizeText = new String[]{"" + df2.format(size), type};
+            }
+        }
+        return sizeText;
+    }
+
     public static boolean checkSDCard(Context context) {
-        File[] storages = ContextCompat.getExternalFilesDirs(context, null);
-        Log.d(TAG, "getSelectedStorage: " + Arrays.toString(storages));
-        return storages.length > 1 && storages[1] != null;
+        if (Build.VERSION.SDK_INT < 19) {
+            return Environment3.isSecondaryExternalStorageAvailable();
+        } else {
+            File[] storages = ContextCompat.getExternalFilesDirs(context, null);
+            Log.d(TAG, "getSelectedStorage: " + Arrays.toString(storages));
+            return storages.length > 1 && storages[1] != null;
+        }
+    }
+
+    public static String[] formatSpeedFromKmph(Context context, int speed) {
+        boolean isUS =
+                !((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC);
+        int ret = speed;
+        if (isUS) {
+            ret = (int) (speed * KILOMETER_TO_MILE);
+            return new String[]{ret + "", "mph"};
+        } else {
+            return new String[]{ret + "", "km/h"};
+        }
     }
 
     public static boolean isInsideBoundingBox(double latPoint, double lonPoint, double latTopLeft, double longTopLeft, double latBottomRight,
@@ -331,12 +592,12 @@ public class Utils {
     public static boolean isGPSEnabled(Context context) {
         android.location.LocationManager locationManager =
                 (android.location.LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        return locationManager != null && locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
+        return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
     }
 
     @SuppressWarnings("UnusedReturnValue")
     public static boolean checkGooglePlayServices(final Activity activity) {
-        final int googlePlayServicesCheck = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity);
+        final int googlePlayServicesCheck = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity);
         switch (googlePlayServicesCheck) {
             case ConnectionResult.SUCCESS:
                 return true;
@@ -345,8 +606,15 @@ public class Utils {
             case ConnectionResult.SERVICE_MISSING:
                 return false;
             case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
-                GoogleApiAvailability.getInstance()
-                        .showErrorDialogFragment(activity, googlePlayServicesCheck, 0, dialogInterface -> activity.finish());
+                Dialog dialog = GooglePlayServicesUtil.getErrorDialog(googlePlayServicesCheck, activity, 0);
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        activity.finish();
+                    }
+                });
+                dialog.show();
         }
         return false;
     }
@@ -371,7 +639,13 @@ public class Utils {
         return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB;
     }
 
-    @SuppressWarnings("unused")
+    public static String formatMoney(double value) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setGroupingSeparator(',');
+        DecimalFormat df2 = new DecimalFormat("#,###,###,###.##", symbols);
+        return df2.format(value);
+    }
+
     public static void trace() {
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         for (StackTraceElement e : trace) {
@@ -379,33 +653,36 @@ public class Utils {
         }
     }
 
-    public static String getExternalStoragePath(Context context, DynamicPreferences prefs) {
-        if ("".equals(sExternalStoragePath)) {
-            getSelectedStorage(context, prefs);
+    public static String formatMoneyConstrained(double value) {
+        if (value < 100) {
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+            symbols.setGroupingSeparator(',');
+            DecimalFormat df2 = new DecimalFormat("#,###,###,###.##", symbols);
+            return df2.format(value);
+        } else {
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+            symbols.setGroupingSeparator(',');
+            DecimalFormat df2 = new DecimalFormat("#,###,###,###", symbols);
+            return df2.format(value);
         }
-        return sExternalStoragePath;
     }
 
-    public static String formatSize(double value) {
-        String[] sizeText = formatSizeDetailed(value);
-        return sizeText[0] + sizeText[1];
-    }
-
-    public static String[] formatSizeDetailed(double value) {
-        String[] sizeText = new String[]{"0", " MB"};
-        if (value > 0) {
-            double size = value / (double) 1024 / (double) 1024;
-            String type = " MB";
-            DecimalFormat df2 = new DecimalFormat("#.#");
-            if (size > 1024) {
-                size = (size / (double) 1024);
-                type = " GB";
-                sizeText = new String[]{"" + df2.format(size), type};
-            } else {
-                sizeText = new String[]{"" + df2.format(size), type};
-            }
+    /**
+     * Pretty prints the elements & keys of the given map to a string.
+     * @param stringMap the map which we need to be pretty printed
+     * @return a string containing the elements of the map
+     */
+    public static String mapToString(@NonNull Map<String, String> stringMap) {
+        StringBuilder stringBuilder = new StringBuilder("{\n");
+        for (Map.Entry<String, String> entry : stringMap.entrySet()) {
+            stringBuilder.append("{ ");
+            stringBuilder.append(entry.getKey());
+            stringBuilder.append(", ");
+            stringBuilder.append(entry.getValue());
+            stringBuilder.append(" }\n");
         }
-        return sizeText;
+        stringBuilder.append("}");
+        return stringBuilder.toString();
     }
 
     /**
@@ -417,9 +694,12 @@ public class Utils {
         alertDialog.setTitle("Error");
         alertDialog.setMessage("API_KEY not set");
         alertDialog.setCancelable(false);
-        alertDialog.setPositiveButton(currentActivity.getResources().getString(R.string.ok_label),
-                (dialog, which) -> android.os.Process
-                        .killProcess(android.os.Process.myPid()));
+        alertDialog.setPositiveButton(currentActivity.getResources().getString(R.string.ok_label), new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+        });
 
         alertDialog.show();
     }

@@ -6,10 +6,11 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
-import com.telenav.osv.data.MapPreferences;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.PreferenceTypes;
 
 /**
- * vanilla location provider from android
  * Created by Kalman on 07/09/16.
  */
 @SuppressWarnings("MissingPermission")
@@ -27,8 +28,6 @@ class LocationDataProvider {
     private final long mMinTime;
 
     private final float mMinDistance;
-
-    private final MapPreferences appPrefs;
 
     private Context mContext;
 
@@ -48,10 +47,8 @@ class LocationDataProvider {
         UNKNOWN
     }
 
-    LocationDataProvider(Context context, MapPreferences appPrefs, boolean useGPSLocation, boolean useCellLocation,
-                         long minTime, float minDistance) {
+    LocationDataProvider(Context context, boolean useGPSLocation, boolean useCellLocation, long minTime, float minDistance) {
         this.mContext = context;
-        this.appPrefs = appPrefs;
         this.mUseGPSLocation = useGPSLocation;
         this.mUseCellLocation = useCellLocation;
         this.mMinTime = minTime;
@@ -215,7 +212,14 @@ class LocationDataProvider {
             best = lastKnownLocationGPS;
         }
         if (best == null) {
-            best = appPrefs.getLastLocation();
+            ApplicationPreferences appPrefs = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs();
+            final double lat = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LAT);
+            final double lon = (double) appPrefs.getFloatPreference(PreferenceTypes.K_POS_LON);
+            if (lat != 0 && lon != 0) {
+                best = new Location("Saved");
+                best.setLatitude(lat);
+                best.setLatitude(lon);
+            }
         }
         return best;
     }

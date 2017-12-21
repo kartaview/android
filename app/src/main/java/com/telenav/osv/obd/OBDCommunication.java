@@ -11,7 +11,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.os.Build;
-import com.telenav.osv.utils.Log;
+import android.util.Log;
 
 /**
  * Created by dianat on 3/25/2016.
@@ -29,7 +29,7 @@ public class OBDCommunication {
      */
     private static final UUID characteristicUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
 
-    private static final String TAG = OBDCommunication.class.getSimpleName();
+    private final static String TAG = OBDCommunication.class.getSimpleName();
 
     /**
      * client characteristic
@@ -153,11 +153,11 @@ public class OBDCommunication {
      */
     public void disconnectFromBLEDevice() {
         BluetoothGatt gatt = bluetoothGatt;
-        bluetoothGatt = null;
         if (gatt == null) {
             return;
         }
         gatt.close();
+        bluetoothGatt = null;
     }
 
     /**
@@ -175,7 +175,6 @@ public class OBDCommunication {
         if (gatt != null) {
             gatt.disconnect();
         }
-        disconnectFromBLEDevice();
     }
 
     /**

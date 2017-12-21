@@ -22,14 +22,14 @@ package com.android.volley;
 @SuppressWarnings("serial")
 public class ParseError extends VolleyError {
 
-  public ParseError() {
-  }
+    public ParseError() {
+    }
 
-  public ParseError(NetworkResponse networkResponse) {
-    super(networkResponse);
-  }
+    public ParseError(NetworkResponse networkResponse) {
+        super(networkResponse);
+    }
 
-  public ParseError(Throwable cause) {
-    super(cause);
-  }
+    public ParseError(Throwable cause) {
+        super(cause);
+    }
 }

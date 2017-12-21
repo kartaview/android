@@ -1,6 +1,5 @@
 package com.telenav.osv.ui.fragment;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -44,12 +43,12 @@ public class OAuthDialogFragment extends DialogFragment {
         return v;
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void onViewCreated(View arg0, Bundle arg1) {
         super.onViewCreated(arg0, arg1);
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         //load the url of the oAuth login page
+        //        progressbar.setVisibility(View.VISIBLE);
         activity = (OSVActivity) getActivity();
         webViewOauth.loadUrl(URL);
         activity.enableProgressBar(true);

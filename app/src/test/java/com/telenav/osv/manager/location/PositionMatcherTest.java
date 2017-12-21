@@ -9,22 +9,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
 import com.skobbler.ngx.SKCoordinate;
 import com.skobbler.ngx.map.SKBoundingBox;
 import com.telenav.osv.MockUtil;
-import com.telenav.osv.data.ApplicationPreferences;
-import com.telenav.osv.data.Preferences;
 import com.telenav.osv.item.ImageCoordinate;
 import com.telenav.osv.item.Polyline;
 import com.telenav.osv.item.Segment;
-import com.telenav.osv.manager.network.GeometryRetriever;
 
 /**
  * tests for position matching
@@ -34,20 +29,21 @@ import com.telenav.osv.manager.network.GeometryRetriever;
 @PrepareForTest({Looper.class, Log.class})
 public class PositionMatcherTest {
 
-    private static final String TAG = "PositionMatcherTest";
-
     private PositionMatcher mMatcher;
 
     private SKCoordinate centerPosition;
-
-    @Mock
-    private Context context;
 
     @Before
     public void setup() throws Exception {
         PowerMockito.mockStatic(Log.class);
         MockUtil.mockMainThreadHandler();
-        mMatcher = new PositionMatcher(new GeometryRetriever(context, new Preferences(new ApplicationPreferences(context))));
+        mMatcher = new PositionMatcher(null, new PositionMatcher.SegmentsListener() {
+
+            @Override
+            public void onSegmentsReceived(SKCoordinate location) {
+
+            }
+        });
 
         String json = MockUtil.getJsonFromFile(this, "geometry.json");
         centerPosition = new SKCoordinate(46.77324496178227, 23.593161462125305);
@@ -194,7 +190,6 @@ public class PositionMatcherTest {
                     try {
                         coverage = tracks.getJSONObject(i).getInt("coverage");
                     } catch (Exception ignored) {
-                        com.telenav.osv.utils.Log.d(TAG, com.telenav.osv.utils.Log.getStackTraceString(ignored));
                     }
                     final Polyline polyline = new Polyline(i);
                     polyline.coverage = coverage;
@@ -209,7 +204,7 @@ public class PositionMatcherTest {
                 }
             }
         } catch (JSONException e) {
-            Log.d(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return segments;
     }

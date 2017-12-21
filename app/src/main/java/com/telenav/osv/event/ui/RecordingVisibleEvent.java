@@ -7,5 +7,5 @@ import com.telenav.osv.event.OSVEvent;
  */
 public class RecordingVisibleEvent extends OSVEvent {
 
-    public static final String TAG = "RecordingVisibleEvent";
+    public final static String TAG = "RecordingVisibleEvent";
 }

@@ -25,4 +25,5 @@
         android:layout_gravity="top|start"
         android:background="@color/transparent"
         android:visibility="visible" />
+
 </FrameLayout>

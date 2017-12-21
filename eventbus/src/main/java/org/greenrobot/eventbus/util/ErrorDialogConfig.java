@@ -16,76 +16,76 @@
 
 package org.greenrobot.eventbus.util;
 
+import org.greenrobot.eventbus.EventBus;
 import android.content.res.Resources;
 import android.util.Log;
-import org.greenrobot.eventbus.EventBus;
 
 public class ErrorDialogConfig {
 
-  final Resources resources;
+    final Resources resources;
 
-  final int defaultTitleId;
+    final int defaultTitleId;
 
-  final int defaultErrorMsgId;
+    final int defaultErrorMsgId;
 
-  final ExceptionToResourceMapping mapping;
+    final ExceptionToResourceMapping mapping;
 
-  EventBus eventBus;
+    EventBus eventBus;
 
-  boolean logExceptions = true;
+    boolean logExceptions = true;
 
-  String tagForLoggingExceptions;
+    String tagForLoggingExceptions;
 
-  int defaultDialogIconId;
+    int defaultDialogIconId;
 
-  Class<?> defaultEventTypeOnDialogClosed;
+    Class<?> defaultEventTypeOnDialogClosed;
 
-  public ErrorDialogConfig(Resources resources, int defaultTitleId, int defaultMsgId) {
-    this.resources = resources;
-    this.defaultTitleId = defaultTitleId;
-    this.defaultErrorMsgId = defaultMsgId;
-    mapping = new ExceptionToResourceMapping();
-  }
-
-  public ErrorDialogConfig addMapping(Class<? extends Throwable> clazz, int msgId) {
-    mapping.addMapping(clazz, msgId);
-    return this;
-  }
-
-  public int getMessageIdForThrowable(final Throwable throwable) {
-    Integer resId = mapping.mapThrowable(throwable);
-    if (resId != null) {
-      return resId;
-    } else {
-      Log.d(EventBus.TAG, "No specific message ressource ID found for " + throwable);
-      return defaultErrorMsgId;
+    public ErrorDialogConfig(Resources resources, int defaultTitleId, int defaultMsgId) {
+        this.resources = resources;
+        this.defaultTitleId = defaultTitleId;
+        this.defaultErrorMsgId = defaultMsgId;
+        mapping = new ExceptionToResourceMapping();
     }
-  }
 
-  public void setDefaultDialogIconId(int defaultDialogIconId) {
-    this.defaultDialogIconId = defaultDialogIconId;
-  }
+    public ErrorDialogConfig addMapping(Class<? extends Throwable> clazz, int msgId) {
+        mapping.addMapping(clazz, msgId);
+        return this;
+    }
 
-  public void setDefaultEventTypeOnDialogClosed(Class<?> defaultEventTypeOnDialogClosed) {
-    this.defaultEventTypeOnDialogClosed = defaultEventTypeOnDialogClosed;
-  }
+    public int getMessageIdForThrowable(final Throwable throwable) {
+        Integer resId = mapping.mapThrowable(throwable);
+        if (resId != null) {
+            return resId;
+        } else {
+            Log.d(EventBus.TAG, "No specific message ressource ID found for " + throwable);
+            return defaultErrorMsgId;
+        }
+    }
 
-  public void disableExceptionLogging() {
-    logExceptions = false;
-  }
+    public void setDefaultDialogIconId(int defaultDialogIconId) {
+        this.defaultDialogIconId = defaultDialogIconId;
+    }
 
-  public void setTagForLoggingExceptions(String tagForLoggingExceptions) {
-    this.tagForLoggingExceptions = tagForLoggingExceptions;
-  }
+    public void setDefaultEventTypeOnDialogClosed(Class<?> defaultEventTypeOnDialogClosed) {
+        this.defaultEventTypeOnDialogClosed = defaultEventTypeOnDialogClosed;
+    }
 
-  /**
-   * eventBus!=null ? eventBus: EventBus.getDefault()
-   */
-  EventBus getEventBus() {
-    return eventBus != null ? eventBus : EventBus.getDefault();
-  }
+    public void disableExceptionLogging() {
+        logExceptions = false;
+    }
 
-  public void setEventBus(EventBus eventBus) {
-    this.eventBus = eventBus;
-  }
+    public void setTagForLoggingExceptions(String tagForLoggingExceptions) {
+        this.tagForLoggingExceptions = tagForLoggingExceptions;
+    }
+
+    /**
+     * eventBus!=null ? eventBus: EventBus.getDefault()
+     */
+    EventBus getEventBus() {
+        return eventBus != null ? eventBus : EventBus.getDefault();
+    }
+
+    public void setEventBus(EventBus eventBus) {
+        this.eventBus = eventBus;
+    }
 }

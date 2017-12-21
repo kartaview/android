@@ -7,7 +7,7 @@ import com.telenav.osv.event.OSVEvent;
  */
 public class OrientationChangedEvent extends OSVEvent {
 
-    public static final String TAG = "OrientationChangedEvent";
+    public final static String TAG = "OrientationChangedEvent";
 
     public int orientation;
 

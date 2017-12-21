@@ -7,18 +7,6 @@ import java.util.Date;
  */
 public abstract class OnlineSequence extends Sequence {
 
-    public static final String SERVER_STATUS_UPLOADING = "NEW";
-
-    public static final String SERVER_STATUS_UPLOADED = "UPLOAD_FINISHED";
-
-    public static final String SERVER_STATUS_PROCESSED = "PROCESSING_FINISHED";
-
-    public static final String SERVER_STATUS_APPROVED = "APPROVED";
-
-    public static final String SERVER_STATUS_REJECTED = "REJECTED";
-
-    public static final String SERVER_STATUS_TBD = "TBD";
-
     private static final String TAG = "OnlineSequence";
 
     public OnlineSequence(int sequenceId, Date date, int originalImageCount, String address, String thumbLink, boolean obd, String platform,

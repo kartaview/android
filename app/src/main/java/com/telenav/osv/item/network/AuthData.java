@@ -1,9 +1,6 @@
 package com.telenav.osv.item.network;
 
-import com.telenav.osv.item.AccountData;
-
 /**
- * Api response containing login related info like OSC access token
  * Created by kalmanb on 8/3/17.
  */
 public class AuthData extends ApiResponse {
@@ -16,15 +13,9 @@ public class AuthData extends ApiResponse {
 
     private String mDisplayName = "";
 
-    /**
-     * see @{{@link UserData}}
-     */
     private int mUserType = 0;
 
-    /**
-     * see @{{@link AccountData}}
-     */
-    private int mLoginType;
+    private String mLoginType;
 
     public String getAccessToken() {
         return mAccessToken;
@@ -66,11 +57,11 @@ public class AuthData extends ApiResponse {
         this.mUserType = userType;
     }
 
-    public int getLoginType() {
+    public String getLoginType() {
         return mLoginType;
     }
 
-    public void setLoginType(int loginType) {
+    public void setLoginType(String loginType) {
         this.mLoginType = loginType;
     }
 }

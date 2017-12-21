@@ -24,101 +24,96 @@ import java.util.Map;
  */
 public interface Cache {
 
-  /**
-   * Retrieves an entry from the cache.
-   *
-   * @param key Cache key
-   *
-   * @return An {@link Entry} or null in the event of a cache miss
-   */
-  Entry get(String key);
-
-  /**
-   * Adds or replaces an entry to the cache.
-   *
-   * @param key Cache key
-   * @param entry Data to store and metadata for cache coherency, TTL, etc.
-   */
-  void put(String key, Entry entry);
-
-  /**
-   * Performs any potentially long-running actions needed to initialize the cache;
-   * will be called from a worker thread.
-   */
-  void initialize();
-
-  /**
-   * Invalidates an entry in the cache.
-   *
-   * @param key Cache key
-   * @param fullExpire True to fully expire the entry, false to soft expire
-   */
-  void invalidate(String key, boolean fullExpire);
-
-  /**
-   * Removes an entry from the cache.
-   *
-   * @param key Cache key
-   */
-  void remove(String key);
-
-  /**
-   * Empties the cache.
-   */
-  void clear();
-
-  /**
-   * Data and metadata for an entry returned by the cache.
-   */
-  class Entry {
+    /**
+     * Retrieves an entry from the cache.
+     * @param key Cache key
+     * @return An {@link Entry} or null in the event of a cache miss
+     */
+    Entry get(String key);
 
     /**
-     * The data returned from cache.
+     * Adds or replaces an entry to the cache.
+     * @param key Cache key
+     * @param entry Data to store and metadata for cache coherency, TTL, etc.
      */
-    public byte[] data;
+    void put(String key, Entry entry);
 
     /**
-     * ETag for cache coherency.
+     * Performs any potentially long-running actions needed to initialize the cache;
+     * will be called from a worker thread.
      */
-    public String etag;
+    void initialize();
 
     /**
-     * Date of this response as reported by the server.
+     * Invalidates an entry in the cache.
+     * @param key Cache key
+     * @param fullExpire True to fully expire the entry, false to soft expire
      */
-    public long serverDate;
+    void invalidate(String key, boolean fullExpire);
 
     /**
-     * The last modified date for the requested object.
+     * Removes an entry from the cache.
+     * @param key Cache key
      */
-    public long lastModified;
+    void remove(String key);
 
     /**
-     * TTL for this record.
+     * Empties the cache.
      */
-    public long ttl;
+    void clear();
 
     /**
-     * Soft TTL for this record.
+     * Data and metadata for an entry returned by the cache.
      */
-    public long softTtl;
+    class Entry {
 
-    /**
-     * Immutable response headers as received from server; must be non-null.
-     */
-    public Map<String, String> responseHeaders = Collections.emptyMap();
+        /**
+         * The data returned from cache.
+         */
+        public byte[] data;
 
-    /**
-     * True if the entry is expired.
-     */
-    public boolean isExpired() {
-      return this.ttl < System.currentTimeMillis();
+        /**
+         * ETag for cache coherency.
+         */
+        public String etag;
+
+        /**
+         * Date of this response as reported by the server.
+         */
+        public long serverDate;
+
+        /**
+         * The last modified date for the requested object.
+         */
+        public long lastModified;
+
+        /**
+         * TTL for this record.
+         */
+        public long ttl;
+
+        /**
+         * Soft TTL for this record.
+         */
+        public long softTtl;
+
+        /**
+         * Immutable response headers as received from server; must be non-null.
+         */
+        public Map<String, String> responseHeaders = Collections.emptyMap();
+
+        /**
+         * True if the entry is expired.
+         */
+        public boolean isExpired() {
+            return this.ttl < System.currentTimeMillis();
+        }
+
+        /**
+         * True if a refresh is needed from the original data source.
+         */
+        public boolean refreshNeeded() {
+            return this.softTtl < System.currentTimeMillis();
+        }
     }
-
-    /**
-     * True if a refresh is needed from the original data source.
-     */
-    public boolean refreshNeeded() {
-      return this.softTtl < System.currentTimeMillis();
-    }
-  }
 }

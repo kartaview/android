@@ -4,6 +4,7 @@
     android:height="20dp"
     android:viewportHeight="14"
     android:viewportWidth="10.89">
+
     <path
         android:fillColor="#333"
         android:fillType="evenOdd"

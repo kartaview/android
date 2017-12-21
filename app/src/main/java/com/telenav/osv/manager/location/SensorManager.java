@@ -4,28 +4,32 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
-import javax.inject.Inject;
 import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
+import com.telenav.datacollectormodule.config.Config;
+import com.telenav.datacollectormodule.datacollectorstarter.DataCollectorManager;
+import com.telenav.datacollectormodule.datatype.EventDataListener;
+import com.telenav.datacollectormodule.datatype.datatypes.BaseObject;
+import com.telenav.datacollectormodule.datatype.datatypes.GPSData;
+import com.telenav.datacollectormodule.datatype.datatypes.PositionObject;
+import com.telenav.datacollectormodule.datatype.datatypes.PressureObject;
+import com.telenav.datacollectormodule.datatype.datatypes.ThreeAxesObject;
+import com.telenav.datacollectormodule.datatype.util.LibraryUtil;
 import com.telenav.osv.application.OSVApplication;
 import com.telenav.osv.item.OSVFile;
-import com.telenav.osv.item.SensorData;
+import com.telenav.osv.item.metadata.DataCollectorItemWrapper;
+import com.telenav.osv.item.metadata.Obd2Data;
+import com.telenav.osv.item.metadata.VideoData;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
-@SuppressWarnings({"MissingPermission", "ResultOfMethodCallIgnored"})
-public class SensorManager implements SensorEventListener, LocationListener {
+public class SensorManager implements EventDataListener {
 
     private static final String LINE_SEPARATOR = "\n";
 
@@ -33,9 +37,15 @@ public class SensorManager implements SensorEventListener, LocationListener {
 
     private static final String TAG = "SensorManager";
 
-    public static float[] mHeadingValues = new float[3];
+    private static final int MAX_BUFFERED_LINES = 1000;
 
-    private static ConcurrentLinkedQueue<SensorData> sensorDataQueue = new ConcurrentLinkedQueue<>();
+    private static final AtomicBoolean gpsAvailableInMetadata = new AtomicBoolean(false);
+
+    private static final AtomicBoolean activeState = new AtomicBoolean(false);
+
+    //TODO move everything from the static data queue, in a non-static field...all this logic pertaining to logging and to the sensor data queue
+    //TODO doesn't need to be static, nor should it be in the sensor manager...a separate logger, or metadata-only responsible class is necessary
+    private static ConcurrentLinkedQueue<Object> sensorDataQueue = new ConcurrentLinkedQueue<>();
 
     private static OSVFile sSequence;
 
@@ -45,39 +55,74 @@ public class SensorManager implements SensorEventListener, LocationListener {
 
     private static Handler mBackgroundHandler;
 
-    private android.hardware.SensorManager mSensorManager;
+    private static AtomicInteger atomicInteger = new AtomicInteger();
 
-    private android.location.LocationManager mLocationService;
-
-    private float[] mHeadingMatrix = new float[16];
-
-    private float[] mGravity = new float[3];
-
-    private float[] mRotationMatrixS = new float[16];
-
-    private float[] mOrientationS = new float[3];
+    private float[] mHeadingValues = new float[3];
 
     private OSVFile mLogFile;
 
-    @Inject
+    private Context context;
+
+    /**
+     * the manager used for collecting sensor data
+     */
+    private DataCollectorManager dataCollectorManager;
+
     public SensorManager(Context context) {
-        // get sensorManager and initialise sensor listeners
-        mSensorManager = (android.hardware.SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        mLocationService = (android.location.LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        this.context = context;
     }
 
-    public static void logSensorData(SensorData sensorData) {
+    public static void logSensorData(DataCollectorItemWrapper sensorData) {
         sensorDataQueue.add(sensorData);
+        if (isGpsData(sensorData)) {
+            if (!gpsAvailableInMetadata.get()) {
+                //to whomever will work on this in the future, this is just a quick workaround, and I apologise in advance
+                //for the technical debt introduced by this 'quick fix'.
+                //
+                //this is done to know when at least one location entry is written in the metadata file. If a picture is
+                //taken before at least one location entry exists in the metadata file, that picture will have its location
+                //set to 0,0, when processed on the backend.
+                //
+                //however, ideally this app shouldn't even use two distinct location providers...(one for the map, one for
+                //the metadata - datacollector). it should only use one location provider, which will provide location data
+                //to both the map and the metadata writer class...then this issue wouldn't be an issue any longer.
+                Log.d(TAG, "got gps position, setting atomic bool to true");
+                gpsAvailableInMetadata.set(true);
+            }
+        }
+        flushIfNeeded();
+    }
+
+    public static void logOBD2Data(Obd2Data obd2Data) {
+        sensorDataQueue.add(obd2Data);
+        flushIfNeeded();
+    }
+
+    public static void logVideoData(VideoData videoData) {
+        sensorDataQueue.add(videoData);
+        flushToDisk();
+    }
+
+    /**
+     * Resets the flag (i.e. sets it to false) which stores whether at least one location entry exists in the metadata file, or not.
+     */
+    public static void resetGpsDataAvailableInMetadata() {
+        Log.d(TAG, "#resetGpsDataAvailableInMetadata");
+        gpsAvailableInMetadata.set(false);
+    }
+
+    /**
+     * @return {@code true} if the metadata file contains at least one location entry, {@code false} otherwise.
+     */
+    public static boolean isGpsDataAvailableInMetadata() {
+        return gpsAvailableInMetadata.get();
     }
 
     public static void flushToDisk() {
-        if (mBackgroundHandler == null || mBackgroundThread == null || !mBackgroundThread.isAlive()) {
-            mBackgroundThread = new HandlerThread("SensorCollector", Process.THREAD_PRIORITY_FOREGROUND);
-            mBackgroundThread.start();
-            mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-        }
-        final ConcurrentLinkedQueue<SensorData> tempQueue = sensorDataQueue;
+        ensureBackgroundHandlerExists();
+        final ConcurrentLinkedQueue<Object> tempQueue = sensorDataQueue;
         mBackgroundHandler.post(() -> {
+            atomicInteger.set(0);
             StringBuilder result = new StringBuilder();
             while (!tempQueue.isEmpty()) {
                 result.append(tempQueue.poll());
@@ -92,94 +137,113 @@ public class SensorManager implements SensorEventListener, LocationListener {
             try {
                 mOutputStream.flush();
             } catch (Exception ignored) {
-                Log.d(TAG, Log.getStackTraceString(ignored));
             }
         });
     }
 
     @Override
-    public synchronized void onSensorChanged(SensorEvent event) {
-        switch (event.sensor.getType()) {
-            case Sensor.TYPE_LINEAR_ACCELERATION:
-                logSensorData(new SensorData(SensorData.ACCELEROMETER, event.values, event.timestamp));
-                mGravity = event.values;
-                break;
-            case Sensor.TYPE_GAME_ROTATION_VECTOR:
-                android.hardware.SensorManager.getRotationMatrixFromVector(mRotationMatrixS, event.values);
-                android.hardware.SensorManager.getOrientation(mRotationMatrixS, mOrientationS);
-                logSensorData(new SensorData(SensorData.ROTATION, mOrientationS, event.timestamp));
-
-                break;
-            case Sensor.TYPE_MAGNETIC_FIELD:
-                float[] mGeomagnetic = event.values;
-                if (mGravity != null && mGeomagnetic != null) {
-                    boolean success = android.hardware.SensorManager.getRotationMatrix(mHeadingMatrix, null, mGravity, mGeomagnetic);
-                    if (success) {
-                        android.hardware.SensorManager
-                                .remapCoordinateSystem(mHeadingMatrix, android.hardware.SensorManager.AXIS_X, android.hardware.SensorManager.AXIS_Z,
-                                        mHeadingMatrix);
-                        android.hardware.SensorManager.getOrientation(mHeadingMatrix, mHeadingValues);
-                        mHeadingValues[0] = (float) Math.toDegrees(mHeadingValues[0]);
-                        mHeadingValues[1] = (float) Math.toDegrees(mHeadingValues[1]);
-                        mHeadingValues[2] = (float) Math.toDegrees(mHeadingValues[2]);
-                        mHeadingValues[0] = mHeadingValues[0] >= 0 ? mHeadingValues[0] : mHeadingValues[0] + 360;
-                        logSensorData(new SensorData(SensorData.COMPASS, mHeadingValues, event.timestamp));
-                    }
+    public void onNewEvent(BaseObject baseObject) {
+        if (!activeState.get()) {
+            Log.d(TAG, "#onNewEvent. not recording, onNewEvent ignored");
+            return;
+        }
+        switch (baseObject.getSensorType()) {
+            case LibraryUtil.ACCELEROMETER:
+                if (baseObject.getStatusCode() == LibraryUtil.PHONE_SENSOR_READ_SUCCESS) {
+                    ThreeAxesObject accelerometerObject = (ThreeAxesObject) baseObject;
+                    //osc implementation
+                    logSensorData(new DataCollectorItemWrapper(accelerometerObject));
                 }
                 break;
-            case Sensor.TYPE_PRESSURE:
-                logSensorData(new SensorData(event.values[0], event.timestamp));
+            case LibraryUtil.HEADING:
+                if (baseObject.getStatusCode() == LibraryUtil.PHONE_SENSOR_READ_SUCCESS) {
+                    ThreeAxesObject compassObject = (ThreeAxesObject) baseObject;
+                    logSensorData(new DataCollectorItemWrapper(compassObject));
+                    //-z
+                    mHeadingValues[0] = compassObject.getzValue();
+                    //x
+                    mHeadingValues[1] = compassObject.getxValue();
+                    //y
+                    mHeadingValues[2] = compassObject.getyValue();
+                }
                 break;
-            case Sensor.TYPE_GRAVITY:
-                logSensorData(new SensorData(SensorData.GRAVITY, event.values, event.timestamp));
+            case LibraryUtil.PRESSURE:
+                if (baseObject.getStatusCode() == LibraryUtil.PHONE_SENSOR_READ_SUCCESS) {
+                    PressureObject pressureObject = (PressureObject) baseObject;
+                    logSensorData(new DataCollectorItemWrapper(pressureObject));
+                }
                 break;
+            case LibraryUtil.GRAVITY:
+                if (baseObject.getStatusCode() == LibraryUtil.PHONE_SENSOR_READ_SUCCESS) {
+                    ThreeAxesObject gravityObject = ((ThreeAxesObject) baseObject);
+                    logSensorData(new DataCollectorItemWrapper(gravityObject));
+                }
+                break;
+            case LibraryUtil.LINEAR_ACCELERATION:
+                if (baseObject.getStatusCode() == LibraryUtil.PHONE_SENSOR_READ_SUCCESS) {
+                    ThreeAxesObject linearAccelerationObject = ((ThreeAxesObject) baseObject);
+                    logSensorData(new DataCollectorItemWrapper(linearAccelerationObject));
+                }
+                break;
+            case LibraryUtil.ROTATION_VECTOR_RAW:
+                if (baseObject.getStatusCode() == LibraryUtil.PHONE_SENSOR_READ_SUCCESS) {
+                    ThreeAxesObject rotVectRawObject = ((ThreeAxesObject) baseObject);
+                    logSensorData(new DataCollectorItemWrapper(rotVectRawObject));
+                }
+                break;
+            case LibraryUtil.PHONE_GPS:
+                if (baseObject.getStatusCode() == LibraryUtil.PHONE_SENSOR_READ_SUCCESS) {
+                    PositionObject positionObject = (PositionObject) baseObject;
+                    Log.d(TAG, "SensorManager#logSensorData-> PHONE GPS. obj: " + ((baseObject != null) ? " Not null." : " Null."));
+                    logSensorData(new DataCollectorItemWrapper(positionObject));
+                } else {
+                    Log.d(TAG, "SensorManager#logSensorData-> error when reading PHONE GPS. obj: " + ((baseObject != null) ? baseObject.getTimestamp() : "Null."));
+                }
+                break;
+            case LibraryUtil.GPS_DATA:
+                if (baseObject.getStatusCode() == LibraryUtil.PHONE_SENSOR_READ_SUCCESS) {
+                    GPSData gpsData = (GPSData) baseObject;
+                    Log.d(TAG, "SensorManager#logSensorData-> GPS DATA. obj: " + ((baseObject != null) ? " Not null." : " Null."));
+                    logSensorData(new DataCollectorItemWrapper(gpsData));
+                } else {
+                    Log.d(TAG, "SensorManager#logSensorData-> error when reading GPS DATA. obj: " + ((baseObject != null) ? (baseObject.getTimestamp()) : "Null."));
+                }
         }
-        if (sensorDataQueue.size() > 12) {
+    }
+
+    private static boolean isGpsData(DataCollectorItemWrapper sensorData) {
+        return sensorData.getType().equals(LibraryUtil.GPS_DATA) || sensorData.getType().equals(LibraryUtil.PHONE_GPS);
+    }
+
+    private static void flushIfNeeded() {
+        int count = atomicInteger.incrementAndGet();
+        if (count >= MAX_BUFFERED_LINES) {
             flushToDisk();
         }
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
+    private static void prettyPrintFlushedLogs(ConcurrentLinkedQueue<VideoData> tempQueue) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (VideoData entry : tempQueue) {
+            stringBuilder.append(entry.toString()).append("\n");
+        }
 
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        logSensorData(new SensorData(location));
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
+        Log.d(TAG, "Logs flushed: " + stringBuilder.toString());
     }
 
     private static void appendLog(String string) {
         try {
-            mOutputStream.write(string.getBytes());
+            if (mOutputStream != null) {
+                mOutputStream.write(string.getBytes());
+            }
         } catch (IOException ignored) {
-            Log.d(TAG, Log.getStackTraceString(ignored));
         } catch (Exception e) {
             Log.w(TAG, "compress: " + Log.getStackTraceString(e));
         }
     }
 
     private static void finishLog() {
-        if (mBackgroundHandler == null || mBackgroundThread == null || !mBackgroundThread.isAlive()) {
-            mBackgroundThread = new HandlerThread("SensorCollector", Process.THREAD_PRIORITY_FOREGROUND);
-            mBackgroundThread.start();
-            mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-        }
+        ensureBackgroundHandlerExists();
         mBackgroundHandler.post(() -> {
             if (mOutputStream != null) {
                 try {
@@ -192,11 +256,10 @@ public class SensorManager implements SensorEventListener, LocationListener {
                     try {
                         mOutputStream.flush();
                     } catch (IllegalStateException ignored) {
-                        Log.d(TAG, Log.getStackTraceString(ignored));
                     }
                     mOutputStream.close();
                 } catch (IOException e) {
-                    Log.d(TAG, Log.getStackTraceString(e));
+                    e.printStackTrace();
                 }
             }
             zipLog();
@@ -208,7 +271,6 @@ public class SensorManager implements SensorEventListener, LocationListener {
             OSVFile zipFile = new OSVFile(sSequence, "track.txt.gz");
             OSVFile txtFile = new OSVFile(sSequence, "track.txt");
             if (txtFile.exists()) {
-
                 FileInputStream is = null;
                 FileOutputStream os = null;
                 GZIPOutputStream zip = null;
@@ -222,9 +284,6 @@ public class SensorManager implements SensorEventListener, LocationListener {
                     while ((len = is.read(buffer)) != -1) {
                         zip.write(buffer, 0, len);
                     }
-                    zip.finish();
-                    zip.close();
-                    is.close();
                     if (zipFile.exists() && Utils.fileSize(zipFile) > 0) {
                         Log.d(TAG, "zipLog: successfully zipped");
                         txtFile.delete();
@@ -232,39 +291,51 @@ public class SensorManager implements SensorEventListener, LocationListener {
                 } catch (IOException e) {
                     Log.w(TAG, "zipLog: " + Log.getStackTraceString(e));
                 } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            Log.d(TAG, "zipLog: " + Log.getStackTraceString(e));
-                        }
-                    }
-                    if (os != null) {
-                        try {
-                            os.close();
-                        } catch (IOException e) {
-                            Log.d(TAG, "zipLog: " + Log.getStackTraceString(e));
-                        }
-                    }
-                    if (zip != null) {
-                        try {
+                    try {
+                        if (zip != null) {
+                            zip.finish();
+
                             zip.close();
-                        } catch (IOException e) {
-                            Log.d(TAG, "zipLog: " + Log.getStackTraceString(e));
                         }
+                        if (os != null) {
+                            os.close();
+                        }
+                        if (is != null) {
+                            is.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
         }
     }
 
-    public void onPauseOrStop() {
-        mSensorManager.unregisterListener(this);
-        try {
-            mLocationService.removeUpdates(this);
-        } catch (SecurityException ignored) {
-            Log.d(TAG, Log.getStackTraceString(ignored));
+    private static void ensureBackgroundHandlerExists() {
+        if (mBackgroundHandler == null || mBackgroundThread == null || !mBackgroundThread.isAlive()) {
+            mBackgroundThread = new HandlerThread("SensorCollector", Process.THREAD_PRIORITY_FOREGROUND);
+            mBackgroundThread.start();
+            mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
         }
+    }
+
+    public float[] getHeadingValues() {
+        return mHeadingValues;
+    }
+
+    public void onPauseOrStop() {
+        ensureBackgroundHandlerExists();
+        mBackgroundHandler.post(() -> {
+            Log.d(TAG, "Set active state to false");
+            activeState.set(false);
+            if (dataCollectorManager != null) {
+                Log.d(TAG, "DataCollector stop collecting");
+                dataCollectorManager.stopCollecting();
+                Log.d(TAG, "DataCollector stop collecting--> Done");
+            }
+            resetGpsDataAvailableInMetadata();
+        });
+
         flushToDisk();
         finishLog();
         mLogFile = null;
@@ -274,12 +345,11 @@ public class SensorManager implements SensorEventListener, LocationListener {
         if (sequence == null) {
             return;
         }
-        if (mBackgroundHandler == null || mBackgroundThread == null || !mBackgroundThread.isAlive()) {
-            mBackgroundThread = new HandlerThread("SensorCollector", Process.THREAD_PRIORITY_FOREGROUND);
-            mBackgroundThread.start();
-            mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-        }
+        ensureBackgroundHandlerExists();
         mBackgroundHandler.post(() -> {
+            Log.d(TAG, "Set active state to true");
+            resetGpsDataAvailableInMetadata();
+            activeState.set(true);
             sensorDataQueue = new ConcurrentLinkedQueue<>();
             sSequence = sequence;
             if (!sSequence.exists()) {
@@ -292,33 +362,35 @@ public class SensorManager implements SensorEventListener, LocationListener {
             try {
                 mOutputStream = new FileOutputStream(mLogFile, true);
             } catch (Exception e) {
-                Log.d(TAG, Log.getStackTraceString(e));
+                e.printStackTrace();
             }
-            appendLog(Build.MANUFACTURER + " " + Build.MODEL + ";" + Build.VERSION.RELEASE + ";" + SENSOR_FORMAT_VERSION + ";" +
-                    OSVApplication.VERSION_NAME + ";" + (safe ? "photo" : "video") + LINE_SEPARATOR);
-            // restore the sensor listeners when user resumes the application.
-            initListeners();
-        });
-    }
+            appendLog(Build.MANUFACTURER + " " + android.os.Build.MODEL + ";" + Build.VERSION.RELEASE + ";" + SENSOR_FORMAT_VERSION + ";" + OSVApplication.VERSION_NAME + ";"
+                    + (safe ? "photo" : "video") + LINE_SEPARATOR);
 
-    // This function registers sensor listeners for the accelerometer, magnetometer and gyroscope.
-    private void initListeners() {
-        int READING_RATE = 100000; // 10/sec
-        //        int READING_RATE_HIGH = 50000; // defaults to 25/sec
-        //        int READING_RATE = android.hardware.SensorManager.SENSOR_DELAY_FASTEST;
-        boolean accelerometer = mSensorManager
-                .registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), READING_RATE, mBackgroundHandler);
-        boolean gyroscope = mSensorManager
-                .registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR), READING_RATE, mBackgroundHandler);
-        boolean magnetometer = mSensorManager
-                .registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), READING_RATE, mBackgroundHandler);
-        boolean pressure =
-                mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE), READING_RATE, mBackgroundHandler);
-        boolean gravity =
-                mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), READING_RATE, mBackgroundHandler);
-        Log.d(TAG,
-                "initSensors: accelerometer=" + accelerometer + ", rotation=" + gyroscope + ", magnetometer=" + magnetometer + ", barometer=" +
-                        pressure + ", gravity=" + gravity);
-        mLocationService.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, SensorManager.this, mBackgroundHandler.getLooper());
+            //register for the desired phone sensors, and start the data collector library
+            Config config = new Config();
+            config.addSource(LibraryUtil.PHONE_SOURCE)
+                    //heading
+                    .addDataListener(SensorManager.this, LibraryUtil.HEADING)
+                    .addSensorFrequency(LibraryUtil.HEADING, LibraryUtil.F_10HZ)
+                    //pressure
+                    .addDataListener(SensorManager.this, LibraryUtil.PRESSURE)
+                    .addSensorFrequency(LibraryUtil.PRESSURE, LibraryUtil.F_10HZ)
+                    //gravity
+                    .addDataListener(SensorManager.this, LibraryUtil.GRAVITY)
+                    .addSensorFrequency(LibraryUtil.GRAVITY, LibraryUtil.F_10HZ)
+                    //linear accel
+                    .addDataListener(SensorManager.this, LibraryUtil.LINEAR_ACCELERATION)
+                    .addSensorFrequency(LibraryUtil.LINEAR_ACCELERATION, LibraryUtil.F_10HZ)
+                    //rotation vector
+                    .addDataListener(SensorManager.this, LibraryUtil.ROTATION_VECTOR_RAW)
+                    .addSensorFrequency(LibraryUtil.ROTATION_VECTOR_RAW, LibraryUtil.F_10HZ)
+                    //gps data
+                    .addDataListener(SensorManager.this, LibraryUtil.GPS_DATA);
+
+            dataCollectorManager = new DataCollectorManager(config);
+            Log.d(TAG, "DataCollector start collecting");
+            dataCollectorManager.startCollecting(context);
+        });
     }
 }

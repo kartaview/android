@@ -46,4 +46,5 @@
             app:srcCompat="@drawable/vector_out"
             tools:ignore="ContentDescription" />
     </RelativeLayout>
+
 </LinearLayout>

@@ -31,7 +31,7 @@
     <string name="recording_deleted">Enregistrement supprimé</string>
     <string name="restart_needed">L\'application doit redémarrer pour appliquer les changements.</string>
     <string name="upload_cancelled">Téléversement annulé.</string>
-    <string name="resuming_upload">Téléversement en cours…</string>
+    <string name="resuming_upload">Téléversement en cours...</string>
     <string name="upload_paused">Téléversement en pause.</string>
     <string name="app_restarted">L\'application a été redémarrée en raison d\'une erreur. Les rapports du crash ont été envoyés.</string>
     <string name="loading_too_long">Le chargement est anormalement long.</string>
@@ -80,14 +80,15 @@
     <string name="account_distance_label">Distance :</string>
     <string name="debug_settings_notification">Des paramètres de débug sont apparus !</string>
     <string name="not_allowed_while_upload">Vous ne pouvez pas pendant que vous téléversez.</string>
-    <string name="connecting_label">Connexion…</string>
+    <string name="resolution_selection_not_available">La sélection de résolution n\'est pas disponible pendant que l\'enregistrement rapide est activé.</string>
+    <string name="connecting_label">Connexion...</string>
     <string name="no_obd_detected_message">Aucun OBD détecté ! Vérifiez votre connexion.</string>
     <string name="restart_label">Redémarrer</string>
     <string name="not_connected_label">Non connecté</string>
     <string name="ffmpeg_init_error_message">L\'encodeur n\'a pas pu s\'initialiser</string>
     <string name="error_creating_video_file_message">Impossible de créer le fichier vidéo</string>
     <string name="upload_finished_message">La piste a été complètement téléversée.</string>
-    <string name="uploading_images_message">Téléverser les images…</string>
+    <string name="uploading_images_message">Téléverser les images...</string>
     <string name="resume_label">Continuer</string>
     <string name="pause_label">Pause</string>
     <string name="not_logged_in">Non connecté</string>

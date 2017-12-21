@@ -1,6 +1,5 @@
 package com.telenav.osv.ui.fragment;
 
-import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -18,16 +17,14 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.StringSignature;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
 import com.telenav.osv.item.network.UserData;
-import com.telenav.osv.item.view.profile.UserProfileData;
-import com.telenav.osv.item.view.tracklist.StatsData;
-import com.telenav.osv.item.view.tracklist.StatsDataFactory;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
-import com.telenav.osv.manager.network.UserDataManager;
-import com.telenav.osv.ui.Navigator;
+import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.Utils;
 
 /**
  * fragment holding the ui for the user's data
@@ -35,10 +32,7 @@ import com.telenav.osv.utils.Log;
  */
 public class UserProfileFragment extends SimpleProfileFragment {
 
-    public static final String TAG = "UserProfileFragment";
-
-    @Inject
-    UserDataManager mUserDataManager;
+    public final static String TAG = "UserProfileFragment";
 
     private View mScoreView;
 
@@ -56,21 +50,26 @@ public class UserProfileFragment extends SimpleProfileFragment {
             mScoreView.setVisibility(View.VISIBLE);
             mRankView = view.findViewById(R.id.rank_view);
             mRankView.setVisibility(View.VISIBLE);
-            mRankView.setOnClickListener(v -> activity.openScreen(Navigator.SCREEN_LEADERBOARD));
+            mRankView.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    activity.openScreen(ScreenComposer.SCREEN_LEADERBOARD);
+                }
+            });
             mRankText = view.findViewById(R.id.rank_text);
             mScoreText = view.findViewById(R.id.score_text);
         }
-        mOnlineSequencesAdapter.showValue(appPrefs.isGamificationEnabled());
         return view;
     }
 
     @Override
     protected void requestDetails() {
-        mUserDataManager.getUserProfileDetails(new NetworkResponseDataListener<UserData>() {
+        activity.getUserDataManager().getUserProfileDetails(new NetworkResponseDataListener<UserData>() {
 
             @Override
             public void requestFailed(int status, UserData details) {
-                activity.showSnackBar(R.string.warning_server_comunication_failiure, Snackbar.LENGTH_LONG);
+                activity.showSnackBar("Failed to communicate with server.", Snackbar.LENGTH_LONG);
                 displayCachedStats();
                 Log.d(TAG, "requestUserDetails: " + " status - > " + status + " details - > " + details);
             }
@@ -79,47 +78,59 @@ public class UserProfileFragment extends SimpleProfileFragment {
             public void requestFinished(int status, final UserData userData) {
                 Log.d(TAG, "requestUserDetails: " + " status - > " + status + " result - > " + userData);
                 if (userData != null) {
-                    UserProfileData profileData = new UserProfileData();
-                    profileData.setName(userData.getDisplayName());
-                    profileData.setUsername(userData.getUserName());
-                    profileData.setPhotoUrl(appPrefs.getUserPhotoUrl());
-                    profileData.setRank(userData.getOverallRank());
-                    profileData.setScore(userData.getTotalPoints());
-                    profileData.setLevel(userData.getLevel());
-                    profileData.setXpProgress(userData.getLevelProgress());
-                    profileData.setXpTarget(userData.getLevelTarget());
-
-                    StatsData stats = StatsDataFactory.create(activity, valueFormatter
-                            , userData.getTotalDistance()
-                            , 0
-                            , userData.getTotalObdDistance()
-                            , (int) userData.getTotalTracks()
-                            , (int) userData.getTotalPhotos());
-                    fillUserInformation(profileData, stats, false);
+                    final String[] totalDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, userData.getTotalDistance());
+                    final String[] obdDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, userData.getObdDistance());
+                    String displayName = userData.getDisplayName();
+                    String username = userData.getUserName();
+                    String totalPhotos = Utils.formatNumber((int) userData.getTotalPhotos());
+                    String totalTracks = Utils.formatNumber((int) userData.getTotalTracks());
+                    final int finalRank = userData.getOverallRank();
+                    final int finalScore = userData.getTotalPoints();
+                    final int finalLevel = userData.getLevel();
+                    final int finalXpProgress = userData.getLevelProgress();
+                    final int finalXpTarget = userData.getLevelTarget();
+                    final String photoUrl = appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL);
+                    fillUserInformation(displayName, username, photoUrl, finalScore, finalRank, finalLevel, finalXpTarget, finalXpProgress,
+                            totalDistanceFormatted, obdDistanceFormatted, totalPhotos, totalTracks, false);
                 }
             }
         });
     }
 
     protected void displayCachedStats() {
-        UserProfileData profileData = new UserProfileData();
-        profileData.setUsername(appPrefs.getUserName());
-        profileData.setName(appPrefs.getUserDisplayName());
-        profileData.setPhotoUrl(appPrefs.getUserPhotoUrl());
         SharedPreferences prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        profileData.setRank(prefs.getInt(K_RANK, 0));
-        profileData.setScore(prefs.getInt(K_SCORE, 0));
-        profileData.setLevel(prefs.getInt(K_LEVEL, 0));
-        profileData.setXpProgress(prefs.getInt(K_XP_PROGRESS, 0));
-        profileData.setXpTarget(prefs.getInt(K_XP_TARGET, 1));
-
-        StatsData stats = StatsDataFactory.create(activity, valueFormatter
-                , prefs.getFloat(K_TOTAL_DISTANCE, 0.0f)
-                , 0
-                , prefs.getFloat(K_OBD_DISTANCE, 0.0f)
-                , prefs.getInt(K_TOTAL_TRACKS, 0)
-                , prefs.getInt(K_TOTAL_PHOTOS, 0));
-        fillUserInformation(profileData, stats, true);
+        final int rank = prefs.getInt(K_RANK, 0);
+        final int score = prefs.getInt(K_SCORE, 0);
+        final int level = prefs.getInt(K_LEVEL, 0);
+        final int xpProgress = prefs.getInt(K_XP_PROGRESS, 0);
+        final int xpTarget = prefs.getInt(K_XP_TARGET, 1);
+        final String photos = prefs.getString(K_TOTAL_PHOTOS, "");
+        final String tracks = prefs.getString(K_TOTAL_TRACKS, "");
+        final String distance = prefs.getString(K_TOTAL_DISTANCE, "");
+        final String obdDistance = prefs.getString(K_OBD_DISTANCE, "");
+        final String[] totalDistanceFormatted, obdDistanceFormatted;
+        if (distance.equals("")) {
+            return;
+        }
+        double totalDistanceNum = 0;
+        double obdDistanceNum = 0;
+        try {
+            totalDistanceNum = Double.parseDouble(distance);
+        } catch (NumberFormatException e) {
+            Log.d(TAG, "displayCachedStats: " + Log.getStackTraceString(e));
+        }
+        try {
+            obdDistanceNum = Double.parseDouble(obdDistance);
+        } catch (NumberFormatException e) {
+            Log.d(TAG, "displayCachedStats: " + Log.getStackTraceString(e));
+        }
+        totalDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, totalDistanceNum);
+        obdDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, obdDistanceNum);
+        final String photoUrl = appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL);
+        final String username = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
+        final String name = appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME);
+        fillUserInformation(name, username, photoUrl, score, rank, level, xpTarget, xpProgress, totalDistanceFormatted, obdDistanceFormatted,
+                photos, tracks, true);
     }
 
     @Override
@@ -169,40 +180,46 @@ public class UserProfileFragment extends SimpleProfileFragment {
         }
     }
 
-    private void fillUserInformation(UserProfileData profileData, StatsData stats, final boolean fromCache) {
-        mHandler.post(() -> {
-            collapsingToolbar.setTitle(profileData.getName());
-            mScoreText.setText(valueFormatter.formatNumber(profileData.getScore()));
-            mRankText.setText("" + profileData.getRank());
-            if (!"".equals(profileData.getPhotoUrl())) {
-                Glide.with(activity).load(profileData.getPhotoUrl())
-                        .centerCrop()
-                        .dontAnimate()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .skipMemoryCache(false)
-                        .signature(new StringSignature("profile " + profileData.getUsername() + "-" + profileData.getPhotoUrl()))
-                        .priority(Priority.IMMEDIATE)
-                        .placeholder(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
-                        .error(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
-                        .listener(MainActivity.mGlideRequestListener)
-                        .into(mProfileImage);
+    private void fillUserInformation(final String name, final String username, final String photoUrl, final int score, final int rank,
+                                     final int level, final int xpTarget, final int xpProgress, final String[] totalDistanceFormatted,
+                                     final String[] obdDistanceFormatted, final String photos, final String tracks, final boolean fromCache) {
+        mHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (!isAdded()) {
+                    return;
+                }
+                collapsingToolbar.setTitle(name);
+                mScoreText.setText("" + Utils.formatNumber(score));
+                mRankText.setText("" + rank);
+                if (!photoUrl.equals("")) {
+                    Glide.with(activity).load(photoUrl).centerCrop().dontAnimate().diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false)
+                            .signature(new StringSignature("profile " + username + "-" + photoUrl)).priority(Priority.IMMEDIATE)
+                            .placeholder(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
+                            .error(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
+                            .listener(MainActivity.mGlideRequestListener).into(mProfileImage);
+                }
+                mProfileImage.setLevel(level);
+                float levelLenght = xpTarget - (score - xpProgress);
+                float progressPercentage = ((int) ((float) xpProgress / levelLenght * 100f)) / 100f;
+                if (progressPercentage > 0.94f) {
+                    progressPercentage = 0.94f;
+                } else if (progressPercentage < 0.07f) {
+                    progressPercentage = 0.07f;
+                }
+                if (fromCache) {
+                    //                    mProfileImage.setLinearProgress(false);
+                    //                    mProfileImage.spin();
+                    mProfileImage.setLinearProgress(true);
+                    mProfileImage.setInstantProgress(0.01f);
+                } else {
+                    mProfileImage.setLinearProgress(true);
+                    mProfileImage.setProgress(progressPercentage);
+                }
+                //                mOnlineSequencesAdapter.notifyDataSetChanged();
+                mOnlineSequencesAdapter.refreshDetails(totalDistanceFormatted, new String[]{}, obdDistanceFormatted, photos, tracks);
             }
-            mProfileImage.setLevel(profileData.getLevel());
-            float levelLenght = profileData.getXpTarget() - (profileData.getScore() - profileData.getXpProgress());
-            float progressPercentage = ((int) ((float) profileData.getXpProgress() / levelLenght * 100f)) / 100f;
-            if (progressPercentage > 0.94f) {
-                progressPercentage = 0.94f;
-            } else if (progressPercentage < 0.07f) {
-                progressPercentage = 0.07f;
-            }
-            if (fromCache) {
-                mProfileImage.setLinearProgress(true);
-                mProfileImage.setInstantProgress(0.01f);
-            } else {
-                mProfileImage.setLinearProgress(true);
-                mProfileImage.setProgress(progressPercentage);
-            }
-            mOnlineSequencesAdapter.refreshDetails(stats);
         });
     }
 }

@@ -6,15 +6,26 @@ import java.net.URL;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
+import android.os.Handler;
+import android.os.Looper;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Utility methods that unit tests can use to do common android library mocking that might be needed.
  */
 public class MockUtil {
 
-    private static final ScheduledExecutorService mainThread = Executors.newSingleThreadScheduledExecutor();
+    private final static ScheduledExecutorService mainThread = Executors.newSingleThreadScheduledExecutor();
 
-    private static final ScheduledExecutorService backgroundThread = Executors.newSingleThreadScheduledExecutor();
+    private final static ScheduledExecutorService backgroundThread = Executors.newSingleThreadScheduledExecutor();
 
     private MockUtil() {
     }
@@ -32,24 +43,28 @@ public class MockUtil {
      * @throws Exception
      */
     public static void mockMainThreadHandler() throws Exception {
-        //PowerMockito.mockStatic(Looper.class);
-        //Looper mockMainThreadLooper = mock(Looper.class);
-        //when(Looper.getMainLooper()).thenReturn(mockMainThreadLooper);
-        //Handler mockMainThreadHandler = mock(Handler.class);
-        //Answer<Boolean> handlerPostAnswer = invocation -> {
-        //  Runnable runnable = invocation.getArgument(0);//, Runnable.class);
-        //  Long delay = 0L;
-        //  if (invocation.getArguments().length > 1) {
-        //    delay = invocation.getArgument(1);//, Long.class);
-        //  }
-        //  if (runnable != null) {
-        //    mainThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
-        //  }
-        //  return true;
-        //};
-        //doAnswer(handlerPostAnswer).when(mockMainThreadHandler).post(any(Runnable.class));
-        //doAnswer(handlerPostAnswer).when(mockMainThreadHandler).postDelayed(any(Runnable.class), anyLong());
-        //PowerMockito.whenNew(Handler.class).withArguments(mockMainThreadLooper).thenReturn(mockMainThreadHandler);
+        PowerMockito.mockStatic(Looper.class);
+        Looper mockMainThreadLooper = mock(Looper.class);
+        when(Looper.getMainLooper()).thenReturn(mockMainThreadLooper);
+        Handler mockMainThreadHandler = mock(Handler.class);
+        Answer<Boolean> handlerPostAnswer = new Answer<Boolean>() {
+
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                Runnable runnable = invocation.getArgumentAt(0, Runnable.class);
+                Long delay = 0L;
+                if (invocation.getArguments().length > 1) {
+                    delay = invocation.getArgumentAt(1, Long.class);
+                }
+                if (runnable != null) {
+                    mainThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+                }
+                return true;
+            }
+        };
+        doAnswer(handlerPostAnswer).when(mockMainThreadHandler).post(any(Runnable.class));
+        doAnswer(handlerPostAnswer).when(mockMainThreadHandler).postDelayed(any(Runnable.class), anyLong());
+        PowerMockito.whenNew(Handler.class).withArguments(mockMainThreadLooper).thenReturn(mockMainThreadHandler);
     }
 
     public static String getJsonFromFile(Object obj, String filename) {
@@ -77,23 +92,27 @@ public class MockUtil {
      * @throws Exception
      */
     public static void mockBackgroundThreadHandler() throws Exception {
-        //PowerMockito.mockStatic(Looper.class);
-        //Looper mockBackgroundThreadLooper = mock(Looper.class);
-        //when(Looper.getMainLooper()).thenReturn(mockBackgroundThreadLooper);
-        //Handler mockMainThreadHandler = mock(Handler.class);
-        //Answer<Boolean> handlerPostAnswer = invocation -> {
-        //  Runnable runnable = invocation.getArgument(0);//, Runnable.class);
-        //  Long delay = 0L;
-        //  if (invocation.getArguments().length > 1) {
-        //    delay = invocation.getArgument(1);//, Long.class);
-        //  }
-        //  if (runnable != null) {
-        //    mainThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
-        //  }
-        //  return true;
-        //};
-        //doAnswer(handlerPostAnswer).when(mockMainThreadHandler).post(any(Runnable.class));
-        //doAnswer(handlerPostAnswer).when(mockMainThreadHandler).postDelayed(any(Runnable.class), anyLong());
-        //PowerMockito.whenNew(Handler.class).withArguments(mockBackgroundThreadLooper).thenReturn(mockMainThreadHandler);
+        PowerMockito.mockStatic(Looper.class);
+        Looper mockBackgroundThreadLooper = mock(Looper.class);
+        when(Looper.getMainLooper()).thenReturn(mockBackgroundThreadLooper);
+        Handler mockMainThreadHandler = mock(Handler.class);
+        Answer<Boolean> handlerPostAnswer = new Answer<Boolean>() {
+
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                Runnable runnable = invocation.getArgumentAt(0, Runnable.class);
+                Long delay = 0L;
+                if (invocation.getArguments().length > 1) {
+                    delay = invocation.getArgumentAt(1, Long.class);
+                }
+                if (runnable != null) {
+                    mainThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+                }
+                return true;
+            }
+        };
+        doAnswer(handlerPostAnswer).when(mockMainThreadHandler).post(any(Runnable.class));
+        doAnswer(handlerPostAnswer).when(mockMainThreadHandler).postDelayed(any(Runnable.class), anyLong());
+        PowerMockito.whenNew(Handler.class).withArguments(mockBackgroundThreadLooper).thenReturn(mockMainThreadHandler);
     }
 }

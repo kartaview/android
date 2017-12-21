@@ -3,7 +3,7 @@ package com.telenav.osv.manager.location;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import javax.inject.Inject;
+import android.content.Context;
 import android.location.Location;
 import com.skobbler.ngx.SKCoordinate;
 import com.skobbler.ngx.map.SKBoundingBox;
@@ -22,21 +22,15 @@ import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
 /**
- * Component that matches given positions to segments received from backend
+ * Component that matches position to segments received from backend
  * Created by Kalman on 31/10/16.
  */
-public class PositionMatcher {
+class PositionMatcher {
 
     private static final String TAG = "PositionMatcher";
 
-    /**
-     * skmaps sdk max zoom, used for the segment request as a FULL RESOLUTION flag (no simplification applied to segments received)
-     */
     private static final float MAX_RESOLUTION_ZOOM = 19;
 
-    /**
-     * 15 meters
-     */
     private static final double MATCH_DISTANCE_LIMIT = 15d / 110000d;
 
     private static final int TWO_SEC = 2000;
@@ -49,59 +43,37 @@ public class PositionMatcher {
 
     private final Object matcherSyncObject = new Object();
 
-    private SegmentsListener mSegmentsListener;
+    private final SegmentsListener mSegmentsListener;
 
-    /**
-     * if this bounding box is reached by the small bounding boxes edge, then a new request is sent
-     */
     private SKBoundingBox mTriggerBB;
 
-    /**
-     * the area that we have segment/coverage data for
-     */
     private SKBoundingBox mLoadedBB;
 
-    /**
-     * the list holding the loaded bounding box's segments
-     */
     private ArrayList<Polyline> mPolylines;
 
-    /**
-     * true if a request has been made but did not arrived yet
-     */
     private boolean requestSent = false;
 
-    /**
-     * we match every 2 seconds only if not recording, to reduce battery consumption
-     */
     private long mLastCheckTime;
 
     private LinkedList<SKCoordinate> mLastCoordinates = new LinkedList<>();
 
-    @Inject
-    public PositionMatcher(GeometryRetriever geometryRetriever) {
-        mGeometryRetriever = geometryRetriever;
+    PositionMatcher(Context context, SegmentsListener listener) {
+        mSegmentsListener = listener;
+        if (context != null) {
+            mGeometryRetriever = new GeometryRetriever(context);
+        } else {
+            mGeometryRetriever = null;
+        }
     }
 
-    /**
-     * returns a bb around the position so
-     * (bb.width == dist*2) && (bb.height == dist*2)
-     * is true
-     * @param coords
-     * @param dist the
-     * @return
-     */
+    //    private static double getMercFromDistCos(double meters, double lat) {
+    //        return meters / (110000 * Math.cos(lat));
+    //    }
+
     static SKBoundingBox getBoundingBoxForRegion(SKCoordinate coords, double dist) {
         return getBoundingBox(coords.getLatitude(), coords.getLongitude(), dist);
     }
 
-    /**
-     * checks if lat long is inside the bb
-     * @param bb
-     * @param lat
-     * @param lon
-     * @return
-     */
     private static boolean pointIsInBB(SKBoundingBox bb, double lat, double lon) {
         return bb != null &&
                 (bb.getTopLeft().getLatitude() >= lat && lat >= bb.getBottomRight().getLatitude() && bb.getTopLeft().getLongitude() <= lon &&
@@ -129,10 +101,6 @@ public class PositionMatcher {
         return (Math.toDegrees(Math.atan2(y, x)) + 360) % 360;
     }
 
-    public void setListener(SegmentsListener listener) {
-        mSegmentsListener = listener;
-    }
-
     private void requestNewDataIfNeeded(SKBoundingBox smallBB, final SKCoordinate coordinate) {
         if (assessBBDifference(mTriggerBB, smallBB) && !requestSent && mGeometryRetriever != null) {
             requestSent = true;
@@ -140,24 +108,28 @@ public class PositionMatcher {
             final SKBoundingBox requestedBB = getBoundingBoxForRegion(coordinate, 3500);
             final SKBoundingBox triggerBB = getBoundingBoxForRegion(coordinate, 1500);
             Log.d(TAG, "requestNewDataIfNeeded: " + triggerBB);
-            BackgroundThreadPool.post(() -> {
-                Log.d(TAG, "requestNewDataIfNeeded: sending request");
+            BackgroundThreadPool.post(new Runnable() {
 
-                mGeometryRetriever.listSegments(new NetworkResponseDataListener<GeometryCollection>() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "requestNewDataIfNeeded: sending request");
 
-                                                    @Override
-                                                    public void requestFailed(int status, GeometryCollection details) {
-                                                        Log.d(TAG, "requestNewDataIfNeeded: " + details);
-                                                        requestSent = false;
-                                                    }
+                    mGeometryRetriever.listSegments(new NetworkResponseDataListener<GeometryCollection>() {
 
-                                                    @Override
-                                                    public void requestFinished(int status, GeometryCollection collectionData) {
-                                                        offerNewSegments(coordinate, collectionData.getSegmentList(), triggerBB, requestedBB);
-                                                    }
-                                                }, requestedBB.getTopLeft().getLatitude() + "," + requestedBB.getTopLeft().getLongitude(),
-                        requestedBB.getBottomRight().getLatitude() + "," + requestedBB.getBottomRight().getLongitude(),
-                        MAX_RESOLUTION_ZOOM);
+                                                        @Override
+                                                        public void requestFailed(int status, GeometryCollection details) {
+                                                            Log.d(TAG, "requestNewDataIfNeeded: " + details);
+                                                            requestSent = false;
+                                                        }
+
+                                                        @Override
+                                                        public void requestFinished(int status, GeometryCollection collectionData) {
+                                                            offerNewSegments(coordinate, collectionData.getSegmentList(), triggerBB, requestedBB);
+                                                        }
+                                                    }, requestedBB.getTopLeft().getLatitude() + "," + requestedBB.getTopLeft().getLongitude(),
+                            requestedBB.getBottomRight().getLatitude() + "," + requestedBB.getBottomRight().getLongitude(),
+                            MAX_RESOLUTION_ZOOM);
+                }
             });
         }
     }
@@ -183,11 +155,6 @@ public class PositionMatcher {
         void onSegmentsReceived(SKCoordinate location);
     }
 
-    /**
-     * called for the current location, every 2 seconds max
-     * @param location
-     * @return
-     */
     Segment onLocationChanged(Location location) {
         long currentTime = System.currentTimeMillis();
         if ((currentTime - mLastCheckTime > TWO_SEC)) {
@@ -197,7 +164,6 @@ public class PositionMatcher {
             //send request if needed
             requestNewDataIfNeeded(smallBB, coordinate);
             if (Utils.DEBUG) {
-                //if debug enabled, the boxes will be rendered on the map
                 EventBus.post(new BoundingBoxChangedEvent(mTriggerBB, mLoadedBB, smallBB));
             }
             if (isCoverageForLocation(coordinate)) {
@@ -209,11 +175,6 @@ public class PositionMatcher {
         return null;
     }
 
-    /**
-     * called for the position of taken pictures
-     * @param location
-     * @return
-     */
     Segment onPictureTaken(Location location) {
         //        if (event.location.getAccuracy() > 500){todo what happens with tunnel mode pictures?
         //            return;
@@ -223,7 +184,6 @@ public class PositionMatcher {
         //send request if needed
         requestNewDataIfNeeded(smallBB, coordinate);
         if (Utils.DEBUG) {
-            //if debug enabled, the boxes will be rendered on the map
             EventBus.post(new BoundingBoxChangedEvent(mTriggerBB, mLoadedBB, smallBB));
         }
         boolean locationIsCovered = isCoverageForLocation(coordinate);

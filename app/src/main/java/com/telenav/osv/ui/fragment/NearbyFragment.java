@@ -13,9 +13,9 @@ import com.telenav.osv.item.network.TrackCollection;
  * Fragment displaying nearby recordings
  * Created by adrianbostan on 11/07/16.
  */
-public class NearbyFragment extends SimpleProfileFragment implements Displayable<TrackCollection> {
+public class NearbyFragment extends SimpleProfileFragment {
 
-    public static final String TAG = "NearbyFragment";
+    public final static String TAG = "NearbyFragment";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -35,7 +35,7 @@ public class NearbyFragment extends SimpleProfileFragment implements Displayable
         lp.height = getResources().getDimensionPixelSize(R.dimen.action_bar_size);
         appBar.requestLayout();
         mSwipeRefreshLayout.setEnabled(false);
-        toolbar.setTitle(activity.getResources().getString(R.string.nearby_label));
+        toolbar.setTitle("Nearby");
         return view;
     }
 
@@ -57,16 +57,19 @@ public class NearbyFragment extends SimpleProfileFragment implements Displayable
     }
 
     @Override
-    public void setDisplayData(TrackCollection collection) {
+    public void setSource(Object collection) {
         mOnlineSequences.clear();
-        mOnlineSequences.addAll(collection.getTrackList());
+        mOnlineSequences.addAll(((TrackCollection) collection).getTrackList());
         mLoading = false;
 
-        mHandler.post(() -> {
-            //change adapter contents
-            if (mOnlineSequencesAdapter != null) {
-                mOnlineSequencesAdapter.notifyDataSetChanged();
-                stopRefreshing();
+        mHandler.post(new Runnable() {
+
+            public void run() {
+                //change adapter contents
+                if (mOnlineSequencesAdapter != null) {
+                    mOnlineSequencesAdapter.notifyDataSetChanged();
+                    stopRefreshing();
+                }
             }
         });
     }

@@ -1,99 +1,97 @@
 allprojects {
-  buildscript {
-    repositories {
-      jcenter()
-      maven {
-        url 'https://maven.fabric.io/public'
-      }
-      maven {
-        url "https://maven.google.com"
-      }
+    buildscript {
+        repositories {
+            google()
+            jcenter()
+            maven {
+                url 'https://maven.fabric.io/public'
+            }
+        }
+
+        dependencies {
+            classpath 'com.android.tools.build:gradle:3.0.1'
+            classpath 'com.android.tools.build:gradle-experimental:0.9.3'
+            classpath 'com.google.gms:google-services:3.1.0'
+            classpath 'io.fabric.tools:gradle:1.23.0'
+            classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+        }
     }
-    dependencies {
-      classpath 'com.android.tools.build:gradle:3.0.0-beta6'
-      classpath 'com.android.tools.build:gradle-experimental:0.9.3'
-      classpath 'com.google.gms:google-services:3.1.1'
-      classpath 'io.fabric.tools:gradle:1.23.0'
-      classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+
+    ext {
+        config = [
+                appId                     : 'com.telenav.streetview',
+                appVersionCode            : 86,
+                appVersionName            : "2.1.6",
+                testInstrumentationRunner : "android.support.test.runner.AndroidJUnitRunner",
+                testAppId                 : 'com.telenav.streetview.test',
+                androidBuildToolsVersion  : "26.0.2",
+                androidMinSdkVersion      : 21,
+                androidTargetSdkVersion   : 26,
+                androidCompileSdkVersion  : 26,
+                //Modules
+                skmapsVersionCode         : 7,
+                skmapsVersion             : '1.0.7',
+                connectionProbeVersionCode: 1,
+                connectionProbeVersion    : '1.0.0',
+                ffmpegVersionCode         : 4,
+                ffmpegVersion             : '1.0.4',
+                sensorlibVersionCode      : 3,
+                sensorlibVersion          : '1.1.0',
+                photoViewVersionCode      : 1,
+                photoViewVersion          : '1.0.0',
+                videoViewVersionCode      : 1,
+                videoViewVersion          : '1.0.0',
+                sphericalVersionCode      : 1,
+                sphericalVersion          : '1.0.0',
+                volleyVersionCode         : 2,
+                volleyVersion             : '1.0.1',
+                eventbusVersionCode       : 1,
+                eventbusVersion           : '1.0.0',
+                dotindicatorVersionCode   : 1,
+                dotindicatorVersion       : '1.0.0'
+        ]
+
+        // Sdk and tools
+        supportVersion = '26.1.0'
+        playServicesVersion = '11.4.2'
+
+        //Libraries
+        dataCollectorVersion = '1.1.5.2'
+        daggerVersion = '2.11'
+        signpostVersion = '1.2.1.2'
+        apacheHttpClientVersion = '4.3.5.1'
+        apacheHttpMimeVersion = '4.3'
+        materialishProgressVersion = '1.7'
+        androidAnnotationsVersion = supportVersion
+        firebaseVersion = playServicesVersion
+        googleApiVersion = "1.22.0"
+        facebookApiVersion = "4.19.0"
+        glideVersion = '3.7.0'
+        appIntroVersion = '4.1.0'
+        bindingCollectionAdapterVersion = '2.2.0'
+        lifecycleVersion = '1.0.0'
+        lifecycleExtVersion = '1.0.0-beta1'
+        pagingVersion = '1.0.0-alpha2'
+
+        //Testing
+        robolectricVersion = '3.3.2'
+        jUnitVersion = '4.12'
+        mockitoVersion = '1.10.19'
+        dexmakerVersion = '1.2'
+        espressoVersion = '3.0.0'
+        testingSupportLibVersion = '0.1'
+        powermockVersion = '1.7.1'
+        hamcrestVersion = '1.3'
+        runnerVersion = '1.0.0'
+        rulesVersion = '1.0.0'
+
+        //Development
+        stethoVersion = '1.5.0'
+        crashliticsVersion = '2.6.8'
+        crashliticsNdkVersion = '1.1.6'
     }
-  }
-
-
-  ext {
-    config = [
-        appId : 'com.telenav.streetview',
-        appVersionCode : 84,
-        appVersionName : "2.1.4",
-        testInstrumentationRunner : "android.support.test.runner.AndroidJUnitRunner",
-        testAppId : 'com.telenav.streetview.test',
-        androidBuildToolsVersion : "26.0.1",
-        androidMinSdkVersion : 21,
-        androidTargetSdkVersion : 26,
-        androidCompileSdkVersion : 26,
-        //Modules
-        skmapsVersionCode : 7,
-        skmapsVersion : '1.0.7',
-        connectionProbeVersionCode : 1,
-        connectionProbeVersion : '1.0.0',
-        ffmpegVersionCode : 4,
-        ffmpegVersion : '1.0.4',
-        sensorlibVersionCode : 3,
-        sensorlibVersion : '1.1.0',
-        photoViewVersionCode : 1,
-        photoViewVersion : '1.0.0',
-        videoViewVersionCode : 1,
-        videoViewVersion : '1.0.0',
-        sphericalVersionCode : 1,
-        sphericalVersion : '1.0.0',
-        volleyVersionCode : 2,
-        volleyVersion : '1.0.1',
-        eventbusVersionCode : 1,
-        eventbusVersion : '1.0.0',
-        dotindicatorVersionCode : 1,
-        dotindicatorVersion : '1.0.0',
-    ]
-
-    // Sdk and tools
-    supportVersion = '26.1.0'
-    playServicesVersion = '11.4.0'
-
-    //Libraries
-    daggerVersion = '2.11'
-    signpostVersion = '1.2.1.2'
-    apacheHttpClientVersion = '4.3.5.1'
-    apacheHttpMimeVersion = '4.3'
-    materialishProgressVersion = '1.7'
-    androidAnnotationsVersion = supportVersion
-    firebaseVersion = playServicesVersion
-    googleApiVersion = "1.22.0"
-    facebookApiVersion = "4.19.0"
-    glideVersion = '3.7.0'
-    appIntroVersion = '4.1.0'
-    bindingCollectionAdapterVersion = '2.2.0'
-    lifecycleVersion = '1.0.0'
-    lifecycleExtVersion = '1.0.0-beta1'
-    pagingVersion = '1.0.0-alpha2'
-
-    //Testing
-    robolectricVersion = '3.3.2'
-    jUnitVersion = '4.12'
-    mockitoVersion = '1.10.19'
-    dexmakerVersion = '1.2'
-    espressoVersion = '3.0.0'
-    testingSupportLibVersion = '0.1'
-    powermockVersion = '1.7.1'
-    hamcrestVersion = '1.3'
-    runnerVersion = '1.0.0'
-    rulesVersion = '1.0.0'
-
-    //Development
-    leakCanaryVersion = '1.5.4'
-    stethoVersion = '1.5.0'
-    crashliticsVersion = '2.6.8'
-    crashliticsNdkVersion = '1.1.6'
-  }
 }
 
 task clean(type: Delete) {
-  delete rootProject.buildDir
+    delete rootProject.buildDir
 }

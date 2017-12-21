@@ -17,6 +17,7 @@
         <flag name="start" value="0x00800003" />
         <flag name="top" value="0x30" />
     </attr>
+
     <declare-styleable name="HoloCircularProgressBar">
         <attr name="stroke_width" format="dimension" />
         <attr name="progress" format="float" />
@@ -25,9 +26,11 @@
         <attr name="progress_background_color" format="color" />
         <attr name="gravity" />
     </declare-styleable>
+
     <declare-styleable name="Theme">
         <attr name="circularProgressBarStyle" format="reference" />
     </declare-styleable>
+
     <declare-styleable name="RevealRelativeLayout">
         <attr name="backgroundColor" format="color" />
     </declare-styleable>
@@ -37,6 +40,7 @@
         <attr name="civ_border_overlay" format="boolean" />
         <attr name="civ_fill_color" format="color" />
     </declare-styleable>
+
     <declare-styleable name="ProgressImageView">
         <attr name="piv_progressIndeterminate" format="boolean" />
         <attr name="piv_barColor" format="color" />
@@ -50,8 +54,5 @@
         <attr name="piv_fillRadius" format="boolean" />
         <attr name="piv_barWidth" format="dimension" />
         <attr name="piv_linearProgress" format="boolean" />
-    </declare-styleable>
-    <declare-styleable name="SwipeRefreshLayout">
-        <attr name="refreshing" format="boolean" />
     </declare-styleable>
 </resources>

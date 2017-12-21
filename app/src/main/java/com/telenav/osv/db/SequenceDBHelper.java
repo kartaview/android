@@ -1,6 +1,5 @@
 package com.telenav.osv.db;
 
-import org.jetbrains.annotations.NonNls;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -9,7 +8,6 @@ import com.telenav.osv.utils.Log;
 /**
  * Created by Kalman on 10/7/2015.
  */
-@NonNls
 class SequenceDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "Sequences";
@@ -50,8 +48,11 @@ class SequenceDBHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "SequenceDBHelper";
 
-    SequenceDBHelper(Context context) {
+    private Context mContext;
+
+    public SequenceDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        mContext = context;
     }
 
     // Method is called during creation of the database
@@ -83,4 +84,102 @@ class SequenceDBHelper extends SQLiteOpenHelper {
             database.execSQL("DROP TABLE " + SequenceDB.SCORE_TABLE + "1");
         }
     }
+    //
+    //    private void moveFolders() {
+    //        try {
+    //            if (Utils.checkSDCard(mContext)) {
+    //                boolean external = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().getBooleanPreference
+    // (PreferenceTypes.K_EXTERNAL_STORAGE);
+    //                OSVFile osv = Utils.generateOSVFolder(mContext);
+    //                if (osv.listFiles().length > 0) {
+    ////                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard1
+    //                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile()
+    // , "OSV_BACKUP");
+    //                    boolean success = osv.renameTo(osvCopy);
+    //                    if (!success) {
+    //                        OSVFile osvCopy2 = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+    //                        osv.renameTo(osvCopy2);
+    //                    }
+    //                    if (external) {
+    //                        OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
+    //                    } else {
+    //                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+    //                    }
+    //                }
+    //                ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes
+    // .K_EXTERNAL_STORAGE, !external);
+    //                external = !external;
+    //                osv = Utils.generateOSVFolder(mContext);
+    //                if (osv.listFiles().length > 0) {
+    ////                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard2
+    //                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile()
+    // , "OSV_BACKUP");
+    //                    boolean success = osv.renameTo(osvCopy);
+    //                    if (!success) {
+    //                        OSVFile osvCopy2 = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+    //                        osv.renameTo(osvCopy2);
+    //                    }
+    //                    if (external) {
+    //                        OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
+    //                    } else {
+    //                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+    //                    }
+    //                }
+    //                //reset preference
+    //                ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes
+    // .K_EXTERNAL_STORAGE, external);
+    //            } else {
+    //                OSVFile osv = Utils.generateOSVFolder(mContext);
+    //                if (osv.listFiles().length > 0) {
+    ////                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard
+    //                    OSVFile osvCopy = new OSVFile(osv.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile()
+    // , "OSV_BACKUP");
+    //                    osv.renameTo(osvCopy);
+    //                    OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+    //                }
+    //            }
+    //        } catch (Exception e) {
+    //            try {
+    //                if (Utils.checkSDCard(mContext)) {
+    //                    boolean external = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().getBooleanPreference
+    // (PreferenceTypes.K_EXTERNAL_STORAGE);
+    //                    OSVFile osv = Utils.generateOSVFolder(mContext);
+    //                    if (osv.listFiles().length > 0) {
+    ////                                                       files     /   com.tnav.osv   /   data      /     Android    /   sdcard1
+    //                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+    //                        osv.renameTo(osvCopy);
+    //                        if (external) {
+    //                            OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
+    //                        } else {
+    //                            OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+    //                        }
+    //                    }
+    //
+    //                    ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes
+    // .K_EXTERNAL_STORAGE, !external);
+    //                    osv = Utils.generateOSVFolder(mContext);
+    //                    if (osv.listFiles().length > 0) {
+    //                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+    //                        osv.renameTo(osvCopy);
+    //                        if (!external) {
+    //                            OSVApplication.sOSVBackupExt = osvCopy.getAbsolutePath();
+    //                        } else {
+    //                            OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+    //                        }
+    //                    }
+    //                    ((OSVApplication) mContext.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes
+    // .K_EXTERNAL_STORAGE, external);
+    //                } else {
+    //                    OSVFile osv = Utils.generateOSVFolder(mContext);
+    //                    if (osv.listFiles().length > 0) {
+    //                        OSVFile osvCopy = new OSVFile(osv.getParentFile(), "OSV_BACKUP");
+    //                        osv.renameTo(osvCopy);
+    //                        OSVApplication.sOSVBackup = osvCopy.getAbsolutePath();
+    //                    }
+    //                }
+    //            } catch (Exception ex) {
+    //                Log.e(TAG, "onUpgrade: " + Log.getStackTraceString(e));
+    //            }
+    //        }
+    //    }
 }

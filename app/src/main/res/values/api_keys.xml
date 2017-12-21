@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="skobbler_api_key" translatable="false">00000000000000000b0000000000000000000000000000000000000000000000</string>
-  <string name="facebook_application_id" translatable="false">0000000000b00000</string>
-  <string name="google_client_id" translatable="false">00000000000000000b000000000000000000000000000.apps.googleusercontent.com</string>
-  <string name="osm_consumer_key" translatable="false">00000000000000000b0000000000000000000000</string>
-  <string name="osm_consumer_secret_key" translatable="false">00000000000000000b0000000000000000000000</string>
+    <string name="skobbler_api_key" translatable="false">00000000000000000b0000000000000000000000000000000000000000000000</string>
+    <string name="facebook_application_id" translatable="false">0000000000b00000</string>
+    <string name="google_client_id" translatable="false">00000000000000000b000000000000000000000000000.apps.googleusercontent.com</string>
+    <string name="osm_consumer_key" translatable="false">00000000000000000b0000000000000000000000</string>
+    <string name="osm_consumer_secret_key" translatable="false">00000000000000000b0000000000000000000000</string>
 </resources>

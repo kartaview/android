@@ -1,7 +1,6 @@
 package com.telenav.osv.item;
 
 /**
- * the server score history format is different form the app history format FYI, one is coverage and one is multiplier
  * Created by kalmanb on 7/18/17.
  */
 public class ScoreItem {

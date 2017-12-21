@@ -19,7 +19,6 @@ public class EventBus {
             try {
                 mBus.register(subscriber);
             } catch (Exception ignored) {
-                Log.d(TAG, ignored.getLocalizedMessage());
             }
         }
     }
@@ -30,7 +29,6 @@ public class EventBus {
             try {
                 mBus.unregister(subscriber);
             } catch (Exception ignored) {
-                Log.d(TAG, Log.getStackTraceString(ignored));
             }
         }
     }
@@ -47,7 +45,7 @@ public class EventBus {
         }
     }
 
-    public static <T> void clear(Class<T> type) {
+    public static void clear(Class type) {
         if (type != null) {
             mBus.removeStickyEvent(type);
         }

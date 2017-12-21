@@ -12,11 +12,8 @@ public class UploadBandwidthEvent extends OSVEvent {
 
     public final double bandwidth;
 
-    public final long remainingSizeValue;
-
-    public UploadBandwidthEvent(ConnectionQuality bandwidthState, final double bandwidth, final long remaining) {
+    public UploadBandwidthEvent(ConnectionQuality bandwidthState, final double bandwidth) {
         this.bandwidthState = bandwidthState;
         this.bandwidth = bandwidth;
-        this.remainingSizeValue = remaining;
     }
 }

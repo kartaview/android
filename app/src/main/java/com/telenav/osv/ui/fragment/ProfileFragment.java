@@ -3,7 +3,6 @@ package com.telenav.osv.ui.fragment;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-import javax.inject.Inject;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -13,7 +12,6 @@ import android.os.Looper;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
@@ -26,12 +24,11 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.application.ValueFormatter;
-import com.telenav.osv.data.Preferences;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.item.Payment;
 import com.telenav.osv.item.Sequence;
-import com.telenav.osv.ui.Navigator;
+import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.ui.custom.ProgressImageView;
 import com.telenav.osv.ui.list.PaymentAdapter;
 import com.telenav.osv.ui.list.SequenceAdapter;
@@ -43,9 +40,9 @@ import com.telenav.osv.utils.Utils;
  * fragment holding the ui for the user's data
  * Created by adrianbostan on 11/07/16.
  */
-public abstract class ProfileFragment extends OSVFragment implements AppBarLayout.OnOffsetChangedListener {
+public abstract class ProfileFragment extends DisplayFragment implements AppBarLayout.OnOffsetChangedListener {
 
-    public static final String TAG = "ProfileFragment";
+    public final static String TAG = "ProfileFragment";
 
     /**
      * preference name
@@ -62,17 +59,19 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
 
     public static final String K_XP_TARGET = "xpTarget";
 
-    public static final String K_TOTAL_DISTANCE = "totalDistance2";
+    public static final String K_TOTAL_DISTANCE = "totalDistance";
 
-    public static final String K_OBD_DISTANCE = "obdDistance2";
+    public static final String K_OBD_DISTANCE = "obdDistance";
 
-    public static final String K_TOTAL_PHOTOS = "totalPhotos2";
+    public static final String K_TOTAL_PHOTOS = "totalPhotos";
 
-    public static final String K_TOTAL_TRACKS = "totalTracks2";
+    public static final String K_TOTAL_TRACKS = "totalTracks";
 
     public static final String K_DRIVER_CURRENT_ACCEPTED_DISTANCE = "currentAcceptedDistance";
 
     public static final String K_DRIVER_CURRENT_PAYRATE = "currentPayRate";
+
+    public static final String K_DRIVER_BYOD20_MAX_PAYRATE = "byod20MaxPayRate";
 
     public static final String K_DRIVER_CURRENT_VALUE = "currentPaymentValue";
 
@@ -90,13 +89,19 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
 
     public static final String K_DRIVER_CURRENCY = "driverCurrency";
 
+    public static final String K_DRIVER_PAYMENT_MODEL_VERSION = "drivePaymentModel";
+
+    public static final String PAYMENT_MODEL_VERSION_20 = "2.0";
+
+    public static final String PAYMENT_MODEL_VERSION_10 = "1.0";
+
     protected static final int NUMBER_OF_ITEMS_PER_PAGE = 30;
 
     protected static final int PERCENTAGE_TO_ANIMATE_AVATAR = 5;
 
     protected boolean mIsAvatarShown = true;
 
-    protected OSVActivity activity;
+    protected MainActivity activity;
 
     protected RecyclerView mSequencesRecyclerView;
 
@@ -122,6 +127,8 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
 
     protected GridLayoutManager mLandscapeLayoutManager;
 
+    protected ApplicationPreferences appPrefs;
+
     protected ProgressImageView mProfileImage;
 
     protected int mMaxScrollSize;
@@ -131,14 +138,6 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
     protected Toolbar toolbar;
 
     protected AppBarLayout appBar;
-
-    protected TabLayout mTabLayout;
-
-    @Inject
-    Preferences appPrefs;
-
-    @Inject
-    ValueFormatter valueFormatter;
 
     ArrayList<Payment> mPaymentsList = new ArrayList<>();
 
@@ -153,11 +152,15 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
         @Override
         public void run() {
             if (mSwipeRefreshLayout != null) {
-                activity.runOnUiThread(() -> {
-                    if (mSwipeRefreshLayout != null) {
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        if (activity.getCurrentScreen() == Navigator.SCREEN_MY_PROFILE) {
-                            activity.showSnackBar(R.string.something_wrong_try_again, Snackbar.LENGTH_LONG);
+                activity.runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (mSwipeRefreshLayout != null) {
+                            mSwipeRefreshLayout.setRefreshing(false);
+                            if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MY_PROFILE) {
+                                activity.showSnackBar(R.string.something_wrong_try_again, Snackbar.LENGTH_LONG);
+                            }
                         }
                     }
                 });
@@ -178,10 +181,14 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
         @Override
         public void run() {
             if (activity != null) {
-                activity.runOnUiThread(() -> {
-                    if (mSwipeRefreshLayout != null) {
-                        if (activity.getCurrentScreen() == Navigator.SCREEN_MY_PROFILE) {
-                            activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
+                activity.runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (mSwipeRefreshLayout != null) {
+                            if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MY_PROFILE) {
+                                activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
+                            }
                         }
                     }
                 });
@@ -199,14 +206,12 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
 
     private LinearLayout mHeaderContentHolder;
 
-    private Navigator navigator;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, null);
 
         activity = (MainActivity) getActivity();
-        navigator = activity;
+        appPrefs = activity.getApp().getAppPrefs();
         mPortraitLayoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
         mLandscapeLayoutManager = new GridLayoutManager(activity, 2);
         mLandscapeLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -217,20 +222,33 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
             }
         });
         mSequencesRecyclerView = view.findViewById(R.id.profile_sequences_recycle_view);
-        mTabLayout = view.findViewById(R.id.profile_tabs);
         mSwipeRefreshLayout = view.findViewById(R.id.profile_swipe_refresh_layout);
         mHeaderContentHolder = view.findViewById(R.id.header_content_holder);
         appBar = view.findViewById(R.id.profile_appbar);
         mProfileImage = view.findViewById(R.id.profile_image);
         toolbar = view.findViewById(R.id.profile_toolbar);
         collapsingToolbar = view.findViewById(R.id.profile_collapsing_toolbar);
-        mSwipeRefreshLayout.setOnRefreshListener(this::refreshContent);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+            @Override
+            public void onRefresh() {
+                refreshContent();
+            }
+        });
         mMaxScrollSize = appBar.getTotalScrollRange();
         appBar.addOnOffsetChangedListener(this);
         Drawable upArrow = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_back_white, null);
         toolbar.setNavigationIcon(upArrow);
-        toolbar.setNavigationOnClickListener(v -> activity.onBackPressed());
-        mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity, navigator, valueFormatter, !(this instanceof NearbyFragment));
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                activity.onBackPressed();
+            }
+        });
+        mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity, !(this instanceof NearbyFragment));
+        mOnlineSequencesAdapter.enablePoints(appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true));
+        mOnlineSequencesAdapter.enableDriverStats(false);
         setupViews(activity.isPortrait());
         return view;
     }
@@ -238,28 +256,32 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        BackgroundThreadPool.post(() -> {
-            mSequencesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        BackgroundThreadPool.post(new Runnable() {
 
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
+            @Override
+            public void run() {
+                mSequencesRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
-                    RecyclerView.LayoutManager lm = mSequencesRecyclerView.getLayoutManager();
-                    if (lm instanceof LinearLayoutManager) {
-                        mTotalItemCount = lm.getItemCount() - 1;
-                        mLastVisibleItem = ((LinearLayoutManager) lm).findLastCompletelyVisibleItemPosition();
-                        if (!mLoading && mTotalItemCount == mLastVisibleItem && mTotalItemCount < mMaxNumberOfResults) {
-                            // End has been reached
-                            mSwipeRefreshLayout.setRefreshing(true);
-                            loadMoreResults();
-                            mLoading = true;
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        super.onScrolled(recyclerView, dx, dy);
+
+                        RecyclerView.LayoutManager lm = mSequencesRecyclerView.getLayoutManager();
+                        if (lm instanceof LinearLayoutManager) {
+                            mTotalItemCount = lm.getItemCount() - 1;
+                            mLastVisibleItem = ((LinearLayoutManager) lm).findLastCompletelyVisibleItemPosition();
+                            if (!mLoading && mTotalItemCount == mLastVisibleItem && mTotalItemCount < mMaxNumberOfResults) {
+                                // End has been reached
+                                mSwipeRefreshLayout.setRefreshing(true);
+                                loadMoreResults();
+                                mLoading = true;
+                            }
                         }
                     }
-                }
-            });
-            displayCachedStats();
-            refreshContent();
+                });
+                displayCachedStats();
+                refreshContent();
+            }
         });
     }
 
@@ -272,6 +294,11 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+    }
+
+    @Override
+    public void setSource(Object extra) {
+        //no source for default profile fragment
     }
 
     protected void setupViews(boolean portrait) {
@@ -298,36 +325,40 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
         lp.width = width;
         mHeaderContentHolder.setLayoutParams(lp);
         mHeaderContentHolder.requestLayout();
-        lp = mTabLayout.getLayoutParams();
         lp.width = width;
-        mTabLayout.setLayoutParams(lp);
-        mTabLayout.setMinimumWidth(width);
-        mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         mOnlineSequencesAdapter.enableAnimation(false);
     }
 
     protected abstract RecyclerView.LayoutManager getLayoutManager(boolean portrait);
 
     protected void refreshContent() {
-        mSequencesRecyclerView.post(() -> {
-            mCurrentPageToList = 1;
-            mPaymentCurrentPageToList = 1;
-            mMaxNumberOfResults = 0;
-            mOnlineSequences.clear();
-            mPaymentsList.clear();
-            if (mPaymentAdapter != null) {
-                mPaymentAdapter.notifyDataSetChanged();
+        mSequencesRecyclerView.post(new Runnable() {
+
+            @Override
+            public void run() {
+                mCurrentPageToList = 1;
+                mPaymentCurrentPageToList = 1;
+                mMaxNumberOfResults = 0;
+                mOnlineSequences.clear();
+                mPaymentsList.clear();
+                if (mPaymentAdapter != null) {
+                    mPaymentAdapter.notifyDataSetChanged();
+                }
+                if (mOnlineSequencesAdapter != null) {
+                    mOnlineSequencesAdapter.notifyDataSetChanged();
+                    mOnlineSequencesAdapter.resetLastAnimatedItem();
+                }
+                BackgroundThreadPool.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "refreshContent ");
+                        requestDetails();
+                        loadMoreResults();
+                        startRefreshing();
+                    }
+                });
             }
-            if (mOnlineSequencesAdapter != null) {
-                mOnlineSequencesAdapter.notifyDataSetChanged();
-                mOnlineSequencesAdapter.resetLastAnimatedItem();
-            }
-            BackgroundThreadPool.post(() -> {
-                Log.d(TAG, "refreshContent ");
-                requestDetails();
-                loadMoreResults();
-                startRefreshing();
-            });
         });
     }
 
@@ -335,15 +366,19 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
 
     protected void stopRefreshing() {
         if (activity != null) {
-            activity.runOnUiThread(() -> {
-                if (mSwipeRefreshLayout != null) {
-                    if (mCancelTask != null) {
-                        mCancelTask.cancel();
+            activity.runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (mSwipeRefreshLayout != null) {
+                        if (mCancelTask != null) {
+                            mCancelTask.cancel();
+                        }
+                        if (mNotifyTask != null) {
+                            mNotifyTask.cancel();
+                        }
+                        mSwipeRefreshLayout.setRefreshing(false);
                     }
-                    if (mNotifyTask != null) {
-                        mNotifyTask.cancel();
-                    }
-                    mSwipeRefreshLayout.setRefreshing(false);
                 }
             });
         }
@@ -355,40 +390,39 @@ public abstract class ProfileFragment extends OSVFragment implements AppBarLayou
 
     private void startRefreshing() {
         if (mSwipeRefreshLayout != null) {
-            mSwipeRefreshLayout.post(() -> {
-                if (mSwipeRefreshLayout != null) {
-                    mSwipeRefreshLayout.setRefreshing(true);
-                    if (mCancelTask != null) {
-                        mCancelTask.cancel();
-                    }
-                    if (mNotifyTask != null) {
-                        mNotifyTask.cancel();
-                    }
+            mSwipeRefreshLayout.post(new Runnable() {
 
-                    mCancelTask = new TimerTask() {
-
-                        @Override
-                        public void run() {
-                            mCancelRunnable.run();
+                @Override
+                public void run() {
+                    if (mSwipeRefreshLayout != null) {
+                        mSwipeRefreshLayout.setRefreshing(true);
+                        if (mCancelTask != null) {
+                            mCancelTask.cancel();
                         }
-                    };
-                    mNotifyTask = new TimerTask() {
-
-                        @Override
-                        public void run() {
-                            mNotifyRunnable.run();
+                        if (mNotifyTask != null) {
+                            mNotifyTask.cancel();
                         }
-                    };
-                    mTimer.schedule(mNotifyTask, 10000);
-                    mTimer.schedule(mCancelTask, 15000);
+
+                        mCancelTask = new TimerTask() {
+
+                            @Override
+                            public void run() {
+                                mCancelRunnable.run();
+                            }
+                        };
+                        mNotifyTask = new TimerTask() {
+
+                            @Override
+                            public void run() {
+                                mNotifyRunnable.run();
+                            }
+                        };
+                        mTimer.schedule(mNotifyTask, 10000);
+                        mTimer.schedule(mCancelTask, 15000);
+                    }
                 }
             });
         }
     }
-
-    //@Override
-    //public void setDisplayData(Sequence extra) {
-    //  //no source for default profile fragment
-    //}
 }
 

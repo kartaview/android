@@ -23,7 +23,6 @@
             android:layout_height="56dp"
             android:layout_marginBottom="3dp"
             android:layout_marginTop="3dp"
-            android:layout_toLeftOf="@+id/refresh_button"
             android:gravity="center|start"
             android:text="@string/ble_devices"
             android:textSize="25sp"
@@ -43,5 +42,7 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/devices_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+    </android.support.v7.widget.RecyclerView>
 </LinearLayout>

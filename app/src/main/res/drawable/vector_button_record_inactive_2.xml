@@ -5,6 +5,7 @@
     android:height="64dp"
     android:viewportHeight="72"
     android:viewportWidth="72">
+
     <group android:name="Mobile">
         <group
             android:name="Icons"

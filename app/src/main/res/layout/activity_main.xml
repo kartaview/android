@@ -7,6 +7,7 @@
     android:layout_height="match_parent">
     <!--tools:openDrawer="start"-->
     <!--&gt;-->
+
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -34,7 +35,9 @@
                 android:id="@+id/content_frame_map"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipChildren="false" />
+                android:clipChildren="false">
+
+            </FrameLayout>
 
             <FrameLayout
                 android:id="@+id/content_frame_large"
@@ -87,6 +90,7 @@
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/vector_triangle_ls"
                 tools:ignore="ContentDescription" />
+
         </LinearLayout>
 
         <android.support.design.widget.AppBarLayout
@@ -96,7 +100,7 @@
             android:background="@color/transparent"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             android:visibility="visible"
-            app:elevation="8dp"
+            app:elevation="0dp"
             tools:visibility="visible">
 
             <com.telenav.osv.ui.custom.AppToolbar

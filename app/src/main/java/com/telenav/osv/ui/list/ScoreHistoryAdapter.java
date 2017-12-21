@@ -11,7 +11,6 @@ import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.item.ScoreItem;
-import com.telenav.osv.utils.Log;
 
 /**
  * adapter for the score list on track preview
@@ -22,8 +21,6 @@ public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private static final int TYPE_HEADER = 0;
 
     private static final int TYPE_ITEM = 1;
-
-    private static final String TAG = "ScoreHistoryAdapter";
 
     private ArrayList<ScoreItem> mScoreHistory;
 
@@ -38,16 +35,21 @@ public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == TYPE_HEADER) {
             FrameLayout layoutView = (FrameLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.partial_score_history_header, null);
+            ((TextView) layoutView.findViewById(R.id.text_score_breakdown_header_column1)).setText(R.string.points_history_pictures);
+            ((TextView) layoutView.findViewById(R.id.text_score_breakdown_header_column2)).setText(R.string.points_history_multiplier);
+            ((TextView) layoutView.findViewById(R.id.text_score_breakdown_header_column3)).setText(R.string.points_history_points);
             LinearLayout.LayoutParams params =
                     new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutView.setLayoutParams(params);
-            return new HeaderHolder(layoutView);
+            HeaderHolder pointsHolder = new HeaderHolder(layoutView);
+            return pointsHolder;
         } else {
             FrameLayout layoutView = (FrameLayout) LayoutInflater.from(parent.getContext()).inflate(R.layout.item_score_history, null);
             LinearLayout.LayoutParams params =
                     new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutView.setLayoutParams(params);
-            return new PointsHolder(layoutView);
+            PointsHolder pointsHolder = new PointsHolder(layoutView);
+            return pointsHolder;
         }
     }
 
@@ -67,7 +69,7 @@ public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 pointsHolder.pointsText.setTextColor(clr);
             }
         } catch (Exception e) {
-            Log.d(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
     }
 
@@ -98,9 +100,9 @@ public class ScoreHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         PointsHolder(View v) {
             super(v);
-            distanceText = v.findViewById(R.id.distance);
-            multiplierText = v.findViewById(R.id.multiplier);
-            pointsText = v.findViewById(R.id.points);
+            distanceText = v.findViewById(R.id.text_track_breakdown_column1);
+            multiplierText = v.findViewById(R.id.text_track_breakdown_column2);
+            pointsText = v.findViewById(R.id.text_track_breakdown_column3);
         }
     }
 

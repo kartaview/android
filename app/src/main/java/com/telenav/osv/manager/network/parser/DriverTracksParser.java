@@ -1,11 +1,14 @@
 package com.telenav.osv.manager.network.parser;
 
+import java.util.Arrays;
+import java.util.Currency;
 import java.util.Date;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.item.DriverOnlineSequence;
+import com.telenav.osv.item.DriverPayRateBreakdownCoverageItem;
 import com.telenav.osv.item.network.TrackCollection;
 import com.telenav.osv.manager.network.UserDataManager;
 import com.telenav.osv.utils.Log;
@@ -50,6 +53,11 @@ public class DriverTracksParser extends ApiResponseParser<TrackCollection> {
                     double lon = item.getDouble("current_lng");
                     double value = item.getDouble("value");
                     String currency = item.getString("currency");
+                    try {
+                        currency = Currency.getInstance(currency).getSymbol();
+                    } catch (IllegalArgumentException ignored) {
+                        Log.d(TAG, "An exception occurred when parsing the pay rate currency. Reverting to value in json.");
+                    }
                     String processing = item.getString("image_processing_status");
                     String status = item.getString("status");
                     boolean obd = false;
@@ -67,14 +75,11 @@ public class DriverTracksParser extends ApiResponseParser<TrackCollection> {
                         }
                     }
                     String partialAddress = "";
-                    String address = "";
                     try {
-                        address = item.getString("address");
+                        String address = item.getString("address");
                         String[] list = address.split(", ");
                         partialAddress = list[0] + ", " + list[2];
                     } catch (Exception ignored) {
-                        Log.d(TAG, ignored.getLocalizedMessage());
-                        partialAddress = address;
                     }
                     String thumbLink = UserDataManager.URL_DOWNLOAD_PHOTO + item.getString("thumb_name");
                     double distanceNum = 0;
@@ -83,18 +88,69 @@ public class DriverTracksParser extends ApiResponseParser<TrackCollection> {
                             distanceNum = Double.parseDouble(distance);
                         }
                     } catch (NumberFormatException ignored) {
-                        Log.d(TAG, Log.getStackTraceString(ignored));
                     }
-                    DriverOnlineSequence seq =
-                            new DriverOnlineSequence(id, date, Integer.valueOf(imgNum), partialAddress, thumbLink, obd, platform, platformVersion,
-                                    appVersion, (int) (distanceNum * 1000d), value, currency);
+
+                    DriverPayRateBreakdownCoverageItem[] driverPayRateBreakdownCoverageArray;
+                    if (item.has("coverage")) {
+                        try {
+                            JSONArray coverageItemsArray = item.getJSONArray("coverage");
+
+                            if (coverageItemsArray != null) {
+                                int coverageItemsLength = coverageItemsArray.length();
+
+                                if (coverageItemsLength > 0) {
+                                    driverPayRateBreakdownCoverageArray = new DriverPayRateBreakdownCoverageItem[coverageItemsLength];
+
+                                    for (int coverageItemIndex = 0; coverageItemIndex < coverageItemsLength; coverageItemIndex++) {
+
+                                        JSONObject coverageItem = coverageItemsArray.getJSONObject(coverageItemIndex);
+                                        if (coverageItem != null) {
+                                            int coverageValue = coverageItem.getInt("value");
+                                            float coverageDistance = (float) coverageItem.getDouble("distance");
+                                            float coveragePrice = (float) coverageItem.getDouble("price");
+                                            driverPayRateBreakdownCoverageArray[coverageItemIndex] = new DriverPayRateBreakdownCoverageItem(coverageValue, coverageDistance,
+                                                    coveragePrice);
+                                        } else {
+                                            driverPayRateBreakdownCoverageArray[coverageItemIndex] = null;
+                                        }
+                                    }
+
+                                } else {
+                                    driverPayRateBreakdownCoverageArray = null;
+                                }
+                            } else {
+                                driverPayRateBreakdownCoverageArray = null;
+                            }
+
+                        } catch (JSONException e) {
+                            Log.d(TAG, "Exception occurred when parsing the driver pay rate breakdown at index:" + i + ", exception:", e);
+                            driverPayRateBreakdownCoverageArray = null;
+                        }
+                    } else {
+                        driverPayRateBreakdownCoverageArray = null;
+                    }
+
+                    DriverOnlineSequence seq = new DriverOnlineSequence(id,
+                            date,
+                            Integer.valueOf(imgNum),
+                            partialAddress,
+                            thumbLink,
+                            obd,
+                            platform,
+                            platformVersion,
+                            appVersion,
+                            (int) (distanceNum * 1000d),
+                            value,
+                            currency,
+                            driverPayRateBreakdownCoverageArray != null ? Arrays.asList(driverPayRateBreakdownCoverageArray) : null);
+
                     seq.setServerStatus(status);
                     seq.setLocation(new SKCoordinate(lat, lon));
                     collectionData.getTrackList().add(seq);
                 }
             }
         } catch (Exception e) {
-            Log.d(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return collectionData;
     }

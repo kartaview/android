@@ -1,6 +1,5 @@
 package com.telenav.osv.ui.fragment;
 
-import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import android.animation.ObjectAnimator;
@@ -12,6 +11,7 @@ import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.display.DisplayManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -33,8 +33,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.command.PhotoCommand;
-import com.telenav.osv.data.Preferences;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.camera.CameraInfoEvent;
 import com.telenav.osv.event.hardware.camera.CameraInitEvent;
@@ -44,20 +45,17 @@ import com.telenav.osv.utils.DimenUtils;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Size;
 
+//import com.skobbler.sensorlib.listener.SignDetectedListener;
+//import com.skobbler.sensorlib.sign.SignType;
+
 /**
  * Recording ui
  * Created by Kalman on 10/7/2015.
  */
 @SuppressLint("ClickableViewAccessibility")
-public class CameraPreviewFragment extends OSVFragment implements TextureView.SurfaceTextureListener {
+public class CameraPreviewFragment extends FunctionalFragment implements TextureView.SurfaceTextureListener {
 
-    public static final String TAG = "CameraPreviewFragment";
-
-    @Inject
-    Recorder mRecorder;
-
-    @Inject
-    Preferences appPrefs;
+    public final static String TAG = "CameraPreviewFragment";
 
     private GestureDetector mGestureDetector;
 
@@ -75,6 +73,8 @@ public class CameraPreviewFragment extends OSVFragment implements TextureView.Su
     };
 
     private OSVActivity activity;
+
+    private Recorder mRecorder;
 
     private View mCameraPreview;
 
@@ -94,12 +94,15 @@ public class CameraPreviewFragment extends OSVFragment implements TextureView.Su
 
     private FrameLayout mCameraSurfaceHolder;
 
+    private ApplicationPreferences appPrefs;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_camera, null);
         activity = (OSVActivity) getActivity();
         // Setup HUDs
+        appPrefs = activity.getApp().getAppPrefs();
         mCameraPreview = view.findViewById(R.id.camera_preview_layout);
 
         // Setup shutter button
@@ -118,26 +121,26 @@ public class CameraPreviewFragment extends OSVFragment implements TextureView.Su
         fadeOut.setStartOffset(100);
         fadeOut.setDuration(300);
         mPaused = false;
-        //todo this won't be ok, screen never goes to sleep since preview fragment gets destroyed only on exit
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        DisplayManager.DisplayListener listener = new DisplayManager.DisplayListener() {
+        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//todo this won't be ok
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            DisplayManager.DisplayListener listener = new DisplayManager.DisplayListener() {
 
-            @Override
-            public void onDisplayAdded(int displayId) {
-            }
+                @Override
+                public void onDisplayAdded(int displayId) {
+                }
 
-            @Override
-            public void onDisplayRemoved(int displayId) {
-            }
+                @Override
+                public void onDisplayRemoved(int displayId) {
+                }
 
-            @Override
-            public void onDisplayChanged(int displayId) {
-                configureTransform(mCameraSurfaceView, mSurfaceSize.width, mSurfaceSize.height);
-            }
-        };
-        DisplayManager displayManager = (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
-        displayManager.registerDisplayListener(listener, mUIHandler);
-
+                @Override
+                public void onDisplayChanged(int displayId) {
+                    configureTransform(mCameraSurfaceView, mSurfaceSize.width, mSurfaceSize.height);
+                }
+            };
+            DisplayManager displayManager = (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
+            displayManager.registerDisplayListener(listener, mUIHandler);
+        }
         return view;
     }
 
@@ -177,6 +180,11 @@ public class CameraPreviewFragment extends OSVFragment implements TextureView.Su
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    @Override
+    public void setRecorder(Recorder recorder) {
+        mRecorder = recorder;
     }
 
     @Override
@@ -371,7 +379,7 @@ public class CameraPreviewFragment extends OSVFragment implements TextureView.Su
 
         @Override
         public void onLongPress(MotionEvent e) {
-            if (mRecorder != null && !appPrefs.isStaticFocus()) {
+            if (mRecorder != null && !appPrefs.getBooleanPreference(PreferenceTypes.K_FOCUS_MODE_STATIC)) {
                 setFocusViewOnScreen(mFocusLockedIndicator, e);
                 ObjectAnimator circleFade = ObjectAnimator.ofFloat(mFocusLockedIndicator, View.ALPHA, 1f, 0f);
                 circleFade.setDuration(1000);
@@ -406,7 +414,7 @@ public class CameraPreviewFragment extends OSVFragment implements TextureView.Su
                 }
                 if (mIsSmall) {
                     EventBus.post(new PreviewSwitchEvent(true));
-                } else if (!appPrefs.isStaticFocus()) {
+                } else if (!appPrefs.getBooleanPreference(PreferenceTypes.K_FOCUS_MODE_STATIC)) {
                     // A single tap equals to touch-to-focus
                     setFocusViewOnScreen(mFocusIndicator, e);
                     ObjectAnimator circleFade = ObjectAnimator.ofFloat(mFocusIndicator, View.ALPHA, 1f, 0f);

@@ -1,6 +1,7 @@
 package com.telenav.osv.activity;
 
-import javax.inject.Inject;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
@@ -18,7 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import com.telenav.osv.R;
 import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.event.EventBus;
+import com.telenav.osv.event.network.LoginChangedEvent;
 import com.telenav.osv.manager.network.LoginManager;
+import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
 /**
@@ -27,12 +31,11 @@ import com.telenav.osv.utils.Utils;
  */
 public class LoginActivity extends OSVActivity {
 
-    private static final String TAG = "LoginActivity";
-
-    @Inject
-    LoginManager mLoginManager;
+    private final static String TAG = "LoginActivity";
 
     private ProgressBar progressBar;
+
+    private LoginManager mLoginManager;
 
     private ImageView mLogo;
 
@@ -41,6 +44,7 @@ public class LoginActivity extends OSVActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        appPrefs = getApp().getAppPrefs();
         setContentView(R.layout.activity_login);
         progressBar = findViewById(R.id.progressbar);
         //noinspection deprecation
@@ -56,7 +60,13 @@ public class LoginActivity extends OSVActivity {
 
         progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
         Toolbar toolbar = findViewById(R.id.app_toolbar);
-        View.OnClickListener mMenuListener = v -> onBackPressed();
+        View.OnClickListener mMenuListener = new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        };
         toolbar.setNavigationOnClickListener(mMenuListener);
         setSupportActionBar(toolbar);
         ActionBar mActionBar = getSupportActionBar();
@@ -66,19 +76,19 @@ public class LoginActivity extends OSVActivity {
             mActionBar.setHomeAsUpIndicator(upArrow);
         }
         toolbar.setNavigationOnClickListener(mMenuListener);
+        mLoginManager = getApp().getLoginManager();
         setupBound(isPortrait());
-        appPrefs.observeLogin().observe(this, logged -> {
-            enableProgressBar(false);
-            if (logged != null && logged) {
-                finish();
-            }
-        });
     }
 
     @Override
     public void onConfigurationChanged(final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setupBound(newConfig.orientation == Configuration.ORIENTATION_PORTRAIT);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     @Override
@@ -89,6 +99,11 @@ public class LoginActivity extends OSVActivity {
     @Override
     public OSVApplication getApp() {
         return (OSVApplication) getApplication();
+    }
+
+    @Override
+    public int getCurrentScreen() {
+        return 0;
     }
 
     @Override
@@ -113,9 +128,13 @@ public class LoginActivity extends OSVActivity {
 
     @Override
     public void enableProgressBar(final boolean show) {
-        runOnUiThread(() -> {
-            if (progressBar != null) {
-                progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                if (progressBar != null) {
+                    progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
             }
         });
     }
@@ -126,23 +145,13 @@ public class LoginActivity extends OSVActivity {
     }
 
     @Override
-    public void openScreen(int screenNearby, Object extra) {
-
-    }
-
-    @Override
     public void openScreen(int screenRecording) {
 
     }
 
     @Override
-    public int getCurrentScreen() {
-        return 0;
-    }
+    public void openScreen(int screenNearby, Object extra) {
 
-    @Override
-    protected void onStop() {
-        super.onStop();
     }
 
     @Override
@@ -168,12 +177,23 @@ public class LoginActivity extends OSVActivity {
 
     @Override
     protected void onPause() {
+        EventBus.unregister(this);
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        EventBus.register(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onLoginChanged(LoginChangedEvent event) {
+        Log.d(TAG, "onLoginChanged: logged=" + event.logged);
+        enableProgressBar(false);
+        if (event.logged) {
+            finish();
+        }
     }
 
     public void onClick(View view) {

@@ -1,20 +1,20 @@
 package com.telenav.osv.manager.location;
 
-import javax.inject.Inject;
-import android.app.Application;
+import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.telenav.osv.data.MapPreferences;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.hardware.LocationPermissionEvent;
 import com.telenav.osv.utils.Log;
@@ -23,7 +23,7 @@ import com.telenav.osv.utils.Log;
  * Location manager from google
  * Created by Kalman on 10/7/2015.
  */
-public class GoogleLocationManager extends LocationManager
+class GoogleLocationManager extends LocationManager
         implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "GoogleLocationManager";
@@ -34,9 +34,17 @@ public class GoogleLocationManager extends LocationManager
 
     private boolean mConnected = false;
 
-    @Inject
-    public GoogleLocationManager(Application context, MapPreferences prefs, LocationQualityChecker qualityChecker) {
-        super(context, prefs, qualityChecker);
+    GoogleLocationManager(Context context, LocationEventListener listener) {
+        super(context, listener);
+        //        float latitude = appPrefs.getFloatPreference(PreferenceTypes.K_POS_LAT, (float) 0);
+        //        float longitude = appPrefs.getFloatPreference(PreferenceTypes.K_POS_LON, (float) 0);
+        //        mActualLocation = new Location("");
+        //        mActualLocation.setLongitude(longitude);
+        //        mActualLocation.setLatitude(latitude);
+        //        mPreviousLocation = new Location("");
+        //        mPreviousLocation.setLongitude(longitude);
+        //        mPreviousLocation.setLatitude(latitude);
+
     }
 
     /**
@@ -57,7 +65,8 @@ public class GoogleLocationManager extends LocationManager
         try {
             Log.d(TAG, "disconnect: disconnecting google api");
             if (mActualLocation != null) {
-                appPrefs.saveLastLocation(mActualLocation);
+                appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) mActualLocation.getLatitude());
+                appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LON, (float) mActualLocation.getLongitude());
             }
             if (mGoogleApiClient != null && mConnected) {
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
@@ -93,13 +102,13 @@ public class GoogleLocationManager extends LocationManager
     void stopLocationUpdates() {
         Log.d(TAG, "stopLocationUpdates: successfull: " + (mGoogleApiClient != null && mConnected));
         if (mActualLocation != null) {
-            appPrefs.saveLastLocation(mActualLocation);
+            appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LAT, (float) mActualLocation.getLatitude());
+            appPrefs.saveFloatPreference(PreferenceTypes.K_POS_LON, (float) mActualLocation.getLongitude());
         }
         if (mGoogleApiClient != null && mConnected) {
             try {
                 LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             } catch (IllegalStateException ignored) {
-                Log.d(TAG, Log.getStackTraceString(ignored));
             }
         }
     }
@@ -121,6 +130,7 @@ public class GoogleLocationManager extends LocationManager
         } catch (SecurityException e) {
             mConnected = false;
             Log.w(TAG, "onConnected: error " + e);
+            //            connect();
         } catch (Exception e) {
             mConnected = false;
             Log.w(TAG, "onConnected: error " + e);
@@ -138,6 +148,16 @@ public class GoogleLocationManager extends LocationManager
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         mConnected = false;
         Log.w(TAG, "onConnectionFailed: " + connectionResult.getErrorMessage());
+        //        final int googlePlayServicesCheck = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mContext);
+        //
+        //        Dialog dialog = GooglePlayServicesUtil.getErrorDialog(googlePlayServicesCheck, mContext, 0);
+        //        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+        //            @Override
+        //            public void onCancel(DialogInterface dialogInterface) {
+        //
+        //            }
+        //        });
+        //        dialog.show();
     }
 
     private LocationRequest createLocationRequest() {
@@ -152,27 +172,50 @@ public class GoogleLocationManager extends LocationManager
                 new LocationSettingsRequest.Builder().addLocationRequest(mLocationRequest).setAlwaysShow(true);
 
         PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
-        result.setResultCallback(result1 -> {
-            final Status status = result1.getStatus();
-            switch (status.getStatusCode()) {
-                case LocationSettingsStatusCodes.SUCCESS:
-                    // All location settings are satisfied. The client can initialize location
-                    // requests here.
-                    EventBus.clear(LocationPermissionEvent.class);
-                    break;
-                case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                    // Location settings are not satisfied. But could be fixed by showing the user
-                    // a dialog.
-                    EventBus.postSticky(new LocationPermissionEvent(status));
-                    break;
-                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                default:
-                    // Location settings are not satisfied. However, we have no way to fix the
-                    // settings so we won't show the dialog.
-                    break;
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+
+            @Override
+            public void onResult(@NonNull LocationSettingsResult result) {
+                final Status status = result.getStatus();
+                //                final LocationSettingsStates state = result.getLocationSettingsStates();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        // All location settings are satisfied. The client can initialize location
+                        // requests here.
+                        EventBus.clear(LocationPermissionEvent.class);
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        // Location settings are not satisfied. But could be fixed by showing the user
+                        // a dialog.
+                        EventBus.postSticky(new LocationPermissionEvent(status));
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        // Location settings are not satisfied. However, we have no way to fix the
+                        // settings so we won't show the dialog.
+                        break;
+                }
             }
         });
         builder.build();
         return mLocationRequest;
     }
+
+    //    public boolean isLocationEnabled() {
+    //        boolean locationServiceBoolean = false;
+    //        android.location.LocationManager locationManager = (android.location.LocationManager) mContext.getSystemService(Context
+    // .LOCATION_SERVICE);
+    //        boolean gpsIsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
+    //        boolean networkIsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
+    //
+    //        if (networkIsEnabled && gpsIsEnabled) {
+    //            locationServiceBoolean = true;
+    //
+    //        } else if (!networkIsEnabled && gpsIsEnabled) {
+    //            locationServiceBoolean = true;
+    //
+    //        } else if (networkIsEnabled) {
+    //            locationServiceBoolean = true;
+    //        }
+    //        return locationServiceBoolean;
+    //    }
 }

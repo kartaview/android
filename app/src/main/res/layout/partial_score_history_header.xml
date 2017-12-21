@@ -2,11 +2,12 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
-    android:layout_marginTop="10dp"
+    android:paddingBottom="9dp"
+    android:layout_marginTop="0dp"
     android:orientation="horizontal">
 
     <TextView
+        android:id="@+id/text_score_breakdown_header_column1"
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -15,10 +16,10 @@
         android:layout_marginRight="10dp"
         android:fontFamily="sans-serif"
         android:gravity="center"
-        android:text="@string/score_history_header_pictures_label"
         android:textColor="@color/white_transparent" />
 
     <TextView
+        android:id="@+id/text_score_breakdown_header_column2"
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -26,10 +27,10 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:fontFamily="sans-serif"
-        android:text="@string/score_history_header_multiplier_label"
         android:textColor="@color/white_transparent" />
 
     <TextView
+        android:id="@+id/text_score_breakdown_header_column3"
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -38,6 +39,5 @@
         android:layout_marginRight="10dp"
         android:fontFamily="sans-serif"
         android:gravity="center"
-        android:text="@string/score_history_header_points_label"
         android:textColor="@color/white_transparent" />
 </FrameLayout>

@@ -58,7 +58,7 @@
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
         android:paddingStart="20dp"
-        android:text="@string/ok_label"
+        android:text="Ok"
         android:textColor="@color/accent_material_dark_1"
         android:textSize="18sp"
         android:textStyle="bold" />

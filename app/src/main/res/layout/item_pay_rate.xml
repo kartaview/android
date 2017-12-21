@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/pay_rate_item"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="@color/profile_pay_rate_dialog_light_gray">
+
+    <TextView
+        android:id="@+id/text_pay_rate_previous_passes"
+        style="@style/textStyle.profileByodPayRateInfoListItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="24dp"
+        tools:text="New Road" />
+
+    <TextView
+        android:id="@+id/text_pay_rate_obd_rate"
+        style="@style/textStyle.profileByodPayRateInfoListItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/text_pay_rate_previous_passes"
+        android:layout_centerHorizontal="true"
+        android:gravity="end"
+        tools:text="$0.225" />
+
+    <TextView
+        android:id="@+id/text_pay_rate_non_obd_rate"
+        style="@style/textStyle.profileByodPayRateInfoListItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/text_pay_rate_previous_passes"
+        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginEnd="24dp"
+        android:gravity="end"
+        tools:text="$0.15" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="top"
+        android:background="@color/payment_divider_color" />
+</RelativeLayout>

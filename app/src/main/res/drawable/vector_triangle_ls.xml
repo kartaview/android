@@ -5,6 +5,7 @@
     android:height="24dp"
     android:viewportHeight="24"
     android:viewportWidth="12">
+
     <group
         android:name="Icons"
         android:pivotX="6"

@@ -2,8 +2,8 @@ package com.telenav.osv.activity;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.inject.Inject;
 import org.greenrobot.eventbus.Subscribe;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.StatFs;
 import android.support.annotation.WorkerThread;
-import android.support.v7.app.AppCompatActivity;
 import com.skobbler.ngx.SKMaps;
 import com.skobbler.ngx.SKMapsInitializationListener;
 import com.skobbler.ngx.map.SKMapSurfaceView;
@@ -21,9 +20,9 @@ import com.skobbler.ngx.util.SKLogging;
 import com.skobbler.ngx.versioning.SKMapVersioningListener;
 import com.skobbler.ngx.versioning.SKVersioningManager;
 import com.telenav.osv.R;
+import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.data.Preferences;
-import com.telenav.osv.di.Injectable;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.AppReadyEvent;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.item.OSVFile;
@@ -36,7 +35,7 @@ import com.telenav.osv.utils.Utils;
  * Activity that installs required resources (from assets/MapResources.zip) to
  * the device
  */
-public class SplashActivity extends AppCompatActivity implements SKMapsInitializationListener, SKMapVersioningListener, Injectable {
+public class SplashActivity extends Activity implements SKMapsInitializationListener, SKMapVersioningListener {
 
     public static final String RESTART_FLAG = "restartExtra";
 
@@ -53,59 +52,68 @@ public class SplashActivity extends AppCompatActivity implements SKMapsInitializ
      */
     public static String mapResourcesDirPath = "";
 
-    @Inject
-    Preferences appPrefs;
+    private static int newMapVersionDetected = 0;
 
     private boolean update = false;
+
+    private ApplicationPreferences appPrefs;
 
     private boolean mLibraryInitialized;
 
     private OSVApplication mApp;
 
-    private Runnable goToMapRunnable = this::goToMap;
+    private Runnable goToMapRunnable = new Runnable() {
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        BackgroundThreadPool.post(goToMapRunnable);
-    }
+        @Override
+        public void run() {
+            goToMap();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         mApp = ((OSVApplication) getApplication());
-        if (!appPrefs.isMapEnabled() || SKMaps.getInstance().isSKMapsInitialized()) {
+        appPrefs = mApp.getAppPrefs();
+        if (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) || SKMaps.getInstance().isSKMapsInitialized()) {
             mLibraryInitialized = true;
         }
-        BackgroundThreadPool.post(() -> {
-            startService(new Intent(getBaseContext(), RecentClearedService.class));
-            if ((appPrefs != null && appPrefs.shouldShowWalkthrough())) {
-                Intent intent = new Intent(SplashActivity.this, WalkthroughActivity.class);
-                startActivityForResult(intent, REQUEST_ENABLE_INTRO);
-            }
-            SKMapSurfaceView.preserveGLContext = true;
-            Utils.isMultipleMapSupportEnabled = false;
-            String applicationPath = chooseStoragePath(SplashActivity.this);
+        BackgroundThreadPool.post(new Runnable() {
 
-            // determine path where map resources should be copied on the device
-            if (applicationPath != null) {
-                mapResourcesDirPath = applicationPath + "/" + "SKMaps/";
-            }
-            appPrefs.setMapResourcesPath(mapResourcesDirPath);
-            checkForUpdate();
-            if (!new OSVFile(mapResourcesDirPath).exists()) {
-                SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
-                Utils.initializeLibrary(SplashActivity.this, appPrefs, SplashActivity.this);
-            } else if (!update) {
-                if (appPrefs.isMapEnabled() && !mLibraryInitialized) {
-                    long time = System.currentTimeMillis();
-                    SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
-                    Utils.initializeLibrary(SplashActivity.this, appPrefs, SplashActivity.this);
-                    Log.d(TAG, "run: initialized in " + (System.currentTimeMillis() - time) + " ms");
+            @Override
+            public void run() {
+                startService(new Intent(getBaseContext(), RecentClearedService.class));
+                if ((appPrefs != null && !appPrefs.getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN))) {
+                    Intent intent = new Intent(SplashActivity.this, WalkthroughActivity.class);
+                    startActivityForResult(intent, REQUEST_ENABLE_INTRO);
+                }
+                SKMapSurfaceView.preserveGLContext = true;
+                Utils.isMultipleMapSupportEnabled = false;
+                String applicationPath = chooseStoragePath(SplashActivity.this);
+
+                // determine path where map resources should be copied on the device
+                if (applicationPath != null) {
+                    mapResourcesDirPath = applicationPath + "/" + "SKMaps/";
                 } else {
-                    if (!appPrefs.shouldShowWalkthrough() && mLibraryInitialized) {
-                        BackgroundThreadPool.post(goToMapRunnable);
+                    // show a dialog and then finish
+                }
+                ((OSVApplication) getApplication()).getAppPrefs().saveStringPreference("mapResourcesPath", mapResourcesDirPath);
+                checkForUpdate();
+                if (!new OSVFile(mapResourcesDirPath).exists()) {
+                    //                    copyOtherResources();
+                    SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
+                    Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
+                } else if (!update) {
+                    if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) && !mLibraryInitialized) {
+                        long time = System.currentTimeMillis();
+                        SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
+                        Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
+                        Log.d(TAG, "run: initialized in " + (System.currentTimeMillis() - time) + " ms");
+                    } else {
+                        if (appPrefs.getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN) && mLibraryInitialized) {
+                            BackgroundThreadPool.post(goToMapRunnable);
+                        }
                     }
                 }
             }
@@ -125,11 +133,18 @@ public class SplashActivity extends AppCompatActivity implements SKMapsInitializ
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        BackgroundThreadPool.post(goToMapRunnable);
+    }
+
+    @Override
     public void onLibraryInitialized(boolean isSuccessful) {
         mLibraryInitialized = true;
         if (isSuccessful) {
+            //            copyOtherResources();
             SKVersioningManager.getInstance().setMapUpdateListener(this);
-            if (!appPrefs.shouldShowWalkthrough()) {
+            if (appPrefs.getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN)) {
                 BackgroundThreadPool.post(goToMapRunnable);
             }
         } else {
@@ -142,21 +157,22 @@ public class SplashActivity extends AppCompatActivity implements SKMapsInitializ
     @Override
     public void onNewVersionDetected(int i) {
         Log.e("", " New version = " + i);
+        newMapVersionDetected = i;
     }
 
     @Override
     public void onMapVersionSet(int i) {
-        //nothing
+
     }
 
     @Override
     public void onVersionFileDownloadTimeout() {
-        //nothing
+
     }
 
     @Override
     public void onNoNewVersionDetected() {
-        //nothing
+
     }
 
     private static String chooseStoragePath(Context context) {
@@ -208,16 +224,54 @@ public class SplashActivity extends AppCompatActivity implements SKMapsInitializ
                 try {
                     SKLogging.writeLog(TAG, "Using new API for getAvailableMemorySize method !!!", SKLogging.LOG_DEBUG);
                     return (Long) getAvailableBytesMethod.invoke(statFs);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    return statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+                } catch (IllegalAccessException e) {
+                    return (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
+                } catch (InvocationTargetException e) {
+                    return (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
                 }
             } else {
-                return statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+                return (long) statFs.getAvailableBlocks() * (long) statFs.getBlockSize();
             }
         } else {
             return 0;
         }
     }
+
+    //    /**
+    //     * Copy some additional resources from assets
+    //     */
+    //    private void copyOtherResources() {
+    //        new Thread() {
+    //
+    //            public void run() {
+    //                try {
+    //                    boolean resAlreadyExist;
+    //
+    //                    String tracksPath = mapResourcesDirPath + "GPXTracks";
+    //                    File tracksDir = new File(tracksPath);
+    //                    resAlreadyExist = tracksDir.exists();
+    //                    if (!resAlreadyExist || update) {
+    //                        if (!resAlreadyExist) {
+    //                            tracksDir.mkdirs();
+    //                        }
+    //                        DemoUtils.copyAssetsToFolder(getAssets(), "GPXTracks", mapResourcesDirPath + "GPXTracks");
+    //                    }
+    //
+    //                    String imagesPath = mapResourcesDirPath + "images";
+    //                    File imagesDir = new File(imagesPath);
+    //                    resAlreadyExist = imagesDir.exists();
+    //                    if (!resAlreadyExist || update) {
+    //                        if (!resAlreadyExist) {
+    //                            imagesDir.mkdirs();
+    //                        }
+    //                        DemoUtils.copyAssetsToFolder(getAssets(), "images", mapResourcesDirPath + "images");
+    //                    }
+    //                } catch (IOException e) {
+    //                    e.printStackTrace();
+    //                }
+    //            }
+    //        }.start();
+    //    }
 
     @Subscribe(sticky = true)
     public void onAppReady(AppReadyEvent event) {
@@ -229,8 +283,8 @@ public class SplashActivity extends AppCompatActivity implements SKMapsInitializ
     }
 
     private boolean shouldOpenMainScreen() {
-        return (!appPrefs.isMapEnabled() || SKMaps.getInstance().isSKMapsInitialized()) &&
-                mApp.isReady() && !appPrefs.shouldShowWalkthrough();
+        return (appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) || SKMaps.getInstance().isSKMapsInitialized()) &&
+                mApp.isReady() && appPrefs.getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN);
     }
 
     @WorkerThread
@@ -244,9 +298,15 @@ public class SplashActivity extends AppCompatActivity implements SKMapsInitializ
             startActivity(i);
             finish();
         } else {
-            if (!appPrefs.shouldShowWalkthrough()) {
+            if (appPrefs.getBooleanPreference(PreferenceTypes.K_INTRO_SHOWN)) {
                 Handler h = new Handler(Looper.getMainLooper());
-                h.postDelayed(() -> BackgroundThreadPool.post(goToMapRunnable), 300);
+                h.postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        BackgroundThreadPool.post(goToMapRunnable);
+                    }
+                }, 300);
             }
         }
     }
@@ -255,15 +315,21 @@ public class SplashActivity extends AppCompatActivity implements SKMapsInitializ
      * Checks if the current version code is grater than the previous and overwrites the map resources.
      */
     private void checkForUpdate() {
-        int lastVersionCode = appPrefs.getVersionCodeForSdk();
+        OSVApplication appContext = (OSVApplication) getApplication();
+        int currentVersionCode = appContext.getAppPrefs().getIntPreference(ApplicationPreferences.CURRENT_VERSION_CODE);
         int versionCode = getVersionCode();
-        if (lastVersionCode != versionCode) {
+        if (currentVersionCode == 0) {
+            appContext.getAppPrefs().setCurrentVersionCode(versionCode);
+        }
+
+        if (0 < currentVersionCode && currentVersionCode < versionCode) {
             update = true;
-            appPrefs.setVersionCodeForSdk(versionCode);
+            appContext.getAppPrefs().setCurrentVersionCode(versionCode);
             Utils.deleteFileOrDirectory(new OSVFile(mapResourcesDirPath));
-            if (appPrefs.isMapEnabled() && !mLibraryInitialized) {
+            //            copyOtherResources();
+            if (!appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false) && !mLibraryInitialized) {
                 SKVersioningManager.getInstance().setMapUpdateListener(SplashActivity.this);
-                Utils.initializeLibrary(SplashActivity.this, appPrefs, SplashActivity.this);
+                Utils.initializeLibrary(SplashActivity.this, SplashActivity.this);
             }
         }
     }
@@ -277,7 +343,6 @@ public class SplashActivity extends AppCompatActivity implements SKMapsInitializ
         try {
             v = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionCode;
         } catch (PackageManager.NameNotFoundException ignored) {
-            Log.d(TAG, Log.getStackTraceString(ignored));
         }
         return v;
     }

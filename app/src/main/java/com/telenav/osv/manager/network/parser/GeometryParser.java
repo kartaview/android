@@ -43,7 +43,6 @@ public class GeometryParser extends ApiResponseParser<GeometryCollection> {
                             try {
                                 coverage = tracks.getJSONObject(i - alreadyDisplayed).getInt("coverage");
                             } catch (Exception ignored) {
-                                Log.d(TAG, Log.getStackTraceString(ignored));
                             }
                             if (coverage == 0) {
                                 continue;
@@ -64,13 +63,13 @@ public class GeometryParser extends ApiResponseParser<GeometryCollection> {
                         }
                     }
                 } catch (Exception e) {
-                    Log.d(TAG, Log.getStackTraceString(e));
+                    e.printStackTrace();
                 }
             } else {
                 Log.d(TAG, "parse: request response is empty: " + json);
             }
         } catch (Exception e) {
-            Log.d(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
 
         return collectionData;

@@ -11,7 +11,7 @@ import com.telenav.osv.item.Polyline;
  */
 public class SegmentsReceivedEvent extends OSVStickyEvent {
 
-    public static final String TAG = "SegmentsReceivedEvent";
+    public final static String TAG = "SegmentsReceivedEvent";
 
     public final List<Polyline> all;
 

@@ -22,11 +22,11 @@ import org.greenrobot.eventbus.SubscriberMethod;
  */
 public interface SubscriberInfo {
 
-  Class<?> getSubscriberClass();
+    Class<?> getSubscriberClass();
 
-  SubscriberMethod[] getSubscriberMethods();
+    SubscriberMethod[] getSubscriberMethods();
 
-  SubscriberInfo getSuperSubscriberInfo();
+    SubscriberInfo getSuperSubscriberInfo();
 
-  boolean shouldCheckSuperclass();
+    boolean shouldCheckSuperclass();
 }

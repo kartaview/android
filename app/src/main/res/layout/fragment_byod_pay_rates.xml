@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/profile_pay_rate_dialog_light_gray">
+
+    <FrameLayout
+        android:id="@+id/button_byod_pay_rate_info_dialog_close_button"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/custom_ripple_white">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="top|end"
+            android:layout_marginEnd="13dp"
+            android:layout_marginTop="12dp"
+            android:padding="5dp"
+            android:src="@drawable/vector_close_button" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/text_pay_rate_previous_passes"
+        style="@style/textStyle.profileByodPayRateInfoListHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_byod_pay_rate_info_dialog_close_button"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28.5dp"
+        android:text="@string/driver_profile_pay_rate_details_header_previous_passes" />
+
+    <TextView
+        android:id="@+id/text_pay_rate_obd_rate"
+        style="@style/textStyle.profileByodPayRateInfoListHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/text_pay_rate_previous_passes"
+        android:layout_centerHorizontal="true"
+        android:gravity="end"
+        android:text="@string/driver_profile_pay_rate_details_header_with_obd" />
+
+    <TextView
+        android:id="@+id/text_pay_rate_non_obd_rate"
+        style="@style/textStyle.profileByodPayRateInfoListHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/text_pay_rate_previous_passes"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="24dp"
+        android:gravity="end"
+        android:text="@string/driver_profile_pay_rate_details_header_without_obd" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/pay_rates_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_pay_rate_previous_passes"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="10dp"
+        android:minHeight="100dp" />
+</RelativeLayout>

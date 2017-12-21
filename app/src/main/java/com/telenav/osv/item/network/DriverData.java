@@ -6,54 +6,29 @@ package com.telenav.osv.item.network;
  */
 public class DriverData extends ApiResponse {
 
-    /**
-     * the value displayed in the scrollable track list header
-     */
     private double totalAcceptedDistance;
 
-    /**
-     * the value displayed in the scrollable track list header
-     */
     private double totalRejectedDistance;
 
-    /**
-     * the value displayed in the scrollable track list header
-     */
     private double totalObdDistance;
 
-    /**
-     * the value displayed in the scrollable track list header
-     */
     private double totalPhotos;
 
-    /**
-     * the value displayed in the scrollable track list header
-     */
     private double totalTracks;
 
     private String displayName;
 
     private String currency;
 
-    /**
-     * the value displayed in the profile extensible header in the appbar
-     */
     private double currentAcceptedDistance;
 
-    /**
-     * the value displayed in the profile extensible header in the appbar
-     */
     private double currentPayRate;
 
-    /**
-     * the value displayed in the profile extensible header in the appbar
-     */
     private double currentPaymentValue;
 
-    /**
-     * the total value displayed in byod profile screen in the payments history tab under the Payments tab
-     */
     private double totalPaidValue;
+
+    private String paymentModelVersion;
 
     @Override
     public String toString() {
@@ -149,5 +124,13 @@ public class DriverData extends ApiResponse {
 
     public void setCurrentAcceptedDistance(double currentAcceptedDistance) {
         this.currentAcceptedDistance = currentAcceptedDistance;
+    }
+
+    public String getPaymentModelVersion() {
+        return paymentModelVersion;
+    }
+
+    public void setPaymentModelVersion(String paymentModelVersion) {
+        this.paymentModelVersion = paymentModelVersion;
     }
 }

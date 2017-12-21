@@ -5,11 +5,11 @@ package com.telenav.spherical;
  */
 public interface CameraStatusChangedListener {
 
-  int STATUS_IDLE = 0;
+    int STATUS_IDLE = 0;
 
-  int STATUS_DISCONNECTED = -1;
+    int STATUS_DISCONNECTED = -1;
 
-  int STATUS_WORKING = 1;
+    int STATUS_WORKING = 1;
 
-  void onCameraStatusChanged(final int status);
+    void onCameraStatusChanged(final int status);
 }

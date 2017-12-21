@@ -2,6 +2,7 @@ package com.telenav.osv.item;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -114,8 +115,13 @@ public class LocalSequence extends Sequence {
 
     public static void order(List<LocalSequence> m) {
 
-        Collections.sort(m, (rhs, lhs) -> (int) ((rhs.getStatus() * 1000 + rhs.mFolder.lastModified()) -
-                (lhs.getStatus() * 1000 + lhs.mFolder.lastModified())));
+        Collections.sort(m, new Comparator<LocalSequence>() {
+
+            @Override
+            public int compare(LocalSequence rhs, LocalSequence lhs) {
+                return (int) ((rhs.getStatus() * 1000 + rhs.mFolder.lastModified()) - (lhs.getStatus() * 1000 + lhs.mFolder.lastModified()));
+            }
+        });
     }
 
     /**
@@ -159,10 +165,10 @@ public class LocalSequence extends Sequence {
         return totalSize;
     }
 
-    public static int checkDeletedSequences(SequenceDB db) {
+    public static int checkDeletedSequences() {
         if (sequences != null && sequences.size() > 0) {
             for (LocalSequence s : sequences.values()) {
-                if (!db.checkSequenceExists(s.mId)) {
+                if (!SequenceDB.instance.checkSequenceExists(s.mId)) {
                     deleteSequence(s.mId);
                 }
             }
@@ -294,7 +300,13 @@ public class LocalSequence extends Sequence {
                     }
                     records.moveToNext();
                 }
-                Collections.sort(mPolyline.getNodes(), (lhs, rhs) -> ((ImageCoordinate) lhs).index - ((ImageCoordinate) rhs).index);
+                Collections.sort(mPolyline.getNodes(), new Comparator<SKCoordinate>() {
+
+                    @Override
+                    public int compare(SKCoordinate lhs, SKCoordinate rhs) {
+                        return ((ImageCoordinate) lhs).index - ((ImageCoordinate) rhs).index;
+                    }
+                });
                 mTotalLength = 0;
                 try {
                     for (int i = 0; i < mPolyline.getNodes().size() - 1; i++) {

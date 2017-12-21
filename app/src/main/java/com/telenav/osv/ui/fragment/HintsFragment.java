@@ -9,8 +9,8 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.matthewtamlin.dotindicator.DotIndicator;
 import com.telenav.osv.R;
@@ -45,7 +45,13 @@ public class HintsFragment extends OSVFragment {
         boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
         hintPagerAdapter.populate(portrait);
         hintPager.setAdapter(hintPagerAdapter);
-        hintPagerAutoRunnable = () -> hintPager.setCurrentItem((hintPager.getCurrentItem() + 1) % hintPagerAdapter.getCount(), true);
+        hintPagerAutoRunnable = new Runnable() {
+
+            @Override
+            public void run() {
+                hintPager.setCurrentItem((hintPager.getCurrentItem() + 1) % hintPagerAdapter.getCount(), true);
+            }
+        };
         hintPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             @Override
@@ -67,7 +73,13 @@ public class HintsFragment extends OSVFragment {
         });
         hintPager.postDelayed(hintPagerAutoRunnable, 8000);
         ImageView mCloseButton = view.findViewById(R.id.close_button);
-        mCloseButton.setOnClickListener(v -> activity.onBackPressed());
+        mCloseButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                activity.onBackPressed();
+            }
+        });
         return view;
     }
 
@@ -108,7 +120,7 @@ public class HintsFragment extends OSVFragment {
         /**
          * The fragments used in the pager
          */
-        ArrayList<LinearLayout> views = new ArrayList<>();
+        ArrayList<FrameLayout> views = new ArrayList<>();
 
         ArrayList<Integer> colors = new ArrayList<>();
 
@@ -174,13 +186,15 @@ public class HintsFragment extends OSVFragment {
 
         void populate(boolean portrait) {
             views.clear();
+            //            long seed = System.nanoTime();
+            //            Collections.shuffle(hints, new Random(seed));
             TextView viewTitleHint;
             TextView viewHintDescription;
-            LinearLayout layout;
-            LinearLayout landscape = null;
+            FrameLayout frameLayout;
+            FrameLayout landscape = null;
             int numberOfItems;
             if (portrait) {
-                landscape = (LinearLayout) mInflater.inflate(R.layout.item_hint_text, null);
+                landscape = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
                 landscape.setBackgroundColor(activity.getResources().getColor(colors.get((views.size() + 1) % colors.size())));
                 viewTitleHint = landscape.findViewById(R.id.title_hint_text_vertical);
                 viewTitleHint.setText(R.string.hint_landscape_label);
@@ -195,13 +209,13 @@ public class HintsFragment extends OSVFragment {
                 if (i == 1 && landscape != null) {
                     views.add(landscape);
                 }
-                layout = (LinearLayout) mInflater.inflate(R.layout.item_hint_text, null);
-                layout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
-                viewTitleHint = layout.findViewById(R.id.title_hint_text_vertical);
-                viewHintDescription = layout.findViewById(R.id.hint_text_vertical);
+                frameLayout = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
+                frameLayout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
+                viewTitleHint = frameLayout.findViewById(R.id.title_hint_text_vertical);
+                viewHintDescription = frameLayout.findViewById(R.id.hint_text_vertical);
                 viewTitleHint.setText(hint[0]);
                 viewHintDescription.setText(hint[1]);
-                views.add(layout);
+                views.add(frameLayout);
                 i++;
             }
             hintIndicator.setNumberOfItems(numberOfItems);

@@ -5,13 +5,13 @@ package com.telenav.spherical.network;
  */
 public interface DownloadProgressListener {
 
-  /**
-   * Total byte count
-   */
-  void onTotalSize(long totalSize);
+    /**
+     * Total byte count
+     */
+    void onTotalSize(long totalSize);
 
-  /**
-   * Received byte count
-   */
-  void onDataReceived(int size);
+    /**
+     * Received byte count
+     */
+    void onDataReceived(int size);
 }

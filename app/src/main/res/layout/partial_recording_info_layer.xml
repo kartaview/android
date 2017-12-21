@@ -92,7 +92,7 @@
         android:minWidth="48dp"
         android:tag="bottom|end">
 
-        <com.telenav.osv.ui.custom.ScoreView
+        <com.telenav.osv.ui.custom.ScoreIndicator
             android:id="@+id/score_text"
             style="@style/textStyle"
             android:layout_width="wrap_content"
@@ -104,6 +104,20 @@
             android:minWidth="48dp"
             android:textStyle="bold"
             android:visibility="visible" />
+
+        <com.telenav.osv.ui.custom.ByodPaymentIndicator
+            android:id="@+id/byod_score_text"
+            style="@style/textStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:lines="1"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            android:textStyle="bold"
+            android:visibility="visible" />
+
     </FrameLayout>
 
     <LinearLayout
@@ -112,7 +126,27 @@
         android:layout_gravity="bottom|start"
         android:layout_margin="5dp"
         android:orientation="vertical"
-        android:tag="bottom|start"></LinearLayout>
+        android:tag="bottom|start">
+
+        <TextView
+            android:id="@+id/debug_speed_text"
+            style="@style/textStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 km/h"
+            android:textColor="@color/accent_material_dark_1"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/debug_distance_text"
+            style="@style/textStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="0 m"
+            android:textColor="@color/accent_material_dark_1"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <ImageView
         android:layout_width="90dp"
@@ -121,4 +155,5 @@
         android:tag="top|start"
         android:visibility="gone"
         tools:ignore="ContentDescription" />
+
 </com.telenav.osv.ui.custom.FixedFrameLayout>

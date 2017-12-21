@@ -3,18 +3,18 @@ package com.telenav.osv.utils;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
+import android.os.Build;
 import android.view.Display;
 import android.view.WindowManager;
 
 /**
- * utility methods for dimensions
  * Created by Kalman on 21/02/2017.
  */
 public class DimenUtils {
 
-    public static final String TAG = "DimenUtils";
+    public final static String TAG = "DimenUtils";
 
-    public static void getContentSize(Context context, boolean portrait, Point size) {
+    public static Point getContentSize(Context context, boolean portrait, Point size) {
         Point realSize = getRealScreenSize(context);
         Point navbarSize = portrait ? getNavigationBarSizeIfExistAtTheBottom(context) : getNavigationBarSizeIfExistOnTheRight(context);
         Point statusbarSize = new Point(realSize.x, getStatusBarHeight(context));
@@ -26,6 +26,7 @@ public class DimenUtils {
             size.x = realSize.x - navbarSize.x;
             size.y = realSize.y - statusbarSize.y;
         }
+        return size;
     }
 
     private static int getStatusBarHeight(Context context) {
@@ -76,7 +77,24 @@ public class DimenUtils {
         Point size = new Point();
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
-        display.getRealSize(size);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            display.getRealSize(size);
+        } else {
+            display.getSize(size);
+            //            View decorView = null;
+            //            if (context instanceof Activity) {
+            //                decorView = ((Activity) context).getWindow().getDecorView();
+            //            } else if (context instanceof ContextThemeWrapper) {
+            //                Context baseContext = ((ContextThemeWrapper) context).getBaseContext();
+            //                if (baseContext instanceof Activity) {
+            //                    decorView = ((Activity) baseContext).getWindow().getDecorView();
+            //                }
+            //            }
+            //            if (decorView != null) {
+            //                size.x = decorView.getWidth();
+            //                size.y = decorView.getHeight();
+            //            }
+        }
         return size;
     }
 }

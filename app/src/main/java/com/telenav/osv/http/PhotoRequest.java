@@ -121,12 +121,13 @@ public class PhotoRequest<T> extends StringRequest {
         mBuilder.addTextBody("sequenceId", "" + mSequenceId);
         mBuilder.addTextBody("sequenceIndex", "" + mSequenceIndex);
         mBuilder.addTextBody("gpsAccuracy", "" + mAccuracy);
-        if (!mImageFile.exists()) {
+        boolean imageExists = mImageFile.exists();
+        if (!imageExists) {
             Log.d(TAG, "buildMultipartEntity: image doesn't exist");
         }
         mBuilder.addBinaryBody(FILE_PART_NAME, mImageFile, ContentType.create("image/jpeg"), mImageFile.getName());
         Log.d(TAG, "buildMultipartEntity: sending request: " + " " + PARAM_TOKEN + " " + mToken + " coordinate " + mLat + "," + mLon +
-                " sequenceId " + mSequenceId + " sequenceIndex " + mSequenceIndex + " gpsAccuracy " + mAccuracy);
+                " sequenceId " + mSequenceId + " sequenceIndex " + mSequenceIndex + " gpsAccuracy " + mAccuracy + " imageExists:" + imageExists);
         mBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         mBuilder.setLaxMode().setBoundary("xx").setCharset(Charset.forName("UTF-8"));
         HttpEntity mEntity = mBuilder.build();

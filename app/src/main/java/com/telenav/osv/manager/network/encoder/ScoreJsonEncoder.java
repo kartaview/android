@@ -5,14 +5,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.telenav.osv.item.ScoreHistory;
-import com.telenav.osv.utils.Log;
 
 /**
  * Created by kalmanb on 8/3/17.
  */
 public class ScoreJsonEncoder {
-
-    private static final String TAG = "ScoreJsonEncoder";
 
     public static String encode(HashMap<Integer, ScoreHistory> histories) {
 
@@ -25,7 +22,7 @@ public class ScoreJsonEncoder {
                 obj.put("obdPhoto", "" + history.obdPhotoCount);
                 obj.put("detectedSigns", "" + history.detectedSigns);
             } catch (JSONException e) {
-                Log.d(TAG, Log.getStackTraceString(e));
+                e.printStackTrace();
             }
             array.put(obj);
         }

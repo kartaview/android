@@ -33,6 +33,7 @@
                 android:textSize="26sp"
                 app:srcCompat="@drawable/vector_home_white"
                 tools:ignore="ContentDescription" />
+
         </FrameLayout>
 
         <FrameLayout
@@ -69,6 +70,7 @@
                 app:matProg_rimColor="#ffffff"
                 app:matProg_spinSpeed="0.45"
                 tools:visibility="visible" />
+
         </FrameLayout>
 
         <RelativeLayout
@@ -84,7 +86,9 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="8dp"
                 app:srcCompat="@drawable/vector_info_white"
-                tools:ignore="ContentDescription" />
+                tools:ignore="ContentDescription">
+
+            </ImageView>
         </RelativeLayout>
     </LinearLayout>
 
@@ -134,14 +138,17 @@
                 android:text="@string/partial_img_label"
                 android:textColor="@color/gray_text_color"
                 android:textSize="18sp" />
+
         </LinearLayout>
 
-        <View
+        <LinearLayout
             android:layout_width="44dp"
             android:layout_height="0dp"
             android:layout_gravity="center"
             android:layout_weight="0.01"
-            android:background="#3B3E47" />
+            android:background="#3B3E47">
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="54dp"
@@ -178,14 +185,17 @@
                 android:text="@string/partial_mb_label"
                 android:textColor="@color/gray_text_color"
                 android:textSize="18sp" />
+
         </LinearLayout>
 
-        <View
+        <LinearLayout
             android:layout_width="44dp"
             android:layout_height="0dp"
             android:layout_gravity="center"
             android:layout_weight="0.01"
-            android:background="#3B3E47" />
+            android:background="#3B3E47">
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="54dp"
@@ -222,8 +232,12 @@
                 android:text="@string/partial_km_label"
                 android:textColor="@color/gray_text_color"
                 android:textSize="18sp" />
+
         </LinearLayout>
+
     </LinearLayout>
+
+
 </RelativeLayout>
 
 

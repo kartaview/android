@@ -72,6 +72,7 @@
     <string name="no_local_recordings_message">No tens enregistraments en local.</string>
     <string name="exit_app_message">Estas segur que vols soritr de la aplicació?</string>
     <string name="exit_label">Sortir</string>
+    <string name="hey_label">Ep</string>
     <string name="uploading_track_label">Pujant traça</string>
     <string name="nearby_label">Proper</string>
     <string name="nearby_no_result_label">Res aqui</string>
@@ -80,6 +81,7 @@
     <string name="account_distance_label">Distància:</string>
     <string name="debug_settings_notification">Una opció de depuració ha aparegut!</string>
     <string name="not_allowed_while_upload">No permès mentre es puja</string>
+    <string name="resolution_selection_not_available">La selecio d\'enregistrament ràpid no està disponible mentre l\'enregistrament ràpid està activat</string>
     <string name="ble_android_not_supported">Lamentablement de moment el  OBD Bluetooth Low Energy  només funciona en Lollipop o superiors.</string>
     <string name="connecting_label">Connectant…</string>
     <string name="no_obd_detected_message">No s\'ha detectat OBD! Comprova la teva connexió</string>
@@ -99,6 +101,7 @@
     <string name="track_upload_resuming">Reprenent la pujada de les traçes…</string>
     <string name="track_upload_cancelled">Pujada cancel·lada.</string>
     <string name="uploading_images">Pujant imatges…</string>
+    <string name="error_creating_sequence">Error creant la seqüència.</string>
     <string name="not_logged_in">No autenticat.</string>
     <string name="pause_caps_label">PAUSA</string>
     <string name="continue_caps_label">CONTINUAR</string>
@@ -111,6 +114,8 @@
     <string name="fast_recording_mode_on">Mode d\'enregistrat ràpid ON</string>
     <string name="focus_locked">Bloquejat</string>
     <string name="stop_caps_label">STOP</string>
+    <string name="fast_recording_mode">Mode d\'enregistrament ràpid</string>
+    <string name="fast_recording_text">Mentre enregistres, la aplicació farà ~5 imatges per segon a baixa resolució.</string>
     <string name="resolution_label">Resolució</string>
     <string name="resolution_text">Selecciona la resolució per fer les fotografies </string>
     <string name="connection_type">Tipus de connexió</string>
@@ -127,6 +132,7 @@
     <string name="remember_login_credentials_text">Recorda les credencials de la sessió després del primer inici. Neteja les credencials després de posar-lo a off.</string>
     <string name="ble_not_supported">BLE no suportat</string>
     <string name="error_bluetooth_not_supported">Bluetooth no suportat</string>
+    <string name="unknown_device">Dispositiu desconegut</string>
     <string name="connected">Connectat</string>
     <string name="ble_devices">Dispositius BLE</string>
 </resources>

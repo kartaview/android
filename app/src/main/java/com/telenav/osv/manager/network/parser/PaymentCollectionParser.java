@@ -50,7 +50,7 @@ public class PaymentCollectionParser extends ApiResponseParser<PaymentCollection
                 }
             }
         } catch (Exception e) {
-            Log.d(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
             return null;
         }
 

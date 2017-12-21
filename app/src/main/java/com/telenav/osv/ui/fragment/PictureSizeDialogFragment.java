@@ -2,7 +2,6 @@ package com.telenav.osv.ui.fragment;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.inject.Inject;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,8 +14,11 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import com.telenav.osv.R;
-import com.telenav.osv.data.Preferences;
-import com.telenav.osv.di.Injectable;
+import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.command.CameraConfigChangedCommand;
+import com.telenav.osv.event.EventBus;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Size;
 
@@ -24,35 +26,35 @@ import com.telenav.osv.utils.Size;
  * fragment for picture resolution selection
  * Created by Kalman on 11/11/2016.
  */
-public class PictureSizeDialogFragment extends DialogFragment implements View.OnClickListener, Injectable {
+public class PictureSizeDialogFragment extends DialogFragment implements View.OnClickListener {
 
-    public static final String TAG = PictureSizeDialogFragment.class.getSimpleName();
-
-    /**
-     * shared preferences
-     */
-    @Inject
-    Preferences preferences;
+    public final static String TAG = PictureSizeDialogFragment.class.getSimpleName();
 
     /**
      * the view of the fragment
      */
     private View root;
 
+    /**
+     * shared preferences
+     */
+    private ApplicationPreferences preferences;
+
     private RadioGroup mRadioGroup;
 
-    private Size resolution;
+    private int widthSize;
+
+    private int heightSize;
 
     private List<Size> availablePictureSizesList;
 
     private LayoutInflater mInflater;
 
-    private Size newResolution;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_picture_size, container, false);
         mInflater = inflater;
+        preferences = ((MainActivity) getActivity()).getApp().getAppPrefs();
         return root;
     }
 
@@ -69,10 +71,14 @@ public class PictureSizeDialogFragment extends DialogFragment implements View.On
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ok_button_selection:
-                if (newResolution != resolution) {
-                    preferences.setResolution(newResolution);
+                if (widthSize != preferences.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH) ||
+                        heightSize != preferences.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT)) {
+                    preferences.saveIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH, widthSize);
+                    preferences.saveIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT, heightSize);
+                    EventBus.post(new CameraConfigChangedCommand());
 
-                    Log.d(TAG, "Resolution when press OK: " + resolution);
+                    Log.d(TAG, "Resolution when press OK: " + preferences.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH) + " x " +
+                            preferences.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT));
                 }
                 dismissDialog();
                 break;
@@ -89,8 +95,8 @@ public class PictureSizeDialogFragment extends DialogFragment implements View.On
     private void initViews(LayoutInflater inflater) {
         mRadioGroup = root.findViewById(R.id.picture_size_radio_group);
         List<Integer> radioButtonsIdsList = new ArrayList<>();
-        resolution = preferences.getResolution();
-        newResolution = resolution;
+        widthSize = preferences.getIntPreference(PreferenceTypes.K_RESOLUTION_WIDTH);
+        heightSize = preferences.getIntPreference(PreferenceTypes.K_RESOLUTION_HEIGHT);
         if (availablePictureSizesList == null) {
             Log.d(TAG, "initViews: availablePictureSizesList is null");
             return;
@@ -110,7 +116,7 @@ public class PictureSizeDialogFragment extends DialogFragment implements View.On
                     availablePictureSizesList.get(i).width + " x " + availablePictureSizesList.get(i).height + " (" + Math.round(pictureSizeInMp) +
                             " MP)");
 
-            if ((availablePictureSizesList.get(i).width == resolution.width) && availablePictureSizesList.get(i).height == resolution.height) {
+            if ((availablePictureSizesList.get(i).width == widthSize) && availablePictureSizesList.get(i).height == heightSize) {
                 radioButton.setChecked(true);
             }
 
@@ -118,19 +124,29 @@ public class PictureSizeDialogFragment extends DialogFragment implements View.On
             radioButtonsIdsList.add(radioButton.getId());
             Log.d(TAG, "radio button id list: " + radioButtonsIdsList.get(i));
         }
-        mRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            View radioButton = mRadioGroup.findViewById(checkedId);
-            if (radioButton.getTag() != null) {
-                Size size = (Size) radioButton.getTag();
-                newResolution = size;
-                resolution = size;
-                Log.d(TAG, "The resolution is " +
-                        availablePictureSizesList.get(checkedId).width + " x " + availablePictureSizesList.get(checkedId).height);
+        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                View radioButton = mRadioGroup.findViewById(checkedId);
+                if (radioButton.getTag() != null) {
+                    Size size = (Size) radioButton.getTag();
+                    widthSize = size.width;
+                    heightSize = size.height;
+                    Log.d(TAG, "The resolution is " + availablePictureSizesList.get(checkedId).width + " x " +
+                            availablePictureSizesList.get(checkedId).height);
+                }
             }
         });
     }
 
     private void dismissDialog() {
-        new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 200);
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                dismiss();
+            }
+        }, 200);
     }
 }

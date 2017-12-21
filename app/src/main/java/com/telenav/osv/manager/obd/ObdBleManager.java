@@ -2,7 +2,6 @@ package com.telenav.osv.manager.obd;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.arch.lifecycle.MutableLiveData;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -42,7 +41,7 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
 
     private static final String VEHICLE_DATA_TYPE_SPEED = "SPEED";
 
-    private static final String TAG = ObdBleManager.class.getSimpleName();
+    private final static String TAG = ObdBleManager.class.getSimpleName();
 
     /**
      * bluetooth connection thread instance
@@ -54,12 +53,16 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
      */
     private String characteristicResult = "";
 
-    private VehicleDataListener internalVehicleDataDelegate = speed -> {
-        Intent intent = new Intent(VEHICLE_DATA_ACTION);
-        // You can also include some extra data.
-        intent.putExtra(VEHICLE_DATA_TYPE_SPEED, speed);
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
-        broadcastUpdate(Constants.ACTION_DATA_AVAILABLE, String.valueOf(speed));
+    private VehicleDataListener internalVehicleDataDelegate = new VehicleDataListener() {
+
+        @Override
+        public void onSpeed(int speed) {
+            Intent intent = new Intent(VEHICLE_DATA_ACTION);
+            // You can also include some extra data.
+            intent.putExtra(VEHICLE_DATA_TYPE_SPEED, speed);
+            LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+            broadcastUpdate(Constants.ACTION_DATA_AVAILABLE, String.valueOf(speed));
+        }
     };
 
     /**
@@ -77,9 +80,15 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
                 }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "onConnectionStateChange STATE_DISCONNECTED");
+                broadcastUpdate(Constants.ACTION_GATT_DISCONNECTED, "Disconnected");
+                sConnected = false;
+                //Close gatt to release resources
+                OBDCommunication.getInstance().disconnectFromBLEDevice();
                 mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).edit().putBoolean(Constants.BLE_SERVICE_STARTED, false)
                         .apply();
-                broadcastUpdate(Constants.ACTION_GATT_DISCONNECTED, "Disconnected");
+                if (mConnectionListener != null) {
+                    mConnectionListener.onObdDisconnected();
+                }
             }
         }
 
@@ -137,15 +146,11 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
         }
     };
 
-    ObdBleManager(Context context, MutableLiveData<Integer> obdStatusLive, ConnectionListener listener) {
-        super(context, obdStatusLive, listener);
+    ObdBleManager(Context context, ConnectionListener listener) {
+        super(context, listener);
     }
 
     public void connect() {
-        if (sConnected &&
-                mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).getBoolean(Constants.BLE_SERVICE_STARTED, false)) {
-            return;
-        }
         final String deviceAddress =
                 mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).getString(Constants.EXTRAS_BLE_DEVICE_ADDRESS, null);
 
@@ -195,12 +200,7 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
         if (bluetoothCommunicationThread != null) {
             bluetoothCommunicationThread.cancel();
         }
-        sConnected = false;
-        OBDCommunication.getInstance().disconnectFromBLEDevice();
         mContext.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE).edit().putBoolean(Constants.BLE_SERVICE_STARTED, false).apply();
-        if (mConnectionListener != null) {
-            mConnectionListener.onObdDisconnected();
-        }
     }
 
     /**
@@ -250,6 +250,11 @@ class ObdBleManager extends ObdManager implements BTDialogFragment.OnDeviceSelec
 
     @Override
     public boolean isFunctional(OSVActivity activity) {
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            activity.showSnackBar(activity.getString(R.string.ble_android_not_supported), Snackbar.LENGTH_LONG);
+            return false;
+        }
 
         // Use this check to determine whether BLE is supported on the device. Then
         // you can selectively disable BLE-related features.

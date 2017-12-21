@@ -1,7 +1,6 @@
 package com.telenav.osv.ui.fragment;
 
 import java.util.Set;
-import javax.inject.Inject;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -10,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -25,8 +25,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
-import com.telenav.osv.di.Injectable;
-import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.manager.obd.ObdManager;
 import com.telenav.osv.obd.Constants;
 import com.telenav.osv.ui.list.DeviceAdapter;
@@ -38,15 +36,12 @@ import com.telenav.osv.utils.Log;
  * by the user, the MAC address of the device is sent back to the parent
  * Activity in the result Intent.
  */
-public class BTDialogFragment extends DialogFragment implements Injectable {
+public class BTDialogFragment extends DialogFragment {
 
     /**
      * Tag for Log
      */
     public static final String TAG = "BTDialogFragment";
-
-    @Inject
-    Recorder mRecorder;
 
     /**
      * Member fields
@@ -105,18 +100,22 @@ public class BTDialogFragment extends DialogFragment implements Injectable {
     /**
      * The on-click listener for all devices in the ListViews
      */
-    private OnDeviceSelectedListener mDeviceClickListener = device -> {
-        if (device != null) {
-            // Cancel discovery because it's costly and we're about to connect
-            mBtAdapter.cancelDiscovery();
+    private OnDeviceSelectedListener mDeviceClickListener = new OnDeviceSelectedListener() {
 
-            preferences.edit().putString(
-                    mObdManager.getType() == ObdManager.TYPE_BLE ? Constants.EXTRAS_BLE_DEVICE_ADDRESS : Constants.EXTRAS_BT_DEVICE_ADDRESS,
-                    device.getAddress()).apply();
-            if (mDeviceSelectedListener != null) {
-                mDeviceSelectedListener.onDeviceSelected(device);
+        @Override
+        public void onDeviceSelected(BluetoothDevice device) {
+            if (device != null) {
+                // Cancel discovery because it's costly and we're about to connect
+                mBtAdapter.cancelDiscovery();
+
+                preferences.edit().putString(
+                        mObdManager.getType() == ObdManager.TYPE_BLE ? Constants.EXTRAS_BLE_DEVICE_ADDRESS : Constants.EXTRAS_BT_DEVICE_ADDRESS,
+                        device.getAddress()).apply();
+                if (mDeviceSelectedListener != null) {
+                    mDeviceSelectedListener.onDeviceSelected(device);
+                }
+                dismiss();
             }
-            dismiss();
         }
     };
 
@@ -126,13 +125,18 @@ public class BTDialogFragment extends DialogFragment implements Injectable {
         View view = inflater.inflate(R.layout.fragment_devices_list, container, false);
         activity = (MainActivity) getActivity();
         preferences = activity.getSharedPreferences(Constants.PREF, Activity.MODE_PRIVATE);
-        mObdManager = mRecorder.getOBDManager();
+        mObdManager = activity.getApp().getRecorder().getOBDManager();
 
         // Initialize the button to perform device discovery
         mScanButton = view.findViewById(R.id.refresh_button);
         RecyclerView mDevicesList = view.findViewById(R.id.devices_list);
         mDevicesTitle = view.findViewById(R.id.devices_fragment_title);
-        mScanOnClickListener = v -> doDiscovery();
+        mScanOnClickListener = new View.OnClickListener() {
+
+            public void onClick(View v) {
+                doDiscovery();
+            }
+        };
         mScanButton.setOnClickListener(mScanOnClickListener);
 
         // Initialize array adapters. One for already paired devices and
@@ -140,6 +144,13 @@ public class BTDialogFragment extends DialogFragment implements Injectable {
         mDevicesAdapter = new DeviceAdapter(activity, mDeviceClickListener);
         mDevicesList.setLayoutManager(new LinearLayoutManager(activity));
         mDevicesList.setAdapter(mDevicesAdapter);
+        // Find and set up the ListView for paired devices
+        //        mPairedListView.setOnItemClickListener(mDeviceClickListener);
+        //
+        //        // Find and set up the ListView for newly discovered devices
+        //        mNewDevicesListView.setVisibility(View.VISIBLE);
+        //        mNewDevicesListView.setAdapter(mNewDevicesAdapter);
+        //        mNewDevicesListView.setOnItemClickListener(mDeviceClickListener);
         // Register for broadcasts when a device is discovered
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         activity.getApplicationContext().registerReceiver(mReceiver, filter);
@@ -153,10 +164,13 @@ public class BTDialogFragment extends DialogFragment implements Injectable {
 
         // Get a set of currently paired devices
         Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
-        mDevicesAdapter
-                .highlight(mObdManager.getType() == ObdManager.TYPE_BLE ? BluetoothDevice.DEVICE_TYPE_LE : BluetoothDevice.DEVICE_TYPE_CLASSIC);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            mDevicesAdapter
+                    .highlight(mObdManager.getType() == ObdManager.TYPE_BLE ? BluetoothDevice.DEVICE_TYPE_LE : BluetoothDevice.DEVICE_TYPE_CLASSIC);
+        }
         // If there are paired devices, add each one to the ArrayAdapter
-        if (!pairedDevices.isEmpty()) {
+        if (pairedDevices.size() > 0) {
             ((TextView) view.findViewById(R.id.devices_fragment_title)).setText(R.string.bt_paired_devices_label);
             for (BluetoothDevice device : pairedDevices) {
                 mDevicesAdapter.addDevice(device);

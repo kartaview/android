@@ -71,7 +71,6 @@ public class TrackCollectionParser extends ApiResponseParser<TrackCollection> {
                         String[] list = address.split(", ");
                         partialAddress = list[0] + ", " + list[2];
                     } catch (Exception ignored) {
-                        Log.d(TAG, Log.getStackTraceString(ignored));
                     }
                     String thumbLink = UserDataManager.URL_DOWNLOAD_PHOTO + item.getString("thumb_name");
                     double distanceNum = 0;
@@ -80,7 +79,6 @@ public class TrackCollectionParser extends ApiResponseParser<TrackCollection> {
                             distanceNum = Double.parseDouble(distance);
                         }
                     } catch (NumberFormatException ignored) {
-                        Log.d(TAG, Log.getStackTraceString(ignored));
                     }
                     UserOnlineSequence seq =
                             new UserOnlineSequence(id, date, Integer.valueOf(imgNum), partialAddress, thumbLink, obd, platform, platformVersion,
@@ -90,6 +88,7 @@ public class TrackCollectionParser extends ApiResponseParser<TrackCollection> {
                     int totalPoints = 0;
                     try {
                         JSONObject history = item.getJSONObject("upload_history");
+                        boolean historyObd = history.getString("has_obd").equals("N");
                         JSONArray coverages = history.getJSONArray("coverage");
                         JSONObject points = history.getJSONObject("points");
                         totalPoints = Integer.parseInt(points.getString("total"));
@@ -109,14 +108,14 @@ public class TrackCollectionParser extends ApiResponseParser<TrackCollection> {
                         }
                         seq.setScoreHistory(scoreHistory);
                     } catch (Exception e) {
-                        Log.d(TAG, "listSequences: " + e.getLocalizedMessage());
+                        Log.d(TAG, "listSequences: " + Log.getStackTraceString(e));
                     }
                     seq.setScore(totalPoints);
                     collection.getTrackList().add(seq);
                 }
             }
         } catch (Exception e) {
-            Log.d(TAG, Log.getStackTraceString(e));
+            e.printStackTrace();
         }
         return collection;
     }

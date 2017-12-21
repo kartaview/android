@@ -50,5 +50,8 @@
             android:text="@string/walkthrough_discover_text"
             android:textColor="@color/white_transparent"
             android:textSize="18sp" />
+
+
     </LinearLayout>
+
 </RelativeLayout>

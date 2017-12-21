@@ -1,10 +1,10 @@
 package com.telenav.osv.service;
 
-import javax.inject.Inject;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import com.telenav.osv.data.Preferences;
+import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.manager.Recorder;
 import com.telenav.osv.utils.Log;
 
@@ -15,12 +15,6 @@ import com.telenav.osv.utils.Log;
 public class RecentClearedService extends Service {
 
     private static final String TAG = "RecentClearedService";
-
-    @Inject
-    Preferences prefs;
-
-    @Inject
-    Recorder mRecorder;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -41,10 +35,12 @@ public class RecentClearedService extends Service {
 
     public void onTaskRemoved(Intent rootIntent) {
         Log.e(TAG, "onTaskRemoved:");
-        if (mRecorder.isRecording()) {
-            mRecorder.stopRecording(true);
-            prefs.setCrashed(false);
-            prefs.setShouldShowClearRecentsWarning(true);
+        //Code here
+        Recorder recorder = ((OSVApplication) getApplication()).getRecorder();
+        if (recorder != null && recorder.isRecording()) {
+            recorder.stopRecording(true);
+            ((OSVApplication) getApplication()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_CRASHED, false);
+            ((OSVApplication) getApplication()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_SHOW_CLEAR_RECENTS_WARNING, true);
         }
         stopSelf();
     }

@@ -5,69 +5,63 @@ package com.telenav.spherical.network;
  */
 public class CameraInfo {
 
-  private String mModel = "";
+    private String mModel = "";
 
-  private String mDeviceVersion = "";
+    private String mDeviceVersion = "";
 
-  private String mSerialNumber = "";
+    private String mSerialNumber = "";
 
-  /**
-   * Constructor
-   */
-  public CameraInfo() {
-  }
+    /**
+     * Constructor
+     */
+    public CameraInfo() {
+    }
 
-  /**
-   * Acquire model name
-   *
-   * @return Model name
-   */
-  public String getModel() {
-    return mModel;
-  }
+    /**
+     * Acquire model name
+     * @return Model name
+     */
+    public String getModel() {
+        return mModel;
+    }
 
-  /**
-   * Set model name
-   *
-   * @param model Model name
-   */
-  public void setModel(String model) {
-    mModel = model;
-  }
+    /**
+     * Set model name
+     * @param model Model name
+     */
+    public void setModel(String model) {
+        mModel = model;
+    }
 
-  /**
-   * Acquire serial number
-   *
-   * @return Serial number
-   */
-  public String getSerialNumber() {
-    return mSerialNumber;
-  }
+    /**
+     * Acquire serial number
+     * @return Serial number
+     */
+    public String getSerialNumber() {
+        return mSerialNumber;
+    }
 
-  /**
-   * Set serial number
-   *
-   * @param serialNumber Serial number
-   */
-  public void setSerialNumber(String serialNumber) {
-    mSerialNumber = serialNumber;
-  }
+    /**
+     * Set serial number
+     * @param serialNumber Serial number
+     */
+    public void setSerialNumber(String serialNumber) {
+        mSerialNumber = serialNumber;
+    }
 
-  /**
-   * Acquire firmware version
-   *
-   * @return Firmware version
-   */
-  public String getDeviceVersion() {
-    return mDeviceVersion;
-  }
+    /**
+     * Acquire firmware version
+     * @return Firmware version
+     */
+    public String getDeviceVersion() {
+        return mDeviceVersion;
+    }
 
-  /**
-   * Set firmware version
-   *
-   * @param version Firmware version
-   */
-  public void setDeviceVersion(String version) {
-    mDeviceVersion = version;
-  }
+    /**
+     * Set firmware version
+     * @param version Firmware version
+     */
+    public void setDeviceVersion(String version) {
+        mDeviceVersion = version;
+    }
 }

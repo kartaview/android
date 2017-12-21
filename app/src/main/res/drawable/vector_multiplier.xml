@@ -5,6 +5,7 @@
     android:height="48dp"
     android:viewportHeight="44"
     android:viewportWidth="44">
+
     <group android:name="Mobile">
         <group android:name="fill">
             <path

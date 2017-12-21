@@ -4,7 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import com.telenav.osv.item.LeaderboardData;
 import com.telenav.osv.item.network.UserCollection;
-import com.telenav.osv.utils.Log;
 
 /**
  * JSON parser for driver tracks list
@@ -36,7 +35,7 @@ public class LeaderboardParser extends ApiResponseParser<UserCollection> {
                     collectionData.getUserList().add(new LeaderboardData(userName, countryCode, rank, points));
                 }
             } catch (Exception e) {
-                Log.d(TAG, Log.getStackTraceString(e));
+                e.printStackTrace();
             }
         }
         return collectionData;
