@@ -1,0 +1,130 @@
+package com.telenav.osv.utils;
+
+import android.app.Activity;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
+import android.os.Build;
+
+public class NetworkUtils {
+
+    /**
+     * name of the class used for networking
+     */
+    private static final String TAG = "NetworkUtils";
+
+    /**
+     * Checks if there is WI-FI or network connection available.
+     */
+    public static boolean isInternetAvailable(Context context) {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+                if (networkCapabilities == null) {
+                    return false;
+                }
+                return networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                        || networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                        || networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN);
+
+            } else {
+                NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+                if (networkInfo == null) {
+                    return false;
+                }
+                if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI
+                        || networkInfo.getType() == ConnectivityManager.TYPE_MOBILE
+                        || networkInfo.getType() == ConnectivityManager.TYPE_VPN) {
+                    return networkInfo.isConnected();
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if there is WI-FI or mobile data connection is available.
+     * <p>This will be checked based on app settings given by {@code isMobileDataEnabled} which represents a special case for when they are off meaning the user wants wi-fi only
+     * internet availability.</p>
+     */
+    public static boolean isInternetConnectionAvailable(Context context, boolean isMobileDataEnabled) {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+                if (networkCapabilities == null) {
+                    return false;
+                }
+                if (!isMobileDataEnabled) {
+                    //if mobile data is disabled this means the user will want wifi only capabilities
+                    return networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                            || networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN);
+                }
+                //check for all network capabilities
+                return networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                        || networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                        || networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN);
+            } else {
+                NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+                if (networkInfo == null) {
+                    return false;
+                }
+                if (!isMobileDataEnabled) {
+                    //if mobile data is disabled this means the user will want wifi only capabilities
+                    return networkInfo.getType() == ConnectivityManager.TYPE_WIFI
+                            || networkInfo.getType() == ConnectivityManager.TYPE_VPN;
+                }
+                //check for all network capabilities
+                return networkInfo.getType() == ConnectivityManager.TYPE_WIFI
+                        || networkInfo.getType() == ConnectivityManager.TYPE_MOBILE
+                        || networkInfo.getType() == ConnectivityManager.TYPE_VPN;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if wifi is ON
+     */
+    public static boolean isWifiOn(Context context) {
+        WifiManager wifi = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        return wifi.isWifiEnabled();
+    }
+
+    /**
+     * checks if there is WI-FI connection available
+     */
+    public static boolean isWifiInternetAvailable(Context currentActivity) {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) currentActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                if (networkInfo.isConnected()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * checks if there is network connection available
+     */
+    public static boolean isMobileInternetAvailable(Activity currentActivity) {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) currentActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                if (networkInfo.isConnected()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+}

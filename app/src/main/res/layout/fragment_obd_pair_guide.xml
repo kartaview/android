@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/settings_default_color">
+
+    <ImageView
+        android:id="@+id/image_view_obd_pair_guide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:contentDescription="@string/obd_ble_pair_guide"
+        android:src="@drawable/vector_bluetooth_big"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_obd_pair_guide_title"
+        app:layout_constraintEnd_toEndOf="@+id/text_view_obd_pair_guide_title"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/text_view_obd_pair_guide_title"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/text_view_obd_pair_guide_title"
+        style="@style/obd_style_text_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/obd_ble_pair_guide_title"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@+id/recycler_view_obd_pair_guide"
+        app:layout_constraintEnd_toEndOf="@+id/button_obd_pair_guide_connect"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/button_obd_pair_guide_connect"
+        app:layout_constraintTop_toBottomOf="@+id/image_view_obd_pair_guide" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_obd_pair_guide"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@+id/button_obd_pair_guide_connect"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_obd_pair_guide_title" />
+
+    <Button
+        android:id="@+id/button_obd_pair_guide_connect"
+        style="@style/obd_style_text_button"
+        android:layout_width="213dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/bg_obd_button"
+        android:text="@string/obd_ble_pair_guide_choose_devices"
+        android:textStyle="normal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recycler_view_obd_pair_guide" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

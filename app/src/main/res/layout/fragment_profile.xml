@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.MainActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/profile_appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/default_blue"
+        android:stateListAnimator="@animator/appbar_always_elevated"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        tools:expanded="true"
+        tools:targetApi="lollipop">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/profile_collapsing_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:collapsedTitleGravity="start|left"
+            app:collapsedTitleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
+            app:expandedTitleGravity="center_horizontal|bottom"
+            app:expandedTitleMarginBottom="@dimen/profile_user_header_title_margin_bottom"
+            app:expandedTitleTextAppearance="@style/textStyle.actionBarTitleExpanded"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+
+            <LinearLayout
+                android:id="@+id/header_content_holder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="360dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/action_bar_size"
+                    android:layout_marginBottom="55dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:weightSum="3">
+
+                    <LinearLayout
+                        android:id="@+id/score_view"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|left"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:visibility="invisible"
+                        tools:visibility="visible">
+
+                        <TextView
+                            style="@style/textStyle.profileInfoTextSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/profile_user_score" />
+
+                        <TextView
+                            android:id="@+id/score_text"
+                            style="@style/textStyle.profileInfoTextLarge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/default_value_0" />
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1">
+
+                        <com.telenav.osv.ui.custom.ProgressImageView
+                            android:id="@+id/profile_image"
+                            android:layout_width="76dp"
+                            android:layout_height="76dp"
+                            android:layout_gravity="center"
+                            android:elevation="4dp"
+                            app:civ_border_color="@color/default_transparent"
+                            app:civ_border_width="3dp"
+                            app:civ_fill_color="@color/default_white"
+                            app:layout_anchor="@id/profile_collapsing_toolbar"
+                            app:layout_anchorGravity="top|center_horizontal"
+                            app:layout_scrollFlags="scroll"
+                            app:piv_barColor="@color/profile_progress_badge_color"
+                            app:piv_barWidth="4dp"
+                            app:piv_circleRadius="42dp"
+                            app:piv_linearProgress="true"
+                            app:piv_progressIndeterminate="false"
+                            app:piv_rimColor="@color/default_white"
+                            app:piv_rimWidth="4dp"
+                            app:piv_spinSpeed="0.70"
+                            app:srcCompat="@drawable/vector_profile_placeholder"
+                            tools:piv_level="2"
+                            tools:piv_progress="0.5" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rank_view"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical|right"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:visibility="invisible"
+                        tools:visibility="visible">
+
+                        <TextView
+                            style="@style/textStyle.profileInfoTextSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/profile_user_rank" />
+
+                        <TextView
+                            android:id="@+id/rank_text"
+                            style="@style/textStyle.profileInfoTextLarge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@drawable/custom_bg_white_rounded"
+                            android:gravity="center"
+                            android:minWidth="48dp"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            android:text="@string/default_value_0"
+                            android:textColor="@color/default_blue" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/profile_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/action_bar_size"
+                android:background="@null"
+                app:layout_collapseMode="pin"
+                tools:navigationIcon="@drawable/vector_back_white" />
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/profile_swipe_refresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background_material_light_1"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/profile_sequences_recycle_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/sequence_list_padding_side_portrait"
+            android:paddingEnd="@dimen/sequence_list_padding_side_portrait"
+            android:paddingBottom="@dimen/sequence_list_padding_bottom"
+            android:scrollbars="none"
+            tools:listheader="@layout/partial_profile_header_user"
+            tools:listitem="@layout/item_sequence_card">
+
+        </androidx.recyclerview.widget.RecyclerView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <FrameLayout
+        android:id="@+id/loading_fragment_profile_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

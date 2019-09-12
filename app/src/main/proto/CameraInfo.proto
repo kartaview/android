@@ -1,0 +1,64 @@
+syntax = "proto2";
+
+package com.telenav.osv;
+
+message CameraInfo {
+    message Pair {
+        optional string key = 1;
+        optional string value = 2;
+    }
+
+    message Dictionary {
+        repeated Pair pairs = 1;
+    }
+
+    optional Dictionary info = 1;
+    repeated Dictionary frameInfo = 2;
+    //    optional string make = 1;//VALUE: samsung
+    //    optional string Model = 2;//VALUE: SM-G930F
+    //    optional int64 Orientation = 3;//VALUE: 1
+    //    optional string XResolution = 4;//VALUE: 72:1
+    //    optional string YResolution = 5;//VALUE: 72:1
+    //    optional string ResolutionUnit = 6;//VALUE: 2
+    //    optional string Software = 7;//VALUE: G930FXXU1BPH6
+    //    optional string DateTime = 8;//VALUE: 2016:10:03 14:34:19
+    //    optional string YCbCrPositioning = 9;//VALUE: 1
+    //    optional string ExposureTime = 10;//VALUE: 1:50
+    //    optional string FNumber = 11;//VALUE: 17:10
+    //    optional string ExposureProgram = 12;//VALUE: 2
+    //    optional string ISOSpeedRatings = 13;//VALUE: 64
+    //    optional string ExifVersion = 14;//VALUE: 48, 50, 50, 48
+    //    optional string DateTimeOriginal = 15;//VALUE: 2016:10:03 14:34:19
+    //    optional string DateTimeDigitized = 16;//VALUE: 2016:10:03 14:34:19
+    //    optional string ShutterSpeedValue = 17;//VALUE: 564:100
+    //    optional string ApertureValue = 18;//VALUE: 153:100
+    //    optional string BrightnessValue = 19;//VALUE: 295:100
+    //    optional string ExposureBiasValue = 20;//VALUE: 0:10
+    //    optional string MaxApertureValue = 21;//VALUE: 153:100
+    //    optional string MeteringMode = 22;//VALUE: 2
+    //    optional int64 Flash = 23;//VALUE: 0
+    //    optional string FocalLength = 24;//VALUE: 420:100
+    //    optional string MakerNote = 25;//VALUE:
+    ////                                                                                7, 0, 1, 0, 7, 0, 4, 0, 0, 0, 48, 49, 48, 48, 2, 0
+    ////                                                                                4, 0, 1, 0, 0, 0, 0, 32, 1, 0, 12, 0, 4, 0, 1, 0
+    ////                                                                                0, 0, 0, 0, 0, 0, 16, 0, 5, 0, 1, 0, 0, 0, 90, 0
+    ////                                                                                0, 0, 64, 0, 4, 0, 1, 0, 0, 0, 0, 0, 0, 0, 80, 0
+    ////                                                                                4, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 3, 0, 1, 0
+    ////                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ////                                                                                0, 0
+    //    optional string UserComment = 26;//VALUE: 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    //    optional string SubSecTime = 27;//VALUE: 0034
+    //    optional string SubSecTimeOriginal = 28;//VALUE: 0034
+    //    optional string SubSecTimeDigitized = 29;//VALUE: 0034
+    //    optional string FlashpixVersion = 30;//VALUE: 48, 49, 48, 48
+    //    optional string ColorSpace = 31;//VALUE: 1
+    //    optional string PixelXDimension = 32;//VALUE: 3264
+    //    optional string PixelYDimension = 33;//VALUE: 2448
+    //    optional string GPSLatitudeRef = 34;//VALUE: R98
+    //    optional string GPSLatitude = 35;//VALUE: 48, 49, 48, 48
+    //    optional string ExposureMode = 36;//VALUE: 0
+    //    optional string WhiteBalance = 37;//VALUE: 0
+    //    optional string FocalLengthIn35mmFilm = 38;//VALUE: 26
+    //    optional string SceneCaptureType = 39;//VALUE: 0
+    //    optional string ImageUniqueID = 40;//VALUE: C12LSII00VM C12LSJE03GM
+}

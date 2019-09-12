@@ -1,0 +1,10 @@
+dependencies {
+    implementation "com.facebook.network.connectionclass:connectivity-osc:${config.module_vers.connectionProbeVersion}"
+    implementation("uk.co.senab.photoview:photoview-osc:${config.module_vers.photoViewVersion}") {
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
+    implementation "com.telenav.streetview.scalablevideoview:scalablevideoview-osc:${config.module_vers.videoViewVersion}"
+    implementation("com.android.volley:volley-osc:${config.module_vers.volleyVersion}") { exclude module: 'httpclient' exclude module: 'entity' exclude module: 'httpcore' }
+    implementation "org.greenrobot.eventbus:eventbus-osc:${config.module_vers.eventbusVersion}"
+    implementation "com.matthewtamlin.dotindicator:dotindicator-osc:${config.module_vers.dotindicatorVersion}"
+}

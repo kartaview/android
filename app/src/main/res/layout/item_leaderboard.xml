@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/rank_text"
+        style="@style/leaderBoardTextStyle"
+        android:layout_width="60dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:layout_margin="10dp"
+        android:gravity="center"
+        tools:text="55" />
+
+    <TextView
+        android:id="@+id/name_text"
+        style="@style/leaderBoardTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="100dp"
+        android:layout_marginBottom="10dp"
+        android:maxLines="2"
+        tools:text="telenavdrivers" />
+
+    <TextView
+        android:id="@+id/points_text"
+        style="@style/leaderBoardTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_margin="10dp"
+        android:ellipsize="none"
+        android:gravity="center"
+        android:singleLine="true"
+        tools:text="3 636 167" />
+</FrameLayout>

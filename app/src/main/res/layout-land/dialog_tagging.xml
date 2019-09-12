@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/layout_dialog_tagging_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:elevation="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_partial"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/action_bar_size"
+            app:theme="@style/AppTheme.Obd.ToolbarStyle"
+            app:titleTextAppearance="@style/AppTheme.Obd.ToolbarTile" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <EditText
+        android:id="@+id/text_dialog_tagging_note"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        android:background="@android:color/transparent"
+        android:fontFamily="sans-serif"
+        android:hint="@string/tagging_add_note"
+        android:letterSpacing="-0.02"
+        android:textColor="#000000"
+        android:textColorHint="@color/default_gray_lighter"
+        android:textSize="16sp"
+        android:textStyle="normal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layout_dialog_tagging_toolbar"
+        tools:text="Add Note (optional)" />
+
+    <Button
+        android:id="@+id/button_dialog_tagging_end"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:background="@color/default_blue"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="@color/default_white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="@string/narrow_road" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

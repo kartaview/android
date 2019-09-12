@@ -1,0 +1,18 @@
+[
+  {
+    "outputType": {
+      "type": "APK"
+    },
+    "apkInfo": {
+      "type": "MAIN",
+      "splits": [],
+      "versionCode": 94
+    },
+    "path": "app-prod-release.apk",
+    "properties": {
+      "packageId": "com.telenav.streetview",
+      "split": "",
+      "minSdkVersion": "21"
+    }
+  }
+]

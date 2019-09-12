@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/CardView.Light"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/sequence_list_item_margin_side"
+    android:layout_marginEnd="@dimen/sequence_list_item_margin_side"
+    android:layout_marginBottom="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/payment_divider_color" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/payment_list_text_inset"
+        android:paddingTop="19dp"
+        android:paddingEnd="@dimen/payment_list_text_inset"
+        android:paddingBottom="17.5dp"
+        android:weightSum="6">
+
+        <TextView
+            android:id="@+id/payment_id_text"
+            style="@style/textStyle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical"
+            android:text="001"
+            android:textColor="#4d4d4d"
+            android:textSize="13sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/payment_date_text"
+            style="@style/textStyle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1.5"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical"
+            android:text="Jun 05'17"
+            android:textColor="#4d4d4d"
+            android:textSize="13sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/payment_distance_text"
+            style="@style/textStyle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1.5"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical|end"
+            android:text="1,524"
+            android:textColor="#4d4d4d"
+            android:textSize="13sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/payment_value_text"
+            style="@style/textStyle"
+            android:layout_width="0dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="2"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical|end"
+            android:text="158.30"
+            android:textColor="#4d4d4d"
+            android:textSize="13sp"
+            android:textStyle="normal" />
+    </LinearLayout>
+</LinearLayout>

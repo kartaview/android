@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:width="10dp"
+    android:height="15dp"
+    android:viewportWidth="12"
+    android:viewportHeight="24">
+
+    <group
+        android:name="Icons"
+        android:pivotX="6"
+        android:pivotY="12"
+        android:rotation="0">
+        <path
+            android:name="triangle_ls"
+            android:fillColor="@color/default_white"
+            android:fillType="evenOdd"
+            android:pathData="
+            M 12           ,0.6862915
+            L 6.972052  ,5.7142395
+            L 0.686292  ,12
+            L 12         ,23.313708
+            L 12         ,0.6862915
+            Z"
+            android:strokeWidth="1"
+            tools:targetApi="n" />
+    </group>
+</vector>

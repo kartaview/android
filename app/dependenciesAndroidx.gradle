@@ -1,0 +1,18 @@
+dependencies {
+    implementation "androidx.appcompat:appcompat:${config.lib_vers.appCompat}"
+    implementation "androidx.recyclerview:recyclerview:${config.lib_vers.recyclerView}"
+    implementation "androidx.cardview:cardview:${config.lib_vers.cardView}"
+    implementation "androidx.percentlayout:percentlayout:${config.lib_vers.precentLayout}"
+    implementation "androidx.annotation:annotation:${config.lib_vers.annotation}"
+    implementation "androidx.lifecycle:lifecycle-runtime:${config.lib_vers.lifecycle}"
+    implementation "androidx.lifecycle:lifecycle-extensions:${config.lib_vers.lifecycle}"
+    implementation "androidx.constraintlayout:constraintlayout:${config.lib_vers.constraintLayout}"
+    annotationProcessor "androidx.lifecycle:lifecycle-compiler:${config.lib_vers.lifecycle}"
+    //settings
+    implementation "androidx.preference:preference:${config.lib_vers.preference}"
+    //room
+    implementation "androidx.room:room-runtime:${config.lib_vers.room}"
+    annotationProcessor "androidx.room:room-compiler:${config.lib_vers.room}"
+    implementation "androidx.room:room-rxjava2:${config.lib_vers.room}"
+    implementation "androidx.room:room-migration:${config.lib_vers.room}"
+}

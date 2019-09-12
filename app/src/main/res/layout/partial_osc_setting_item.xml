@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_partial_osc_setting_item"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/partial_osc_setting_item"
+    android:background="@color/default_white"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    tools:layout_editor_absoluteY="25dp">
+
+    <ImageView
+        android:id="@+id/image_view_osc_setting_item_left_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/vector_faq"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/text_view_osc_setting_item_title"
+        style="@style/obd_faq_text_style"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:paddingTop="5dp"
+        android:textAlignment="viewStart"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_osc_setting_item_subtitle"
+        app:layout_constraintStart_toEndOf="@+id/image_view_osc_setting_item_left_icon"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="Title test"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/text_view_osc_setting_item_subtitle"
+        style="@style/obd_style_text_subtext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:textAlignment="viewStart"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/image_view_osc_setting_item_left_icon"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_osc_setting_item_title"
+        tools:text="Subtitle test"
+        tools:visibility="visible" />
+
+
+    <ImageView
+        android:id="@+id/image_view_osc_setting_item_right_icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/vector_faq"
+        tools:visibility="visible" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar_osc_setting_item_loader"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="16dp"
+        android:indeterminateTint="@color/default_blue"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
+
+    <View
+        android:id="@+id/view_osc_setting_item_divider"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@drawable/recycler_view_default_divider"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

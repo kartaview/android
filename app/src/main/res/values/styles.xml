@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Application theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowBackground">@drawable/splash_background_no_drawable</item>
+        <item name="android:dialogTheme">@style/DialogTheme</item>
+        <item name="colorPrimary">@color/darker_grey</item>
+        <item name="colorPrimaryDark">@color/darker_grey</item>
+        <item name="colorAccent">@color/default_purple</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="actionModeStyle">@style/ActionMode</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+    </style>
+
+    <style name="AppTheme.Light" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:dialogTheme">@style/DialogTheme</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="colorPrimary">@color/darker_grey</item>
+        <item name="colorPrimaryDark">@color/darker_grey</item>
+        <item name="colorAccent">@color/default_purple</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:textColor">@color/settings_default_text_color</item>
+        <item name="actionModeStyle">@style/ActionMode</item>
+    </style>
+
+    <style name="AppThemeLogin" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/splashscreen_background</item>
+    </style>
+
+    <style name="AppTheme.Obd" parent="AppTheme">
+        <item name="android:colorPrimary">@color/default_black</item>
+        <item name="android:colorPrimaryDark">@color/md_grey_200</item>
+        <item name="android:textColorPrimary">@color/default_black</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="AppTheme.Obd.ToolbarStyle" parent="@style/ThemeOverlay.AppCompat.ActionBar">
+        <!-- Customize color of navigation drawer icon and back arrow -->
+        <item name="colorControlNormal">@color/default_black</item>
+    </style>
+
+    <style name="AppTheme.Obd.ToolbarTile" parent="@style/TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">@dimen/text_size_default</item>
+    </style>
+
+    <!-- Base theme applied no matter what API -->
+
+    <style name="ActionMode" parent="@style/Widget.AppCompat.ActionMode">
+        <item name="background">@color/md_grey_900</item>
+    </style>
+
+    <style name="AlertDialog" parent="AppCompatAlertDialogStyleLight">
+        <item name="colorPrimary">@color/md_grey_900</item>
+        <item name="colorPrimaryDark">@color/md_grey_900</item>
+        <item name="colorAccent">@color/default_purple</item>
+    </style>
+
+    <style name="AlertDialogIssueReport" parent="AppCompatAlertDialogStyleDark">
+        <item name="colorPrimary">@color/default_white</item>
+        <item name="colorPrimaryDark">@color/default_white</item>
+        <item name="colorAccent">@color/default_blue</item>f
+    </style>
+
+    <style name="AppCompatAlertDialogStyleLight" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/default_purple</item>
+        <item name="android:textColorPrimary">@color/default_white</item>
+        <item name="android:background">@color/md_grey_900</item>
+    </style>
+
+    <style name="AppCompatAlertDialogStyleDark" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="colorAccent">@color/default_purple</item>
+        <item name="android:textColorPrimary">@color/default_gray_darkest</item>
+        <item name="android:background">@color/default_white</item>
+    </style>
+
+    <style name="textStyle.Light" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textColor">@color/default_gray_darkest</item>
+        <item name="android:textSize">@dimen/text_size_default</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="textStyle" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/action_bar_size</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textColor">@color/default_white</item>
+        <item name="android:textSize">@dimen/text_size_default</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="trackBreakdownItemStyleStyle" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_track_breakdown</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="trackBreakdownTotalValueTextStyle" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_track_breakdown_total_value</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="toolbarButtonStyle">
+        <item name="android:background">@null</item><!--todo make custom_ripple on pre lollipop -->
+    </style>
+
+    <style name="DialogTheme" parent="Base.Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/default_purple</item>
+    </style>
+
+    <style name="EditText.Report" parent="Widget.AppCompat.EditText">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textColorHint">@color/issue_report_text_gray</item>
+        <item name="colorAccent">@color/default_blue</item>
+        <item name="colorControlNormal">@color/md_grey_900</item>
+        <item name="colorControlActivated">@color/default_blue</item>
+    </style>
+
+    <style name="textStyle.actionBarTitleExpanded" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_profile_title_expanded</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/default_white</item>
+    </style>
+
+    <style name="textStyle.actionBarTitleCollapsed" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_profile_title_collapsed</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/default_white</item>
+    </style>
+
+    <style name="textStyle.actionBarTabItem">
+        <item name="android:textSize">@dimen/text_size_profile_tab_item</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/profile_header_info_text_gray</item>
+    </style>
+
+    <style name="profileHeaderInfoLight" parent="@android:style/TextAppearance">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/profile_info_text_light</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="PreviewButton" parent="Widget.AppCompat.Button">
+        <item name="android:textColor">@color/default_white</item>
+        <item name="colorButtonNormal">@color/default_white</item>
+    </style>
+
+    <style name="textStyle.profileInfoTextSmall" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_profile_header_info_small</item>
+        <item name="android:textColor">@color/profile_header_info_text_gray</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="textStyle.profileInfoTextLarge" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_profile_header_info_large</item>
+        <item name="android:textColor">@color/default_white</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="textStyle.profileByodPayRateInfoListItem" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_byod_pay_rate_details_item</item>
+        <item name="android:textColor">@color/default_gray_darkest</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">-0.03</item>
+    </style>
+
+    <style name="textStyle.profileByodPayRateInfoListHeader" parent="textStyle.profileByodPayRateInfoListItem">
+        <item name="android:textColor">@color/default_gray_darker</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="textStyle.profileInfoTitle" parent="textStyle.profileInfoTextLarge">
+        <item name="android:textSize">@dimen/text_size_profile_header_title</item>
+    </style>
+
+    <style name="profileHeaderInfoTextSmall" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_profile_header_info_small</item>
+        <item name="android:textColor">@color/default_gray_darker</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingExtra">9dp</item>
+    </style>
+
+    <style name="profileHeaderInfoTextLarge" parent="textStyle">
+        <item name="android:textSize">@dimen/text_size_profile_header_title</item>
+        <item name="android:textColor">@color/default_gray_darkest</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="profileSequenceCardInfo" parent="textStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/default_gray_darker</item>
+        <item name="android:textSize">@dimen/text_size_profile_sequence_card_item</item>
+        <item name="android:fontFamily">"sans-serif"</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="leaderBoardTextStyle" parent="textStyle">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/default_black_lighter</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="obd_faq_text_style">
+        <item name="android:textColor">@color/settings_default_text_color</item>
+        <item name="android:lines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textSize">19sp</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="obd_style_text_header">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/default_black</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:lineSpacingExtra">8sp</item>
+    </style>
+
+    <style name="obd_settings_header">
+        <item name="android:textColor">@color/default_blue</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="obd_style_text_sub_header">
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:textColor">@color/default_black</item>
+        <item name="android:lineSpacingExtra">9sp</item>
+    </style>
+
+    <style name="obd_style_text_subtext">
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/odb_faq_subtext_color</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:lineSpacingExtra">8sp</item>
+        <item name="android:textAlignment">textStart</item>
+    </style>
+
+    <style name="obd_adapters_filled_button" parent="Base.Widget.AppCompat.Button.Borderless.Colored">
+        <item name="android:textColor">@color/default_white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:background">@drawable/bg_obd_button</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:lineSpacingExtra">5sp</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="obd_disconnect_filled_button" parent="Base.Widget.AppCompat.Button.Borderless.Colored">
+        <item name="android:textColor">@color/default_white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:background">@drawable/bg_odb_disconnect_button</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:lineSpacingExtra">5sp</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="obd_style_text_button">
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/default_white</item>
+        <item name="android:lineSpacingExtra">5sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="tooltipTextStyle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:typeface">sans</item>
+        <item name="android:textColor">@color/darker_grey</item>
+    </style>
+
+    <style name="tooltipStyleDefault">
+        <item name="android:layout_margin">@dimen/tooltip_margin_anchor</item>
+        <item name="android:textAppearance">@style/tooltipTextStyle</item>
+        <item name="android:background">@color/default_white</item>
+        <item name="android:padding">@dimen/tooltip_text_padding</item>
+        <item name="android:radius">@dimen/tooltip_radius_corners</item>
+        <item name="dismissOnTouch">true</item>
+        <item name="dismissOnOutsideTouch">false</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="tooltipStyleDisconnected" parent="tooltipStyleDefault">
+        <item name="android:textColor">@color/default_white</item>
+        <item name="android:background">@color/default_red</item>
+    </style>
+
+    <style name="tooltipStyleConnected" parent="tooltipStyleDefault">
+        <item name="android:textColor">@color/default_white</item>
+        <item name="android:background">@color/default_green</item>
+    </style>
+
+    <style name="TipsTricks">
+        <item name="android:textColor">@color/default_white</item>
+        <item name="android:textSize">22sp</item>
+    </style>
+
+    <style name="RecordingDetailsLabels">
+        <item name="android:textColor">@color/default_gray_lighter</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="RecordingDetailsValues" parent="TipsTricks">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="FullScreenDialogStyle" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:colorAccent">@color/default_green_darker</item>
+
+        <!-- Set this to true if you want Full Screen without status bar -->
+        <item name="android:windowFullscreen">false</item>
+
+        <item name="android:windowIsFloating">false</item>
+
+        <!-- This is important! Don't forget to set window background -->
+        <item name="android:windowBackground">@color/tagging_background</item>
+    </style>
+
+</resources>

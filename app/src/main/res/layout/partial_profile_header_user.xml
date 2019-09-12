@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/user_info_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="50dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <TextView
+            android:id="@+id/header_images_text_view"
+            style="@style/profileHeaderInfoLight"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:lineSpacingExtra="5dp"
+            android:lines="2"
+            android:text="@string/account_images_label" />
+
+        <TextView
+            android:id="@+id/header_distance_text_view"
+            style="@style/profileHeaderInfoLight"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:lineSpacingExtra="5dp"
+            android:lines="2"
+            android:text="@string/account_distance_label" />
+
+        <TextView
+            android:id="@+id/header_obd_text_view"
+            style="@style/profileHeaderInfoLight"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:lineSpacingExtra="5dp"
+            android:lines="2"
+            android:text="@string/account_obd_label" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/header_uploaded_tracks_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif"
+        android:paddingLeft="@dimen/sequence_list_item_margin_side"
+        android:paddingTop="50dp"
+        android:paddingRight="@dimen/sequence_list_item_margin_side"
+        android:paddingBottom="10dp"
+        android:textColor="@color/default_gray_darkest"
+        android:textSize="17sp"
+        android:textStyle="normal"
+        tools:text="Uploaded tracks - 0" />
+
+</LinearLayout>

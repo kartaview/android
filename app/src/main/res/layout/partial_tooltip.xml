@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:background="@color/darker_grey">
+
+    <ImageView
+        android:id="@+id/image_view_triangle_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/vector_triangle"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/text_view_tooltip_message"
+        app:layout_constraintEnd_toStartOf="@id/text_view_tooltip_message"
+        app:layout_constraintTop_toTopOf="@+id/text_view_tooltip_message"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/text_view_tooltip_message"
+        style="@style/tooltipStyleDefault"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/image_view_triangle_right"
+        app:layout_constraintBottom_toTopOf="@id/image_view_triangle_bottom"
+        app:layout_constraintTop_toBottomOf="@id/image_view_triangle_top"
+        tools:text="@string/obd_connect_car" />
+
+    <ImageView
+        android:id="@+id/image_view_triangle_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-1dp"
+        android:src="@drawable/ic_tooltip_down"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/text_view_tooltip_message"
+        app:layout_constraintStart_toStartOf="@+id/text_view_tooltip_message"
+        app:layout_constraintTop_toBottomOf="@id/text_view_tooltip_message"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/image_view_triangle_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:rotation="180"
+        android:src="@drawable/vector_triangle"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/text_view_tooltip_message"
+        app:layout_constraintStart_toEndOf="@id/text_view_tooltip_message"
+        app:layout_constraintTop_toTopOf="@+id/text_view_tooltip_message"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/image_view_triangle_bottom_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:rotation="180"
+        android:src="@drawable/ic_tooltip_down"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_tooltip_message"
+        app:layout_constraintStart_toStartOf="@+id/text_view_tooltip_message"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/image_view_triangle_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:rotation="180"
+        android:src="@drawable/ic_tooltip_down"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_tooltip_message"
+        app:layout_constraintEnd_toEndOf="@id/text_view_tooltip_message"
+        app:layout_constraintStart_toStartOf="@+id/text_view_tooltip_message"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

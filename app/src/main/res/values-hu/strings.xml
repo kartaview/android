@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation" tools:locale="hu">
+    <string name="cancel_label">Mégse</string>
+    <string name="ok_label">OK</string>
+    <string name="yes">Igen</string>
+    <string name="no">Nem</string>
+    <string name="descr_image">Kép</string>
+    <string name="stop_recording_warning_message">Meg akarod állítani a felvételt? A felvételt folytathatod a háttérben is.</string>
+    <string name="stop_recording_warning_title">Kilépés</string>
+    <string name="recording_in_background_toast_message">Felvétel a háttérben…</string>
+    <string name="login_to_see_online_warning">Kérlek jelentkezz be hogy lásd az online felvételeidet.</string>
+    <string name="login_to_upload_warning">Kérlek jelentkezz be hogy feltölthesd a felvételeidet.</string>
+    <string name="stop_value_string">Álj</string>
+    <string name="keep_value_string">Felvétel folytatása</string>
+    <string name="log_out">Kijelentkezés</string>
+    <string name="tip_map_screen">Tipp: Válasz ki egy vonalat hogy megnézd a képeket</string>
+    <string name="upload_all_label">Tölts fel mindent</string>
+    <string name="upload_all_warning">Töltsön fel mindent és törölje az adatokat az ezközről?</string>
+    <string name="upload_all_warning_title">Az összes felvétel feltöltése</string>
+    <string name="no_internet_connection_label">Nincs internet kapcsolat.</string>
+    <string name="logout_confirmation_message">Biztos ki akarsz jelentkezni.</string>
+    <string name="no_wifi_label">Csatlakozz egy hotspothoz vagy engedélyezd a mobil hálózat feltöltést a beállításokban.</string>
+    <string name="something_wrong_try_again">Valami sikertelen volt, kérlek próbálkozz késöbb.</string>
+    <string name="recording_deleted">Felvétel törölve.</string>
+    <string name="upload_cancelled">Feltöltés félbeszakítva.</string>
+    <string name="resuming_upload">Feltöltés…</string>
+    <string name="upload_paused">Feltöltés szünetelve.</string>
+    <string name="app_restarted">Az applikáció újraindult egy probléma miatt, a szükséges információk el lettek küldve.</string>
+    <string name="loading_too_long">Betöltés szokatlanul sokáig tart…</string>
+</resources>

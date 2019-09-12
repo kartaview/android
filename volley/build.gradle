@@ -1,0 +1,55 @@
+// NOTE: The only changes that belong in this file are the definitions
+// of tool versions (gradle plugin, compile SDK, build tools), so that
+// Volley can be built via gradle as a standalone project.
+//
+// Any other changes to the build config belong in rules.gradle, which
+// is used by projects that depend on Volley but define their own
+// tools versions across all dependencies to ensure a consistent build.
+//
+// Most users should just add this line to settings.gradle:
+//     include(":volley")
+//
+// If you have a more complicated Gradle setup you can choose to use
+// this instead:
+//     include(":volley")
+//     project(':volley').buildFileName = 'rules.gradle'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+repositories {
+    jcenter()
+}
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion = '25.0.2'
+    buildTypes {
+        release {
+            debuggable false
+        }
+        debug {
+            debuggable true
+        }
+    }
+    configurations {
+        compile.exclude group: 'org.apache.commons'
+        compile.exclude module: 'commons'
+    }
+}
+dependencies {
+    compile files('src/main/libs/org.apache.http.legacy.jar')
+}
+
+ext {
+    PUBLISH_GROUP_ID = 'com.android.volley'
+    PUBLISH_ARTIFACT_ID = 'volley-osc'
+    PUBLISH_VERSION = '1.0.1'
+}
+
+apply from: 'buildRelease.gradle'

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="gravity">
+        <flag name="bottom" value="0x50" />
+        <flag name="center" value="0x11" />
+        <flag name="center_horizontal" value="0x01" />
+        <flag name="center_vertical" value="0x10" />
+        <flag name="clip" value="0x88" />
+        <flag name="clip_horizontal" value="0x08" />
+        <flag name="clip_vertical" value="0x80" />
+        <flag name="end" value="0x00800005" />
+        <flag name="fill" value="0x77" />
+        <flag name="fill_horizontal" value="0x07" />
+        <flag name="fill_vertical" value="0x70" />
+        <flag name="left" value="0x03" />
+        <flag name="right" value="0x05" />
+        <flag name="start" value="0x00800003" />
+        <flag name="top" value="0x30" />
+    </attr>
+
+    <declare-styleable name="HoloCircularProgressBar">
+        <attr name="stroke_width" format="dimension" />
+        <attr name="progress" format="float" />
+        <attr name="marker_progress" format="float" />
+        <attr name="progress_color" format="color" />
+        <attr name="progress_background_color" format="color" />
+        <attr name="gravity" />
+    </declare-styleable>
+
+    <declare-styleable name="Theme">
+        <attr name="circularProgressBarStyle" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="RevealRelativeLayout">
+        <attr name="backgroundColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="CircleImageView">
+        <attr name="civ_border_width" format="dimension" />
+        <attr name="civ_border_color" format="color" />
+        <attr name="civ_border_overlay" format="boolean" />
+        <attr name="civ_fill_color" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="ProgressImageView">
+        <attr name="piv_progressIndeterminate" format="boolean" />
+        <attr name="piv_barColor" format="color" />
+        <attr name="piv_rimColor" format="color" />
+        <attr name="piv_rimWidth" format="dimension" />
+        <attr name="piv_spinSpeed" format="float" />
+        <attr name="piv_level" format="integer" />
+        <attr name="piv_progress" format="float" />
+        <attr name="piv_barSpinCycleTime" format="integer" />
+        <attr name="piv_circleRadius" format="dimension" />
+        <attr name="piv_fillRadius" format="boolean" />
+        <attr name="piv_barWidth" format="dimension" />
+        <attr name="piv_linearProgress" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="Tooltip">
+        <attr name="dismissOnOutsideTouch" format="boolean" />
+        <attr name="dismissOnTouch" format="boolean" />
+        <attr name="android:background" format="color" />
+        <attr name="android:radius" format="dimension" />
+        <attr name="android:layout_margin" />
+        <attr name="android:gravity" />
+        <attr name="android:text" />
+        <attr name="android:textAppearance" />
+        <attr name="android:padding" />
+        <attr name="android:textSize" />
+        <attr name="android:textColor" />
+        <attr name="android:textStyle" />
+        <attr name="android:fontFamily" />
+    </declare-styleable>
+</resources>

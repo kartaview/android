@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/osc_logo_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="92dp"
+        android:src="@drawable/ic_osc_logo"
+        tools:ignore="ContentDescription" />
+
+    <LinearLayout
+        android:id="@+id/login_buttons_holder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        android:weightSum="4">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/osm_login_button"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/osm_logo"
+            android:drawablePadding="20dp"
+            android:gravity="left|center_vertical"
+            android:minHeight="72dp"
+            android:onClick="onClick"
+            android:paddingLeft="20dp"
+            android:text="@string/login_osm_button_label"
+            android:textColor="@color/default_white"
+            app:backgroundTint="@color/osm_grey" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/facebook_login_button"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            android:drawablePadding="23dp"
+            android:gravity="left|center_vertical"
+            android:minHeight="72dp"
+            android:onClick="onClick"
+            android:paddingLeft="20dp"
+            android:text="@string/login_facebook_button_label"
+            android:textColor="@color/default_white"
+            app:backgroundTint="@color/facebook_blue" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/google_login_button"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_weight="1"
+            android:drawablePadding="10dp"
+            android:gravity="left|center_vertical"
+            android:minHeight="72dp"
+            android:onClick="onClick"
+            android:text="@string/login_google_button_label"
+            android:textColor="@color/default_white"
+            app:backgroundTint="@color/google_red" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressbar"
+        style="@style/Base.Widget.AppCompat.ProgressBar"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/default_transparent"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:visibility="visible"
+        app:elevation="0dp"
+        tools:visibility="visible">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/app_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/action_bar_size"
+            android:clickable="true">
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+</FrameLayout>

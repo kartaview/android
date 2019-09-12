@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation" tools:locale="de">
+    <string name="cancel_label">Abbruch</string>
+    <string name="ok_label">OK</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
+    <string name="stop_recording_warning_message">Soll die aktuelle Aufnahme ebenfalls gestoppt werden? Diese könnte im Hintergrund weiterlaufen.</string>
+    <string name="stop_recording_warning_title">Anwendung verlassen</string>
+    <string name="recording_in_background_toast_message">Mit OSM-Account einloggen</string>
+    <string name="login_to_see_online_warning">Bitte einloggen, um deine gespeicherten Aufnahmen zu sehen.</string>
+    <string name="login_to_upload_warning">Bitte einloggen um die Aufnahmen hochzuladen.</string>
+    <string name="stop_value_string">Stop</string>
+    <string name="keep_value_string">Aufnahme fortsetzen</string>
+    <string name="log_out">Ausloggen</string>
+    <string name="tip_map_screen">Tipp: Wähle eine Spur auf der Karte aus, um die Bilder dazu anzuzeigen.</string>
+    <string name="upload_all_label">Alles hochladen</string>
+    <string name="upload_all_warning">Alle Aufnahmen hochladen und lokale Dateien löschen?</string>
+    <string name="upload_all_warning_title">Alle Aufnahmen hochladen?</string>
+    <string name="no_internet_connection_label">Keine Internetverbindung verfügbar</string>
+    <string name="logout_confirmation_message">Wirklich abmelden?</string>
+    <string name="something_wrong_try_again">Ein Fehler ist aufgetreten, bitte später erneut versuchen.</string>
+    <string name="recording_deleted">Aufnahme gelöscht.</string>
+    <string name="upload_cancelled">Hochladen abgebrochen.</string>
+    <string name="delete_online_track">Soll diese Spur wirklich vom Server gelöscht werden?</string>
+    <string name="delete_local_track">Soll diese Spur wirklich vom Gerätespeicher gelöscht werden?</string>
+    <string name="delete_track_title">Spur löschen</string>
+    <string name="my_profile">Mein Profil</string>
+    <string name="settings">Einstellungen</string>
+    <string name="got_it_label">Habe verstanden</string>
+    <string name="hint_mount_label">Telefonhalterung</string>
+    <string name="hint_windshield_label">Windschutzscheibe</string>
+    <string name="hint_landscape_label">Querformat</string>
+    <string name="no_local_recordings_message">Keine lokalen Aufnahmen vorhanden.</string>
+    <string name="exit_app_message">Soll die App wirklich beendet werden?</string>
+    <string name="osm_login_label">Bei OpenStreetMap anmelden</string>
+    <string name="resume_label">Fortsetzen</string>
+    <string name="resolutions_label">Auflösungen</string>
+</resources>

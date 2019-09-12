@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="0dp"
+    android:orientation="horizontal"
+    android:paddingBottom="9dp">
+
+    <TextView
+        android:id="@+id/text_score_breakdown_header_column1"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:textColor="@color/default_white_transparent" />
+
+    <TextView
+        android:id="@+id/text_score_breakdown_header_column2"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:textColor="@color/default_white_transparent" />
+
+    <TextView
+        android:id="@+id/text_score_breakdown_header_column3"
+        style="@style/textStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:textColor="@color/default_white_transparent" />
+</FrameLayout>

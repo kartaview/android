@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_view_partial_tagging_subitem_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="14dp"
+    android:orientation="horizontal"
+    app:cardBackgroundColor="@drawable/selector_tagging"
+    app:cardCornerRadius="6dp"
+    app:cardElevation="3dp"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    tools:background="@color/default_transparent">
+
+    <TextView
+        android:id="@+id/text_tagging_subitem_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="11dp"
+        android:drawableStart="@drawable/ic_closed_road"
+        android:drawablePadding="5dp"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:letterSpacing="-0.02"
+        android:lines="1"
+        android:textColor="@color/default_black"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="Narrow Road" />
+
+</androidx.cardview.widget.CardView>
+
+
+
+

@@ -1,0 +1,136 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.3.2'
+        classpath "com.google.gms:google-services:4.2.0"
+        classpath 'io.fabric.tools:gradle:1.25.4'
+        classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.21"
+    }
+}
+
+allprojects {
+
+    repositories {
+        google()
+        jcenter()
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
+        maven { url 'https://jitpack.io' }
+    }
+
+    def module_versions = [
+            connectionProbeVersionCode: 1,
+            connectionProbeVersion    : '1.0.0',
+            sensorlibVersionCode      : 3,
+            sensorlibVersion          : '1.1.0',
+            photoViewVersionCode      : 1,
+            photoViewVersion          : '1.0.0',
+            videoViewVersionCode      : 1,
+            videoViewVersion          : '1.0.0',
+            sphericalVersionCode      : 1,
+            sphericalVersion          : '1.0.0',
+            volleyVersionCode         : 2,
+            volleyVersion             : '1.0.1',
+            eventbusVersionCode       : 1,
+            eventbusVersion           : '1.0.0',
+            dotindicatorVersionCode   : 1,
+            dotindicatorVersion       : '1.0.0'
+    ]
+
+    def library_version = [
+            jetbrainsAnnotations           : '15.0',
+            signpostVersion                : '1.2.1.2',
+            apacheHttpClientVersion        : '4.3.5.1',
+            apacheHttpMimeVersion          : '4.3.6',
+            apacheMathVersion              : '3.6.1',
+            materialishProgressVersion     : '1.7',
+            glideVersion                   : '3.7.0',
+            appIntroVersion                : 'v5.1.0',
+            bindingCollectionAdapterVersion: '2.2.0',
+            pagingVersion                  : '1.0.0-alpha2',
+            guavaVersion                   : '25.1-android',
+            jodaExtVersion                 : '2.10.1',
+            slidableActivityVersion        : '2.0.6',
+            //okhttp
+            okHttpVersion                  : '3.14.2',
+            //rxjava2
+            rxJava2Version                 : '2.2.9',
+            rxAndroidVersion               : '2.1.1',
+            //retrofit
+            retrofitVersion                : '2.4.0',
+            retrofitRxJavaAdapterVersion   : '1.0.0',
+            retrofitGsonConverter          : '2.5.0',
+            //--------------Androidx------------------------
+            recyclerView                   : '1.0.0',
+            cardView                       : '1.0.0',
+            precentLayout                  : '1.0.0',
+            browser                        : '1.0.0',
+            annotation                     : '1.0.0',
+            lifecycle                      : '2.0.0',
+            constraintLayout               : '1.1.3',
+            appCompat                      : '1.0.2',
+            preference                     : '1.0.0',
+            room                           : '2.0.0',
+            //--------------Google--------------------------
+            googleServices                 : '4.2.0',
+            playServicesAuth               : '16.0.1',
+            playServicesLocation           : '16.0.0',
+            firebaseAuth                   : '16.0.5',
+            firebaseCore                   : '16.0.5',
+            googleApiVersion               : '1.27.0',
+            material                       : '1.0.0',
+            kotlinVersion                  : '1.3.20',
+            exoplayerVersion               : '2.9.6',
+            //--------------Facebook------------------------
+            facebookSdk                    : '4.38.1'
+    ]
+
+    def testing_versions = [
+            robolectricVersion   : '4.0.1',
+            jUnitVersion         : '4.12',
+            mockitoCore          : '2.23.4',
+            dexmakerVersion      : '1.2',
+            espressoVersion      : '3.1.0',
+            powermockVersion     : '2.0.0',
+            hamcrestVersion      : '1.3',
+            runnerTesting        : '1.1.0',
+            rulesTesting         : '1.1.0',
+            stethoVersion        : '1.5.0',
+            archCoreTesting      : '2.0.0',
+            //development
+            crashliticsVersion   : '2.9.6',
+            crashliticsNdkVersion: '2.0.5'
+    ]
+
+    def build_versions = [
+            appId                    : 'com.telenav.streetview',
+            appVersionCode           : 104,
+            appVersionName           : "2.9.1",
+            testInstrumentationRunner: 'androidx.test.runner.AndroidJUnitRunner',
+            testAppId                : 'com.telenav.streetview.test',
+            androidBuildToolsVersion : '28.0.3',
+            androidMinSdkVersion     : 22,
+            androidTargetSdkVersion  : 28,
+            androidCompileSdkVersion : 28,
+    ]
+
+    ext.config = [
+            lib_vers   : library_version,
+            test_vers  : testing_versions,
+            module_vers: module_versions,
+            build_vers : build_versions
+    ]
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
