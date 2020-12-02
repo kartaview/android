@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,65 +8,66 @@
     android:paddingTop="@dimen/action_bar_size"
     tools:context=".activity.MainActivity">
 
-    <android.support.design.widget.TabLayout
+    <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        app:tabBackground="@color/leaderboard_green"
+        app:tabBackground="@color/default_purple"
         app:tabGravity="fill"
-        app:tabIndicatorColor="@color/white"
+        app:tabIndicatorColor="@color/default_white"
         app:tabMaxWidth="10000dp"
-        app:tabMode="fixed">
+        app:tabMode="fixed"
+        app:tabTextAppearance="@android:style/TextAppearance.Widget.TabWidget"
+        app:tabTextColor="@color/default_white">
 
-        <android.support.design.widget.TabItem
+        <com.google.android.material.tabs.TabItem
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="All World" />
+            android:text="@string/leaderboard_tab_all_world" />
 
-        <android.support.design.widget.TabItem
+        <com.google.android.material.tabs.TabItem
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Region" />
+            android:text="@string/leaderboard_tab_region" />
 
-    </android.support.design.widget.TabLayout>
+    </com.google.android.material.tabs.TabLayout>
 
-    <android.support.v4.widget.SwipeRefreshLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/leaderboard_swipe_refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="100dp"
         android:background="@color/background_material_light_1">
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rank_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginTop="100dp"
-            android:background="@color/white"
+            android:background="@color/default_white"
             android:minHeight="1000dp"
             tools:listitem="@layout/item_leaderboard">
 
-        </android.support.v7.widget.RecyclerView>
+        </androidx.recyclerview.widget.RecyclerView>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_marginTop="40dp"
-        android:background="@color/leaderboard_grey">
+        android:background="@color/settings_default_color">
 
-        <android.support.v4.view.ViewPager
+        <androidx.viewpager.widget.ViewPager
             android:id="@+id/time_view_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginEnd="60dp"
+            android:layout_marginStart="60dp"
             android:layout_marginLeft="60dp"
-            android:layout_marginRight="60dp"
-            android:layout_marginStart="60dp" />
+            android:layout_marginEnd="60dp"
+            android:layout_marginRight="60dp" />
 
         <ImageView
             android:id="@+id/button_time_pager_left"
@@ -87,4 +88,4 @@
             app:srcCompat="@drawable/vector_chevron_black"
             tools:ignore="ContentDescription" />
     </FrameLayout>
-</android.support.design.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

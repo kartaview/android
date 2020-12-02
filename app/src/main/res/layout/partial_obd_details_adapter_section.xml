@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:background="@color/settings_default_color">
+
+    <TextView
+        android:id="@+id/text_view_partial_obd_details_adapter_sub_header"
+        style="@style/obd_style_text_sub_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/wifi_adapters" />
+
+    <TextView
+        android:id="@+id/text_view_partial_obd_details_adapter_explication"
+        style="@style/obd_style_text_subtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_partial_obd_details_adapter_sub_header"
+        tools:text="@string/wifi_adapters_explication" />
+
+    <TextView
+        android:id="@+id/text_view_partial_obd_details_adapter_recommended_label"
+        style="@style/obd_style_text_subtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/recommended"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_partial_obd_details_adapter_explication" />
+
+    <ImageView
+        android:id="@+id/image_view_partial_obd_details_adapter_icon"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_partial_obd_details_adapter_recommended_label"
+        tools:src="@drawable/obd_wifi" />
+
+    <TextView
+        android:id="@+id/text_view_partial_obd_details_adapter_recommended"
+        style="@style/obd_style_text_subtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/recommended"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/image_view_partial_obd_details_adapter_icon"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_partial_obd_details_adapter_recommended_label"
+        tools:text="@string/veepeak_obd2" />
+
+    <TextView
+        android:id="@+id/text_view_partial_obd_details_adapter_button"
+        style="@style/obd_adapters_filled_button"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/obd_button_size"
+        android:layout_marginTop="16dp"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/image_view_partial_obd_details_adapter_icon"
+        tools:text="@string/get_on_amazon" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,7 +1,7 @@
 package com.telenav.osv.item.network;
 
 import java.util.ArrayList;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.data.sequence.model.Sequence;
 
 /**
  * Created by kalmanb on 7/5/17.

@@ -27,9 +27,6 @@ public class AuthDataParser extends ApiResponseParser<AuthData> {
             authData.setUsername(osv.getString("username"));
             authData.setDisplayName(osv.getString("full_name"));
             String type = osv.getString("type");
-            if (type.equals("driver")) {
-                type = osv.getString("driver_type");
-            }
             int typeNum = AccountData.getUserTypeForString(type);
             authData.setUserType(typeNum);
         } catch (JSONException e) {

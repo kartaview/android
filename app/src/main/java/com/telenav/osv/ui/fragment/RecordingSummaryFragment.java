@@ -2,7 +2,6 @@ package com.telenav.osv.ui.fragment;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
@@ -16,9 +15,11 @@ import android.widget.TextView;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.item.LocalSequence;
+import com.telenav.osv.data.sequence.model.LocalSequence;
+import com.telenav.osv.data.sequence.model.details.reward.SequenceDetailsRewardBase;
+import com.telenav.osv.utils.FormatUtils;
 import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Utils;
+import androidx.annotation.Nullable;
 
 /**
  * fragment showing the summary of the recording finished
@@ -102,7 +103,7 @@ public class RecordingSummaryFragment extends DisplayFragment {
             });
             if (mSequence != null) {
                 String first = "Disk size ";
-                String[] items = Utils.formatSizeDetailed(mSequence.getSize());
+                String[] items = FormatUtils.formatSizeDetailed(mSequence.getLocalDetails().getDiskSize());
                 String second = items[0];
                 String third = items[1];
                 third.replace("MB", "mb");
@@ -117,16 +118,16 @@ public class RecordingSummaryFragment extends DisplayFragment {
                         .setSpan(new AbsoluteSizeSpan(18, true), first.length() + second.length(), first.length() + second.length() + third.length(),
                                 0);
                 styledString
-                        .setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), 0, first.length(), 0);
-                styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(),
+                        .setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.default_gray_darker)), 0, first.length(), 0);
+                styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.default_gray)), first.length(),
                         first.length() + second.length(), 0);
 
-                styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)),
+                styledString.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.default_gray_darker)),
                         first.length() + second.length(), first.length() + second.length() + third.length(), 0);
                 sizeText.setText(styledString);
 
                 first = "Distance ";
-                items = Utils.formatDistanceFromMeters(activity, mSequence.getDistance());
+                items = FormatUtils.formatDistanceFromMeters(activity, (int) mSequence.getDetails().getDistance(), FormatUtils.SEPARATOR_SPACE);
                 second = items[0];
                 third = items[1];
                 SpannableString styledString2 = new SpannableString(first + second + third);
@@ -139,27 +140,29 @@ public class RecordingSummaryFragment extends DisplayFragment {
                         .setSpan(new AbsoluteSizeSpan(18, true), first.length() + second.length(), first.length() + second.length() + third.length(),
                                 0);
                 styledString2
-                        .setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), 0, first.length(), 0);
-                styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(),
+                        .setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.default_gray_darker)), 0, first.length(), 0);
+                styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.default_gray)), first.length(),
                         first.length() + second.length(), 0);
-                styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)),
+                styledString2.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.default_gray_darker)),
                         first.length() + second.length(), first.length() + second.length() + third.length(), 0);
                 distanceText.setText(styledString2);
 
                 first = "Photos ";
-                second = "" + mSequence.getOriginalFrameCount();
+                second = "" + mSequence.getCompressionDetails().getLocationsCount();
                 SpannableString styledString3 = new SpannableString(first + second);
                 styledString3.setSpan(new AbsoluteSizeSpan(20, true), 0, first.length(), 0);
                 styledString3.setSpan(new AbsoluteSizeSpan(24, true), first.length(), second.length() + first.length(), 0);
                 //                styledString3.setSpan(new CenteredSpan(), 0, first.length(), 0);
                 //                styledString3.setSpan(new CenteredSpan(), first.length() + second.length(), second.length() + first.length(), 0);
                 styledString3
-                        .setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_secondary_text)), 0, first.length(), 0);
-                styledString3.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.gray_summary_primary_text)), first.length(),
+                        .setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.default_gray_darker)), 0, first.length(), 0);
+                styledString3.setSpan(new ForegroundColorSpan(activity.getResources().getColor(R.color.default_gray)), first.length(),
                         first.length() + second.length(), 0);
                 imagesText.setText(styledString3);
-
-                summaryText.setText("" + mSequence.getScore());
+                SequenceDetailsRewardBase rewardBase = mSequence.getRewardDetails();
+                if (rewardBase != null) {
+                    summaryText.setText(String.format("%s", (int) mSequence.getRewardDetails().getValue()));
+                }
             }
         } catch (Exception e) {
             Log.d(TAG, "onViewCreated: " + Log.getStackTraceString(e));

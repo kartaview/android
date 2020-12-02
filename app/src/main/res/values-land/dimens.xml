@@ -2,10 +2,10 @@
 <resources>
 
     <dimen name="track_preview_card_padding_top">0dp</dimen>
-
     <dimen name="track_preview_card_padding_sides">9dp</dimen>
-
     <dimen name="track_preview_card_padding_bottom">0dp</dimen>
-
     <dimen name="track_preview_card_additional_padding_top">51dp</dimen>
+
+    <dimen name="recording_info_layout_margin_top">32dp</dimen>
+    <dimen name="recording_info_layout_margin_start">16dp</dimen>
 </resources>

@@ -2,9 +2,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="9dp"
     android:layout_marginTop="0dp"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingBottom="9dp">
 
     <TextView
         android:id="@+id/text_score_breakdown_header_column1"
@@ -16,7 +16,7 @@
         android:layout_marginRight="10dp"
         android:fontFamily="sans-serif"
         android:gravity="center"
-        android:textColor="@color/white_transparent" />
+        android:textColor="@color/default_white_transparent" />
 
     <TextView
         android:id="@+id/text_score_breakdown_header_column2"
@@ -27,7 +27,7 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:fontFamily="sans-serif"
-        android:textColor="@color/white_transparent" />
+        android:textColor="@color/default_white_transparent" />
 
     <TextView
         android:id="@+id/text_score_breakdown_header_column3"
@@ -39,5 +39,5 @@
         android:layout_marginRight="10dp"
         android:fontFamily="sans-serif"
         android:gravity="center"
-        android:textColor="@color/white_transparent" />
+        android:textColor="@color/default_white_transparent" />
 </FrameLayout>

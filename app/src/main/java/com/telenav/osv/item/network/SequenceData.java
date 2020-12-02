@@ -5,13 +5,13 @@ package com.telenav.osv.item.network;
  */
 public class SequenceData extends ApiResponse {
 
-    private int onlineID;
+    private long onlineID;
 
-    public int getOnlineID() {
+    public long getOnlineID() {
         return onlineID;
     }
 
-    public void setOnlineID(int onlineID) {
+    public void setOnlineID(long onlineID) {
         this.onlineID = onlineID;
     }
 }

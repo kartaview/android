@@ -1,24 +1,25 @@
 package com.telenav.osv.item.network;
 
-import java.util.ArrayList;
-import com.telenav.osv.item.ImageCoordinate;
+import com.telenav.osv.common.model.KVLatLng;
 import com.telenav.osv.item.ImageFile;
 
+import java.util.ArrayList;
+
 /**
- * Class holding payment objects
+ * Class holding photo objects
  * Created by kalmanb on 7/12/17.
  */
 public class PhotoCollection extends ApiResponse {
 
     private ArrayList<ImageFile> nodes = new ArrayList<>();
 
-    private ArrayList<ImageCoordinate> track = new ArrayList<>();
+    private ArrayList<KVLatLng> track = new ArrayList<>();
 
     public ArrayList<ImageFile> getNodes() {
         return nodes;
     }
 
-    public ArrayList<ImageCoordinate> getTrack() {
+    public ArrayList<KVLatLng> getTrack() {
         return track;
     }
 }

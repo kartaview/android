@@ -1,6 +1,5 @@
 package com.telenav.osv.event.ui;
 
-import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.event.OSVStickyEvent;
 
 /**
@@ -17,9 +16,5 @@ public class UserTypeChangedEvent extends OSVStickyEvent {
     @Override
     public Class getStickyClass() {
         return UserTypeChangedEvent.class;
-    }
-
-    public boolean isDriver() {
-        return type == PreferenceTypes.USER_TYPE_BAU || type == PreferenceTypes.USER_TYPE_BYOD || type == PreferenceTypes.USER_TYPE_DEDICATED;
     }
 }

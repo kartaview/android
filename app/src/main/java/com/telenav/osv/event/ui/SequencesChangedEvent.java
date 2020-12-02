@@ -13,18 +13,21 @@ public class SequencesChangedEvent extends OSVStickyEvent {
 
     public boolean diskChange;
 
-    public int deletedSequenceId = 0;
+    public long diskSize;
+
+    public String deletedSequenceId;
 
     public SequencesChangedEvent(boolean online) {
         this.online = online;
     }
 
-    public SequencesChangedEvent(boolean online, boolean diskChange) {
+    public SequencesChangedEvent(boolean online, boolean diskChange, long diskSize) {
         this.online = online;
         this.diskChange = diskChange;
+        this.diskSize = diskSize;
     }
 
-    public SequencesChangedEvent(boolean online, int id) {
+    public SequencesChangedEvent(boolean online, String id) {
         this.online = online;
         this.deletedSequenceId = id;
     }

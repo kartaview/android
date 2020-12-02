@@ -5,6 +5,10 @@ package com.telenav.osv.application;
  */
 public final class PreferenceTypes {
 
+    public static final String K_FTUE = "ftue";
+
+    public static final String K_APP_RUN_TIME_COUNTER = "appRunTimeCounter";
+
     public static final String K_POS_LAT = "pref_pos_lat";
 
     public static final String K_POS_LON = "pref_pos_lon";
@@ -19,27 +23,17 @@ public final class PreferenceTypes {
 
     public static final String K_USER_ID = "user_id";
 
-    public static final String K_IMAGE_SIZE = "image_size";
-
-    public static final String K_HINT_TAP_TO_SHOOT = "tap_to_shoot";
-
     public static final String K_DEBUG_ENABLED = "debugEnabled";
 
     public static final String K_DEBUG_SAVE_AUTH = "saveAuth";
 
-    public static final String K_DEBUG_DELETE_VISIBLE = "deleteVisible";
-
-    public static final String K_DEBUG_HDR = "hdrEnabled";
-
-    public static final String K_DEBUG_AUTO_SHUTTER = "autoShutter";
-
-    public static final String K_DEBUG_PUBLIC_VISIBLE = "publicVisible";
+    public static final String K_DEBUG_RECORDING_TAGGING = "recordingTagging";
 
     public static final String K_DEBUG_SERVER_TYPE = "serverType";
 
-    public static final String K_RESTART_COUNTER = "restartCounter";
+    public static final String K_URL_ENVIRONMENT = "urlEnvironment";
 
-    public static final String K_DEBUG_SPEED_DIST = "speedDistFilter";
+    public static final String K_RESTART_COUNTER = "restartCounter";
 
     public static final String K_DISTANCE_UNIT_METRIC = "distanceUnit";
 
@@ -61,21 +55,21 @@ public final class PreferenceTypes {
 
     public static final String K_MAP_DISABLED = "mapDisabled";
 
+    public static final String K_MAP_ENABLED = "mapEnabled";
+
     public static final String K_OBD_TYPE = "obdType";
-
-    public static final String K_OBD_CONNECTED = "obdConnected";
-
-    public static final int V_OBD_WIFI = 0;
-
-    public static final int V_OBD_BLE = 1;
-
-    public static final int V_OBD_BT = 2;
 
     public static final String K_RESOLUTION_WIDTH = "resolutionWidth";
 
     public static final String K_RESOLUTION_HEIGHT = "resolutionHeight";
 
+    /**
+     * This preference is removed from version {@code 3.2.0}.
+     */
+    @Deprecated
     public static final String K_RECORDING_MAP_ENABLED = "recordingMapEnabled";
+
+    public static final String K_RECORDING_MINI_MAP_ENABLED = "recordingMiniMapEnabled";
 
     public static final String K_SKIP_DELETE_DIALOG = "showDeleteDialog";
 
@@ -85,7 +79,7 @@ public final class PreferenceTypes {
 
     public static final String K_SHOW_SAFE_MODE_MESSAGE = "showSafeModeMessage";
 
-    public static final String K_SAFE_MODE_ENABLED = "safeModeEnabled";
+    public static final String K_VIDEO_MODE_ENABLED = "videoModeEnabled";
 
     public static final String K_SHOW_CLEAR_RECENTS_WARNING = "clearRecentsWarning";
 
@@ -97,19 +91,13 @@ public final class PreferenceTypes {
 
     public static final int USER_TYPE_QA = 1;
 
-    public static final int USER_TYPE_DEDICATED = 2;
-
-    public static final int USER_TYPE_BYOD = 3;
-
-    public static final int USER_TYPE_BAU = 4;
-
     public static final String K_USER_PHOTO_URL = "userPhotoUrl";
 
     public static final String K_DISPLAY_NAME = "displayName";
 
     public static final String K_LOGIN_TYPE = "loginType";
 
-    public static final String K_FFMPEG_CRASH_COUNTER = "ffmpegCrashCounter";
+    public static final String K_NEW_ENCODER_CRASH_COUNTER = "newEncoderCrashCounter";
 
     public static final String K_RECORDING_MAP_ZOOM = "recordingMapZoom";
 
@@ -117,15 +105,40 @@ public final class PreferenceTypes {
 
     public static final String K_HIDE_RECORDING_SUMMARY = "hideSummary";
 
+    @Deprecated
     public static final String K_DRIVER_MODE_DIALOG_SHOWN = "driverModeDialogShown";
 
     public static final String K_FOCUS_MODE_STATIC = "focusMode";
 
     public static final String K_USE_CAMERA_API_NEW = "cameraApi";
 
-    public static final String K_PREVIEW_WIDTH = "previewWidth";
+    public static final String K_USED_CAMERA_ID = "usedCameraId";
 
-    public static final String K_PREVIEW_HEIGHT = "previewHeight";
+    public static final String K_RECORD_START_TIME = "recordStartTime";
+
+    public static final String K_BLE_DEVICE_ADDRESS = "bleDeviceAddress";
+
+    public static final String K_OBD_MANUAL_STOPPED = "obdManualStopped";
+
+    public static final String K_CURRENT_SEQUENCE_ID = "currentSequenceId";
+
+    public static final String K_TAGGING_MODE = "recordingTaggingMode";
+
+    public static final String K_DEBUG_BENCHMARK_SHUTTER_LOGIC = "benchmarkShutterLogic";
+
+    public static final String JARVIS_USER_ID = "jarvisUserId";
+
+    public static final String JARVIS_USER_NAME = "jarvisUserName";
+
+    public static final String JARVIS_ACCESS_TOKEN = "jarvisAccessToken";
+
+    public static final String JARVIS_REFRESH_TOKEN = "jarvisRefreshToken";
+
+    /**
+     * This preference is removed from version {@link KVApplication#APP_VERSION_CODE_2_7_4}.
+     */
+    @Deprecated
+    static final String K_SAFE_MODE_ENABLED = "safeModeEnabled";
 
     private PreferenceTypes() {
     }

@@ -1,35 +1,21 @@
 package com.telenav.osv.manager.network;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.android.volley.DefaultRetryPolicy;
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.LoginEvent;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -47,41 +33,61 @@ import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.KVApplication;
 import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.command.LogoutCommand;
+import com.telenav.osv.common.dialog.KVDialog;
+import com.telenav.osv.data.user.datasource.UserDataSource;
+import com.telenav.osv.data.user.model.User;
+import com.telenav.osv.data.user.utils.UserUtils;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.network.LoginChangedEvent;
-import com.telenav.osv.event.ui.GamificationSettingEvent;
 import com.telenav.osv.event.ui.UserTypeChangedEvent;
 import com.telenav.osv.http.AuthRequest;
 import com.telenav.osv.item.AccountData;
 import com.telenav.osv.item.network.ApiResponse;
 import com.telenav.osv.item.network.AuthData;
-import com.telenav.osv.item.network.DriverData;
 import com.telenav.osv.item.network.OsmProfileData;
+import com.telenav.osv.jarvis.login.network.JarvisLoginRequest;
+import com.telenav.osv.jarvis.login.usecase.JarvisLoginUseCase;
 import com.telenav.osv.listener.OAuthResultListener;
+import com.telenav.osv.listener.network.KVRequestResponseListener;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.listener.network.OsmAuthDataListener;
-import com.telenav.osv.listener.network.OsvRequestResponseListener;
 import com.telenav.osv.manager.network.parser.AuthDataParser;
-import com.telenav.osv.manager.network.parser.OsmProfileDataParser;
+import com.telenav.osv.network.endpoint.UrlLogin;
 import com.telenav.osv.ui.fragment.OAuthDialogFragment;
 import com.telenav.osv.ui.fragment.ProfileFragment;
 import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.LogUtils;
 import com.telenav.osv.utils.Utils;
-import io.fabric.sdk.android.Fabric;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
 
@@ -97,22 +103,13 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
     public static final String LOGIN_TYPE_FACEBOOK = "facebook";
 
+    public static final String LOGIN_TYPE_PARTNER = "partner";
+
     private final static String TAG = "LoginManager";
 
     private static final int REQUEST_CODE_LOGIN_GOOGLE = 10001;
 
-    /**
-     * request url for login details of OSM user
-     */
-    private static final String URL_USER_DETAILS = "http://api.openstreetmap.org/api/0.6/user/details";
-
-    private static String URL_AUTH_OSM = "http://" + "&&" + "auth/openstreetmap/client_auth";
-
-    private static String URL_AUTH_GOOGLE = "http://" + "&&" + "auth/google/client_auth";
-
-    private static String URL_AUTH_FACEBOOK = "http://" + "&&" + "auth/facebook/client_auth";
-
-    private final OSVApplication mContext;
+    private final KVApplication mContext;
 
     private final GoogleApiClient mGoogleApiClient;
 
@@ -124,66 +121,83 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
     private ApplicationPreferences appPrefs;
 
-    private Handler mHandler = new Handler(Looper.getMainLooper());
-
     private FirebaseAuth mAuth;
 
     private AuthDataParser mAuthDataParser = new AuthDataParser();
 
-    public LoginManager(final OSVApplication context) {
+    /**
+     * Container for Rx disposables which will automatically dispose them after execute.
+     */
+    @NonNull
+    private CompositeDisposable compositeDisposable;
+
+    /**
+     * Instance for {@code UserDataSource} which represents the user repository.
+     */
+    private UserDataSource userRepository;
+
+    private JarvisLoginUseCase jarvisLoginUseCase;
+    private String loginType = null;
+    private KVDialog jarvisLoginFailureDialog = null;
+
+    public LoginManager(final KVApplication context, UserDataSource userRepository, JarvisLoginUseCase jarvisLoginUseCase) {
         super(context);
+        compositeDisposable = new CompositeDisposable();
+        this.jarvisLoginUseCase = jarvisLoginUseCase;
+        this.userRepository = userRepository;
         this.mContext = context;
         appPrefs = context.getAppPrefs();
         profilePrefs = context.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
+        FirebaseApp.initializeApp(context.getApplicationContext());
         mAuth = FirebaseAuth.getInstance();
-        setEnvironment();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().requestProfile()
                 .requestIdToken(context.getString(R.string.google_client_id))
                 .requestScopes(new Scope(Scopes.PROFILE), new Scope("https://www.googleapis.com/auth/contacts.readonly")).build();
         mGoogleApiClient = new GoogleApiClient.Builder(context).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
         mGoogleApiClient.registerConnectionFailedListener(this);
         mGoogleApiClient.connect();
-        userDataManager = new UserDataManager(context);
+        userDataManager = new UserDataManager(context, userRepository);
 
-        FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
-
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {//user signed in
-                    Log.d(TAG, "onAuthStateChanged: user is from " + user.getProviderId());
-                    String imgLink = null;
-                    Uri url = user.getPhotoUrl();
-                    if (url != null) {
-                        imgLink = url.toString();
-                    }
-                    final String finalImgLink = imgLink;
-                    appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, finalImgLink);
-                    final String id = appPrefs.getStringPreference(PreferenceTypes.K_USER_ID);
-                    final String userName = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-                    final String token = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
-                    final String displayName = appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME);
-                    final int type = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
-                    final String loginType = appPrefs.getStringPreference(PreferenceTypes.K_LOGIN_TYPE);
-                    mHandler.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            if (userName.equals("") || token.equals("")) {
-                                EventBus.postSticky(new LoginChangedEvent(false, null));
-                                EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
-                            } else {
-                                onLoginSuccessful(new AccountData(id, userName, displayName, finalImgLink, type,
-                                        AccountData.getAccountTypeForString(loginType)));
-                            }
-                        }
-                    });
-                } else {//user signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
+        mAuth.addAuthStateListener(firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {//user signed in
+                Log.d(TAG, "onAuthStateChanged: user is from " + user.getProviderId());
+                String imgLink = null;
+                Uri url = user.getPhotoUrl();
+                if (url != null) {
+                    imgLink = url.toString();
                 }
+                final String finalImgLink = imgLink;
+                appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, finalImgLink);
+                Disposable disposable = userRepository
+                        .getUser()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                //onSuccess
+                                localUser -> {
+                                    Log.d(TAG, String.format("loginManager constructor. Status: success. ID: %s. Message: User found.", localUser.getID()));
+                                    onLoginSuccessful(new AccountData(localUser.getID(),
+                                            localUser.getUserName(),
+                                            localUser.getDisplayName(),
+                                            finalImgLink,
+                                            localUser.getUserType(),
+                                            AccountData.getAccountTypeForString(localUser.getLoginType())));
+                                },
+                                //on error
+                                throwable -> Log.d(TAG, String.format("loginManager constructor. Status: error. Message: %s.", throwable.getMessage())),
+                                //OnComplete
+                                () -> {
+                                    Log.d(TAG, "loginManager constructor. Status: complete. Message: User not found.");
+                                    EventBus.postSticky(new LoginChangedEvent(false, null));
+                                    EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
+                                }
+                        );
+                compositeDisposable.add(disposable);
+            } else {//user signed out
+                Log.d(TAG, "onAuthStateChanged:signed_out");
             }
-        };
-        mAuth.addAuthStateListener(mAuthListener);
+        });
 
         mFacebookCallbackManager = CallbackManager.Factory.create();
 
@@ -209,15 +223,8 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
     }
 
     @Override
-    protected void setEnvironment() {
-        super.setEnvironment();
-        URL_AUTH_OSM = URL_AUTH_OSM.replace("&&", URL_ENV[mCurrentServer]);
-        URL_AUTH_FACEBOOK = URL_AUTH_FACEBOOK.replace("&&", URL_ENV[mCurrentServer]);
-        URL_AUTH_GOOGLE = URL_AUTH_GOOGLE.replace("&&", URL_ENV[mCurrentServer]);
-    }
-
-    @Override
     public void destroy() {
+        compositeDisposable.clear();
         super.destroy();
     }
 
@@ -226,7 +233,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
         Log.d(TAG, "onConnectionFailed: error connecting google api: " + connectionResult.getErrorMessage());
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data, Context context) {
         Log.d(TAG, "onActivityResult: requestCode=" + requestCode + " resultCode=" + resultCode);
         if (requestCode == LoginManager.REQUEST_CODE_LOGIN_GOOGLE) {
             Log.d(TAG, "onActivityResult: REQUEST_CODE_LOGIN_GOOGLE");
@@ -236,7 +243,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
                 GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
                 if (result.isSuccess()) {
                     Log.d(TAG, "onActivityResult: Google Sign In was successful, authenticate with Firebase");
-                    handleGoogleLoginResult(result);
+                    handleGoogleLoginResult(result, context);
                 } else {
                     Log.d(TAG, "onActivityResult: Google Sign In was unsuccessfull, rollback login");
                     EventBus.postSticky(new LogoutCommand());
@@ -250,10 +257,12 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
     public void login(OSVActivity activity, String type) {
         Log.d(TAG, "login: requested login type " + type);
+        loginType = type;
         switch (type) {
             case LOGIN_TYPE_FACEBOOK:
                 loginFacebook(activity);
                 break;
+            case LOGIN_TYPE_PARTNER:
             case LOGIN_TYPE_GOOGLE:
                 loginGoogle(activity);
                 break;
@@ -265,30 +274,41 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void onLogoutCommand(LogoutCommand command) {
-        appPrefs.saveStringPreference(PreferenceTypes.K_USER_ID, "");
-        appPrefs.saveStringPreference(PreferenceTypes.K_ACCESS_TOKEN, "");
-        appPrefs.saveStringPreference(PreferenceTypes.K_LOGIN_TYPE, "");
-        appPrefs.saveStringPreference(PreferenceTypes.K_USER_NAME, "");
-        appPrefs.saveStringPreference(PreferenceTypes.K_DISPLAY_NAME, "");
-        appPrefs.saveStringPreference(PreferenceTypes.K_USER_PHOTO_URL, "");
-        appPrefs.saveIntPreference(PreferenceTypes.K_USER_TYPE, -1);
-        EventBus.postSticky(new LoginChangedEvent(false, null));
-        EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
-        logoutFirebase();
+        Disposable disposable = userRepository
+                .deleteUser()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        //onComplete
+                        () -> {
+                            EventBus.postSticky(new LoginChangedEvent(false, null));
+                            EventBus.postSticky(new UserTypeChangedEvent(PreferenceTypes.USER_TYPE_UNKNOWN));
+                            logoutFirebase();
+                        },
+                        //onError
+                        throwable -> {
+                            Log.d(TAG, String.format("Delete user invalid. Message: %s", throwable.getMessage()));
+                            Toast.makeText(mContext, R.string.something_wrong_try_again, Toast.LENGTH_SHORT).show();
+                        }
+                );
+        compositeDisposable.add(disposable);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.BACKGROUND)
     public void onLoginChanged(LoginChangedEvent event) {
         Log.d(TAG, "onLoginChanged: logged=" + event.logged + " " + event.accountData);
-        if (Fabric.isInitialized()) {
-            if (event.logged) {
-                String method = appPrefs.getStringPreference(PreferenceTypes.K_LOGIN_TYPE);
-                int type = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
-                Answers.getInstance().logLogin(new LoginEvent().putSuccess(true).putMethod(method).putCustomAttribute("userType", type));
-                Crashlytics.setInt(Log.USER_TYPE, type);
-            } else {
-                Crashlytics.setString(Log.USER_TYPE, "");
-            }
+        FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+        if (event.logged) {
+            String method = appPrefs.getStringPreference(PreferenceTypes.K_LOGIN_TYPE);
+            int type = appPrefs.getIntPreference(PreferenceTypes.K_USER_TYPE, -1);
+            FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(mContext);
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.METHOD, method);
+            bundle.putInt("user_type", type);
+            analytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+            crashlytics.setCustomKey(Log.USER_TYPE, type);
+        } else {
+            crashlytics.setCustomKey(Log.USER_TYPE, "");
         }
         if (!event.logged) {
             SharedPreferences prefs = mContext.getSharedPreferences(ProfileFragment.PREFS_NAME, Context.MODE_PRIVATE);
@@ -302,42 +322,12 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
                 //noinspection deprecation
                 CookieManager.getInstance().removeAllCookie();
             }
-        } else {
-            if (event.accountData.isDriver()) {
-                appPrefs.saveBooleanPreference(PreferenceTypes.K_GAMIFICATION, false);
-                EventBus.post(new GamificationSettingEvent(false));
-
-            }
         }
     }
 
     private void onLoginSuccessful(final AccountData accountData) {
         Log.w(TAG, "onLoginSuccessful for account.");
-        if (accountData.isDriver()) {
-            userDataManager.getDriverProfileDetails(new NetworkResponseDataListener<DriverData>() {
-                @Override
-                public void requestFailed(int status, DriverData details) {
-                    Log.w(TAG, "driver getDriverProfileDetails failed...assume payment model 10.");
-
-                    if (!ProfileFragment.PAYMENT_MODEL_VERSION_20.equals(profilePrefs.getString(ProfileFragment.K_DRIVER_PAYMENT_MODEL_VERSION, ProfileFragment
-                            .PAYMENT_MODEL_VERSION_10))) {
-                        //there wasn't a previous value which indicated that the current user uses the 2.0 payment model....save value representing 1.0 payment model
-                        profilePrefs.edit().putString(ProfileFragment.K_DRIVER_PAYMENT_MODEL_VERSION, ProfileFragment.PAYMENT_MODEL_VERSION_10).apply();
-                    }
-                    //notify right away...
-                    notifyAppOfSuccessfulLogin(accountData);
-                }
-
-                @Override
-                public void requestFinished(int status, DriverData details) {
-                    profilePrefs.edit().putString(ProfileFragment.K_DRIVER_PAYMENT_MODEL_VERSION, details.getPaymentModelVersion()).apply();
-                    notifyAppOfSuccessfulLogin(accountData);
-                }
-            });
-        } else {
-            notifyAppOfSuccessfulLogin(accountData);
-
-        }
+        notifyAppOfSuccessfulLogin(accountData);
     }
 
     private void notifyAppOfSuccessfulLogin(AccountData accountData) {
@@ -467,26 +457,7 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
                                         String requestToken = consumer.getToken();
                                         String secretToken = consumer.getTokenSecret();
 
-                                        //get user details like username and profile picture url
-                                        HttpGet request = new HttpGet(URL_USER_DETAILS);
-                                        consumer.sign(request);
-                                        HttpClient httpclient = new DefaultHttpClient();
-                                        HttpResponse httpResponse;
-                                        final String response;
-                                        httpResponse = httpclient.execute(request);
-                                        StatusLine statusLine = httpResponse.getStatusLine();
-                                        if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
-                                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                                            httpResponse.getEntity().writeTo(out);
-                                            response = out.toString();
-                                            out.close();
-                                        } else {
-                                            //Closes the connection.
-                                            httpResponse.getEntity().getContent().close();
-                                            throw new IOException(statusLine.getReasonPhrase());
-                                        }
-                                        listener.requestFinished(statusLine.getStatusCode(), new OsmProfileDataParser().parse(response));
-                                        authenticate(URL_AUTH_OSM, requestToken, secretToken, listener);
+                                        authenticate(factoryServerEndpointUrl.getLoginAuthentication(UrlLogin.OSM), requestToken, secretToken, listener);
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                         ApiResponse response = new ApiResponse();
@@ -519,35 +490,37 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
     private void authenticate(final String url, final String requestToken, final String secretToken,
                               final NetworkResponseDataListener<AuthData> listener) {
         Log.d(TAG, "authenticate: " + url);
-        AuthRequest request = new AuthRequest(url, new OsvRequestResponseListener<AuthDataParser, AuthData>(mAuthDataParser) {
+        AuthRequest request = new AuthRequest(url, new KVRequestResponseListener<AuthDataParser, AuthData>(mAuthDataParser) {
 
             @Override
             public void onSuccess(final int status, final AuthData authData) {
-                runInBackground(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        String loginType = "OSM";
-                        if (url.contains("facebook")) {
-                            loginType = "FACEBOOK";
-                        } else if (url.contains("google")) {
-                            loginType = "GOOGLE";
-                        }
-                        authData.setLoginType(loginType);
-                        appPrefs.saveStringPreference(PreferenceTypes.K_ACCESS_TOKEN, authData.getAccessToken());
-                        appPrefs.saveStringPreference(PreferenceTypes.K_USER_ID, authData.getId());
-                        appPrefs.saveStringPreference(PreferenceTypes.K_USER_NAME, authData.getUsername());
-                        appPrefs.saveStringPreference(PreferenceTypes.K_DISPLAY_NAME, authData.getDisplayName());
-                        appPrefs.saveIntPreference(PreferenceTypes.K_USER_TYPE, authData.getUserType());
-                        appPrefs.saveStringPreference(PreferenceTypes.K_LOGIN_TYPE, authData.getLoginType());
-                        listener.requestFinished(status, authData);
-                        Log.d(TAG, "authenticate: success");
-                    }
-                });
+                Log.d(TAG, "authenticate: success");
+                String loginType = "OSM";
+                if (url.contains("facebook")) {
+                    loginType = "FACEBOOK";
+                } else if (url.contains("google")) {
+                    loginType = "GOOGLE";
+                }
+                authData.setLoginType(loginType);
+                Disposable disposable = userRepository
+                        .saveUser(getUser(authData))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io())
+                        .subscribe(
+                                //onComplete
+                                () -> {
+                                    Log.d(TAG, "onLoginSuccess");
+                                    listener.requestFinished(status, authData);
+                                },
+                                //onError
+                                throwable -> Log.d(TAG, "onLoginFailure")
+                        );
+                compositeDisposable.add(disposable);
             }
 
             @Override
             public void onFailure(int status, AuthData authData) {
+                Log.d(TAG, "authenticate: fail");
                 listener.requestFailed(status, authData);
             }
         }, requestToken, secretToken);
@@ -555,7 +528,25 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
         mQueue.add(request);
     }
 
-    private void handleGoogleLoginResult(final GoogleSignInResult result) {
+    /**
+     * @param authData the authetication response from the server api.
+     * @return {@code User} representing the user created from authenticated data without any user details since requires different API call.
+     */
+    private User getUser(AuthData authData) {
+        return new User(authData.getId(),
+                authData.getAccessToken(),
+                authData.getDisplayName(),
+                authData.getLoginType(),
+                authData.getUsername(),
+                authData.getUserType(),
+                0,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private void handleGoogleLoginResult(final GoogleSignInResult result, Context context) {
         BackgroundThreadPool.post(new Runnable() {
 
             @Override
@@ -568,7 +559,8 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
                         EventBus.postSticky(new LogoutCommand());
                         return;
                     }
-                    final AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+                    final String googleAuthIdToken = acct.getIdToken();
+                    final AuthCredential credential = GoogleAuthProvider.getCredential(googleAuthIdToken, null);
                     GoogleAccountCredential credential2 = GoogleAccountCredential.usingOAuth2(mContext, Collections.singleton(Scopes.PROFILE));
                     credential2.setSelectedAccount(acct.getAccount());
                     String token = null;
@@ -577,36 +569,30 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
                     } catch (IOException | GoogleAuthException e) {
                         Log.d(TAG, "handleGoogleLoginResult: " + Log.getStackTraceString(e));
                     }
-                    authenticate(URL_AUTH_GOOGLE, token, null, new NetworkResponseDataListener<AuthData>() {
+                    if (LoginManager.LOGIN_TYPE_GOOGLE.equals(loginType)) {
+                        authenticate(factoryServerEndpointUrl.getLoginAuthentication(UrlLogin.Google), token, null, new NetworkResponseDataListener<AuthData>() {
 
-                        @Override
-                        public void requestFailed(int status, AuthData details) {
-                            Log.d(TAG, "handleGoogleLoginResult requestFinished: rolling back login");
+                            @Override
+                            public void requestFailed(int status, AuthData details) {
+                                Log.d(TAG, "handleGoogleLoginResult requestFinished: rolling back login");
+                                signOutGoogle();
+                                EventBus.postSticky(new LogoutCommand());
+                            }
+
+                            @Override
+                            public void requestFinished(int status, AuthData userData) {
+                                Log.d(TAG, "handleGoogleLoginResult requestFinished: API token received, signing in with firebase as well");
+                                signInWithFirebase(credential);
+                            }
+                        });
+                    } else if (LoginManager.LOGIN_TYPE_PARTNER.equals(loginType)) {
+                        if (googleAuthIdToken == null || token == null) {
+                            LogUtils.logDebug(TAG, "Google Token is Null for Partner Login");
                             EventBus.postSticky(new LogoutCommand());
+                        } else {
+                            loginJarvis(googleAuthIdToken, token, credential, context);
                         }
-
-                        @Override
-                        public void requestFinished(int status, AuthData userData) {
-                            Log.d(TAG, "handleGoogleLoginResult requestFinished: API token received, signing in with firebase as well");
-                            mAuth.signInWithCredential(credential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
-                                    if (!task.isSuccessful()) {
-                                        EventBus.postSticky(new LogoutCommand());
-                                    }
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.d(TAG, "signInWithCredential:onFailure:" + Log.getStackTraceString(e));
-                                    EventBus.postSticky(new LogoutCommand());
-                                }
-                            });
-                        }
-                    });
+                    }
                 } catch (Exception e) {
                     Log.d(TAG, "handleGoogleLoginResult: " + Log.getStackTraceString(e));
                     Log.d(TAG, "handleGoogleLoginResult: rolling back login");
@@ -616,11 +602,82 @@ public class LoginManager extends NetworkManager implements GoogleApiClient.OnCo
         });
     }
 
+    private void loginJarvis(
+            final String googleAuthIdToken,
+            final String googleAccessToken,
+            final AuthCredential credential,
+            final Context context) {
+        final String GOOGLE = "GOOGLE";
+        JarvisLoginRequest loginRequest = new JarvisLoginRequest(GOOGLE, googleAuthIdToken);
+        Disposable partnerLoginDisposable = jarvisLoginUseCase
+                .jarvisLogin(googleAccessToken, loginRequest)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        jarvisLoginResponse -> {
+                            compositeDisposable.add(userRepository
+                                    .saveUser(UserUtils.getUser(jarvisLoginResponse))
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(Schedulers.io())
+                                    .subscribe(
+                                            //onComplete
+                                            () -> signInWithFirebase(credential),
+                                            //onError
+                                            throwable -> {
+                                                LogUtils.logDebug(TAG, "Failed to save user after Jarvis Login");
+                                                signOutGoogle();
+                                                EventBus.postSticky(new LogoutCommand());
+                                            }
+                                    ));
+                        },
+                        throwable -> {
+                            LogUtils.logDebug(TAG, "Jarvis login request failed");
+                            signOutGoogle();
+                            EventBus.postSticky(new LogoutCommand());
+                            showJarvisLoginFailureDialog(context);
+                        }
+                );
+        compositeDisposable.add(partnerLoginDisposable);
+    }
+
+    private void showJarvisLoginFailureDialog(Context context) {
+        if (jarvisLoginFailureDialog == null) {
+            jarvisLoginFailureDialog = new KVDialog.Builder(context)
+                    .setTitleResId(R.string.partner_login_failed_dialog_title)
+                    .setTitleTextColor(R.color.color_EB3030)
+                    .setInfoResId(R.string.partner_login_failed_dialog_message)
+                    .setPositiveButton(R.string.close, v -> jarvisLoginFailureDialog.dismiss())
+                    .setIconLayoutVisibility(false)
+                    .build();
+        }
+        jarvisLoginFailureDialog.show();
+    }
+
+    /**
+     * This method sign in a user in firebase
+     * @param credential Google AuthCredential for user
+     */
+    private void signInWithFirebase(final AuthCredential credential) {
+        mAuth.signInWithCredential(credential).addOnCompleteListener(task -> {
+            Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
+            if (!task.isSuccessful()) {
+                EventBus.postSticky(new LogoutCommand());
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "signInWithCredential:onFailure:" + Log.getStackTraceString(e));
+                EventBus.postSticky(new LogoutCommand());
+            }
+        });
+    }
+
     private void handleFacebookAccessToken(final AccessToken token) {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
 
         final AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        authenticate(URL_AUTH_FACEBOOK, token.getToken(), "", new NetworkResponseDataListener<AuthData>() {
+        authenticate(factoryServerEndpointUrl.getLoginAuthentication(UrlLogin.Facebook), token.getToken(), "", new NetworkResponseDataListener<AuthData>() {
 
             @Override
             public void requestFailed(int status, AuthData details) {

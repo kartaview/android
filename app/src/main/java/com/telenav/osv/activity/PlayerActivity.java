@@ -1,6 +1,6 @@
 package com.telenav.osv.activity;
 
-import org.greenrobot.eventbus.Subscribe;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -8,30 +8,40 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import com.crashlytics.android.Crashlytics;
-import com.skobbler.ngx.SKMaps;
-import com.skobbler.ngx.util.SKLogging;
+import android.widget.Toast;
+
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.telenav.osv.R;
-import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.KVApplication;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.db.SequenceDB;
+import com.telenav.osv.common.Injection;
+import com.telenav.osv.data.frame.datasource.local.FrameLocalDataSource;
+import com.telenav.osv.data.sequence.datasource.local.SequenceLocalDataSource;
+import com.telenav.osv.data.sequence.model.details.compression.SequenceDetailsCompressionBase;
+import com.telenav.osv.data.sequence.model.details.compression.SequenceDetailsCompressionJpeg;
+import com.telenav.osv.data.video.datasource.VideoLocalDataSource;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.FullscreenEvent;
-import com.telenav.osv.item.LocalSequence;
-import com.telenav.osv.item.OSVFile;
-import com.telenav.osv.item.Sequence;
-import com.telenav.osv.manager.playback.LocalPlaybackManager;
 import com.telenav.osv.manager.playback.PlaybackManager;
+import com.telenav.osv.manager.playback.SafePlaybackManager;
+import com.telenav.osv.manager.playback.VideoPlayerManager;
+import com.telenav.osv.map.MapFragment;
+import com.telenav.osv.map.model.MapModes;
 import com.telenav.osv.ui.ScreenComposer;
-import com.telenav.osv.ui.fragment.MapFragment;
 import com.telenav.osv.ui.fragment.TrackPreviewFragment;
 import com.telenav.osv.utils.Log;
-import io.fabric.sdk.android.Fabric;
+
+import org.greenrobot.eventbus.Subscribe;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class PlayerActivity extends OSVActivity {
 
@@ -51,37 +61,26 @@ public class PlayerActivity extends OSVActivity {
 
     private LinearLayout mLinearLayout;
 
-    private boolean mMapDisabled;
+    private boolean mapEnabled;
+
+    private Disposable disposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         appPrefs = getApp().getAppPrefs();
         setContentView(R.layout.activity_player);
-        if (Fabric.isInitialized()) {
-            Crashlytics.setString(Log.PLAYBACK, "local-mp4");
-        }
-        SequenceDB.instantiate(this);
-
+        FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+        crashlytics.setCustomKey(Log.PLAYBACK, "local-mp4");
         mLinearLayout = findViewById(R.id.player_main_holder);
         mapHolder = findViewById(R.id.content_frame_map);
         largeHolder = findViewById(R.id.content_frame_large);
         progressBar = findViewById(R.id.progressbar);
         View backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
-        progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
-        mMapDisabled = appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_DISABLED, false);
-        if (!mMapDisabled) {
-            SKMaps.getInstance().setLogOption(SKMaps.NGXLoggingOption.LOGGING_OPTION_FILE_AND_CONSOLE, false);
-            SKMaps.getInstance().setLogOption(SKMaps.NGXLoggingOption.LOGGING_OPTION_DISABLED, true);
-            SKLogging.enableLogs(false);
-        } else {
+        backButton.setOnClickListener(v -> onBackPressed());
+        progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.default_purple), PorterDuff.Mode.SRC_IN);
+        mapEnabled = appPrefs.getBooleanPreference(PreferenceTypes.K_MAP_ENABLED, false);
+        if (!mapEnabled) {
             resizeHolders(1f, isPortrait());
         }
         displayPreview();
@@ -90,14 +89,10 @@ public class PlayerActivity extends OSVActivity {
     @Override
     public void onConfigurationChanged(final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mHandler.post(new Runnable() {
-
-            @Override
-            public void run() {
-                int orientation = newConfig.orientation;
-                boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
-                resizeHolders(-1, portrait);
-            }
+        mHandler.post(() -> {
+            int orientation = newConfig.orientation;
+            boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
+            resizeHolders(-1, portrait);
         });
     }
 
@@ -105,6 +100,9 @@ public class PlayerActivity extends OSVActivity {
     protected void onDestroy() {
         if (trackPreviewFragment != null) {
             trackPreviewFragment.onDestroy();
+        }
+        if (disposable != null) {
+            disposable.dispose();
         }
         super.onDestroy();
     }
@@ -150,8 +148,8 @@ public class PlayerActivity extends OSVActivity {
     }
 
     @Override
-    public OSVApplication getApp() {
-        return (OSVApplication) getApplication();
+    public KVApplication getApp() {
+        return (KVApplication) getApplication();
     }
 
     @Override
@@ -160,7 +158,12 @@ public class PlayerActivity extends OSVActivity {
     }
 
     @Override
-    public void resolveLocationProblem(boolean b) {
+    public void resolveLocationProblem() {
+
+    }
+
+    @Override
+    public void resolveRecordingProblem() {
 
     }
 
@@ -221,20 +224,55 @@ public class PlayerActivity extends OSVActivity {
         }
     }
 
-    private void openScreen(final Object extra) {
-        PlaybackManager player;
-        player = new LocalPlaybackManager(PlayerActivity.this, (Sequence) extra);
-        trackPreviewFragment = new TrackPreviewFragment();
-        trackPreviewFragment.setSource(player);
-        trackPreviewFragment.hideDelete(false);
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.add(R.id.content_frame_large, trackPreviewFragment, TrackPreviewFragment.TAG);
-        if (!mMapDisabled) {
-            MapFragment mapFragment = new MapFragment();
-            mapFragment.setSource(player);
-            ft.add(R.id.content_frame_map, mapFragment, MapFragment.TAG);
-        }
-        ft.commitAllowingStateLoss();
+    private void openScreen(String sequenceId) {
+        Context context = getApplicationContext();
+        VideoLocalDataSource videoLocalDataSource = Injection.provideVideoDataSource(context);
+        FrameLocalDataSource frameLocalDataSource = Injection.provideFrameLocalDataSource(context);
+        SequenceLocalDataSource sequenceLocalDataSource = Injection.provideSequenceLocalDataSource(context,
+                frameLocalDataSource,
+                Injection.provideScoreLocalDataSource(context),
+                Injection.provideLocationLocalDataSource(context),
+                videoLocalDataSource);
+
+        disposable = sequenceLocalDataSource
+                .getSequenceWithAll(sequenceId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        //onSuccess
+                        sequence -> {
+                            Log.d(TAG, String.format("openScreen. Status: success. Sequence id: %s. Message: Sequences loaded successful. ", sequenceId));
+                            PlaybackManager player;
+                            SequenceDetailsCompressionBase compressionBase = sequence.getCompressionDetails();
+                            if (compressionBase instanceof SequenceDetailsCompressionJpeg) {
+                                player = new SafePlaybackManager(PlayerActivity.this, sequence, frameLocalDataSource, appPrefs);
+                            } else {
+                                player = new VideoPlayerManager(PlayerActivity.this, sequence, videoLocalDataSource);
+                            }
+                            trackPreviewFragment = new TrackPreviewFragment();
+                            trackPreviewFragment.setSource(player);
+                            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                            ft.add(R.id.content_frame_large, trackPreviewFragment, TrackPreviewFragment.TAG);
+                            if (mapEnabled) {
+                                Log.d(TAG, "openScreen. Map enable preparing for preview");
+                                MapFragment mapFragment = MapFragment.newInstance(MapModes.PREVIEW_MAP, player);
+                                ft.add(R.id.content_frame_map, mapFragment, MapFragment.TAG);
+                            }
+                            ft.commitAllowingStateLoss();
+                        },
+                        //onError
+                        throwable -> {
+                            Log.d(TAG, String.format("openScreen. Status: complete. Sequence id: %s. Message: %s. ", sequenceId, throwable.getLocalizedMessage()));
+                            Toast.makeText(this, R.string.something_wrong_try_again, Toast.LENGTH_SHORT).show();
+                            finish();
+                        },
+                        //OnComplete
+                        () -> {
+                            Log.d(TAG, String.format("openScreen. Status: complete. Sequence id: %s. Message: Local sequence was not found. ", sequenceId));
+                            Toast.makeText(this, R.string.something_wrong_try_again, Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                );
     }
 
     private void resizeHolders(float ratio, final boolean portrait) {
@@ -278,13 +316,7 @@ public class PlayerActivity extends OSVActivity {
     }
 
     private void displayPreview() {
-        Intent intent2 = getIntent();
-        String path = intent2.getStringExtra(EXTRA_SEQUENCE_ID);
-        if (path == null) {
-            finish();
-        }
-        Sequence sequence = new LocalSequence(new OSVFile(path));
-        Log.d(TAG, "displayPreview: " + sequence);
-        openScreen(sequence);
+        Intent activityIntent = getIntent();
+        openScreen(activityIntent.getStringExtra(EXTRA_SEQUENCE_ID));
     }
 }

@@ -183,7 +183,7 @@ public class OBDCommunication {
      */
     public void writeOBDCommand(String p_command) {
         BluetoothGatt gatt = bluetoothGatt;
-        if (gatt != null) {
+        if (gatt != null && bluetoothGatt.getService(serviceUUID) != null) {
             BluetoothGattCharacteristic writeChar = bluetoothGatt.getService(serviceUUID).getCharacteristic(characteristicUUID);
 
             writeChar.setValue(p_command + '\r');

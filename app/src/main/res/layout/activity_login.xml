@@ -1,104 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/osc_logo_view"
-        android:layout_width="match_parent"
+        android:id="@+id/kv_logo_view"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="92dp"
-        android:src="@drawable/ic_osc_logo"
+        android:src="@drawable/ic_splash"
+        app:layout_constraintBottom_toTopOf="@id/guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
-    <LinearLayout
-        android:id="@+id/login_buttons_holder"
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:paddingLeft="30dp"
-        android:paddingRight="30dp"
-        android:weightSum="4">
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/osm_login_button"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="10dp"
-            android:layout_weight="1"
-            android:drawableLeft="@drawable/osm_logo"
-            android:drawablePadding="20dp"
-            android:gravity="left|center_vertical"
-            android:minHeight="72dp"
-            android:onClick="onClick"
-            android:paddingLeft="20dp"
-            android:text="@string/login_osm_button_label"
-            android:textColor="@color/white"
-            app:backgroundTint="@color/osm_grey" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/osm_login_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:drawableLeft="@drawable/osm_logo"
+        android:drawablePadding="20dp"
+        android:gravity="left|center_vertical"
+        android:minHeight="60dp"
+        android:onClick="onClick"
+        android:paddingLeft="20dp"
+        android:text="@string/login_osm_button_label"
+        android:textColor="@color/default_white"
+        app:backgroundTint="@color/osm_grey"
+        app:layout_constraintBottom_toTopOf="@+id/facebook_login_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/guideline" />
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/facebook_login_button"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="10dp"
-            android:layout_weight="1"
-            android:drawablePadding="23dp"
-            android:gravity="left|center_vertical"
-            android:minHeight="72dp"
-            android:onClick="onClick"
-            android:paddingLeft="20dp"
-            android:text="@string/login_facebook_button_label"
-            android:textColor="@color/white"
-            app:backgroundTint="@color/facebook_blue" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/facebook_login_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:drawablePadding="23dp"
+        android:gravity="left|center_vertical"
+        android:minHeight="60dp"
+        android:onClick="onClick"
+        android:paddingLeft="20dp"
+        android:text="@string/login_facebook_button_label"
+        android:textColor="@color/default_white"
+        app:backgroundTint="@color/facebook_blue"
+        app:layout_constraintBottom_toTopOf="@+id/google_login_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/osm_login_button" />
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/google_login_button"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_weight="1"
-            android:drawablePadding="10dp"
-            android:gravity="left|center_vertical"
-            android:minHeight="72dp"
-            android:onClick="onClick"
-            android:text="@string/login_google_button_label"
-            android:textColor="@color/white"
-            app:backgroundTint="@color/google_red" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/google_login_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:drawablePadding="10dp"
+        android:gravity="left|center_vertical"
+        android:minHeight="60dp"
+        android:onClick="onClick"
+        android:text="@string/login_google_button_label"
+        android:textColor="@color/default_white"
+        app:backgroundTint="@color/google_red"
+        app:layout_constraintBottom_toTopOf="@+id/tv_partner_login"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/facebook_login_button" />
 
-    </LinearLayout>
+    <TextView
+        android:id="@+id/tv_partner_login"
+        style="@style/FontMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:onClick="onClick"
+        android:padding="@dimen/grid_2"
+        android:text="@string/partner_login"
+        android:textColor="@color/default_grab_grey"
+        android:textSize="@dimen/font_size_17"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/google_login_button"
+        tools:text="Partner Login" />
 
     <ProgressBar
         android:id="@+id/progressbar"
         style="@style/Base.Widget.AppCompat.ProgressBar"
-        android:layout_width="65dp"
+        android:layout_width="wrap_content"
         android:layout_height="65dp"
         android:layout_gravity="center"
         android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/transparent"
+        android:background="@color/default_transparent"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:visibility="visible"
         app:elevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/app_toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/action_bar_size"
             android:clickable="true">
 
-        </android.support.v7.widget.Toolbar>
-    </android.support.design.widget.AppBarLayout>
-</FrameLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

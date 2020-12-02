@@ -1,67 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/fragment_map_root"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:context=".presentation.map.MapFragment">
 
-    </FrameLayout>
+        <ImageView
+            android:id="@+id/image_view_fragment_map_background"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/splashscreen_background"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <View
-        android:layout_width="1dp"
-        android:layout_height="1dp"
-        android:layout_gravity="bottom|end"
-        android:background="@color/transparent"
-        android:visibility="visible" />
-
-    <View
-        android:layout_width="1dp"
-        android:layout_height="1dp"
-        android:layout_gravity="top|start"
-        android:background="@color/transparent"
-        android:visibility="visible" />
+        <ImageView
+            android:id="@+id/image_view_fragment_map_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/action_bar_size"
+            android:src="@drawable/ic_splash"
+            app:layout_constraintBottom_toTopOf="@id/button_fragment_map_record"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/record_button"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_gravity="bottom|center"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="20dp"
-        android:clickable="true"
-        android:scaleType="center"
-        app:backgroundTint="@color/black"
-        app:elevation="6dp"
-        app:pressedTranslationZ="12dp"
-        app:rippleColor="@color/md_grey_600"
-        app:srcCompat="@drawable/vector_button_record" />
+        <com.mapbox.mapboxsdk.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/action_bar_size"
+            android:layout_marginBottom="1dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/position_button"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="20dp"
-        android:clickable="true"
-        android:scaleType="center"
-        android:visibility="gone"
-        app:backgroundTint="@color/white"
-        app:elevation="6dp"
-        app:pressedTranslationZ="12dp"
-        app:rippleColor="@color/md_grey_400"
-        app:srcCompat="@drawable/vector_recenter" />
-</android.support.design.widget.CoordinatorLayout>
+        <TextView
+            android:id="@+id/tv_tasks"
+            style="@style/FontMedium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/grid_18"
+            android:background="@drawable/bg_obd_button_large"
+            android:clickable="@{!viewModel.enableProgress}"
+            android:gravity="center"
+            android:paddingStart="@dimen/grid_6"
+            android:paddingTop="@dimen/grid_3"
+            android:paddingEnd="@dimen/grid_6"
+            android:paddingBottom="@dimen/grid_3"
+            android:text="@string/view_tasks"
+            android:textAllCaps="true"
+            android:textColor="@color/default_white"
+            android:textSize="@dimen/font_size_17"
+            android:visibility="@{viewModel.enableMyTasks.booleanValue() ? View.VISIBLE : View.GONE}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="wrap"
+            tools:visibility="visible" />
+
+        <View
+            android:id="@+id/view_fragment_map_background"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_gravity="bottom|end"
+            android:background="@color/default_transparent"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_gravity="top|start"
+            android:background="@color/default_transparent"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/button_fragment_map_record"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="bottom|center"
+            android:layout_marginBottom="24dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="@{clickListenerCamera}"
+            android:scaleType="center"
+            android:visibility="@{viewModel.recordingEnable.booleanValue() ? View.VISIBLE : View.GONE}"
+            app:backgroundTint="@color/default_black"
+            app:elevation="6dp"
+            app:fabCustomSize="64dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:pressedTranslationZ="12dp"
+            app:rippleColor="@color/md_grey_600"
+            app:srcCompat="@drawable/vector_button_record" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/button_fragment_map_center"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="@{clickListenerCenter}"
+            android:scaleType="center"
+            android:visibility="@{viewModel.locationEnable.booleanValue() ? View.VISIBLE : View.GONE}"
+            app:backgroundTint="@color/default_white"
+            app:borderWidth="0dp"
+            app:elevation="6dp"
+            app:fabCustomSize="44dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:pressedTranslationZ="12dp"
+            app:rippleColor="@color/md_grey_400"
+            app:srcCompat="@drawable/vector_recenter" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="viewModel"
+            type="com.telenav.osv.map.viewmodel.MapViewModel" />
+
+        <variable
+            name="clickListenerCamera"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="clickListenerCenter"
+            type="android.view.View.OnClickListener" />
+    </data>
+</layout>

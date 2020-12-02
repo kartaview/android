@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="@dimen/grid_14">
+    <shape android:shape="rectangle">
+        <solid android:color="@color/color_14212121" />
+        <size android:height="@dimen/grid_1dp" />
+    </shape>
+</inset>

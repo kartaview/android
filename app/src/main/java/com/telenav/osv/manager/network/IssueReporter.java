@@ -1,23 +1,28 @@
 package com.telenav.osv.manager.network;
 
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import android.content.Context;
 import android.os.Build;
+
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
+import com.telenav.osv.application.PreferenceTypes;
 import com.telenav.osv.http.IssueCreationRequest;
 import com.telenav.osv.http.IssueUploadRequest;
-import com.telenav.osv.item.OSVFile;
+import com.telenav.osv.item.KVFile;
 import com.telenav.osv.item.network.ApiResponse;
 import com.telenav.osv.item.network.IssueData;
+import com.telenav.osv.jarvis.login.utils.LoginUtils;
+import com.telenav.osv.listener.network.KVRequestResponseListener;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
-import com.telenav.osv.listener.network.OsvRequestResponseListener;
 import com.telenav.osv.manager.network.parser.HttpResponseParser;
 import com.telenav.osv.manager.network.parser.IssueCreationParser;
+import com.telenav.osv.network.endpoint.UrlIssue;
 import com.telenav.osv.utils.Log;
+
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * responsible for uploading issue reports
@@ -29,14 +34,17 @@ public class IssueReporter extends NetworkManager implements RequestQueue.Reques
     private static final String TAG = "IssueReporter";
 
     /**
-     * create issue on backend
+     * The time out for the report an issue request.
      */
-    private static String URL_ISSUE_CREATE = "http://" + "&&" + URL_VER + "issue/";
+    private static final int REQUEST_TIME_OUT = 1800;
 
     /**
-     * create issue on backend
+     * The maximum number of retries for the report an issue request.
      */
-    private static String URL_ISSUE_UPLOAD = "http://" + "&&" + URL_VER + "upload/issue-file/";
+    private static final int MAX_NO_RETRY = 1;
+
+    //TODO: Clarify the meaning of this constant.
+    private static final float BACK_OFF_MULTIPLIER = 1;
 
     private ConcurrentLinkedQueue<StringRequest> mHolderQueue = new ConcurrentLinkedQueue<>();
 
@@ -49,14 +57,6 @@ public class IssueReporter extends NetworkManager implements RequestQueue.Reques
     public IssueReporter(Context context) {
         super(context);
         mQueue.addRequestFinishedListener(this);
-        setEnvironment();
-    }
-
-    @Override
-    protected void setEnvironment() {
-        super.setEnvironment();
-        URL_ISSUE_CREATE = URL_ISSUE_CREATE.replace("&&", URL_ENV[mCurrentServer]);
-        URL_ISSUE_UPLOAD = URL_ISSUE_UPLOAD.replace("&&", URL_ENV[mCurrentServer]);
     }
 
     @Override
@@ -82,48 +82,38 @@ public class IssueReporter extends NetworkManager implements RequestQueue.Reques
         mHolderQueue.clear();
         mListener = listener;
         IssueCreationRequest issueRequest =
-                new IssueCreationRequest(URL_ISSUE_CREATE, new OsvRequestResponseListener<IssueCreationParser, IssueData>(mIsueCreationParser) {
+                new IssueCreationRequest(factoryServerEndpointUrl.getIssueEndpoint(UrlIssue.ISSUE_CREATE), new KVRequestResponseListener<IssueCreationParser, IssueData>(mIsueCreationParser) {
 
                     @Override
                     public void onSuccess(int status, final IssueData issueData) {
-                        runInBackground(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                mQueue.stop();
-                                int index = 0;
-                                ArrayList<OSVFile> files = Log.getLogFiles(mContext);
-                                for (OSVFile file : files) {
-                                    uploadIssueFile(listener, issueData.getOnlineID(), file, index);
-                                    index++;
-                                }
-                                mQueue.start();
+                        runInBackground(() -> {
+                            mQueue.stop();
+                            int index = 0;
+                            ArrayList<KVFile> files = Log.getLogFiles(mContext);
+                            for (KVFile file : files) {
+                                uploadIssueFile(issueData.getOnlineID(), file, index);
+                                index++;
                             }
+                            mQueue.start();
                         });
                     }
 
                     @Override
                     public void onFailure(final int status, final IssueData issueData) {
-                        runInBackground(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                listener.requestFailed(status, issueData);
-                            }
-                        });
+                        runInBackground(() -> listener.requestFailed(status, issueData));
                     }
-                }, "[Android;" + Build.MODEL + ";" + Build.VERSION.RELEASE + "] " + description, getAccessToken());
-        issueRequest.setRetryPolicy(new DefaultRetryPolicy(18000, 1, 1f));
+                }, "[Android;" + Build.MODEL + ";" + Build.VERSION.RELEASE + "] " + description, getAccessToken(), LoginUtils.isLoginTypePartner(appPrefs), appPrefs.getStringPreference(PreferenceTypes.JARVIS_ACCESS_TOKEN));
+        issueRequest.setRetryPolicy(new DefaultRetryPolicy(REQUEST_TIME_OUT, MAX_NO_RETRY, BACK_OFF_MULTIPLIER));
         mQueue.add(issueRequest);
     }
 
-    private void uploadIssueFile(final NetworkResponseDataListener<IssueData> listener, final int id, final OSVFile file, final int index) {
+    private void uploadIssueFile(final int id, final KVFile file, final int index) {
         if (!file.exists()) {
             Log.w(TAG, "uploadIssueFile: file doesn't exist: " + file.getPath());
             return;
         }
         final IssueUploadRequest request =
-                new IssueUploadRequest(URL_ISSUE_UPLOAD, new OsvRequestResponseListener<HttpResponseParser, ApiResponse>(mHttpResponseParser) {
+                new IssueUploadRequest(factoryServerEndpointUrl.getIssueEndpoint(UrlIssue.ISSUE_UPLOAD_FILE), new KVRequestResponseListener<HttpResponseParser, ApiResponse>(mHttpResponseParser) {
 
                     @Override
                     public void onSuccess(int status, ApiResponse apiResponse) {
@@ -135,10 +125,10 @@ public class IssueReporter extends NetworkManager implements RequestQueue.Reques
 
                     @Override
                     public void onFailure(int status, ApiResponse apiResponse) {
-                        uploadIssueFile(listener, id, file, index);
+                        uploadIssueFile(id, file, index);
                     }
-                }, getAccessToken(), file, id, index);
-        request.setRetryPolicy(new DefaultRetryPolicy(UPLOAD_REQUEST_TIMEOUT, 0, 1f));
+                }, getAccessToken(), file, id, index, LoginUtils.isLoginTypePartner(appPrefs), appPrefs.getStringPreference(PreferenceTypes.JARVIS_ACCESS_TOKEN));
+        request.setRetryPolicy(new DefaultRetryPolicy(UPLOAD_REQUEST_TIMEOUT, 0, BACK_OFF_MULTIPLIER));
         mHolderQueue.add(request);
         mQueue.add(request);
     }

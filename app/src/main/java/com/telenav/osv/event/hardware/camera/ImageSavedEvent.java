@@ -1,20 +1,42 @@
 package com.telenav.osv.event.hardware.camera;
 
+import android.location.Location;
 import com.telenav.osv.event.OSVEvent;
-import com.telenav.osv.item.LocalSequence;
 
 /**
  * Event fired when a frame has been written to storage
- * Created by Kalman on 16/11/2016.
+ * @author unknown
  */
 public class ImageSavedEvent extends OSVEvent {
 
-    public final LocalSequence sequence;
+    private double distance;
 
-    private boolean saved;
+    private long diskSize;
 
-    public ImageSavedEvent(LocalSequence sequence, boolean saved) {
-        this.sequence = sequence;
-        this.saved = saved;
+    private int frameCount;
+
+    private Location imageLocation;
+
+    public ImageSavedEvent(double distance, long diskSize, int frameCount, Location imageLocation) {
+        this.distance = distance;
+        this.diskSize = diskSize;
+        this.frameCount = frameCount;
+        this.imageLocation = imageLocation;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public long getDiskSize() {
+        return diskSize;
+    }
+
+    public int getFrameCount() {
+        return frameCount;
+    }
+
+    public Location getImageLocation() {
+        return imageLocation;
     }
 }

@@ -19,23 +19,33 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <View
+                android:id="@+id/view_camera_preview_background"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/default_transparent" />
+
             <FrameLayout
                 android:id="@+id/content_frame_camera"
                 android:layout_width="match_parent"
                 android:layout_height="500dp"
+                android:background="@color/default_black_lighter"
                 android:tag="bottom|start" />
 
             <FrameLayout
                 android:id="@+id/content_frame_controls"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="150dp"
+                android:layout_gravity="bottom"
+                android:background="@color/default_black_lighter"
                 tools:visibility="visible" />
 
             <FrameLayout
                 android:id="@+id/content_frame_map"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:clipChildren="false">
+                android:clipChildren="false"
+                android:tag="bottom|start">
 
             </FrameLayout>
 
@@ -49,8 +59,8 @@
         <include
             android:id="@+id/recording_feedback_layout"
             layout="@layout/partial_recording_info_layer"
-            android:visibility="gone"
-            tools:visibility="visible" />
+            android:visibility="visible"
+            tools:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/progressbar"
@@ -61,43 +71,11 @@
             android:visibility="gone"
             tools:visibility="visible" />
 
-        <LinearLayout
-            android:id="@+id/record_hint_layout_landscape"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|left"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:visibility="invisible"
-            tools:ignore="UseCompoundDrawables">
-
-            <TextView
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:background="@drawable/custom_bg_white_rounded_hint"
-                android:fontFamily="sans-serif"
-                android:gravity="center"
-                android:paddingEnd="30dp"
-                android:paddingLeft="30dp"
-                android:paddingRight="30dp"
-                android:paddingStart="30dp"
-                android:text="@string/tap_to_start_recording_hint"
-                android:textColor="@color/darker_grey" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/vector_triangle_ls"
-                tools:ignore="ContentDescription" />
-
-        </LinearLayout>
-
-        <android.support.design.widget.AppBarLayout
+        <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/transparent"
+            android:background="@color/default_transparent"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             android:visibility="visible"
             app:elevation="0dp"
@@ -109,9 +87,10 @@
                 android:layout_height="@dimen/action_bar_size"
                 android:clickable="true"
                 android:focusable="true"
+                android:minHeight="@dimen/action_bar_size"
                 app:titleTextAppearance="@style/textStyle.actionBarTitleCollapsed"
-                tools:background="@color/profile_header_blue_text"
-                tools:title="OSC"
+                tools:background="@color/default_purple"
+                tools:title="KV"
                 tools:visibility="visible">
 
                 <TextView
@@ -119,9 +98,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:layout_marginRight="15dp"
+                    android:layout_marginEnd="15dp"
                     android:gravity="end"
-                    android:textColor="#B7BAC5"
+                    android:textColor="@color/default_gray"
                     android:textSize="22sp"
                     android:visibility="gone"
                     tools:text="0" />
@@ -131,22 +110,24 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="end"
-                    android:layout_marginRight="15dp"
+                    android:layout_marginEnd="15dp"
                     android:gravity="end"
                     android:visibility="gone"
                     app:srcCompat="@drawable/vector_send_report"
                     tools:ignore="ContentDescription"
                     tools:visibility="visible" />
             </com.telenav.osv.ui.custom.AppToolbar>
-        </android.support.design.widget.AppBarLayout>
+        </com.google.android.material.appbar.AppBarLayout>
     </FrameLayout>
 
-    <android.support.design.widget.NavigationView
+    <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/darker_grey"
+        app:itemTextColor="@color/default_black"
+        app:itemIconTint="@color/default_purple"
+        android:background="@color/default_white"
         app:headerLayout="@layout/partial_drawer_header"
         app:menu="@menu/menu_navigation" />
 </com.telenav.osv.ui.custom.CustomDrawerLayout>

@@ -1,12 +1,12 @@
 package com.telenav.osv.manager.network.parser;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import com.skobbler.ngx.SKCoordinate;
-import com.telenav.osv.item.ImageCoordinate;
+import com.telenav.osv.common.model.KVLatLng;
 import com.telenav.osv.item.Polyline;
 import com.telenav.osv.item.network.GeometryCollection;
 import com.telenav.osv.utils.Log;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * json parser for geometry
@@ -49,14 +49,14 @@ public class GeometryParser extends ApiResponseParser<GeometryCollection> {
                             }
                             final Polyline polyline = new Polyline(i);
                             polyline.coverage = coverage;
-                            SKCoordinate coordinate;
+                            KVLatLng coordinate;
                             for (int j = 0; j < track.length(); j++) {
                                 if (Thread.interrupted()) {
                                     return collectionData;
                                 }
                                 double lat = track.getJSONArray(j).getDouble(0);
                                 double lon = track.getJSONArray(j).getDouble(1);
-                                coordinate = new ImageCoordinate(lat, lon, j);
+                                coordinate = new KVLatLng(lat, lon, j);
                                 polyline.getNodes().add(coordinate);
                             }
                             collectionData.getSegmentList().add(polyline);

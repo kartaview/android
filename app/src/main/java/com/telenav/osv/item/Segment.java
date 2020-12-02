@@ -1,7 +1,8 @@
 package com.telenav.osv.item;
 
-import android.support.annotation.NonNull;
-import com.skobbler.ngx.SKCoordinate;
+import androidx.annotation.NonNull;
+
+import com.telenav.osv.common.model.KVLatLng;
 
 /**
  * segment object holding matcher info and coverage
@@ -12,21 +13,21 @@ public class Segment {
 
     private static final String TAG = "Segment";
 
-    private final SKCoordinate reference;
+    private final KVLatLng reference;
 
     private double deltaBearing;
 
     private float score;
 
-    private SKCoordinate start;
+    private KVLatLng start;
 
-    private SKCoordinate end;
+    private KVLatLng end;
 
     private double distance;
 
     private Polyline polyline;
 
-    public Segment(double distance, SKCoordinate referencePoint, @NonNull Polyline polyline, SKCoordinate start, SKCoordinate end,
+    public Segment(double distance, KVLatLng referencePoint, @NonNull Polyline polyline, KVLatLng start, KVLatLng end,
                    double deltaBearing, float score) {
         this.distance = distance;
         this.polyline = polyline;
@@ -51,15 +52,15 @@ public class Segment {
         return distance;
     }
 
-    public SKCoordinate getStart() {
+    public KVLatLng getStart() {
         return start;
     }
 
-    public SKCoordinate getEnd() {
+    public KVLatLng getEnd() {
         return end;
     }
 
-    public SKCoordinate getReference() {
+    public KVLatLng getReference() {
         return reference;
     }
 

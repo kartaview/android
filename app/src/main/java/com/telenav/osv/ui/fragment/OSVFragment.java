@@ -1,14 +1,18 @@
 package com.telenav.osv.ui.fragment;
 
-import android.support.annotation.AnimRes;
-import android.support.annotation.AnimatorRes;
-import android.support.v4.app.Fragment;
 import android.view.View;
+
+import androidx.annotation.AnimRes;
+import androidx.annotation.AnimatorRes;
+import androidx.fragment.app.Fragment;
+
 import com.telenav.osv.R;
 
 /**
  * Created by kalmanb on 8/9/17.
+ * This should not be used for new implementation, over time is intended to be replaced and deleted.
  */
+@Deprecated
 public abstract class OSVFragment extends Fragment {
 
     public void cancelAction() {

@@ -2,7 +2,6 @@ package com.telenav.osv.ui.fragment;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import android.webkit.WebViewClient;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
 import com.telenav.osv.listener.OAuthResultListener;
+import androidx.fragment.app.DialogFragment;
 
 /**
  * oauth fragment

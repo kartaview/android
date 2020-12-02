@@ -1,22 +1,63 @@
 package com.telenav.osv.item;
 
+import com.telenav.osv.common.model.KVLatLng;
+
 import java.util.ArrayList;
-import com.skobbler.ngx.SKCoordinate;
-import com.skobbler.ngx.map.SKPolyline;
+import java.util.List;
 
 /**
- * Created by Kalman on 11/11/2016.
+ * Polyline class extension used to denote that if the polyline is used
  */
-
-public class Polyline extends SKPolyline {
-
-    public boolean isLocal = false;
+public class Polyline {
 
     public int coverage = 0;
 
+    private int identifier;
+
+    private List<KVLatLng> nodes;
+
+    private float[] color;
+
+    private float[] outlineColor;
+
     public Polyline(int identifier) {
-        super();
-        setIdentifier(identifier);
-        setNodes(new ArrayList<SKCoordinate>());
+        this.identifier = identifier;
+        this.nodes = new ArrayList<>();
+    }
+
+    public List<KVLatLng> getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(List<KVLatLng> nodes) {
+        this.nodes = nodes;
+    }
+
+    public boolean isLocal() {
+        return true;
+    }
+
+    public int getCoverage() {
+        return coverage;
+    }
+
+    public int getIdentifier() {
+        return identifier;
+    }
+
+    public float[] getColor() {
+        return color;
+    }
+
+    public void setColor(float[] color) {
+        this.color = color;
+    }
+
+    public float[] getOutlineColor() {
+        return outlineColor;
+    }
+
+    public void setOutlineColor(float[] outlineColor) {
+        this.outlineColor = outlineColor;
     }
 }

@@ -1,7 +1,8 @@
 package com.telenav.osv.utils;
 
+import com.telenav.osv.common.model.KVLatLng;
+
 import java.text.DecimalFormat;
-import com.skobbler.ngx.SKCoordinate;
 
 public class ComputingDistance {
 
@@ -95,10 +96,11 @@ public class ComputingDistance {
 
     /**
      * Convenience method for {@link #distanceBetween(double, double, double, double)}
+     *
      * @return distance on surface in meter
      */
-    public static double distanceBetween(final SKCoordinate point_A, final SKCoordinate point_B) {
-        return distanceBetween(point_A.getLongitude(), point_A.getLatitude(), point_B.getLongitude(), point_B.getLatitude());
+    public static double distanceBetween(final KVLatLng firstLocation, final KVLatLng secondLocation) {
+        return distanceBetween(firstLocation.getLon(), firstLocation.getLat(), secondLocation.getLon(), secondLocation.getLat());
     }
 
     /**
@@ -209,42 +211,42 @@ public class ComputingDistance {
 
     /**
      * Convenience method for {@link #getAirDistance(double, double, double, double)}
+     *
      * @return distance on surface in meter
      */
-    public static double getAirDistance(final SKCoordinate point_A, final SKCoordinate point_B) {
-        return getAirDistance(point_A.getLongitude(), point_A.getLatitude(), point_B.getLongitude(), point_B.getLatitude());
+    public static double getAirDistance(final KVLatLng point_A, final KVLatLng point_B) {
+        return getAirDistance(point_A.getLon(), point_A.getLat(), point_B.getLon(), point_B.getLat());
     }
 
-    public static double getDistanceFromLine(SKCoordinate position, SKCoordinate start, SKCoordinate end) {
+    public static double getDistanceFromLine(KVLatLng position, KVLatLng start, KVLatLng end) {
         return Math.sqrt(distToSegmentSquared(position, start, end));
     }
 
-    public static double getDistanceFromSegment(SKCoordinate origin, SKCoordinate pointA, SKCoordinate pointB) {
-        SKCoordinate dap = new SKCoordinate(origin.getLatitude() - pointA.getLatitude(), origin.getLongitude() - pointA.getLongitude());
-        SKCoordinate dab = new SKCoordinate(pointB.getLatitude() - pointA.getLatitude(), pointB.getLongitude() - pointA.getLongitude());
-        double dot = dap.getLongitude() * dab.getLongitude() + dap.getLatitude() * dab.getLatitude();
+    public static double getDistanceFromSegment(KVLatLng origin, KVLatLng pointA, KVLatLng pointB) {
+        KVLatLng dap = new KVLatLng(origin.getLat() - pointA.getLat(), origin.getLon() - pointA.getLon(), 0);
+        KVLatLng dab = new KVLatLng(pointB.getLat() - pointA.getLat(), pointB.getLon() - pointA.getLon(), 0);
+        double dot = dap.getLon() * dab.getLon() + dap.getLat() * dab.getLat();
 
-        double squareLength = dab.getLongitude() * dab.getLongitude() + dab.getLatitude() * dab.getLatitude();
+        double squareLength = dab.getLon() * dab.getLon() + dab.getLat() * dab.getLat();
         double param = dot / squareLength;
 
-        SKCoordinate nearestPoint = new SKCoordinate();
-        if (param < 0 || (pointA.getLongitude() == pointB.getLongitude() && pointA.getLatitude() == pointB.getLatitude())) {
-            nearestPoint.setLongitude(pointA.getLongitude());
-            nearestPoint.setLatitude(pointA.getLatitude());
+        double nearestLat;
+        double nearestLon;
+        if (param < 0 || (pointA.getLon() == pointB.getLon() && pointA.getLat() == pointB.getLat())) {
+            nearestLon = pointA.getLon();
+            nearestLat = pointA.getLat();
         } else if (param > 1) {
-            nearestPoint.setLongitude(pointB.getLongitude());
-            nearestPoint.setLatitude(pointB.getLatitude());
+            nearestLon = pointB.getLon();
+            nearestLat = pointB.getLat();
         } else {
-            nearestPoint.setLongitude(pointA.getLongitude() + param * dab.getLongitude());
-            nearestPoint.setLatitude(pointA.getLatitude() + param * dab.getLatitude());
+            nearestLon = (pointA.getLon() + param * dab.getLon());
+            nearestLat = (pointA.getLat() + param * dab.getLat());
         }
 
-        double dx = origin.getLongitude() - nearestPoint.getLongitude();
-        double dy = origin.getLatitude() - nearestPoint.getLatitude();
-        double distance = Math.sqrt(dx * dx + dy * dy);
-
-        //        return nearestPoint;
-        return distance;
+        KVLatLng nearestPoint = new KVLatLng(nearestLat, nearestLon, 0);
+        double dx = origin.getLon() - nearestPoint.getLon();
+        double dy = origin.getLat() - nearestPoint.getLat();
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     /**
@@ -313,15 +315,15 @@ public class ComputingDistance {
         return sqr(vx - wx) + sqr(vy - wy);
     }
 
-    private static double distToSegmentSquared(SKCoordinate p, SKCoordinate v, SKCoordinate w) {
-        double l2 = dist2(v.getLongitude(), v.getLatitude(), w.getLongitude(), w.getLatitude());
+    private static double distToSegmentSquared(KVLatLng p, KVLatLng v, KVLatLng w) {
+        double l2 = dist2(v.getLon(), v.getLat(), w.getLon(), w.getLat());
         if (l2 == 0) {
-            return dist2(p.getLongitude(), p.getLatitude(), v.getLongitude(), v.getLatitude());
+            return dist2(p.getLon(), p.getLat(), v.getLon(), v.getLat());
         }
-        double t = ((p.getLongitude() - v.getLongitude()) * (w.getLongitude() - v.getLongitude()) +
-                (p.getLatitude() - v.getLatitude()) * (w.getLatitude() - v.getLatitude())) / l2;
+        double t = ((p.getLon() - v.getLon()) * (w.getLon() - v.getLon()) +
+                (p.getLat() - v.getLat()) * (w.getLat() - v.getLat())) / l2;
         t = Math.max(0, Math.min(1, t));
-        return dist2(p.getLongitude(), p.getLatitude(), v.getLongitude() + t * (w.getLongitude() - v.getLongitude()),
-                v.getLatitude() + t * (w.getLatitude() - v.getLatitude()));
+        return dist2(p.getLon(), p.getLat(), v.getLon() + t * (w.getLon() - v.getLon()),
+                v.getLat() + t * (w.getLat() - v.getLat()));
     }
 }

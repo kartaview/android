@@ -1,0 +1,124 @@
+apply plugin: 'com.android.model.library'
+
+model {
+    android {
+        def globalConfiguration = rootProject.ext.config
+
+        compileSdkVersion globalConfiguration.androidCompileSdkVersion
+        buildToolsVersion globalConfiguration.androidBuildToolsVersion
+
+        defaultConfig {
+            minSdkVersion globalConfiguration.androidMinSdkVersion
+            targetSdkVersion globalConfiguration.androidTargetSdkVersion
+            versionCode globalConfiguration.sensorlibVersionCode
+            versionName globalConfiguration.sensorlibVersion
+        }
+        ndk {
+            debuggable true
+            moduleName "sensor"
+            cppFlags.add('-I' + file("src/main/jni/include"))
+            cppFlags.add('-I' + file("src/main/jni/"))
+            cppFlags.add("-frtti")
+            cppFlags.add("-lto")
+            ldLibs.add("android")
+            ldLibs.add("log")
+            ldLibs.add("m")
+            ldLibs.add("dl")
+            ldLibs.add("atomic")
+            abiFilters.add("x86")
+            abiFilters.add("armeabi-v7a")
+            abiFilters.add("armeabi")
+            stl "gnustl_static"
+            toolchain "clang"
+        }
+
+    }
+
+    android.lintOptions {
+        abortOnError true
+    }
+    android.sources.main {
+        java {
+            source {
+                srcDirs "src/main/java"
+            }
+        }
+        aidl {
+            source {
+                srcDir "src/main/java"
+            }
+        }
+        jni {
+            exportedHeaders {
+                srcDir "src/main/jni/include"
+            }
+            source {
+                srcDir "src/main/jni"
+
+            }
+            dependencies {
+                library "lept" linkage "shared"
+                library "opencv" linkage "shared"
+                library "tess" linkage "shared"
+                library "SL" linkage "shared"
+                library "proto" linkage "shared"
+//                library "boost" linkage "static"
+            }
+        }
+    }
+    android.sources.main {
+        jniLibs {
+            source {
+                srcDir "src/main/libs"
+            }
+        }
+    }
+
+    repositories {
+        libs(PrebuiltLibraries) {
+            SL {
+                headers.srcDir "src/main/jni/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/libs/${targetPlatform.getName()}/libsl.so")
+                }
+            }
+            lept {
+                headers.srcDir "src/main/jni/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/libs/${targetPlatform.getName()}/liblept.so")
+                }
+            }
+            opencv {
+                headers.srcDir "src/main/jni/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/libs/${targetPlatform.getName()}/libopencv_java3.so")
+                }
+            }
+            tess {
+                headers.srcDir "src/main/jni/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/libs/${targetPlatform.getName()}/libtess.so")
+                }
+            }
+            proto {
+                headers.srcDir "src/main/jni/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("src/main/libs/${targetPlatform.getName()}/libprotobuf.so")
+                }
+            }
+//            boost {
+//                headers.srcDir "src/main/jni/include"
+//                binaries.withType(StaticLibraryBinary) {
+//                    staticLibraryFile = file("src/main/lib/libboost_system.a")
+//                    staticLibraryFile = file("src/main/lib/libboost_thread.a")
+//                    staticLibraryFile = file("src/main/lib/libboost_atomic.a")
+//                }
+//            }
+        }
+    }
+}
+
+dependencies {
+    def appDependencies = rootProject.ext.appDependencies
+    compile appDependencies.appcompatv7
+}

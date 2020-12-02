@@ -14,7 +14,6 @@
         android:layout_above="@+id/buttons_layout"
         android:layout_alignParentTop="true"
         android:layout_centerInParent="true"
-        android:layout_marginTop="@dimen/action_bar_size"
         android:background="#1B1C1F"
         android:gravity="center"
         android:orientation="vertical">
@@ -29,18 +28,18 @@
                 android:id="@+id/upload_total_progress"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
                 android:layout_centerInParent="true"
                 android:gravity="center"
                 android:indeterminate="false"
                 android:max="100"
-                android:minHeight="220dp"
                 android:minWidth="220dp"
+                android:minHeight="220dp"
                 android:progress="0"
                 android:visibility="visible"
-                app:matProg_barColor="#A233B1"
+                app:matProg_barColor="@color/default_purple"
                 app:matProg_barWidth="6dp"
                 app:matProg_circleRadius="140dp"
                 app:matProg_linearProgress="true"
@@ -63,7 +62,7 @@
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@string/default_value_0"
-                    android:textColor="@color/text_colour_default"
+                    android:textColor="@color/default_white"
                     android:textSize="90sp"
                     tools:ignore="HardcodedText" />
 
@@ -71,12 +70,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_above="@+id/size_details_holder"
-                    android:layout_marginBottom="15dp"
                     android:layout_marginLeft="3dp"
+                    android:layout_marginBottom="15dp"
                     android:layout_toRightOf="@+id/percent_text"
                     android:fontFamily="sans-serif-thin"
                     android:text="%"
-                    android:textColor="@color/gray_text_color"
+                    android:textColor="@color/default_gray_darker"
                     android:textSize="30sp"
                     tools:ignore="HardcodedText" />
 
@@ -97,7 +96,7 @@
                         android:layout_toLeftOf="@+id/simple_line"
                         android:maxLines="1"
                         android:text="0 MB"
-                        android:textColor="@color/text_colour_default"
+                        android:textColor="@color/default_white"
                         android:textSize="12sp"
                         tools:ignore="HardcodedText" />
 
@@ -106,7 +105,7 @@
                         android:layout_width="1dp"
                         android:layout_height="14dp"
                         android:layout_centerInParent="true"
-                        android:background="@color/gray_text_color" />
+                        android:background="@color/default_gray_darker" />
 
                     <TextView
                         android:id="@+id/total_text"
@@ -117,7 +116,7 @@
                         android:layout_toRightOf="@+id/simple_line"
                         android:maxLines="1"
                         android:text="0 MB"
-                        android:textColor="@color/gray_text_color"
+                        android:textColor="@color/default_gray_darker"
                         android:textSize="12sp"
                         tools:ignore="HardcodedText" />
                 </RelativeLayout>
@@ -135,13 +134,13 @@
                 style="@style/textStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
                 android:layout_toLeftOf="@+id/second_simple_line"
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="0 min"
-                android:textColor="@color/gray_text_color"
+                android:textColor="@color/default_gray_darker"
                 android:textSize="22sp"
                 tools:ignore="HardcodedText" />
 
@@ -151,7 +150,7 @@
                 android:layout_height="22dp"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:background="@color/gray_text_color" />
+                android:background="@color/default_gray_darker" />
 
             <TextView
                 android:id="@+id/upload_speed_text"
@@ -162,13 +161,13 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="0 kb/s"
-                android:textColor="@color/gray_text_color"
+                android:textColor="@color/default_gray_darker"
                 android:textSize="22sp"
                 tools:ignore="HardcodedText" />
         </RelativeLayout>
     </LinearLayout>
 
-    <android.support.percent.PercentRelativeLayout
+    <androidx.percentlayout.widget.PercentRelativeLayout
         android:id="@+id/buttons_layout"
         android:layout_width="match_parent"
         android:layout_height="68dp"
@@ -176,56 +175,35 @@
         android:background="#1B1C1F"
         android:padding="10dp">
 
-        <LinearLayout
-            android:id="@+id/pause_button"
-            android:layout_marginRight="5dp"
-            android:background="@drawable/custom_bg_uploading_buttons"
-            android:clickable="true"
-            android:focusable="true"
+
+    </androidx.percentlayout.widget.PercentRelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/cancel_all_button"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_alignParentBottom="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/default_gray"
+            android:orientation="vertical" />
+
+        <TextView
+            style="@style/toolbarButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:fontFamily="sans-serif-light"
             android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_heightPercent="100%"
-            app:layout_widthPercent="48%">
-
-            <TextView
-                android:id="@+id/pause_text"
-                style="@style/toolbarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:drawableLeft="@drawable/ic_uploading_pause_gray"
-                android:fontFamily="sans-serif-light"
-                android:gravity="center"
-                android:text="@string/pause_caps_label"
-                android:textColor="@color/gray_text_color"
-                android:textSize="19sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/cancel_all_button"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="5dp"
-            android:background="@drawable/custom_bg_uploading_buttons"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_heightPercent="100%"
-            app:layout_widthPercent="48%">
-
-            <TextView
-                style="@style/toolbarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:drawableLeft="@drawable/ic_uploading_stop_gray"
-                android:fontFamily="sans-serif-light"
-                android:gravity="center"
-                android:text="@string/stop_caps_label"
-                android:textColor="@color/gray_text_color"
-                android:textSize="19sp" />
-        </LinearLayout>
-    </android.support.percent.PercentRelativeLayout>
+            android:text="@string/stop_caps_label"
+            android:textColor="@color/default_gray_darker"
+            android:textSize="19sp" />
+    </LinearLayout>
 
 </RelativeLayout>

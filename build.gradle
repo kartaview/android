@@ -1,95 +1,154 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath "com.google.gms:google-services:4.3.4"
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.3.0'
+        classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10"
+    }
+}
+
 allprojects {
-    buildscript {
-        repositories {
-            google()
-            jcenter()
-            maven {
-                url 'https://maven.fabric.io/public'
+
+    repositories {
+        google()
+        jcenter()
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
+        maven {
+            url "http://share.skobbler.com/android/maven/"
+        }
+        maven { url 'https://jitpack.io' }
+        maven {
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                // Do not change the username below.
+                // This should always be `mapbox` (not your username).
+                username = 'mapbox'
+                // Use the secret token you stored in gradle.properties as the password
+                password = project.properties['mapBoxDownload']
             }
         }
-
-        dependencies {
-            classpath 'com.android.tools.build:gradle:3.0.1'
-            classpath 'com.android.tools.build:gradle-experimental:0.9.3'
-            classpath 'com.google.gms:google-services:3.1.0'
-            classpath 'io.fabric.tools:gradle:1.23.0'
-            classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
-        }
     }
 
-    ext {
-        config = [
-                appId                     : 'com.telenav.streetview',
-                appVersionCode            : 86,
-                appVersionName            : "2.1.6",
-                testInstrumentationRunner : "android.support.test.runner.AndroidJUnitRunner",
-                testAppId                 : 'com.telenav.streetview.test',
-                androidBuildToolsVersion  : "26.0.2",
-                androidMinSdkVersion      : 21,
-                androidTargetSdkVersion   : 26,
-                androidCompileSdkVersion  : 26,
-                //Modules
-                skmapsVersionCode         : 7,
-                skmapsVersion             : '1.0.7',
-                connectionProbeVersionCode: 1,
-                connectionProbeVersion    : '1.0.0',
-                ffmpegVersionCode         : 4,
-                ffmpegVersion             : '1.0.4',
-                sensorlibVersionCode      : 3,
-                sensorlibVersion          : '1.1.0',
-                photoViewVersionCode      : 1,
-                photoViewVersion          : '1.0.0',
-                videoViewVersionCode      : 1,
-                videoViewVersion          : '1.0.0',
-                sphericalVersionCode      : 1,
-                sphericalVersion          : '1.0.0',
-                volleyVersionCode         : 2,
-                volleyVersion             : '1.0.1',
-                eventbusVersionCode       : 1,
-                eventbusVersion           : '1.0.0',
-                dotindicatorVersionCode   : 1,
-                dotindicatorVersion       : '1.0.0'
-        ]
+    def module_versions = [
+            connectionProbeVersionCode: 1,
+            connectionProbeVersion    : '1.0.0',
+            sensorlibVersionCode      : 3,
+            sensorlibVersion          : '1.1.0',
+            photoViewVersionCode      : 1,
+            photoViewVersion          : '1.0.0',
+            videoViewVersionCode      : 1,
+            videoViewVersion          : '1.0.0',
+            sphericalVersionCode      : 1,
+            sphericalVersion          : '1.0.0',
+            volleyVersionCode         : 2,
+            volleyVersion             : '1.0.1',
+            eventbusVersionCode       : 1,
+            eventbusVersion           : '1.0.0',
+            dotindicatorVersionCode   : 1,
+            dotindicatorVersion       : '1.0.0'
+    ]
 
-        // Sdk and tools
-        supportVersion = '26.1.0'
-        playServicesVersion = '11.4.2'
+    def library_version = [
+            jetbrainsAnnotations           : '15.0',
+            signpostVersion                : '1.2.1.2',
+            apacheHttpClientVersion        : '4.3.5.1',
+            apacheHttpMimeVersion          : '4.3.6',
+            apacheMathVersion              : '3.6.1',
+            materialishProgressVersion     : '1.7',
+            glideVersion                   : '4.11.0',
+            appIntroVersion                : 'v5.1.0',
+            bindingCollectionAdapterVersion: '2.2.0',
+            pagingVersion                  : '1.0.0-alpha2',
+            guavaVersion                   : '25.1-android',
+            jodaExtVersion                 : '2.10.1',
+            slidableActivityVersion        : '2.0.6',
+            //okhttp
+            okHttpVersion                  : '3.14.2',
+            //rxjava2
+            rxJava2Version                 : '2.2.9',
+            rxAndroidVersion               : '2.1.1',
+            //retrofit
+            retrofitVersion                : '2.8.1',
+            retrofitRxJavaAdapterVersion   : '1.0.0',
+            retrofitGsonConverter          : '2.5.0',
+            //--------------Androidx------------------------
+            recyclerView                   : '1.0.0',
+            cardView                       : '1.0.0',
+            precentLayout                  : '1.0.0',
+            browser                        : '1.0.0',
+            annotation                     : '1.0.0',
+            lifecycle                      : '2.0.0',
+            constraintLayout               : '1.1.3',
+            appCompat                      : '1.2.0',
+            preference                     : '1.0.0',
+            room                           : '2.0.0',
+            //--------------Google--------------------------
+            googleServices                 : '4.2.0',
+            playServicesAuth               : '16.0.1',
+            playServicesLocation           : '16.0.0',
+            firebaseAuth                   : '19.4.0',
+            firebaseCore                   : '17.5.1',
+            firebaseMessaging              : '20.3.0',
+            googleApiVersion               : '1.27.0',
+            material                       : '1.0.0',
+            kotlinVersion                  : '1.4.10',
+            coroutines                     : '1.3.5',
+            exoplayerVersion               : '2.9.6',
+            timberVersion                  : '4.7.1',
+            //--------------Facebook------------------------
+            facebookSdk                    : '4.38.1',
+            //--------------MapBox--------------------------
+            mapBoxSdk                      : '9.5.0',
+            mapBoxSdkAnnotation            : '0.7.0'
+    ]
 
-        //Libraries
-        dataCollectorVersion = '1.1.5.2'
-        daggerVersion = '2.11'
-        signpostVersion = '1.2.1.2'
-        apacheHttpClientVersion = '4.3.5.1'
-        apacheHttpMimeVersion = '4.3'
-        materialishProgressVersion = '1.7'
-        androidAnnotationsVersion = supportVersion
-        firebaseVersion = playServicesVersion
-        googleApiVersion = "1.22.0"
-        facebookApiVersion = "4.19.0"
-        glideVersion = '3.7.0'
-        appIntroVersion = '4.1.0'
-        bindingCollectionAdapterVersion = '2.2.0'
-        lifecycleVersion = '1.0.0'
-        lifecycleExtVersion = '1.0.0-beta1'
-        pagingVersion = '1.0.0-alpha2'
+    def testing_versions = [
+            robolectricVersion   : '4.0.1',
+            jUnitVersion         : '4.12',
+            mockitoCore          : '2.23.4',
+            dexmakerVersion      : '1.2',
+            espressoVersion      : '3.1.0',
+            powermockVersion     : '2.0.0',
+            hamcrestVersion      : '1.3',
+            runnerTesting        : '1.1.0',
+            rulesTesting         : '1.1.0',
+            stethoVersion        : '1.5.0',
+            archCoreTesting      : '2.0.0',
+            //development
+            crashliticsVersion   : '17.2.2',
+            crashliticsNdkVersion: '17.2.2',
+            firebaseAnalytichs   : '17.6.0'
+    ]
 
-        //Testing
-        robolectricVersion = '3.3.2'
-        jUnitVersion = '4.12'
-        mockitoVersion = '1.10.19'
-        dexmakerVersion = '1.2'
-        espressoVersion = '3.0.0'
-        testingSupportLibVersion = '0.1'
-        powermockVersion = '1.7.1'
-        hamcrestVersion = '1.3'
-        runnerVersion = '1.0.0'
-        rulesVersion = '1.0.0'
+    def build_versions = [
+            appId                    : 'com.telenav.streetview',
+            appVersionCode           : 118,
+            appVersionName           : "4.0",
+            testInstrumentationRunner: 'androidx.test.runner.AndroidJUnitRunner',
+            testAppId                : 'com.telenav.streetview.test',
+            androidBuildToolsVersion : '29.0.2',
+            androidMinSdkVersion     : 22,
+            androidTargetSdkVersion  : 29,
+            androidCompileSdkVersion : 29,
+    ]
 
-        //Development
-        stethoVersion = '1.5.0'
-        crashliticsVersion = '2.6.8'
-        crashliticsNdkVersion = '1.1.6'
-    }
+    ext.config = [
+            lib_vers   : library_version,
+            test_vers  : testing_versions,
+            module_vers: module_versions,
+            build_vers : build_versions
+    ]
 }
 
 task clean(type: Delete) {

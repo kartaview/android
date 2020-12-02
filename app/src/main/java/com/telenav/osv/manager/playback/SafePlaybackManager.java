@@ -1,39 +1,50 @@
 package com.telenav.osv.manager.playback;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.SeekBar;
-import com.bumptech.glide.DrawableRequestBuilder;
+
+import androidx.annotation.Nullable;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.bumptech.glide.signature.StringSignature;
-import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.db.SequenceDB;
-import com.telenav.osv.item.ImageCoordinate;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.common.model.KVLatLng;
+import com.telenav.osv.data.frame.datasource.local.FrameLocalDataSource;
+import com.telenav.osv.data.frame.model.Frame;
+import com.telenav.osv.data.sequence.model.LocalSequence;
+import com.telenav.osv.data.sequence.model.Sequence;
+import com.telenav.osv.data.sequence.model.details.compression.SequenceDetailsCompressionJpeg;
 import com.telenav.osv.item.ImageFile;
-import com.telenav.osv.item.OSVFile;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.item.KVFile;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.Utils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import uk.co.senab.photoview.PhotoView;
 
 /**
@@ -48,13 +59,13 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
 
     private static long PLAYBACK_RATE = 250;
 
-    private final Sequence mSequence;
+    private final LocalSequence mSequence;
 
     private final OSVActivity activity;
 
     private ArrayList<ImageFile> mImages = new ArrayList<>();
 
-    private ArrayList<SKCoordinate> mTrack = new ArrayList<>();
+    private ArrayList<Location> mTrack = new ArrayList<>();
 
     private Glide mGlide;
 
@@ -73,6 +84,8 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
     private boolean mImageLoaded = true;
 
     private ArrayList<PlaybackListener> mPlaybackListeners = new ArrayList<>();
+
+    private Disposable framesDisposable;
 
     private Runnable mRunnable = new Runnable() {
 
@@ -94,17 +107,16 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
         }
     };
 
-    private RequestListener<? super String, GlideDrawable> mGlideListener = new RequestListener<String, GlideDrawable>() {
+    private RequestListener<Drawable> mGlideListener = new RequestListener<Drawable>() {
 
         @Override
-        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
             mImageLoaded = true;
             return false;
         }
 
         @Override
-        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache,
-                                       boolean isFirstResource) {
+        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
             mImageLoaded = true;
             return false;
         }
@@ -112,10 +124,19 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
 
     private boolean mPrepared;
 
-    public SafePlaybackManager(OSVActivity act, Sequence sequence) {
+    private ApplicationPreferences applicationPreferences;
+
+    /**
+     * The data source for frame on the device persistence.
+     */
+    private FrameLocalDataSource frameLocalDataSource;
+
+    public SafePlaybackManager(OSVActivity act, LocalSequence sequence, FrameLocalDataSource frameLocalDataSource, ApplicationPreferences applicationPreferences) {
         activity = act;
         mSequence = sequence;
         mGlide = Glide.get(activity);
+        this.applicationPreferences = applicationPreferences;
+        this.frameLocalDataSource = frameLocalDataSource;
         mPagerAdapter = new FullscreenPagerAdapter(activity);
     }
 
@@ -169,15 +190,9 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
             }
 
             @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
+            public void onPageScrollStateChanged(int state) {}
         });
-        if (mSequence.getRequestedFrameIndex() != 0) {
-            if (mPager != null) {
-                mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
-            }
-        }
+        setFrameIndex();
     }
 
     @Override
@@ -223,6 +238,9 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
 
     @Override
     public void stop() {
+        if (framesDisposable != null) {
+            framesDisposable.dispose();
+        }
         mPlaying = false;
         mPlayHandler.removeCallbacks(mRunnable);
         if (mPager != null) {
@@ -301,7 +319,7 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
         return mSequence;
     }
 
-    public ArrayList<SKCoordinate> getTrack() {
+    public ArrayList<Location> getTrack() {
         return mTrack;
     }
 
@@ -331,64 +349,59 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
 
     }
 
+    /**
+     * Sets the frame index for the pager.
+     */
+    private void setFrameIndex() {
+        if (mSequence.getCompressionDetails() instanceof SequenceDetailsCompressionJpeg) {
+            if (mPager != null) {
+                mPager.setCurrentItem(((SequenceDetailsCompressionJpeg) mSequence.getCompressionDetails()).getFrameIndex());
+            }
+        }
+    }
+
     private void loadFrames() {
         activity.enableProgressBar(true);
         final ArrayList<ImageFile> nodes = new ArrayList<>();
-        final ArrayList<ImageCoordinate> track = new ArrayList<>();
-        final int finalSeqId = mSequence.getId();
-        Cursor cursor = SequenceDB.instance.getFrames(finalSeqId);
-        while (cursor != null && !cursor.isAfterLast()) {
-            int index = cursor.getInt(cursor.getColumnIndex(SequenceDB.FRAME_SEQ_INDEX));
-            String path = cursor.getString(cursor.getColumnIndex(SequenceDB.FRAME_FILE_PATH));
-            double lat = cursor.getDouble(cursor.getColumnIndex(SequenceDB.FRAME_LAT));
-            double lon = cursor.getDouble(cursor.getColumnIndex(SequenceDB.FRAME_LON));
-            if (lat != 0.0 && lon != 0.0) {
-                ImageCoordinate coord = new ImageCoordinate(lat, lon, index);
-                nodes.add(new ImageFile(new OSVFile(path), index, coord, false));
-                track.add(coord);
-            }
-            cursor.moveToNext();
-        }
-        if (cursor != null) {
-            cursor.close();
-        }
-        Collections.sort(nodes, new Comparator<ImageFile>() {
-
-            @Override
-            public int compare(ImageFile lhs, ImageFile rhs) {
-                return lhs.index - rhs.index;
-            }
-        });
-        Collections.sort(track, new Comparator<ImageCoordinate>() {
-
-            @Override
-            public int compare(ImageCoordinate lhs, ImageCoordinate rhs) {
-                return lhs.index - rhs.index;
-            }
-        });
-        activity.enableProgressBar(false);
-        Log.d(TAG, "listImages: id=" + finalSeqId + " length=" + nodes.size());
-        activity.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                mPrepared = true;
-                mImages = nodes;
-                mTrack = new ArrayList<SKCoordinate>(track);
-                mSeekbar.setMax(mImages.size());
-                mSeekbar.setProgress(0);
-                mPagerAdapter.notifyDataSetChanged();
-                for (PlaybackListener pl : mPlaybackListeners) {
-                    pl.onPrepared();
-                }
-                if (mSequence.getRequestedFrameIndex() != 0) {
-                    if (mPager != null) {
-                        mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
-                    }
-                }
-                //                                play();
-            }
-        });
+        final ArrayList<KVLatLng> track = new ArrayList<>();
+        final String sequenceId = mSequence.getID();
+        framesDisposable = frameLocalDataSource
+                .getFramesWithLocations(sequenceId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        //onSuccess
+                        frames -> {
+                            Log.d(TAG, String.format("loadFrames. Status: successful. Sequence id: %s. Message: Frames loaded successful for the sequence.", sequenceId));
+                            for (Frame frame : frames) {
+                                Location frameLocation = frame.getLocation();
+                                if (frameLocation != null && frameLocation.getLatitude() != 0.0 && frameLocation.getLongitude() != 0.0) {
+                                    int frameSeqIndex = frame.getIndex();
+                                    KVLatLng coord = new KVLatLng(frameLocation.getLatitude(), frameLocation.getLongitude(), frameSeqIndex);
+                                    nodes.add(new ImageFile(new KVFile(frame.getFilePath()), frameSeqIndex, coord, false));
+                                    track.add(coord);
+                                }
+                            }
+                            Collections.sort(nodes, (lhs, rhs) -> lhs.index - rhs.index);
+                            Collections.sort(track, (lhs, rhs) -> lhs.getIndex() - rhs.getIndex());
+                            activity.enableProgressBar(false);
+                            Log.d(TAG, "listImages: id=" + sequenceId + " length=" + nodes.size());
+                            mPrepared = true;
+                            mImages = nodes;
+                            mTrack = new ArrayList<>(Utils.toLocationFromKVLatLng(track));
+                            mSeekbar.setMax(mImages.size());
+                            mSeekbar.setProgress(0);
+                            mPagerAdapter.notifyDataSetChanged();
+                            for (PlaybackListener pl : mPlaybackListeners) {
+                                pl.onPrepared();
+                            }
+                            setFrameIndex();
+                            play();
+                        },
+                        //onError
+                        throwable -> Log.d(TAG, String.format("loadFrames. Status: error. Sequence id: %s. Message: %s.", sequenceId, throwable.getLocalizedMessage())),
+                        //OnComplete
+                        () -> Log.d(TAG, String.format("loadFrames. Status: complete. Sequence id: %s. Message: Frames not found.", sequenceId)));
     }
 
     private void playImpl() {
@@ -429,10 +442,8 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
                     mGlide.trimMemory(OFFSCREEN_LIMIT);
                 }
                 try {
-                    DrawableRequestBuilder<String> builder =
+                    RequestBuilder<Drawable> builder =
                             Glide.with(activity).load(mImages.get(position).link).fitCenter().diskCacheStrategy(DiskCacheStrategy.ALL)
-                                    .animate(new AlphaAnimation(1f, 1f)).skipMemoryCache(false).signature(new StringSignature(
-                                    mImages.get(position).coords.getLatitude() + "," + mImages.get(position).coords.getLongitude() + " full"))
                                     .priority(Priority.NORMAL).error(R.drawable.vector_picture_placeholder).listener(mGlideListener);
                     if (PLAYBACK_RATE > 200 || !isPlaying()) {
                         builder.thumbnail(0.2f).listener(mGlideListener);
@@ -449,8 +460,8 @@ public class SafePlaybackManager extends PlaybackManager implements SeekBar.OnSe
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            if (object != null) {
-                Glide.clear(((View) object));
+            if (object != null && !activity.isFinishing()) {
+                Glide.with(activity).clear(((View) object));
             }
             container.removeView((View) object);
         }

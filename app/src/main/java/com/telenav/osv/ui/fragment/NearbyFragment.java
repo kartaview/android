@@ -1,13 +1,14 @@
 package com.telenav.osv.ui.fragment;
 
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CoordinatorLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.google.android.material.appbar.AppBarLayout;
 import com.telenav.osv.R;
 import com.telenav.osv.item.network.TrackCollection;
+import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 /**
  * Fragment displaying nearby recordings
@@ -36,16 +37,24 @@ public class NearbyFragment extends SimpleProfileFragment {
         appBar.requestLayout();
         mSwipeRefreshLayout.setEnabled(false);
         toolbar.setTitle("Nearby");
+
+        mOnlineSequencesAdapter.setTrackIdVisibility(false);
         return view;
     }
 
     @Override
-    protected void requestDetails() {
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        hideLoadingIndicator();
     }
 
     @Override
-    protected void displayCachedStats() {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
+    @Override
+    protected void requestDetails() {
     }
 
     @Override

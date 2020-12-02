@@ -9,32 +9,42 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.snackbar.Snackbar;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.ApplicationPreferences;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.item.Payment;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.common.Injection;
+import com.telenav.osv.common.ui.loader.LoadingScreen;
+import com.telenav.osv.data.sequence.model.Sequence;
+import com.telenav.osv.data.user.datasource.UserDataSource;
+import com.telenav.osv.data.user.model.User;
 import com.telenav.osv.ui.ScreenComposer;
 import com.telenav.osv.ui.custom.ProgressImageView;
-import com.telenav.osv.ui.list.PaymentAdapter;
 import com.telenav.osv.ui.list.SequenceAdapter;
 import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * fragment holding the ui for the user's data
@@ -48,52 +58,6 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
      * preference name
      */
     public static final String PREFS_NAME = "osvMyProfileAppPrefs";
-
-    public static final String K_RANK = "rank";
-
-    public static final String K_LEVEL = "level";
-
-    public static final String K_SCORE = "score";
-
-    public static final String K_XP_PROGRESS = "xpProgress";
-
-    public static final String K_XP_TARGET = "xpTarget";
-
-    public static final String K_TOTAL_DISTANCE = "totalDistance";
-
-    public static final String K_OBD_DISTANCE = "obdDistance";
-
-    public static final String K_TOTAL_PHOTOS = "totalPhotos";
-
-    public static final String K_TOTAL_TRACKS = "totalTracks";
-
-    public static final String K_DRIVER_CURRENT_ACCEPTED_DISTANCE = "currentAcceptedDistance";
-
-    public static final String K_DRIVER_CURRENT_PAYRATE = "currentPayRate";
-
-    public static final String K_DRIVER_BYOD20_MAX_PAYRATE = "byod20MaxPayRate";
-
-    public static final String K_DRIVER_CURRENT_VALUE = "currentPaymentValue";
-
-    public static final String K_DRIVER_TOTAL_VALUE = "totalPaymentValue";
-
-    public static final String K_DRIVER_TOTAL_ACCEPTED_DISTANCE = "driverAcceptedDistance";
-
-    public static final String K_DRIVER_TOTAL_REJECTED_DISTANCE = "driverRejectedDistance";
-
-    public static final String K_DRIVER_TOTAL_OBD_DISTANCE = "driverObdDistance";
-
-    public static final String K_DRIVER_TRACKS_COUNT = "driverTracksCount";
-
-    public static final String K_DRIVER_PHOTOS_COUNT = "driverPhotosCount";
-
-    public static final String K_DRIVER_CURRENCY = "driverCurrency";
-
-    public static final String K_DRIVER_PAYMENT_MODEL_VERSION = "drivePaymentModel";
-
-    public static final String PAYMENT_MODEL_VERSION_20 = "2.0";
-
-    public static final String PAYMENT_MODEL_VERSION_10 = "1.0";
 
     protected static final int NUMBER_OF_ITEMS_PER_PAGE = 30;
 
@@ -112,10 +76,6 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
     protected ArrayList<Sequence> mOnlineSequences = new ArrayList<>();
 
     protected int mCurrentPageToList = 1;
-
-    protected int mPaymentCurrentPageToList = 1;
-
-    protected int mPaymentMaxNumberOfResults = 10000;
 
     protected boolean mLoading;
 
@@ -138,10 +98,6 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
     protected Toolbar toolbar;
 
     protected AppBarLayout appBar;
-
-    ArrayList<Payment> mPaymentsList = new ArrayList<>();
-
-    PaymentAdapter mPaymentAdapter;
 
     private int mLastVisibleItem, mTotalItemCount;
 
@@ -181,14 +137,10 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
         @Override
         public void run() {
             if (activity != null) {
-                activity.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (mSwipeRefreshLayout != null) {
-                            if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MY_PROFILE) {
-                                activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
-                            }
+                activity.runOnUiThread(() -> {
+                    if (mSwipeRefreshLayout != null) {
+                        if (activity.getCurrentScreen() == ScreenComposer.SCREEN_MY_PROFILE) {
+                            activity.showSnackBar(R.string.loading_too_long, Snackbar.LENGTH_LONG);
                         }
                     }
                 });
@@ -205,6 +157,34 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
     };
 
     private LinearLayout mHeaderContentHolder;
+
+    /**
+     * Container for Rx disposables which will automatically dispose them after execute.
+     */
+    @NonNull
+    private CompositeDisposable compositeDisposable;
+
+    /**
+     * Instance for {@code UserDataSource} which represents the user repository.
+     */
+    private UserDataSource userRepository;
+
+    /**
+     * The loading indicator container
+     */
+    private ViewGroup loadingIndicatorContainer;
+
+    /**
+     * The {@code LoadingScreen} displayed before the network requests.
+     */
+    private LoadingScreen loadingScreen;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        userRepository = Injection.provideUserRepository(getContext().getApplicationContext());
+        compositeDisposable = new CompositeDisposable();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -228,27 +208,16 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
         mProfileImage = view.findViewById(R.id.profile_image);
         toolbar = view.findViewById(R.id.profile_toolbar);
         collapsingToolbar = view.findViewById(R.id.profile_collapsing_toolbar);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-
-            @Override
-            public void onRefresh() {
-                refreshContent();
-            }
-        });
+        mSwipeRefreshLayout.setOnRefreshListener(this::refreshContent);
         mMaxScrollSize = appBar.getTotalScrollRange();
         appBar.addOnOffsetChangedListener(this);
         Drawable upArrow = ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_back_white, null);
         toolbar.setNavigationIcon(upArrow);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                activity.onBackPressed();
-            }
-        });
-        mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity, !(this instanceof NearbyFragment));
+        toolbar.setNavigationOnClickListener(v -> activity.onBackPressed());
+        mOnlineSequencesAdapter = new SequenceAdapter(mOnlineSequences, activity, !(this instanceof NearbyFragment), appPrefs);
         mOnlineSequencesAdapter.enablePoints(appPrefs.getBooleanPreference(PreferenceTypes.K_GAMIFICATION, true));
-        mOnlineSequencesAdapter.enableDriverStats(false);
+        loadingIndicatorContainer = view.findViewById(R.id.loading_fragment_profile_container);
+        loadingScreen = new LoadingScreen(R.layout.generic_loader, R.id.text_view_generic_loader_message, R.string.profile_fetching_data);
         setupViews(activity.isPortrait());
         return view;
     }
@@ -256,6 +225,7 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        showLoadingIndicator();
         BackgroundThreadPool.post(new Runnable() {
 
             @Override
@@ -279,7 +249,6 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
                         }
                     }
                 });
-                displayCachedStats();
                 refreshContent();
             }
         });
@@ -332,33 +301,20 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
     protected abstract RecyclerView.LayoutManager getLayoutManager(boolean portrait);
 
     protected void refreshContent() {
-        mSequencesRecyclerView.post(new Runnable() {
-
-            @Override
-            public void run() {
-                mCurrentPageToList = 1;
-                mPaymentCurrentPageToList = 1;
-                mMaxNumberOfResults = 0;
-                mOnlineSequences.clear();
-                mPaymentsList.clear();
-                if (mPaymentAdapter != null) {
-                    mPaymentAdapter.notifyDataSetChanged();
-                }
-                if (mOnlineSequencesAdapter != null) {
-                    mOnlineSequencesAdapter.notifyDataSetChanged();
-                    mOnlineSequencesAdapter.resetLastAnimatedItem();
-                }
-                BackgroundThreadPool.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "refreshContent ");
-                        requestDetails();
-                        loadMoreResults();
-                        startRefreshing();
-                    }
-                });
+        mSequencesRecyclerView.post(() -> {
+            mCurrentPageToList = 1;
+            mMaxNumberOfResults = 0;
+            mOnlineSequences.clear();
+            if (mOnlineSequencesAdapter != null) {
+                mOnlineSequencesAdapter.notifyDataSetChanged();
+                mOnlineSequencesAdapter.resetLastAnimatedItem();
             }
+            BackgroundThreadPool.post(() -> {
+                Log.d(TAG, "refreshContent ");
+                requestDetails();
+                loadMoreResults();
+                startRefreshing();
+            });
         });
     }
 
@@ -366,27 +322,41 @@ public abstract class ProfileFragment extends DisplayFragment implements AppBarL
 
     protected void stopRefreshing() {
         if (activity != null) {
-            activity.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    if (mSwipeRefreshLayout != null) {
-                        if (mCancelTask != null) {
-                            mCancelTask.cancel();
-                        }
-                        if (mNotifyTask != null) {
-                            mNotifyTask.cancel();
-                        }
-                        mSwipeRefreshLayout.setRefreshing(false);
+            activity.runOnUiThread(() -> {
+                if (mSwipeRefreshLayout != null) {
+                    if (mCancelTask != null) {
+                        mCancelTask.cancel();
                     }
+                    if (mNotifyTask != null) {
+                        mNotifyTask.cancel();
+                    }
+                    mSwipeRefreshLayout.setRefreshing(false);
                 }
             });
         }
     }
 
-    protected abstract void displayCachedStats();
+    protected void displayCachedStats(Consumer<User> onSuccess, Consumer<Throwable> onError, Action onComplete) {
+        compositeDisposable.clear();
+        Disposable disposable = userRepository
+                .getUser()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(onSuccess, onError, onComplete);
+        compositeDisposable.add(disposable);
+    }
 
     protected abstract void loadMoreResults();
+
+    protected void showLoadingIndicator() {
+        appBar.setVisibility(View.GONE);
+        loadingScreen.show(loadingIndicatorContainer, 0);
+    }
+
+    protected void hideLoadingIndicator() {
+        appBar.setVisibility(View.VISIBLE);
+        loadingScreen.hide(loadingIndicatorContainer);
+    }
 
     private void startRefreshing() {
         if (mSwipeRefreshLayout != null) {

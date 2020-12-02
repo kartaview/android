@@ -1,0 +1,49 @@
+dependencies {
+    // Dependencies for local unit tests
+    testImplementation "androidx.annotation:annotation:${config.lib_vers.annotation}"
+    testImplementation "org.powermock:powermock-api-mockito2:${config.test_vers.powermockVersion}"
+    testImplementation "org.powermock:powermock-module-junit4:${config.test_vers.powermockVersion}"
+    testImplementation "org.robolectric:robolectric:${config.test_vers.robolectricVersion}"
+    testImplementation "junit:junit:${config.test_vers.jUnitVersion}"
+    testImplementation "org.mockito:mockito-core:${config.test_vers.mockitoCore}"
+    testImplementation "org.hamcrest:hamcrest-all:${config.test_vers.hamcrestVersion}"
+    testImplementation "androidx.arch.core:core-testing:${config.test_vers.archCoreTesting}"
+    testImplementation "androidx.room:room-testing:${config.lib_vers.room}"
+    // Android Testing Support Library's runner and rules
+    androidTestImplementation("androidx.test:runner:${config.test_vers.runnerTesting}") {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    }
+    androidTestImplementation("androidx.test:rules:${config.test_vers.rulesTesting}") {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    }
+    // Dependencies for Android unit tests
+    androidTestImplementation "junit:junit:${config.test_vers.jUnitVersion}"
+    androidTestImplementation "com.google.dexmaker:dexmaker:${config.test_vers.dexmakerVersion}"
+    androidTestImplementation "com.google.dexmaker:dexmaker-mockito:${config.test_vers.dexmakerVersion}"
+
+    // Espresso UI Testing
+    androidTestImplementation "androidx.test.espresso:espresso-core:${config.test_vers.espressoVersion}"
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:${config.test_vers.espressoVersion}"
+    androidTestImplementation "androidx.test.espresso:espresso-intents:${config.test_vers.espressoVersion}"
+    androidTestImplementation "androidx.test.espresso:espresso-idling-resource:${config.test_vers.espressoVersion}"
+
+    // Android test
+    androidTestImplementation "androidx.annotation:annotation:${config.lib_vers.annotation}"
+    androidTestImplementation "androidx.recyclerview:recyclerview:${config.lib_vers.recyclerView}"
+    androidTestImplementation "androidx.appcompat:appcompat:${config.lib_vers.appCompat}"
+    androidTestImplementation "com.google.android.material:material:${config.lib_vers.material}"
+    androidTestImplementation "androidx.room:room-testing:${config.lib_vers.room}"
+
+    // Development
+    implementation "com.google.firebase:firebase-crashlytics:${config.test_vers.crashliticsVersion}"
+    implementation "com.google.firebase:firebase-crashlytics-ndk:${config.test_vers.crashliticsNdkVersion}"
+    implementation "com.google.firebase:firebase-analytics:${config.test_vers.firebaseAnalytics}"
+
+    //Kotlin test
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:${config.lib_vers.kotlinVersion}"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:${config.lib_vers.kotlinVersion}"
+
+    //Joda
+    testImplementation "net.danlew:android.joda:${config.lib_vers.jodaExtVersion}"
+
+}

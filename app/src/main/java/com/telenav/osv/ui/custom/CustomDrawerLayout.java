@@ -1,9 +1,9 @@
 package com.telenav.osv.ui.custom;
 
 import android.content.Context;
-import android.support.v4.widget.DrawerLayout;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 /**
  * quick fix for drawer layout error

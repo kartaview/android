@@ -1,0 +1,45 @@
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${config.lib_vers.kotlinVersion}"
+    implementation "com.google.gms:google-services:${config.lib_vers.googleServices}"
+    implementation("com.google.firebase:firebase-auth:${config.lib_vers.firebaseAuth}")
+    implementation "com.google.android.gms:play-services-auth:${config.lib_vers.playServicesAuth}"
+    implementation "com.google.android.gms:play-services-location:${config.lib_vers.playServicesLocation}"
+    implementation "com.google.android.material:material:${config.lib_vers.material}"
+    implementation("com.google.firebase:firebase-core:${config.lib_vers.firebaseCore}")
+    implementation "com.google.firebase:firebase-messaging:${config.lib_vers.firebaseMessaging}"
+    implementation("com.google.api-client:google-api-client-android:${config.lib_vers.googleApiVersion}") { exclude group: 'org.apache.httpcomponents' }
+    implementation "com.google.android.exoplayer:exoplayer-core:${config.lib_vers.exoplayerVersion}"
+    implementation "com.google.android.exoplayer:exoplayer-ui:${config.lib_vers.exoplayerVersion}"
+    //facebook
+    implementation("com.facebook.android:facebook-android-sdk:${config.lib_vers.facebookSdk}")
+    //other
+    implementation "com.github.bumptech.glide:glide:${config.lib_vers.glideVersion}"
+    implementation "com.pnikosis:materialish-progress:${config.lib_vers.materialishProgressVersion}"
+    implementation "com.github.paolorotolo:appintro:${config.lib_vers.appIntroVersion}"
+    implementation "org.apache.commons:commons-math3:${config.lib_vers.apacheMathVersion}"
+    implementation("com.r0adkll:slidableactivity:${config.lib_vers.slidableActivityVersion}")
+    implementation "io.reactivex.rxjava2:rxandroid:${config.lib_vers.rxAndroidVersion}"
+    implementation "io.reactivex.rxjava2:rxjava:${config.lib_vers.rxJava2Version}"
+    implementation "com.jakewharton.retrofit:retrofit2-rxjava2-adapter:${config.lib_vers.retrofitRxJavaAdapterVersion}"
+    implementation "com.squareup.retrofit2:retrofit:${config.lib_vers.retrofitVersion}"
+    implementation "com.squareup.retrofit2:converter-gson:${config.lib_vers.retrofitVersion}"
+    implementation "com.squareup.okhttp3:okhttp:${config.lib_vers.okHttpVersion}"
+    implementation "com.squareup.okhttp3:logging-interceptor:${config.lib_vers.okHttpVersion}"
+
+    implementation("org.apache.httpcomponents:httpclient-android:${config.lib_vers.apacheHttpClientVersion}") {
+        exclude module: 'httpclient' exclude module: 'entity' exclude module: 'httpcore'
+    }
+    implementation("org.apache.httpcomponents:httpmime:${config.lib_vers.apacheHttpMimeVersion}") {
+        exclude module: 'httpclient' exclude module: 'entity' exclude module: 'httpcore'
+    }
+    implementation("oauth.signpost:signpost-commonshttp4:${config.lib_vers.signpostVersion}") {
+        exclude module: "httpcore" exclude module: "commons-codec" exclude module: "httpclient"
+    }
+    implementation "org.jetbrains:annotations:${config.lib_vers.jetbrainsAnnotations}"
+    implementation "net.danlew:android.joda:${config.lib_vers.jodaExtVersion}"
+    //mapbox
+    implementation "com.mapbox.mapboxsdk:mapbox-android-sdk:${config.lib_vers.mapBoxSdk}"
+    implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v8:${config.lib_vers.mapBoxSdkAnnotation}"
+    //timber
+    implementation "com.jakewharton.timber:timber:${config.lib_vers.timberVersion}"
+}

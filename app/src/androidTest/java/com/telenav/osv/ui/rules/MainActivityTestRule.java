@@ -1,9 +1,9 @@
 package com.telenav.osv.ui.rules;
 
 import android.content.Intent;
-import android.support.annotation.Nullable;
-import android.support.test.rule.ActivityTestRule;
 import com.telenav.osv.activity.MainActivity;
+import androidx.annotation.Nullable;
+import androidx.test.rule.ActivityTestRule;
 
 /**
  * Created by Kalman on 04/04/2017.

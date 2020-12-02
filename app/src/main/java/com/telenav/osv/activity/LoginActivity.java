@@ -1,29 +1,30 @@
 package com.telenav.osv.activity;
 
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.AppCompatButton;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.google.android.material.snackbar.Snackbar;
 import com.telenav.osv.R;
-import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.KVApplication;
+import com.telenav.osv.common.dialog.KVDialog;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.network.LoginChangedEvent;
 import com.telenav.osv.manager.network.LoginManager;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Activity with login choices
@@ -37,9 +38,7 @@ public class LoginActivity extends OSVActivity {
 
     private LoginManager mLoginManager;
 
-    private ImageView mLogo;
-
-    private LinearLayout mButtonsHolder;
+    private KVDialog partnerLoginDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +46,6 @@ public class LoginActivity extends OSVActivity {
         appPrefs = getApp().getAppPrefs();
         setContentView(R.layout.activity_login);
         progressBar = findViewById(R.id.progressbar);
-        //noinspection deprecation
-        mLogo = findViewById(R.id.osc_logo_view);
-        mButtonsHolder = findViewById(R.id.login_buttons_holder);
         AppCompatButton facebookButton = findViewById(R.id.facebook_login_button);
         AppCompatButton googleButton = findViewById(R.id.google_login_button);
 
@@ -58,15 +54,9 @@ public class LoginActivity extends OSVActivity {
         facebookButton.setCompoundDrawablesWithIntrinsicBounds(face, null, null, null);
         googleButton.setCompoundDrawablesWithIntrinsicBounds(goo, null, null, null);
 
-        progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.accent_material_dark_1), PorterDuff.Mode.SRC_IN);
+        progressBar.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.default_purple), PorterDuff.Mode.SRC_IN);
         Toolbar toolbar = findViewById(R.id.app_toolbar);
-        View.OnClickListener mMenuListener = new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        };
+        View.OnClickListener mMenuListener = v -> onBackPressed();
         toolbar.setNavigationOnClickListener(mMenuListener);
         setSupportActionBar(toolbar);
         ActionBar mActionBar = getSupportActionBar();
@@ -77,13 +67,6 @@ public class LoginActivity extends OSVActivity {
         }
         toolbar.setNavigationOnClickListener(mMenuListener);
         mLoginManager = getApp().getLoginManager();
-        setupBound(isPortrait());
-    }
-
-    @Override
-    public void onConfigurationChanged(final Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        setupBound(newConfig.orientation == Configuration.ORIENTATION_PORTRAIT);
     }
 
     @Override
@@ -97,8 +80,8 @@ public class LoginActivity extends OSVActivity {
     }
 
     @Override
-    public OSVApplication getApp() {
-        return (OSVApplication) getApplication();
+    public KVApplication getApp() {
+        return (KVApplication) getApplication();
     }
 
     @Override
@@ -107,7 +90,12 @@ public class LoginActivity extends OSVActivity {
     }
 
     @Override
-    public void resolveLocationProblem(boolean b) {
+    public void resolveLocationProblem() {
+
+    }
+
+    @Override
+    public void resolveRecordingProblem() {
 
     }
 
@@ -128,13 +116,9 @@ public class LoginActivity extends OSVActivity {
 
     @Override
     public void enableProgressBar(final boolean show) {
-        runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                if (progressBar != null) {
-                    progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
+        runOnUiThread(() -> {
+            if (progressBar != null) {
+                progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
             }
         });
     }
@@ -163,7 +147,7 @@ public class LoginActivity extends OSVActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (mLoginManager != null) {
-            mLoginManager.onActivityResult(requestCode, resultCode, data);
+            mLoginManager.onActivityResult(requestCode, resultCode, data, this);
         }
         if (resultCode != RESULT_OK) {
             enableProgressBar(false);
@@ -202,36 +186,41 @@ public class LoginActivity extends OSVActivity {
                 showSnackBar(R.string.check_internet_connection, Snackbar.LENGTH_LONG);
                 return;
             }
-            enableProgressBar(true);
             switch (view.getId()) {
                 case R.id.facebook_login_button:
+                    enableProgressBar(true);
                     mLoginManager.login(this, LoginManager.LOGIN_TYPE_FACEBOOK);
                     break;
                 case R.id.google_login_button:
+                    enableProgressBar(true);
                     mLoginManager.login(this, LoginManager.LOGIN_TYPE_GOOGLE);
                     break;
                 case R.id.osm_login_button:
+                    enableProgressBar(true);
                     mLoginManager.login(this, LoginManager.LOGIN_TYPE_OSM);
+                    break;
+                case R.id.tv_partner_login:
+                    showPartnerLoginDialog(this);
                     break;
             }
         }
     }
 
-    private void setupBound(boolean portrait) {
-        if (portrait) {
-            ((FrameLayout.MarginLayoutParams) mLogo.getLayoutParams()).topMargin = (int) Utils.dpToPx(this, 92);
-            mLogo.requestLayout();
-            ((FrameLayout.MarginLayoutParams) mButtonsHolder.getLayoutParams()).width = FrameLayout.MarginLayoutParams.MATCH_PARENT;
-            int thirty = (int) Utils.dpToPx(this, 30);
-            mButtonsHolder.setPadding(thirty, thirty, thirty, thirty);
-            mButtonsHolder.requestLayout();
-        } else {
-            ((FrameLayout.MarginLayoutParams) mLogo.getLayoutParams()).topMargin = (int) Utils.dpToPx(this, 48);
-            mLogo.requestLayout();
-            ((FrameLayout.LayoutParams) mButtonsHolder.getLayoutParams()).width = (int) Utils.dpToPx(this, 400);
-            int twenty = (int) Utils.dpToPx(this, 20);
-            mButtonsHolder.setPadding(twenty, twenty, twenty, twenty / 2);
-            mButtonsHolder.requestLayout();
+    private void showPartnerLoginDialog(final OSVActivity activity) {
+        if (partnerLoginDialog == null) {
+            partnerLoginDialog = new KVDialog.Builder(activity)
+                    .setTitleResId(R.string.partner_login)
+                    .setInfoResId(R.string.partner_login_dialog_message)
+                    .setPositiveButton(R.string.continue_caps_label, v -> {
+                        enableProgressBar(true);
+                        mLoginManager.login(activity, LoginManager.LOGIN_TYPE_PARTNER);
+                        partnerLoginDialog.dismiss();
+                    })
+                    .setNegativeButton(R.string.go_back, v -> partnerLoginDialog.dismiss())
+                    .setNegativeButtonTextColor(R.color.default_grab_grey)
+                    .setIconLayoutVisibility(false)
+                    .build();
         }
+        partnerLoginDialog.show();
     }
 }

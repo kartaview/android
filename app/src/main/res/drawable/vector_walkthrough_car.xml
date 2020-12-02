@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="162dp"
     android:height="162dp"
-    android:viewportHeight="162"
-    android:viewportWidth="162">
+    android:viewportWidth="162"
+    android:viewportHeight="162">
 
     <clip-path
         android:name="Mask"

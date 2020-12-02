@@ -1,18 +1,18 @@
 package com.telenav.osv.http;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.telenav.osv.listener.network.GenericResponseListener;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.toolbox.StringRequest;
-import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by adrianbostan on 22/07/16.
  */
 
-public class ProfileRequest extends StringRequest {
+public class ProfileRequest extends KvVolleyStringRequestJarvisAuthorization {
 
     private static final String PARAM_USER_NAME = "username";
 
@@ -20,23 +20,10 @@ public class ProfileRequest extends StringRequest {
 
     private final String mName;
 
-    public ProfileRequest(String url, GenericResponseListener listener, String name) {
-        super(Request.Method.POST, url, listener, listener);
+    public ProfileRequest(String url, GenericResponseListener listener, String name, boolean isJarvisAuthorization, String jarvisAccessToken) {
+        super(Request.Method.POST, url, listener, listener, isJarvisAuthorization, jarvisAccessToken);
         mName = name;
         mListener = listener;
-    }
-
-    @Override
-    public Map<String, String> getHeaders() throws AuthFailureError {
-        Map<String, String> headers = super.getHeaders();
-
-        if (headers == null || headers.equals(Collections.emptyMap())) {
-            headers = new HashMap<>();
-        }
-
-        headers.put("Accept", "application/json");
-
-        return headers;
     }
 
     @Override

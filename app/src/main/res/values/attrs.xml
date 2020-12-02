@@ -55,4 +55,20 @@
         <attr name="piv_barWidth" format="dimension" />
         <attr name="piv_linearProgress" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="Tooltip">
+        <attr name="dismissOnOutsideTouch" format="boolean" />
+        <attr name="dismissOnTouch" format="boolean" />
+        <attr name="android:background" format="color" />
+        <attr name="android:radius" format="dimension" />
+        <attr name="android:layout_margin" />
+        <attr name="android:gravity" />
+        <attr name="android:text" />
+        <attr name="android:textAppearance" />
+        <attr name="android:padding" />
+        <attr name="android:textSize" />
+        <attr name="android:textColor" />
+        <attr name="android:textStyle" />
+        <attr name="android:fontFamily" />
+    </declare-styleable>
 </resources>

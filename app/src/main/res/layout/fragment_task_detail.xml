@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="taskDetailsVm"
+            type="com.telenav.osv.tasks.viewmodels.TaskDetailsViewModel" />
+
+        <import type="android.view.View" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_f5f5f5">
+
+        <!-- Toolbar layout -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/action_bar_size"
+            android:paddingStart="@dimen/grid_4"
+            android:paddingEnd="@dimen/grid_4"
+            android:paddingTop="@dimen/grid_2"
+            android:paddingBottom="@dimen/grid_2"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@color/default_grab_grey">
+
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/grid_2"
+                app:srcCompat="@drawable/vector_back_arrow"
+                android:tint="@color/default_white"
+                android:contentDescription="@null"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_toolbar_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:visibility="@{taskDetailsVm.isTaskDataVisible ? View.VISIBLE : View.GONE }"
+                app:layout_constrainedWidth="true"
+                app:layout_constrainedHeight="true"
+                android:background="@drawable/bg_default_white_radius_56"
+                android:layout_marginStart="@dimen/grid_2"
+                app:layout_constraintStart_toEndOf="@id/iv_back"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintWidth_default="wrap"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginStart="@dimen/grid_1"
+                    android:layout_marginTop="@dimen/grid_1"
+                    android:layout_marginBottom="@dimen/grid_1"
+                    style="@style/FontMedium"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="@{taskDetailsVm.task.title}"
+                    android:textColor="@color/default_white"
+                    android:textSize="@dimen/font_size_18"
+                    android:paddingTop="@dimen/grid_1dp"
+                    android:paddingBottom="@dimen/grid_1dp"
+                    android:paddingStart="@dimen/grid_2"
+                    android:paddingEnd="@dimen/grid_2"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    tools:text="RO667"
+                    tools:background="@drawable/bg_grid_status_to_do" />
+
+                <TextView
+                    android:id="@+id/tv_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constrainedWidth="true"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:paddingStart="@dimen/grid_2"
+                    android:paddingEnd="@dimen/grid_4"
+                    style="@style/FontMedium"
+                    android:text="@{taskDetailsVm.taskAmount}"
+                    android:textSize="@dimen/font_size_20"
+                    app:layout_constraintStart_toEndOf="@id/tv_title"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    tools:textColor="@color/default_grab_grey"
+                    tools:text="$21.50" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- This layout represents error layout that should be rendered in case task details api call fails -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_error_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/grid_12"
+            android:layout_marginEnd="@dimen/grid_12"
+            android:visibility="@{taskDetailsVm.isErrorLayoutVisible ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_toolbar"
+            tools:visibility="gone">
+
+            <ImageView
+                android:id="@+id/iv_error_view_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@null"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/vector_satellite" />
+
+            <TextView
+                android:id="@+id/tv_error_view_title"
+                style="@style/FontMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/grid_10"
+                android:text="@string/oops"
+                android:textColor="@color/sequence_local"
+                android:textSize="@dimen/font_size_18"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/iv_error_view_icon" />
+
+            <TextView
+                android:id="@+id/tv_error_view_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/grid_5"
+                android:gravity="center"
+                android:text="@string/error_task_details_description"
+                android:textColor="@color/color_a5a7ab"
+                android:textSize="@dimen/font_size_14"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_error_view_title" />
+
+            <TextView
+                android:id="@+id/tv_try_again"
+                style="@style/FontMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/grid_14"
+                android:background="@drawable/bg_obd_button_large"
+                android:paddingStart="@dimen/grid_6"
+                android:paddingTop="@dimen/grid_3"
+                android:paddingEnd="@dimen/grid_6"
+                android:paddingBottom="@dimen/grid_3"
+                android:text="@string/try_again"
+                android:textColor="@color/default_white"
+                android:textSize="@dimen/font_size_18"
+                android:onClick="@{() -> taskDetailsVm.fetchTaskDetails()}"
+                android:clickable="@{!taskDetailsVm.isLoaderVisible}"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_error_view_description" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="@{taskDetailsVm.isTaskDataVisible ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cl_toolbar"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:visibility="visible">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <!-- Action layout -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cl_action"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="@dimen/grid_6"
+                    android:paddingEnd="@dimen/grid_6"
+                    android:paddingTop="@dimen/grid_6"
+                    android:paddingBottom="@dimen/grid_6"
+                    android:background="@color/default_white"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <!-- Action layout for assigned task -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/cl_assigned_task_action"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:visibility="@{taskDetailsVm.isTaskAssigned ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        tools:visibility="visible">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/cl_dynamic_task_action"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent">
+
+                            <TextView
+                                android:id="@+id/tv_status"
+                                style="@style/FontMedium"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:visibility="@{taskDetailsVm.isTaskInProgress ? View.GONE : View.VISIBLE}"
+                                android:gravity="center"
+                                android:textColor="@color/default_grab_grey"
+                                android:textSize="@dimen/font_size_25"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                tools:text="Task in Review"
+                                tools:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/tv_status_message"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:visibility="@{taskDetailsVm.isTaskInProgress ? View.GONE : View.VISIBLE}"
+                                android:layout_marginTop="@dimen/grid_4"
+                                android:paddingBottom="@dimen/grid_6"
+                                android:gravity="center"
+                                android:textColor="@color/default_grab_grey"
+                                android:textSize="@dimen/font_size_17"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tv_status"
+                                tools:text="Thanks for your patience!"
+                                tools:visibility="visible" />
+
+                            <TextView
+                                android:id="@+id/tv_submit"
+                                style="@style/FontMedium"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:visibility="@{taskDetailsVm.isTaskInProgress ? View.VISIBLE : View.GONE}"
+                                android:gravity="center"
+                                android:background="@drawable/bg_obd_button_large"
+                                android:paddingStart="@dimen/grid_1"
+                                android:paddingTop="@dimen/grid_4"
+                                android:paddingEnd="@dimen/grid_1"
+                                android:paddingBottom="@dimen/grid_4"
+                                android:text="@string/submit_for_review"
+                                android:textAllCaps="true"
+                                android:textColor="@color/default_white"
+                                android:textSize="@dimen/font_size_17"
+                                android:clickable="@{!taskDetailsVm.isLoaderVisible}"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                tools:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/tv_give_up"
+                                style="@style/FontMedium"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:visibility="@{taskDetailsVm.isTaskInProgress ? View.VISIBLE : View.GONE}"
+                                android:layout_marginTop="@dimen/grid_4"
+                                android:gravity="center"
+                                android:background="@drawable/bg_obd_button_large_error"
+                                android:paddingStart="@dimen/grid_1"
+                                android:paddingTop="@dimen/grid_4"
+                                android:paddingEnd="@dimen/grid_1"
+                                android:paddingBottom="@dimen/grid_4"
+                                android:text="@string/revoke_task"
+                                android:textAllCaps="true"
+                                android:textColor="@color/color_f74f15"
+                                android:textSize="@dimen/font_size_17"
+                                android:clickable="@{!taskDetailsVm.isLoaderVisible}"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/tv_submit"
+                                tools:visibility="gone" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <EditText
+                            android:id="@+id/et_note"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/grid_4"
+                            android:paddingStart="@dimen/grid_6"
+                            android:paddingEnd="@dimen/grid_6"
+                            android:paddingTop="@dimen/grid_4"
+                            android:paddingBottom="@dimen/grid_4"
+                            android:drawableStart="@drawable/vector_edit"
+                            android:drawablePadding="@dimen/grid_2"
+                            android:background="@drawable/bg_notes_edit_text"
+                            android:padding="@dimen/grid_4"
+                            android:text="@{taskDetailsVm.noteText}"
+                            android:onTextChanged="@{taskDetailsVm.onNoteTextChanged}"
+                            android:textSize="@dimen/font_size_17"
+                            android:textColor="@color/default_grab_grey"
+                            android:hint="@string/notes_hint"
+                            android:textColorHint="@color/color_a5a7ab"
+                            android:maxLines="1"
+                            android:inputType="text"
+                            android:clickable="@{!taskDetailsVm.isLoaderVisible}"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/cl_dynamic_task_action" />
+
+                        <TextView
+                            android:id="@+id/tv_submit_note"
+                            style="@style/FontMedium"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:visibility="@{taskDetailsVm.isSubmitNoteVisible ? View.VISIBLE : View.GONE}"
+                            android:layout_marginTop="@dimen/grid_4"
+                            android:gravity="center"
+                            android:background="@drawable/bg_grey_radius_56"
+                            android:paddingStart="@dimen/grid_1"
+                            android:paddingTop="@dimen/grid_4"
+                            android:paddingEnd="@dimen/grid_1"
+                            android:paddingBottom="@dimen/grid_4"
+                            android:text="@string/submit_note"
+                            android:textAllCaps="true"
+                            android:textColor="@color/default_white"
+                            android:textSize="@dimen/font_size_17"
+                            android:clickable="@{!taskDetailsVm.isLoaderVisible}"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/et_note"
+                            tools:visibility="gone" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!-- Action layout for unassigned task -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/cl_unassigned_task_action"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:visibility="@{taskDetailsVm.isTaskAssigned ? View.GONE : View.VISIBLE}"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        tools:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tv_target"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            style="@style/FontMedium"
+                            android:textSize="@dimen/font_size_25"
+                            android:textColor="@color/default_grab_grey"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            tools:text="Target: 10.2 km Roads"/>
+
+                        <TextView
+                            android:id="@+id/tv_confirmation"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/grid_4"
+                            android:gravity="center"
+                            android:text="@string/record_cell_confirmation_text"
+                            android:textSize="@dimen/font_size_17"
+                            android:textColor="@color/default_grab_grey"
+                            app:layout_constraintTop_toBottomOf="@id/tv_target"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tv_assign"
+                            style="@style/FontMedium"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/grid_4"
+                            android:gravity="center"
+                            android:background="@drawable/bg_obd_button_large"
+                            android:paddingStart="@dimen/grid_1"
+                            android:paddingTop="@dimen/grid_4"
+                            android:paddingEnd="@dimen/grid_1"
+                            android:paddingBottom="@dimen/grid_4"
+                            android:text="@string/assign_to_me"
+                            android:textAllCaps="true"
+                            android:textColor="@color/default_white"
+                            android:textSize="@dimen/font_size_17"
+                            android:onClick="@{() -> taskDetailsVm.pickUpTask()}"
+                            android:clickable="@{!taskDetailsVm.isLoaderVisible}"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tv_confirmation"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Layout to display operation logs -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cl_logs"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:visibility="@{taskDetailsVm.isHistoryVisible ? View.VISIBLE : View.GONE}"
+                    android:padding="@dimen/grid_4"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cl_action"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tv_history"
+                        style="@style/FontMedium"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/history"
+                        android:textAllCaps="true"
+                        android:textColor="@color/color_a5a7ab"
+                        android:textSize="@dimen/font_size_14"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_operation_logs"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/grid_2"
+                        android:layout_marginStart="@dimen/grid_3"
+                        android:layout_marginEnd="@dimen/grid_3"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_history"
+                        tools:listitem="@layout/item_operation_log" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- This layout represents progress bar for loading data -->
+        <ProgressBar
+            android:id="@+id/pb_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{taskDetailsVm.isLoaderVisible ? View.VISIBLE : View.GONE}"
+            android:indeterminateTint="@color/default_purple"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="gone" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

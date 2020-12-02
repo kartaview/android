@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:background="@android:color/background_dark"
     tools:context=".activity.MainActivity"
     tools:layout_height="match_parent"
     tools:layout_width="match_parent">
@@ -14,37 +15,37 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|start"
         android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
         android:layout_marginTop="15dp"
+        android:layout_marginRight="15dp"
         android:tag="top|start"
         android:text="@string/fast_recording_mode_on"
         android:textColor="#e16152"
         android:textSize="25sp"
         android:textStyle="bold"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <RelativeLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:tag="top|end">
+        android:layout_gravity="top">
 
         <FrameLayout
-            android:id="@+id/obd_icon_holder"
+            android:id="@+id/layout_recording_info_obd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_marginBottom="5dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginTop="5dp"
-            android:visibility="gone"
-            tools:visibility="visible">
+            android:layout_gravity="top|start"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="visible">
 
             <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:srcCompat="@drawable/vector_ellipse_green"
+                android:id="@+id/image_view_recording_info_obd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/vector_car_obd_add"
                 tools:ignore="ContentDescription" />
 
             <LinearLayout
@@ -54,31 +55,49 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/obd_icon"
+                    android:id="@+id/text_view_recording_info_obd_speed"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:clickable="false"
+                    android:focusable="false"
                     android:text="@string/default_value_0"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:textColor="@color/default_white"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
 
                 <TextView
-                    android:id="@+id/obd_icon_unit"
+                    android:id="@+id/text_view_recording_info_obd_speed_unit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:clickable="false"
+                    android:focusable="false"
                     android:text="@string/partial_kmh_label"
-                    android:textSize="12sp" />
+                    android:textColor="@color/default_white"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
             </LinearLayout>
         </FrameLayout>
+
+        <View
+            android:id="@+id/view_recording_click_view"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:layout_gravity="top|start"
+            android:background="@color/default_transparent"
+            android:clickable="true"
+            android:focusable="true" />
 
         <ImageView
             android:id="@+id/gps_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
             android:layout_gravity="top|end"
-            android:layout_margin="5dp"
-            android:layout_toRightOf="@+id/obd_icon_holder"
-            app:srcCompat="@drawable/vector_gps_low"
+            android:layout_margin="16dp"
+            app:srcCompat="@drawable/vector_gps_medium"
             tools:ignore="ContentDescription" />
     </RelativeLayout>
 
@@ -88,8 +107,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="5dp"
         android:gravity="center"
-        android:minHeight="48dp"
         android:minWidth="48dp"
+        android:minHeight="48dp"
         android:tag="bottom|end">
 
         <com.telenav.osv.ui.custom.ScoreIndicator
@@ -98,23 +117,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_margin="10dp"
             android:gravity="center"
             android:lines="1"
-            android:minHeight="48dp"
             android:minWidth="48dp"
-            android:textStyle="bold"
-            android:visibility="visible" />
-
-        <com.telenav.osv.ui.custom.ByodPaymentIndicator
-            android:id="@+id/byod_score_text"
-            style="@style/textStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:lines="1"
             android:minHeight="48dp"
-            android:minWidth="48dp"
             android:textStyle="bold"
             android:visibility="visible" />
 
@@ -134,7 +141,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0 km/h"
-            android:textColor="@color/accent_material_dark_1"
+            android:textColor="@color/default_purple"
             android:visibility="gone" />
 
         <TextView
@@ -144,7 +151,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:text="0 m"
-            android:textColor="@color/accent_material_dark_1"
+            android:textColor="@color/default_purple"
             android:visibility="gone" />
     </LinearLayout>
 

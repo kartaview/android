@@ -1,72 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/relativeLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white">
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#f8f8fa" />
+    android:background="@color/default_white">
 
     <TextView
-        android:id="@+id/address_text"
+        android:id="@+id/text_view_item_local_sequence_address"
         style="@style/textStyle"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginTop="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
         android:adjustViewBounds="true"
-        android:drawablePadding="5dp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"
-        android:paddingLeft="16dp"
-        android:text="Strada Mihail Emil, Cluj-Napoca"
-        android:textColor="@color/md_grey_900"
-        android:textSize="16sp" />
+        android:textColor="@color/md_grey_600"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Strada Mihail Emil, Cluj-Napoca" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/text_view_item_local_sequence_total_images"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/address_text"
         android:layout_marginTop="8dp"
-        android:gravity="center_horizontal"
-        android:weightSum="3">
+        android:layout_marginBottom="16dp"
+        android:drawableStart="@drawable/vector_camera"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical"
+        android:textColor="@color/md_grey_900"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_item_local_sequence_error"
+        app:layout_constraintStart_toStartOf="@+id/text_view_item_local_sequence_address"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_item_local_sequence_address"
+        tools:text="0 IMG " />
 
-        <TextView
-            android:id="@+id/total_images_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:drawableLeft="@drawable/ic_camera_small_grey"
-            android:gravity="center_vertical"
-            android:paddingLeft="16dp"
-            android:text="0 IMG"
-            android:textColor="@color/md_grey_700"
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/text_view_item_local_sequence_total_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:drawableStart="@drawable/vector_sequence"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical"
+        android:textColor="@color/md_grey_900"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/text_view_item_local_sequence_total_images"
+        app:layout_constraintEnd_toStartOf="@+id/text_view_item_local_sequence_date_time"
+        app:layout_constraintStart_toEndOf="@+id/text_view_item_local_sequence_total_images"
+        app:layout_constraintTop_toTopOf="@+id/text_view_item_local_sequence_total_images"
+        tools:text="0 KM" />
 
-        <TextView
-            android:id="@+id/total_distance_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:drawableLeft="@drawable/ic_distance"
-            android:gravity="center_vertical"
-            android:paddingLeft="16dp"
-            android:text="0 KM"
-            android:textColor="@color/md_grey_700"
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/text_view_item_local_sequence_date_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/md_grey_900"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/text_view_item_local_sequence_total_distance"
+        app:layout_constraintEnd_toEndOf="@+id/text_view_item_local_sequence_address"
+        app:layout_constraintTop_toTopOf="@+id/text_view_item_local_sequence_total_distance"
+        tools:text="01.01.16" />
 
-        <TextView
-            android:id="@+id/date_time_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingLeft="16dp"
-            android:text="01.01.16 "
-            android:textColor="@color/md_grey_700"
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/text_view_item_local_sequence_error"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:drawableStart="@drawable/vector_alert"
+        android:drawablePadding="16dp"
+        android:gravity="center_vertical"
+        android:textColor="@color/default_red"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/view_item_local_sequence_separator"
+        app:layout_constraintEnd_toEndOf="@+id/text_view_item_local_sequence_address"
+        app:layout_constraintStart_toStartOf="@+id/text_view_item_local_sequence_address"
+        tools:text="@string/invalid_sequence_missing_physical_data"
+        tools:visibility="visible" />
 
-    </LinearLayout>
-</RelativeLayout>
+    <View
+        android:id="@+id/view_item_local_sequence_separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/md_grey_300"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

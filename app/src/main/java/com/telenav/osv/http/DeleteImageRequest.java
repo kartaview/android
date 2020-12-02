@@ -1,17 +1,15 @@
 package com.telenav.osv.http;
 
-import java.util.Collections;
+import com.telenav.osv.listener.network.GenericResponseListener;
+
 import java.util.HashMap;
 import java.util.Map;
-import com.android.volley.AuthFailureError;
-import com.android.volley.toolbox.StringRequest;
-import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
  */
 @SuppressWarnings("HardCodedStringLiteral")
-class DeleteImageRequest extends StringRequest {
+class DeleteImageRequest extends KvVolleyStringRequestJarvisAuthorization {
 
     private static final String PARAM_IMAGE_ID = "photoId";
 
@@ -23,24 +21,11 @@ class DeleteImageRequest extends StringRequest {
 
     private int mImageId;
 
-    public DeleteImageRequest(String url, GenericResponseListener listener, int imageId, String token) {
-        super(Method.POST, url, listener, listener);
+    public DeleteImageRequest(String url, GenericResponseListener listener, int imageId, String token, boolean isJarvisAuthorization, String jarvisAccessToken) {
+        super(Method.POST, url, listener, listener, isJarvisAuthorization, jarvisAccessToken);
         mToken = token;
         mImageId = imageId;
         mListener = listener;
-    }
-
-    @Override
-    public Map<String, String> getHeaders() throws AuthFailureError {
-        Map<String, String> headers = super.getHeaders();
-
-        if (headers == null || headers.equals(Collections.emptyMap())) {
-            headers = new HashMap<>();
-        }
-
-        headers.put("Accept", "application/json");
-
-        return headers;
     }
 
     @Override

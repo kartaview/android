@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/CardView.Light"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/sequence_list_item_margin_bottom"
     android:layout_marginLeft="@dimen/sequence_list_item_margin_side"
-    android:layout_marginRight="@dimen/sequence_list_item_margin_side"
     android:layout_marginTop="@dimen/sequence_list_item_margin_top"
+    android:layout_marginRight="@dimen/sequence_list_item_margin_side"
+    android:layout_marginBottom="@dimen/sequence_list_item_margin_bottom"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
@@ -23,12 +23,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <!-- this is the background for sequence image view,
+             because there is no other way of setting a background image without being stretched. -->
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="235dp"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                android:src="@drawable/vector_picture_placeholder" />
+
             <ImageView
                 android:id="@+id/sequence_image"
                 android:layout_width="match_parent"
                 android:layout_height="235dp"
-                android:background="@drawable/custom_pattern_preview_background"
                 android:contentDescription="@null"
+                android:src="@drawable/vector_picture_placeholder"
                 android:scaleType="centerCrop" />
 
             <ImageView
@@ -62,82 +71,66 @@
             android:padding="18dp">
 
             <TextView
+                android:id="@+id/sequence_id_label"
+                style="@style/profileSequenceCardInfo"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="10dp"
+                android:lineSpacingExtra="9sp"
+                android:visibility="gone"
+                tools:text="#00000010"
+                tools:visibility="visible" />
+
+            <TextView
                 android:id="@+id/sequence_status_text"
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/profileSequenceCardInfo"
+                android:layout_alignParentEnd="true"
                 android:layout_marginBottom="10dp"
                 android:fontFamily="sans-serif-medium"
-                android:textColor="@color/sequence_card_status_text_color_green"
-                android:textSize="12sp"
-                android:textStyle="normal"
+                android:textColor="@color/default_green"
                 android:visibility="visible"
                 tools:text="ACCEPTED" />
 
             <TextView
                 android:id="@+id/sequence_address_label"
-                style="@style/textStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/sequence_status_text"
+                style="@style/profileSequenceCardInfo"
+                android:layout_below="@id/sequence_id_label"
                 android:layout_marginBottom="10dp"
                 android:fontFamily="sans-serif-medium"
                 android:maxLines="2"
-                android:textColor="@color/sequence_card_text_color_dark_grey"
+                android:textColor="@color/default_gray_darkest"
                 android:textSize="17sp"
-                android:textStyle="normal"
                 tools:text="Cuza Voda 1,Cluj, Romania" />
-
 
             <TextView
                 android:id="@+id/sequence_datetime_label"
-                style="@style/textStyle"
+                style="@style/profileSequenceCardInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="20dp"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
                 android:layout_below="@+id/sequence_address_label"
-                android:fontFamily="sans-serif"
-                android:gravity="center_vertical|start"
-                android:textColor="@color/sequence_card_text_color_secondary_grey"
-                android:textSize="12sp"
-                android:textStyle="normal"
+                android:layout_alignParentStart="true"
                 tools:text="05.02.16 | 02:00 AM" />
 
             <TextView
                 android:id="@+id/total_images_textView"
-                style="@style/textStyle"
+                style="@style/profileSequenceCardInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="20dp"
                 android:layout_below="@+id/sequence_address_label"
                 android:layout_marginEnd="13dp"
-                android:layout_marginRight="13dp"
-                android:layout_toLeftOf="@+id/total_length_label"
                 android:layout_toStartOf="@+id/total_length_label"
-                android:fontFamily="sans-serif"
-                android:gravity="center_vertical"
-                android:textColor="@color/sequence_card_text_color_secondary_grey"
-                android:textSize="12sp"
-                android:textStyle="normal"
                 tools:drawableLeft="@drawable/vector_camera_gray"
                 tools:text="0 " />
 
             <TextView
                 android:id="@+id/total_length_label"
-                style="@style/textStyle"
+                style="@style/profileSequenceCardInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="20dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
                 android:layout_below="@+id/sequence_address_label"
-                android:fontFamily="sans-serif"
-                android:gravity="center_vertical"
-                android:textColor="@color/sequence_card_text_color_secondary_grey"
-                android:textSize="12sp"
-                android:textStyle="normal"
+                android:layout_alignParentEnd="true"
                 tools:drawableLeft="@drawable/vector_distance_gray"
                 tools:text="0 km" />
         </RelativeLayout>
 
     </LinearLayout>
-</android.support.v7.widget.CardView>
+</androidx.cardview.widget.CardView>

@@ -15,7 +15,7 @@ public class ApplicationPreferences {
     /**
      * preference name
      */
-    private static final String PREFS_NAME = "osvAppPrefs";
+    public static final String PREFS_NAME = "osvAppPrefs";
 
     /**
      * used for modifying values in a SharedPreferences prefs
@@ -61,6 +61,10 @@ public class ApplicationPreferences {
         return prefs.getFloat(key, 0);
     }
 
+    public long getLongPreference(String key) {return prefs.getLong(key, 0);}
+
+    public long getLongPreference(String key, long defaultValue) {return prefs.getLong(key, defaultValue);}
+
     public float getFloatPreference(String key, float defaultValue) {
         return prefs.getFloat(key, defaultValue);
     }
@@ -85,6 +89,11 @@ public class ApplicationPreferences {
         prefsEditor.commit();
     }
 
+    public void saveLongPreference(String key, long value) {
+        prefsEditor.putLong(key, value);
+        prefsEditor.commit();
+    }
+
     public void saveFloatPreference(String key, float value, boolean later) {
         prefsEditor.putFloat(key, value);
         if (later) {
@@ -97,5 +106,14 @@ public class ApplicationPreferences {
     public void saveIntPreference(String key, int value) {
         prefsEditor.putInt(key, value);
         prefsEditor.commit();
+    }
+
+    public void removePreference(String key) {
+        prefsEditor.remove(key);
+        prefsEditor.commit();
+    }
+
+    public boolean contains(String key) {
+        return prefs.contains(key);
     }
 }

@@ -24,9 +24,9 @@ import com.telenav.osv.R;
  * A Material style progress wheel, compatible up to 2.2.
  * Based on Todd Davies' Progress Wheel https://github.com/Todd-Davies/ProgressImageView
  * @author Nico Hormazábal
- *         <p/>
- *         Licensed under the Apache License 2.0 license see:
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Licensed under the Apache License 2.0 license see:
+ * http://www.apache.org/licenses/LICENSE-2.0
  */
 public class ProgressImageView extends CircleImageView {
 

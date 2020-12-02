@@ -1,17 +1,17 @@
 package com.telenav.osv.http;
 
+import com.android.volley.AuthFailureError;
+import com.telenav.osv.listener.network.GenericResponseListener;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import com.android.volley.AuthFailureError;
-import com.android.volley.toolbox.StringRequest;
-import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 10/6/2015.
  */
 @SuppressWarnings("HardCodedStringLiteral")
-public class ListSequencesRequest extends StringRequest {
+public class ListSequencesRequest extends KvVolleyStringRequestJarvisAuthorization {
 
     private static final String PARAM_PAGE_NUMBER = "page";
 
@@ -27,25 +27,12 @@ public class ListSequencesRequest extends StringRequest {
 
     private final String mToken;
 
-    public ListSequencesRequest(String url, GenericResponseListener listener, String token, int pageNr, int numberOfResults) {
-        super(Method.POST, url, listener, listener);
+    public ListSequencesRequest(String url, GenericResponseListener listener, String token, int pageNr, int numberOfResults, boolean isJarvisAuthorization, String jarvisAccessToken) {
+        super(Method.POST, url, listener, listener, isJarvisAuthorization, jarvisAccessToken);
         mToken = token;
         mListener = listener;
         mPageIndex = pageNr;
         mResultsToLoad = numberOfResults;
-    }
-
-    @Override
-    public Map<String, String> getHeaders() throws AuthFailureError {
-        Map<String, String> headers = super.getHeaders();
-
-        if (headers == null || headers.equals(Collections.emptyMap())) {
-            headers = new HashMap<>();
-        }
-
-        headers.put("Accept", "application/json");
-
-        return headers;
     }
 
     @Override

@@ -1,16 +1,16 @@
 package com.telenav.osv.http;
 
+import com.android.volley.AuthFailureError;
+import com.telenav.osv.listener.network.GenericResponseListener;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import com.android.volley.AuthFailureError;
-import com.android.volley.toolbox.StringRequest;
-import com.telenav.osv.listener.network.GenericResponseListener;
 
 /**
  * Created by Kalman on 22/11/2016.
  */
-public class LeaderboardRequest extends StringRequest {
+public class LeaderboardRequest extends KvVolleyStringRequestJarvisAuthorization {
 
     private static final String PARAM_DATE = "fromDate";
 
@@ -24,24 +24,11 @@ public class LeaderboardRequest extends StringRequest {
 
     private final String stateCode;
 
-    public LeaderboardRequest(String url, GenericResponseListener listener, String date, String countryCode, String stateCode) {
-        super(Method.POST, url, listener, listener);
+    public LeaderboardRequest(String url, GenericResponseListener listener, String date, String countryCode, String stateCode, boolean isJarvisAuthorization, String jarvisAccessToken) {
+        super(Method.POST, url, listener, listener, isJarvisAuthorization, jarvisAccessToken);
         this.date = date;
         this.countryCode = countryCode;
         this.stateCode = stateCode;
-    }
-
-    @Override
-    public Map<String, String> getHeaders() throws AuthFailureError {
-        Map<String, String> headers = super.getHeaders();
-
-        if (headers == null || headers.equals(Collections.emptyMap())) {
-            headers = new HashMap<>();
-        }
-
-        headers.put("Accept", "application/json");
-
-        return headers;
     }
 
     @Override
