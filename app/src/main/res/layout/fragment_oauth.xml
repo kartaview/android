@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="500dp"
     android:layout_gravity="center"
-    android:minHeight="400dp"
-    android:minWidth="320dp">
+    android:minWidth="320dp"
+    android:minHeight="400dp">
 
 
     <WebView

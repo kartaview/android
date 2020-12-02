@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="reportIssueVm"
+            type="com.telenav.osv.report.viewmodel.ReportIssueViewModel" />
+
+        <import type="android.view.View" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_bottom_sheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/grid_6"
+        android:paddingBottom="@dimen/grid_6"
+        android:background="@drawable/bg_default_white_top_radius_16">
+
+        <!-- Layout to report issue -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_report"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/grid_4"
+            android:paddingEnd="@dimen/grid_4"
+            android:visibility="@{reportIssueVm.isSubmitLayoutVisible ? View.GONE : View.VISIBLE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/tv_report"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                style="@style/FontMedium"
+                android:text="@string/report_issue"
+                android:textSize="@dimen/font_size_18"
+                android:textColor="@color/sequence_local"
+                app:layout_constraintWidth_default="wrap"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_road_closed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/grid_8"
+                android:onClick="@{(view) -> reportIssueVm.reportIssue(view)}"
+                app:layout_constraintTop_toBottomOf="@id/tv_report"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/cl_inaccessible"
+                app:layout_constraintHorizontal_chainStyle="spread">
+
+                <ImageView
+                    android:id="@+id/iv_road_closed"
+                    android:layout_width="@dimen/grid_14"
+                    android:layout_height="@dimen/grid_14"
+                    app:srcCompat="@drawable/ic_road_closed"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/tv_road_closed"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginTop="@dimen/grid_3"
+                    android:text="@string/road_closed"
+                    android:textSize="@dimen/font_size_16"
+                    android:textColor="@color/sequence_local"
+                    app:layout_constraintTop_toBottomOf="@id/iv_road_closed"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintWidth_default="wrap" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_inaccessible"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/grid_8"
+                android:onClick="@{(view) -> reportIssueVm.reportIssue(view)}"
+                app:layout_constraintTop_toBottomOf="@id/tv_report"
+                app:layout_constraintStart_toEndOf="@id/cl_road_closed"
+                app:layout_constraintEnd_toStartOf="@id/cl_note"
+                app:layout_constraintHorizontal_chainStyle="spread">
+
+                <ImageView
+                    android:id="@+id/iv_inaccessible"
+                    android:layout_width="@dimen/grid_14"
+                    android:layout_height="@dimen/grid_14"
+                    app:srcCompat="@drawable/ic_inaccessible"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/tv_inaccessible"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginTop="@dimen/grid_3"
+                    android:text="@string/inaccessible"
+                    android:textSize="@dimen/font_size_16"
+                    android:textColor="@color/sequence_local"
+                    app:layout_constraintTop_toBottomOf="@id/iv_inaccessible"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintWidth_default="wrap" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_note"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/grid_8"
+                android:onClick="@{(view) -> reportIssueVm.reportIssue(view)}"
+                app:layout_constraintTop_toBottomOf="@id/tv_report"
+                app:layout_constraintStart_toEndOf="@id/cl_inaccessible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_chainStyle="spread">
+
+                <ImageView
+                    android:id="@+id/iv_note"
+                    android:layout_width="@dimen/grid_14"
+                    android:layout_height="@dimen/grid_14"
+                    app:srcCompat="@drawable/ic_note"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/tv_note"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginTop="@dimen/grid_3"
+                    android:text="@string/note"
+                    android:textSize="@dimen/font_size_16"
+                    android:textColor="@color/sequence_local"
+                    app:layout_constraintTop_toBottomOf="@id/iv_note"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintWidth_default="wrap" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Layout to provide note and submit issue -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_submit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/grid_3"
+            android:paddingEnd="@dimen/grid_4"
+            android:visibility="@{reportIssueVm.isSubmitLayoutVisible ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:visibility="gone">
+            
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/grid_1"
+                android:paddingEnd="@dimen/grid_1"
+                app:srcCompat="@drawable/vector_back_arrow"
+                android:onClick="@{() -> reportIssueVm.navigateBack()}"
+                android:clickable="@{!reportIssueVm.isLoaderVisible}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                tools:ignore="ContentDescription"/>
+
+            <EditText
+                android:id="@+id/et_note"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/grid_3"
+                android:layout_marginEnd="@dimen/grid_4"
+                android:paddingStart="@dimen/grid_6"
+                android:paddingEnd="@dimen/grid_6"
+                android:paddingTop="@dimen/grid_4"
+                android:paddingBottom="@dimen/grid_4"
+                android:drawableStart="@drawable/vector_edit"
+                android:drawablePadding="@dimen/grid_2"
+                android:background="@drawable/bg_notes_edit_text"
+                android:padding="@dimen/grid_4"
+                android:text="@{reportIssueVm.noteText}"
+                android:onTextChanged="@{reportIssueVm.onNoteTextChanged}"
+                android:textSize="@dimen/font_size_17"
+                android:textColor="@color/default_grab_grey"
+                android:hint="@string/optional_note"
+                android:textColorHint="@color/color_a5a7ab"
+                android:maxLines="1"
+                android:inputType="text"
+                android:clickable="@{!reportIssueVm.isLoaderVisible}"
+                app:layout_constraintStart_toEndOf="@id/iv_back"
+                app:layout_constraintEnd_toStartOf="@id/tv_submit"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_submit"
+                style="@style/FontMedium"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:background="@drawable/bg_error_radius_56"
+                android:paddingStart="@dimen/grid_6"
+                android:paddingTop="@dimen/grid_4"
+                android:paddingEnd="@dimen/grid_6"
+                android:paddingBottom="@dimen/grid_4"
+                android:text="@string/submit"
+                android:textAllCaps="true"
+                android:textColor="@color/default_white"
+                android:textSize="@dimen/font_size_17"
+                android:onClick="@{() -> reportIssueVm.submitIssue()}"
+                android:clickable="@{!reportIssueVm.isLoaderVisible}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- This layout represents progress bar for loading data -->
+        <ProgressBar
+            android:id="@+id/pb_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{reportIssueVm.isLoaderVisible ? View.VISIBLE : View.GONE}"
+            android:indeterminateTint="@color/default_purple"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="gone" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

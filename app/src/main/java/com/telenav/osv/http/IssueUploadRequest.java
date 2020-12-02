@@ -1,27 +1,26 @@
 package com.telenav.osv.http;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import com.android.volley.AuthFailureError;
 import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.StringRequest;
-import com.telenav.osv.item.OSVFile;
+import com.telenav.osv.item.KVFile;
 import com.telenav.osv.listener.network.GenericResponseListener;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Map;
+
 /**
  * Created by Kalman on 10/6/2015.
  */
-public class IssueUploadRequest<T> extends StringRequest {
+public class IssueUploadRequest<T> extends KvVolleyStringRequestJarvisAuthorization {
 
     private static final String FILE_PART_NAME = "file";
 
@@ -41,7 +40,7 @@ public class IssueUploadRequest<T> extends StringRequest {
 
     private final GenericResponseListener mListener;
 
-    private final OSVFile mFile;
+    private final KVFile mFile;
 
     private final String mToken;
 
@@ -51,8 +50,8 @@ public class IssueUploadRequest<T> extends StringRequest {
 
     private ProgressiveEntity mProgressiveEntity;
 
-    public IssueUploadRequest(String url, GenericResponseListener listener, String token, OSVFile file, int issueId, int index) {
-        super(Method.POST, url, listener, listener);
+    public IssueUploadRequest(String url, GenericResponseListener listener, String token, KVFile file, int issueId, int index, boolean isJarvisAuthorization, String jarvisAccessToken) {
+        super(Method.POST, url, listener, listener, isJarvisAuthorization, jarvisAccessToken);
 
         mListener = listener;
         mFile = file;
@@ -61,19 +60,6 @@ public class IssueUploadRequest<T> extends StringRequest {
 
         mToken = token;
         buildMultipartEntity();
-    }
-
-    @Override
-    public Map<String, String> getHeaders() throws AuthFailureError {
-        Map<String, String> headers = super.getHeaders();
-
-        if (headers == null || headers.equals(Collections.emptyMap())) {
-            headers = new HashMap<>();
-        }
-
-        headers.put("Accept", "application/json");
-
-        return headers;
     }
 
     @Override

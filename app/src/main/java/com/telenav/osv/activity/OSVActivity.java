@@ -1,34 +1,35 @@
 package com.telenav.osv.activity;
 
-import java.util.ArrayList;
-import android.Manifest;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
-import android.support.annotation.StringRes;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import com.telenav.osv.R;
 import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.manager.network.UploadManager;
+import com.telenav.osv.application.KVApplication;
+import com.telenav.osv.common.Injection;
 import com.telenav.osv.manager.network.UserDataManager;
+import com.telenav.osv.upload.UploadManager;
 import com.telenav.osv.utils.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Abstract activity used in the project
  * Created by Kalman on 26/09/16.
+ * This should not be used for new implementation, over time is intended to be replaced and deleted.
  */
-public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListener*/ {
+@Deprecated
+public abstract class OSVActivity extends KVActivityTempBase {
 
     private static final String TAG = "OSVActivity";
 
-    public UploadManager mUploadManager;
+    public UploadManager uploadManager;
 
     ApplicationPreferences appPrefs;
 
     UserDataManager mUserDataManager;
+
+    /**
+     * Holder of location permission listeners which will be notified when the location permissions are granted.
+     */
+    List<LocationPermissionsListener> locationPermissionsListeners = new ArrayList<>();
 
     @Override
     public void onLowMemory() {
@@ -66,11 +67,12 @@ public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListen
         Log.d(TAG, "onTrimMemory: --------------------------- level " + levelRepr);
     }
 
-    public abstract OSVApplication getApp();
+    public abstract KVApplication getApp();
 
     public abstract int getCurrentScreen();
 
-    public abstract void resolveLocationProblem(boolean b);
+    public abstract void resolveLocationProblem();
+    public abstract void resolveRecordingProblem();
 
     public abstract void hideSnackBar();
 
@@ -100,104 +102,42 @@ public abstract class OSVActivity extends AppCompatActivity/*,SignDetectedListen
 
     public abstract void openScreen(int screenNearby, Object extra);
 
-    public boolean checkPermissionsForRecording() {
-        Log.d(TAG, "checkPermissionsForRecording: ");
-        ArrayList<String> needed = new ArrayList<>();
-        int cameraPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-        int locationPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        int storagePermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (cameraPermitted == PackageManager.PERMISSION_DENIED) {
-            needed.add(Manifest.permission.CAMERA);
-        }
-        if (locationPermitted == PackageManager.PERMISSION_DENIED) {
-            needed.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-        if (storagePermitted == PackageManager.PERMISSION_DENIED) {
-            needed.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        }
-
-        if (needed.size() > 0) {
-            String[] array = new String[needed.size()];
-            needed.toArray(array);
-            ActivityCompat.requestPermissions(this, array, OSVApplication.START_RECORDING_PERMISSION);
-            return false;
-        }
-        return true;
-    }
-
-    public boolean checkPermissionsForGPS() {
-        Log.d(TAG, "checkPermissionsForGPS: ");
-        ArrayList<String> needed = new ArrayList<>();
-        int locationPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (locationPermitted == PackageManager.PERMISSION_DENIED) {
-            needed.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-
-        if (needed.size() > 0) {
-            String[] array = new String[needed.size()];
-            needed.toArray(array);
-            ActivityCompat.requestPermissions(this, array, OSVApplication.LOCATION_PERMISSION);
-            return false;
-        }
-        return true;
-    }
-
-    public boolean checkPermissionsForGPSWithRationale(@StringRes int message) {
-        Log.d(TAG, "checkPermissionsForGPSWithRationale: ");
-        final ArrayList<String> needed = new ArrayList<>();
-        int locationPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (locationPermitted == PackageManager.PERMISSION_DENIED) {
-            needed.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-
-        if (needed.size() > 0) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, needed.get(0))) {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog);
-                AlertDialog dialog = builder.setMessage(message).setTitle(R.string.permission_request)
-                        .setNeutralButton(R.string.ok_label, new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String[] array = new String[needed.size()];
-                                needed.toArray(array);
-                                ActivityCompat.requestPermissions(OSVActivity.this, array, OSVApplication.LOCATION_PERMISSION_BT);
-                            }
-                        }).create();
-                dialog.show();
-                return false;
-            } else {
-                String[] array = new String[needed.size()];
-                needed.toArray(array);
-                ActivityCompat.requestPermissions(this, array, OSVApplication.LOCATION_PERMISSION_BT);
-                return false;
-            }
-        }
-        return true;
-    }
-
     public UserDataManager getUserDataManager() {
         if (mUserDataManager == null) {
-            mUserDataManager = new UserDataManager(this);
+            mUserDataManager = new UserDataManager(this, Injection.provideUserRepository(this.getApplicationContext()));
         }
         return mUserDataManager;
     }
 
-    public abstract boolean hasPosition();
+    public boolean hasPosition() {
+        return false;
+    }
 
-    protected abstract void showSnackBar(final CharSequence text, final int duration, final CharSequence button, final Runnable onClick);
+    /**
+     * Adds a new listener in {@link #locationPermissionsListeners}.
+     * @param listener the listener to be added.
+     */
+    public void addLocationPermissionListener(LocationPermissionsListener listener) {
+        locationPermissionsListeners.add(listener);
+    }
 
-    void checkPermissionsForCamera() {
-        Log.d(TAG, "checkPermissionsForCamera: ");
-        ArrayList<String> needed = new ArrayList<>();
-        int cameraPermitted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-        if (cameraPermitted == PackageManager.PERMISSION_DENIED) {
-            needed.add(Manifest.permission.CAMERA);
-        }
-
-        if (needed.size() > 0) {
-            String[] array = new String[needed.size()];
-            needed.toArray(array);
-            ActivityCompat.requestPermissions(this, array, OSVApplication.CAMERA_PERMISSION);
+    /**
+     * Notifies the location permission listeners when the location permission is granted.
+     */
+    public void notifyLocationPermissionListenersGranted() {
+        for (LocationPermissionsListener listener : locationPermissionsListeners) {
+            listener.onLocationPermissionGranted();
         }
     }
+
+    /**
+     * Notifies the location permission listeners when the location permission is granted.
+     */
+    public void notifyLocationPermissionListenersDenied() {
+        for (LocationPermissionsListener listener : locationPermissionsListeners) {
+            listener.onLocationPermissionDenied();
+        }
+    }
+
+    protected abstract void showSnackBar(final CharSequence text, final int duration, final CharSequence button, final Runnable onClick);
 }

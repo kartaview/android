@@ -1,7 +1,7 @@
 package com.telenav.osv.ui.rules;
 
-import android.support.test.rule.ActivityTestRule;
 import com.telenav.osv.activity.SplashActivity;
+import androidx.test.rule.ActivityTestRule;
 
 /**
  * Created by Kalman on 03/04/2017.

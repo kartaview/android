@@ -44,9 +44,6 @@ public class UserDataParser extends ApiResponseParser<UserData> {
                 name = osv.getString("full_name");
                 userData.setDisplayName(name);
                 String userType = osv.getString("type");
-                if (userType.equals("driver")) {
-                    userType = osv.getString("driver_type");
-                }
                 userData.setUserType(AccountData.getUserTypeForString(userType));
                 obdDistance = osv.getString("obdDistance");
                 totalDistance = osv.getString("totalDistance");
@@ -58,23 +55,26 @@ public class UserDataParser extends ApiResponseParser<UserData> {
                 userData.setWeeklyRank(weeklyRank);
                 try {
                     JSONObject gamification = osv.getJSONObject("gamification");
-
-                    rank = gamification.getInt("rank");
+                    if (gamification.has("rank")) {
+                        rank = gamification.getInt("rank");
+                    }
                     userData.setOverallRank(rank);
-                    score = gamification.getInt("total_user_points");
+                    if (gamification.has("total_user_points")) {
+                        score = gamification.getInt("total_user_points");
+                    }
                     userData.setTotalPoints(score);
                     level = gamification.getInt("level");
                     userData.setLevel(level);
                     levelName = gamification.getString("level_name");
                     userData.setLevelName(levelName);
-                    xpProgress = gamification.getInt("level_progress");
-                    userData.setLevelProgress(xpProgress);
-                    try {
-                        xpTarget = gamification.getInt("level_target");
-                        userData.setLevelTarget(xpTarget);
-                    } catch (Exception e) {
-                        Log.w(TAG, "requestFinished: " + Log.getStackTraceString(e));
+                    if(gamification.has("level_progress")){
+                        xpProgress = gamification.getInt("level_progress");
                     }
+                    userData.setLevelProgress(xpProgress);
+                    if (gamification.has("level_target")) {
+                        xpTarget = gamification.getInt("level_target");
+                    }
+                    userData.setLevelTarget(xpTarget);
                 } catch (Exception e) {
                     Log.w(TAG, "requestFinished: " + Log.getStackTraceString(e));
                 }

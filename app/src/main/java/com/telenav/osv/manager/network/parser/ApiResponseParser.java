@@ -1,11 +1,25 @@
 package com.telenav.osv.manager.network.parser;
 
-import org.json.JSONObject;
+import android.location.Location;
+
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.telenav.osv.data.sequence.model.details.SequenceDetails;
+import com.telenav.osv.data.sequence.model.details.compression.SequenceDetailsCompressionJpeg;
 import com.telenav.osv.item.network.ApiResponse;
+import com.telenav.osv.network.endpoint.FactoryServerEndpointUrl;
+import com.telenav.osv.network.endpoint.UrlProfile;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.StringUtils;
 import com.telenav.osv.utils.Utils;
+
+import org.joda.time.DateTime;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.util.Date;
+
 import static com.telenav.osv.listener.network.NetworkResponseDataListener.API_EXCEPTIONAL_FAILURE;
 
 /**
@@ -14,6 +28,11 @@ import static com.telenav.osv.listener.network.NetworkResponseDataListener.API_E
 public abstract class ApiResponseParser<T extends ApiResponse> {
 
     private static final String TAG = "ApiResponseParser";
+
+    /**
+     * The multiplier required to transform km to meters.
+     */
+    private static final double M_MULTIPLIER = 1000d;
 
     private static final int HTTP_TIMEOUT = 408;
 
@@ -60,7 +79,6 @@ public abstract class ApiResponseParser<T extends ApiResponse> {
 
         T response = getHolder();
         try {
-            //                Log.w(TAG, "parse: " + json);
             JSONObject ob = new JSONObject(json);
             int httpCode = ob.getJSONObject("status").getInt("httpCode");
             String httpMessage = ob.getJSONObject("status").getString("httpMessage");
@@ -74,5 +92,75 @@ public abstract class ApiResponseParser<T extends ApiResponse> {
             e.printStackTrace();
         }
         return response;
+    }
+
+    /**
+     * Transform the data for a sequence in Json Format related to {@code SequenceDetailsCompressionJpeg}.
+     * @param sequenceJsonFormat sequence in Json Format.
+     * @return {@code SequenceDetailsCompressionJpeg} object.
+     * @throws JSONException exception thrown by the Json when data in invalid.
+     */
+    SequenceDetailsCompressionJpeg getJpegCompression(JSONObject sequenceJsonFormat, FactoryServerEndpointUrl factoryServerEndpointUrl) throws JSONException {
+        String frameLength = sequenceJsonFormat.getString("photo_no");
+        String thumbLink = factoryServerEndpointUrl.getProfileEndpoint(UrlProfile.DOWNLOAD_PHOTO) + sequenceJsonFormat.getString("thumb_name");
+
+        return new SequenceDetailsCompressionJpeg(Integer.valueOf(frameLength), thumbLink, 0);
+    }
+
+    /**
+     * Transform the data for a sequence in Json Format related to {@code SequenceDetails}.
+     * @param sequenceJsonFormat sequence in Json Format.
+     * @return {@code SequenceDetails} object.
+     * @throws JSONException exception thrown by the Json when data in invalid.
+     */
+    SequenceDetails getSequenceDetails(JSONObject sequenceJsonFormat) throws JSONException {
+        boolean obd = false;
+        String appVersion = StringUtils.EMPTY_STRING;
+        double distanceNumber = 0;
+        String partialAddress = StringUtils.EMPTY_STRING;
+        int id = sequenceJsonFormat.getInt("id");
+        double lat = sequenceJsonFormat.getDouble("current_lat");
+        double lon = sequenceJsonFormat.getDouble("current_lng");
+        long timestamp = new DateTime().getMillis();
+        String processingStatus = sequenceJsonFormat.getString("image_processing_status");
+        String distance = sequenceJsonFormat.getString("distance");
+        String dateFormat = sequenceJsonFormat.getString("date_added");
+        Location initialLocation = new Location(StringUtils.EMPTY_STRING);
+        initialLocation.setLatitude(lat);
+        initialLocation.setLongitude(lon);
+
+        try {
+            String address = sequenceJsonFormat.getString("location");
+            String[] list = address.split(", ");
+            partialAddress = list[0] + ", " + list[2];
+            if (distance != null) {
+                distanceNumber = Double.parseDouble(distance) * M_MULTIPLIER;
+            }
+            appVersion = sequenceJsonFormat.getString("app_version");
+            if (!sequenceJsonFormat.getString("obd_info").equals("null")) {
+                obd = sequenceJsonFormat.getInt("obd_info") > 0;
+            }
+            try {
+                Date date = Utils.onlineDateFormat.parse(dateFormat);
+                timestamp = date.getTime();
+            } catch (ParseException parseException) {
+                Log.d(TAG, String.format("ParseException for date. Sequence id: %s. Exception: %s", id, parseException.getMessage()));
+            }
+        } catch (NumberFormatException numberFormatException) {
+            Log.d(TAG, String.format("Number format exception. Sequence id: %s. Exception: %s", id, numberFormatException.getMessage()));
+        } catch (JSONException jsonException) {
+            Log.d(TAG, String.format("Json exception. Sequence id: %s. Exception: %s", id, jsonException.getMessage()));
+        }
+
+        SequenceDetails sequenceDetails = new SequenceDetails(initialLocation,
+                distanceNumber,
+                appVersion,
+                new DateTime(timestamp));
+        sequenceDetails.setOnlineId(id);
+        sequenceDetails.setObd(obd);
+        sequenceDetails.setProcessingRemoteStatus(processingStatus);
+        sequenceDetails.setAddressName(partialAddress);
+
+        return sequenceDetails;
     }
 }

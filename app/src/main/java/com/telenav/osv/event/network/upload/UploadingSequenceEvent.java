@@ -1,7 +1,7 @@
 package com.telenav.osv.event.network.upload;
 
+import com.telenav.osv.data.sequence.model.Sequence;
 import com.telenav.osv.event.OSVEvent;
-import com.telenav.osv.item.Sequence;
 
 /**
  * Created by Bencze Kalman on 2/12/2017.

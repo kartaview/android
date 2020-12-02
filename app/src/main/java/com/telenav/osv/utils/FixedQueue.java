@@ -23,7 +23,7 @@ public class FixedQueue {
         // We don't want to work on the original data
         System.arraycopy(initialValues, 0, ring, 0, initialValues.length);
 
-        // The next time we add something to the queue,
+        // The next time we addChild something to the queue,
         // the oldest element should be replaced
         index = 0;
     }

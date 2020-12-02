@@ -1,9 +1,9 @@
 package com.telenav.osv.event.network.matcher;
 
-import java.util.List;
-import com.skobbler.ngx.map.SKBoundingBox;
 import com.telenav.osv.event.OSVStickyEvent;
 import com.telenav.osv.item.Polyline;
+
+import java.util.List;
 
 /**
  * event which marks segments received from server
@@ -13,7 +13,7 @@ public class SegmentsReceivedEvent extends OSVStickyEvent {
 
     public final static String TAG = "SegmentsReceivedEvent";
 
-    public final List<Polyline> all;
+    public final List<Polyline> polylines;
 
     public final boolean matcher;
 
@@ -21,11 +21,11 @@ public class SegmentsReceivedEvent extends OSVStickyEvent {
 
     public final float zoom;
 
-    public SKBoundingBox boundingBox;
+    public KVBoundingBox boundingBox;
 
-    public SegmentsReceivedEvent(List<Polyline> all, Object syncObject, boolean matcher, SKBoundingBox boundingBox, float zoom) {
+    public SegmentsReceivedEvent(List<Polyline> polylines, Object syncObject, boolean matcher, KVBoundingBox boundingBox, float zoom) {
         this.zoom = zoom;
-        this.all = all;
+        this.polylines = polylines;
         this.matcher = matcher;
         this.syncObject = syncObject;
         this.boundingBox = boundingBox;

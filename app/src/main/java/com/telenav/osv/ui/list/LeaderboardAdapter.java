@@ -1,8 +1,8 @@
 package com.telenav.osv.ui.list;
 
 import java.util.List;
+import android.content.Context;
 import android.graphics.Color;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +12,11 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.telenav.osv.R;
-import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.item.LeaderboardData;
+import com.telenav.osv.utils.FormatUtils;
 import com.telenav.osv.utils.Log;
 import com.telenav.osv.utils.Utils;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * *
@@ -34,7 +35,7 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private List<LeaderboardData> mUserList;
 
-    private MainActivity activity;
+    private Context context;
 
     private boolean mInternetAvailable;
 
@@ -42,10 +43,10 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private int lastPosition = 0;
 
-    public LeaderboardAdapter(List<LeaderboardData> results, MainActivity activity) {
+    public LeaderboardAdapter(List<LeaderboardData> results, Context context) {
         mUserList = results;
-        this.activity = activity;
-        mInternetAvailable = Utils.isInternetAvailable(this.activity);
+        this.context = context;
+        mInternetAvailable = Utils.isInternetAvailable(this.context);
     }
 
     @Override
@@ -77,22 +78,22 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 LeaderboardAdapter.UserHolder userHolder = (LeaderboardAdapter.UserHolder) holder;
                 final LeaderboardData leaderboardData = mUserList.get(Math.min(position - 1, mUserList.size() - 1));
                 userHolder.nameText.setText(leaderboardData.getName());
-                userHolder.rankText.setText("" + leaderboardData.getRank());
-                userHolder.pointsText.setText(Utils.formatNumber(leaderboardData.getPoints()));
+                userHolder.rankText.setText(String.format("%d", leaderboardData.getRank()));
+                userHolder.pointsText.setText(FormatUtils.formatNumber(leaderboardData.getPoints()));
                 if (mUserPosition == position) {
-                    userHolder.itemView.setBackgroundColor(activity.getResources().getColor(R.color.leaderboard_green));
+                    userHolder.itemView.setBackgroundColor(context.getResources().getColor(R.color.default_purple));
                     userHolder.nameText.setTextColor(Color.WHITE);
                     userHolder.rankText.setTextColor(Color.WHITE);
                     userHolder.pointsText.setTextColor(Color.WHITE);
                     return;
                 } else {
-                    int clr = activity.getResources().getColor(R.color.leaderboard_text_grey);
+                    int clr = context.getResources().getColor(R.color.default_black_lighter);
                     userHolder.nameText.setTextColor(clr);
                     userHolder.rankText.setTextColor(clr);
                     userHolder.pointsText.setTextColor(clr);
                 }
             }
-            holder.itemView.setBackgroundColor(activity.getResources().getColor(position % 2 == 0 ? R.color.leaderboard_grey : R.color.white));
+            holder.itemView.setBackgroundColor(context.getResources().getColor(position % 2 == 0 ? R.color.settings_default_color : R.color.default_white));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -153,7 +154,7 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             if (Math.abs(last - position) > 1) {
                 return;
             }
-            Animation animation = AnimationUtils.loadAnimation(activity, (position >= last) ? R.anim.item_slide_up : R.anim.item_slide_down);
+            Animation animation = AnimationUtils.loadAnimation(context, (position >= last) ? R.anim.item_slide_up : R.anim.item_slide_down);
             viewToAnimate.startAnimation(animation);
         }
     }

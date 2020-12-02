@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/image_view_fragment_camera_controls_obd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/recording_info_layout_margin_start"
+        android:layout_marginTop="@dimen/recording_info_layout_margin_top"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/vector_car_obd_add"
+        tools:ignore="ContentDescription" />
+
+    <LinearLayout
+        android:id="@+id/layout_fragment_camera_controls_icon_obd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/image_view_fragment_camera_controls_obd"
+        app:layout_constraintEnd_toEndOf="@id/image_view_fragment_camera_controls_obd"
+        app:layout_constraintStart_toStartOf="@id/image_view_fragment_camera_controls_obd"
+        app:layout_constraintTop_toTopOf="@id/image_view_fragment_camera_controls_obd">
+
+        <TextView
+            android:id="@+id/text_view_fragment_camera_controls_obd_speed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:clickable="false"
+            android:focusable="false"
+            android:text="@string/default_value_0"
+            android:textColor="@color/default_white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/text_view_fragment_camera_controls_obd_speed_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:clickable="false"
+            android:focusable="false"
+            android:text="@string/partial_kmh_label"
+            android:textColor="@color/default_white"
+            android:textSize="14sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/view_fragment_camera_controls_obd_click_view"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_margin="12dp"
+        android:background="@color/default_transparent"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@id/image_view_fragment_camera_controls_obd"
+        app:layout_constraintEnd_toEndOf="@id/image_view_fragment_camera_controls_obd"
+        app:layout_constraintStart_toStartOf="@id/image_view_fragment_camera_controls_obd"
+        app:layout_constraintTop_toTopOf="@id/image_view_fragment_camera_controls_obd" />
+
+    <ImageView
+        android:id="@+id/image_view_fragment_camera_controls_gps_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/recording_info_layout_margin_start"
+        android:layout_marginTop="@dimen/recording_info_layout_margin_top"
+        android:layout_marginEnd="@dimen/recording_info_layout_margin_start"
+        app:layout_constraintStart_toEndOf="@id/image_view_fragment_camera_controls_obd"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/vector_gps_low"
+        tools:ignore="ContentDescription" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_report"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/grid_4"
+        android:layout_marginTop="@dimen/recording_info_layout_margin_top"
+        android:layout_marginEnd="@dimen/grid_4"
+        android:background="@drawable/bg_default_white_radius_56"
+        android:padding="@dimen/grid_1"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/layout_fragment_camera_controls_recording_points"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/image_view_fragment_camera_controls_gps_icon"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_default="wrap">
+
+        <ImageView
+            android:id="@+id/iv_report"
+            android:layout_width="@dimen/grid_14"
+            android:layout_height="@dimen/grid_14"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/vector_report"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tv_report"
+            style="@style/FontMedium"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/grid_3"
+            android:paddingEnd="@dimen/grid_3"
+            android:text="@string/report"
+            android:textAllCaps="true"
+            android:textColor="@color/default_black"
+            android:textSize="@dimen/font_size_16"
+            app:layout_constraintBottom_toBottomOf="@id/iv_report"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_report"
+            app:layout_constraintTop_toTopOf="@id/iv_report"
+            app:layout_constraintWidth_default="wrap" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <ImageView
+        android:id="@+id/image_view_fragment_camera_controls_close_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/recording_info_layout_margin_start"
+        android:layout_marginTop="@dimen/recording_info_layout_margin_top"
+        android:layout_marginEnd="@dimen/recording_info_layout_margin_start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/vector_close_camera"
+        tools:ignore="ContentDescription" />
+
+    <include
+        android:id="@+id/layout_fragment_camera_controls_recording_points"
+        layout="@layout/layout_recording_points"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/recording_info_layout_margin_start"
+        android:layout_marginTop="@dimen/recording_info_layout_margin_top"
+        android:layout_marginEnd="@dimen/recording_info_layout_margin_start"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/controls_gradient_bar"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:background="@drawable/bg_recording_black_gradient"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button_fragment_camera_controls_start_recording"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="172dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_start_recording_button"
+        android:text="@string/camera_preview_start_recording"
+        android:textColor="@color/default_white"
+        android:textSize="20sp"
+        android:textStyle="normal"
+        app:layout_constraintBottom_toBottomOf="@id/controls_gradient_bar"
+        app:layout_constraintEnd_toEndOf="@id/controls_gradient_bar"
+        app:layout_constraintTop_toTopOf="@id/controls_gradient_bar" />
+
+    <Chronometer
+        android:id="@+id/chronometer_fragment_camera_controls_stop_recording"
+        android:layout_width="172dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_stop_recording_button"
+        android:drawableStart="@drawable/vector_recording_stop"
+        android:drawablePadding="6dp"
+        android:gravity="center"
+        android:paddingStart="20dp"
+        android:paddingEnd="10dp"
+        android:textColor="@color/default_black"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/controls_gradient_bar"
+        app:layout_constraintEnd_toEndOf="@id/controls_gradient_bar"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintTop_toTopOf="@id/controls_gradient_bar"
+        tools:text="00:02:43" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="75dp"
+        android:indeterminateTint="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/controls_gradient_bar"
+        app:layout_constraintEnd_toEndOf="@id/chronometer_fragment_camera_controls_stop_recording"
+        app:layout_constraintStart_toStartOf="@id/chronometer_fragment_camera_controls_stop_recording"
+        app:layout_constraintTop_toTopOf="@id/controls_gradient_bar" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_fragment_camera_controls_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.33" />
+
+    <TextView
+        android:id="@+id/text_view_fragment_camera_controls_tips_and_tricks"
+        style="@style/TipsTricks"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/vector_info"
+        android:drawablePadding="7dp"
+        android:gravity="center"
+        android:text="@string/camera_preview_tips_and_tricks"
+        app:layout_constraintBottom_toBottomOf="@id/controls_gradient_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/controls_gradient_bar" />
+
+    <include
+        android:id="@+id/layout_fragment_camera_controls_recording_details"
+        layout="@layout/layout_recording_details"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/controls_gradient_bar"
+        app:layout_constraintEnd_toStartOf="@id/chronometer_fragment_camera_controls_stop_recording"
+        app:layout_constraintStart_toEndOf="@id/guideline_fragment_camera_controls_vertical"
+        app:layout_constraintTop_toTopOf="@id/controls_gradient_bar" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

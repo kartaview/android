@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape>
+            <corners android:radius="4dp" />
+            <solid android:color="@color/default_purple" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape>
+            <corners android:radius="4dp" />
+            <solid android:color="@color/default_purple" />
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid android:drawable="@drawable/bg_tagging_recording_group" />
+        </shape>
+    </item>
+</selector>

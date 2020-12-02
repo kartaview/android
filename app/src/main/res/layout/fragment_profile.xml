@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activity.MainActivity">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/profile_appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/action_bar_blue"
+        android:background="@color/default_purple"
         android:stateListAnimator="@animator/appbar_always_elevated"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         tools:expanded="true"
         tools:targetApi="lollipop">
 
-        <android.support.design.widget.CollapsingToolbarLayout
+        <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/profile_collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,8 +38,8 @@
                     android:layout_width="360dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="55dp"
                     android:layout_marginTop="@dimen/action_bar_size"
+                    android:layout_marginBottom="55dp"
                     android:baselineAligned="false"
                     android:orientation="horizontal"
                     android:weightSum="3">
@@ -84,9 +84,9 @@
                             android:layout_height="76dp"
                             android:layout_gravity="center"
                             android:elevation="4dp"
-                            app:civ_border_color="@color/transparent"
+                            app:civ_border_color="@color/default_transparent"
                             app:civ_border_width="3dp"
-                            app:civ_fill_color="@color/white"
+                            app:civ_fill_color="@color/default_white"
                             app:layout_anchor="@id/profile_collapsing_toolbar"
                             app:layout_anchorGravity="top|center_horizontal"
                             app:layout_scrollFlags="scroll"
@@ -95,10 +95,10 @@
                             app:piv_circleRadius="42dp"
                             app:piv_linearProgress="true"
                             app:piv_progressIndeterminate="false"
-                            app:piv_rimColor="@color/white"
+                            app:piv_rimColor="@color/default_white"
                             app:piv_rimWidth="4dp"
                             app:piv_spinSpeed="0.70"
-                            app:srcCompat="@drawable/vector_profile_placeholder"
+                            app:srcCompat="@drawable/ic_profile_placeholder"
                             tools:piv_level="2"
                             tools:piv_progress="0.5" />
                     </FrameLayout>
@@ -130,47 +130,53 @@
                             android:background="@drawable/custom_bg_white_rounded"
                             android:gravity="center"
                             android:minWidth="48dp"
-                            android:paddingEnd="10dp"
                             android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
                             android:text="@string/default_value_0"
-                            android:textColor="@color/profile_header_blue_text" />
+                            android:textColor="@color/default_purple" />
                     </LinearLayout>
                 </LinearLayout>
 
             </LinearLayout>
 
-            <android.support.v7.widget.Toolbar
+            <androidx.appcompat.widget.Toolbar
                 android:id="@+id/profile_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/action_bar_size"
                 android:background="@null"
                 app:layout_collapseMode="pin"
                 tools:navigationIcon="@drawable/vector_back_white" />
-        </android.support.design.widget.CollapsingToolbarLayout>
-    </android.support.design.widget.AppBarLayout>
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
-    <android.support.v4.widget.SwipeRefreshLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/profile_swipe_refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/background_material_light_1"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/profile_sequences_recycle_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:clipToPadding="false"
-            android:paddingBottom="@dimen/sequence_list_padding_bottom"
-            android:paddingEnd="@dimen/sequence_list_padding_side_portrait"
             android:paddingStart="@dimen/sequence_list_padding_side_portrait"
+            android:paddingEnd="@dimen/sequence_list_padding_side_portrait"
+            android:paddingBottom="@dimen/sequence_list_padding_bottom"
             android:scrollbars="none"
             tools:listheader="@layout/partial_profile_header_user"
             tools:listitem="@layout/item_sequence_card">
 
-        </android.support.v7.widget.RecyclerView>
-    </android.support.v4.widget.SwipeRefreshLayout>
-</android.support.design.widget.CoordinatorLayout>
+        </androidx.recyclerview.widget.RecyclerView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <FrameLayout
+        android:id="@+id/loading_fragment_profile_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

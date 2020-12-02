@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="24dp"
     android:height="24dp"
-    android:viewportHeight="24"
-    android:viewportWidth="24">
+    android:viewportWidth="24"
+    android:viewportHeight="24">
 
     <group
         android:name="Icons"

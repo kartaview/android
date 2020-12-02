@@ -1,7 +1,7 @@
 package com.telenav.osv.listener;
 
 import com.facebook.network.connectionclass.ConnectionClassManager;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.data.sequence.model.Sequence;
 
 /**
  * Created by Kalman on 11/18/15.

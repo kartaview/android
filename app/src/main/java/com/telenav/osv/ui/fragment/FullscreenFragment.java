@@ -2,7 +2,6 @@ package com.telenav.osv.ui.fragment;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,9 +10,11 @@ import android.widget.FrameLayout;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.activity.OSVActivity;
-import com.telenav.osv.item.Sequence;
+import com.telenav.osv.common.Injection;
+import com.telenav.osv.data.sequence.model.Sequence;
 import com.telenav.osv.manager.playback.PlaybackManager;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
+import androidx.annotation.Nullable;
 
 /**
  * fullscreen preview fragment
@@ -47,14 +48,10 @@ public class FullscreenFragment extends DisplayFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_fullscreen_preview, null);
         activity = (MainActivity) getActivity();
-        this.playbackManager = PlaybackManager.get(activity, mSequence);
-        //        mImageView = (PhotoView) inflater.inflate(R.layout.item_image_view_pager, null);
+        this.playbackManager = PlaybackManager.get(activity, mSequence,
+                Injection.provideFrameLocalDataSource(getContext().getApplicationContext()),
+                Injection.provideVideoDataSource(getContext().getApplicationContext()), Injection.provideApplicationPreferences(getContext()));
         mFrameHolder = view.findViewById(R.id.image_holder);
-        //        mFrameHolder.addView(mImageView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
-        // .MATCH_PARENT));
-        //        Bitmap bitmap = ((GlideBitmapDrawable)((ImageView)((ScrollDisabledViewPager)playbackManager.getSurface()).getChildAt(0))
-        // .getDrawable()).getBitmap();
-        //        mImageView.setImageBitmap(bitmap);
         return view;
     }
 
@@ -97,7 +94,6 @@ public class FullscreenFragment extends DisplayFragment {
     @Override
     public void onDestroyView() {
         if (playbackManager != null) {
-            playbackManager.stop();
             playbackManager.destroy();
         }
         super.onDestroyView();

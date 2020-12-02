@@ -7,43 +7,34 @@
 
     <TextView
         android:id="@+id/rank_text"
-        style="@style/textStyle"
+        style="@style/leaderBoardTextStyle"
         android:layout_width="60dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:layout_margin="10dp"
-        android:fontFamily="sans-serif"
         android:gravity="center"
-        android:textColor="@color/leaderboard_text_grey"
         tools:text="55" />
 
     <TextView
         android:id="@+id/name_text"
-        style="@style/textStyle"
+        style="@style/leaderBoardTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginLeft="80dp"
-        android:layout_marginRight="100dp"
         android:layout_marginStart="80dp"
         android:layout_marginTop="10dp"
-        android:fontFamily="sans-serif"
-        android:lines="1"
-        android:textColor="@color/leaderboard_text_grey"
-        tools:text="telenavdrivers" />
+        android:layout_marginEnd="100dp"
+        android:layout_marginBottom="10dp"
+        android:maxLines="2" />
 
     <TextView
         android:id="@+id/points_text"
-        style="@style/textStyle"
+        style="@style/leaderBoardTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:layout_margin="10dp"
         android:ellipsize="none"
-        android:fontFamily="sans-serif"
         android:gravity="center"
         android:singleLine="true"
-        android:textColor="@color/leaderboard_text_grey"
         tools:text="3 636 167" />
 </FrameLayout>

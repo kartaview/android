@@ -68,4 +68,32 @@ public class Constants {
     public static final String BLE_SERVICE_STARTED = "BLE_SERVICE_STARTED";
 
     public static final String BT_SERVICE_STARTED = "BT_SERVICE_STARTED";
+
+    /**
+     * Argument used for pics passing.
+     */
+    public static final String ARG_PICS = "PICS";
+
+    /**
+     * Argument used for points passing.
+     */
+    public static final String ARG_POINTS = "POINTS";
+
+    /**
+     * Argument used for distance passing.
+     */
+    public static final String ARG_DISTANCE = "DISTANCE";
+
+    public static final String ARG_DISTANCE_LABEL = "DISTANCE_LABEL";
+
+    /**
+     * Argument used for recording time passing.
+     */
+    public static final String ARG_RECORDING_TIME = "TIME";
+
+    public static final String ARG_SIZE = "SIZE";
+
+    public static final String ARG_SIZE_LABEL = "SIZE_LABEL";
+
+    public static final String ARG_GPS_ICON = "GPS_ICON";
 }

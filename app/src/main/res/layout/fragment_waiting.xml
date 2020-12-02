@@ -1,31 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/frameLayout2"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/local_list"
+    <View
+        android:id="@+id/view_item_fragment_waiting_separator"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="56dp"
-        android:layout_marginTop="@dimen/action_bar_size"
+        android:layout_height="1dp"
+        android:background="@color/md_grey_600"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_fragment_waiting_sequences"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:background="@color/background_material_light_1"
         android:divider="@drawable/custom_list_divider"
         android:fadeScrollbars="true"
         android:overScrollFooter="@android:color/transparent"
         android:scrollbars="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_fragment_waiting_upload"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view_item_fragment_waiting_separator"
         tools:listitem="@layout/item_local_sequence" />
 
-    <Button
-        android:id="@+id/upload_button"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_gravity="bottom"
-        android:background="@color/hint_purple"
+    <TextView
+        android:id="@+id/text_view_fragment_waiting_upload"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:background="@color/default_purple"
         android:gravity="center"
         android:orientation="horizontal"
         android:text="@string/upload_all_label"
-        android:textColor="@color/white"
-        android:textSize="18sp" />
-</FrameLayout>
+        android:textAllCaps="true"
+        android:textColor="@color/default_white"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

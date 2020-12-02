@@ -10,8 +10,10 @@
     public native <methods>;
     protected native <methods>;
 }
--keep class com.skobbler.** {*;}
--keep class com.telenav.ffmpeg.** {*;}
+
+# For Androidx
+-keep class androidx.core.app.CoreComponentFactory { *; }
+
 # For Guava:
 -dontwarn javax.annotation.**
 -dontwarn javax.inject.**

@@ -1,9 +1,9 @@
 package com.telenav.osv.ui.fragment.transition;
 
-import android.support.transition.ChangeBounds;
-import android.support.transition.ChangeImageTransform;
-import android.support.transition.ChangeTransform;
-import android.support.transition.TransitionSet;
+import androidx.transition.ChangeBounds;
+import androidx.transition.ChangeImageTransform;
+import androidx.transition.ChangeTransform;
+import androidx.transition.TransitionSet;
 
 /**
  * Created by kalmanb on 8/9/17.

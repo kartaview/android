@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/walkthrought_2"
+    android:background="@color/default_green"
     android:paddingBottom="@dimen/appIntroBottomBarHeight">
 
     <ImageView
@@ -34,7 +34,7 @@
             android:paddingLeft="32dp"
             android:paddingRight="32dp"
             android:text="@string/walkthrough_record_title"
-            android:textColor="@color/white"
+            android:textColor="@color/default_white"
             android:textSize="24sp" />
 
 
@@ -44,12 +44,12 @@
             android:layout_gravity="center"
             android:layout_marginTop="30dp"
             android:gravity="center"
-            android:paddingEnd="60dp"
-            android:paddingLeft="60dp"
-            android:paddingRight="60dp"
             android:paddingStart="60dp"
+            android:paddingLeft="60dp"
+            android:paddingEnd="60dp"
+            android:paddingRight="60dp"
             android:text="@string/walkthrough_record_text"
-            android:textColor="@color/white_transparent"
+            android:textColor="@color/default_white_transparent"
             android:textSize="18sp" />
 
 

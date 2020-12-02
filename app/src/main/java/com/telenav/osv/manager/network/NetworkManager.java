@@ -1,10 +1,10 @@
 package com.telenav.osv.manager.network;
 
-import java.io.File;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
+
 import com.android.volley.ExecutorDelivery;
 import com.android.volley.Network;
 import com.android.volley.Request;
@@ -14,25 +14,19 @@ import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HttpStack;
 import com.android.volley.toolbox.HurlStack;
 import com.telenav.osv.application.ApplicationPreferences;
-import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.KVApplication;
 import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.common.Injection;
+import com.telenav.osv.network.endpoint.FactoryServerEndpointUrl;
 import com.telenav.osv.utils.BackgroundThreadPool;
-import com.telenav.osv.utils.Log;
-import com.telenav.osv.utils.Utils;
+
+import java.io.File;
 
 /**
  * abstract networking class
  * Created by Kalman on 02/05/2017.
  */
-abstract class NetworkManager {
-
-    public static final String[] URL_ENV =
-            {"openstreetcam.org/", "staging.openstreetcam.org/", "testing-api.openstreetcam.org/", "testing.openstreetcam.org/", "beta.openstreetcam.org/"};
-
-    /**
-     * version number, when it will be added to backend
-     */
-    static final String URL_VER = "1.0/";
+public abstract class NetworkManager {
 
     static final int UPLOAD_REQUEST_TIMEOUT = 30000;
 
@@ -45,7 +39,7 @@ abstract class NetworkManager {
 
     final ApplicationPreferences appPrefs;
 
-    public int mCurrentServer = 0;
+    protected FactoryServerEndpointUrl factoryServerEndpointUrl;
 
     /**
      * request queue for operations
@@ -64,8 +58,9 @@ abstract class NetworkManager {
         mQueueThread = new HandlerThread("QueueThread", Process.THREAD_PRIORITY_BACKGROUND);
         mQueueThread.start();
 
-        appPrefs = ((OSVApplication) mContext.getApplicationContext()).getAppPrefs();
-        mCurrentServer = appPrefs.getIntPreference(PreferenceTypes.K_DEBUG_SERVER_TYPE);
+        appPrefs = ((KVApplication) mContext.getApplicationContext()).getAppPrefs();
+        //ToDo: remove the injection from inside the constructor to a parameter
+        factoryServerEndpointUrl = Injection.provideNetworkFactoryUrl(appPrefs);
         mQueue = newRequestQueue(mContext, 4);
     }
 
@@ -97,13 +92,6 @@ abstract class NetworkManager {
             mAccessToken = appPrefs.getStringPreference(PreferenceTypes.K_ACCESS_TOKEN);
         }
         return mAccessToken;
-    }
-
-    void setEnvironment() {
-        if (!Utils.isDebugBuild(mContext) && !appPrefs.getBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED)) {
-            mCurrentServer = 0;
-        }
-        Log.d(TAG, "setEnvironment: " + URL_ENV[mCurrentServer]);
     }
 
     void destroy() {

@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="48dp"
     android:height="48dp"
-    android:viewportHeight="44"
-    android:viewportWidth="44">
+    android:viewportWidth="44"
+    android:viewportHeight="44">
     <group
         android:name="Icons"
         android:translateX="-336.000000"
@@ -15,7 +15,7 @@
             android:translateY="256.000000">
             <path
                 android:name="Fill-1"
-                android:fillColor="#FFFFFF"
+                android:fillColor="@color/default_white"
                 android:fillType="evenOdd"
                 android:pathData="M28.8626667,12.0092593 L25.6293333,15.5974074 C23.5106667,14.9633333
 22,14.9618519 22,14.9618519 C16.1553333,14.9618519 11.3286667,19.787037

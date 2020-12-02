@@ -1,35 +1,46 @@
 package com.telenav.osv.manager.playback;
 
-import java.util.ArrayList;
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.SeekBar;
-import com.bumptech.glide.DrawableRequestBuilder;
+
+import androidx.annotation.Nullable;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.bumptech.glide.signature.StringSignature;
-import com.skobbler.ngx.SKCoordinate;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.OSVActivity;
+import com.telenav.osv.application.ApplicationPreferences;
+import com.telenav.osv.data.sequence.model.Sequence;
+import com.telenav.osv.data.sequence.model.details.compression.SequenceDetailsCompressionBase;
+import com.telenav.osv.data.sequence.model.details.compression.SequenceDetailsCompressionJpeg;
 import com.telenav.osv.item.ImageFile;
-import com.telenav.osv.item.Sequence;
 import com.telenav.osv.item.network.PhotoCollection;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.ui.custom.ScrollDisabledViewPager;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.NetworkUtils;
+import com.telenav.osv.utils.Utils;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import uk.co.senab.photoview.PhotoView;
 
 /**
@@ -42,6 +53,8 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     private static final int OFFSCREEN_LIMIT = 20;
 
+    private static final Object object = new Object();
+
     private static long PLAYBACK_RATE = 250;
 
     private final Sequence mSequence;
@@ -50,7 +63,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     private ArrayList<ImageFile> mImages = new ArrayList<>();
 
-    private ArrayList<SKCoordinate> mTrack = new ArrayList<>();
+    private ArrayList<Location> mTrack = new ArrayList<>();
 
     private Glide mGlide;
 
@@ -79,9 +92,10 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                     mPlayHandler.postDelayed(mRunnable, 20);
                     return;
                 }
-                mPager.setCurrentItem(mSequence.getRequestedFrameIndex() + mModifier, false);
-                int current = mSequence.getRequestedFrameIndex();
-                if (current + mModifier >= 0 || current + mModifier <= mImages.size()) {
+                int requestedFrameIndex = getFrameIndex();
+                mPager.setCurrentItem(getFrameIndex());
+                mPager.setCurrentItem(requestedFrameIndex + mModifier, false);
+                if (requestedFrameIndex + mModifier >= 0 || requestedFrameIndex + mModifier <= mImages.size()) {
                     mPlayHandler.postDelayed(mRunnable, PLAYBACK_RATE);
                 } else {
                     pause();
@@ -90,17 +104,16 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         }
     };
 
-    private RequestListener<? super String, GlideDrawable> mGlideListener = new RequestListener<String, GlideDrawable>() {
+    private RequestListener<Drawable> mGlideListener = new RequestListener<Drawable>() {
 
         @Override
-        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
             mImageLoaded = true;
             return false;
         }
 
         @Override
-        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache,
-                                       boolean isFirstResource) {
+        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
             mImageLoaded = true;
             return false;
         }
@@ -110,7 +123,10 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     private boolean mPrepared;
 
-    public OnlinePlaybackManager(OSVActivity act, Sequence sequence) {
+    private ApplicationPreferences applicationPreferences;
+
+    public OnlinePlaybackManager(OSVActivity act, Sequence sequence, ApplicationPreferences applicationPreferences) {
+        this.applicationPreferences = applicationPreferences;
         activity = act;
         mSequence = sequence;
         mGlide = Glide.get(activity);
@@ -132,7 +148,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         mPager = (ScrollDisabledViewPager) surface;
         mPager.setOffscreenPageLimit(OFFSCREEN_LIMIT / 2);
         mPager.setAdapter(mPagerAdapter);
-        mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
+        mPager.setCurrentItem(getFrameIndex());
         mPageChangedListener = new ViewPager.OnPageChangeListener() {
 
             @Override
@@ -145,7 +161,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                 if (mSeekbar != null) {
                     mSeekbar.setProgress(position);
                 }
-                mSequence.setRequestedFrameIndex(position);
+                setFrameIndex(position);
                 View view = mPager.getChildAt(0);
                 if (view != null) {
                     View image = view.findViewById(R.id.image);
@@ -181,10 +197,8 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
             }
         };
         mPager.addOnPageChangeListener(mPageChangedListener);
-        if (mSequence.getRequestedFrameIndex() != 0) {
-            if (mPager != null) {
-                mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
-            }
+        if (mPager != null) {
+            mPager.setCurrentItem(getFrameIndex());
         }
     }
 
@@ -199,7 +213,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
     public void next() {
         pause();
         if (mPager != null) {
-            mPager.setCurrentItem(mSequence.getRequestedFrameIndex() + 1);
+            mPager.setCurrentItem(getFrameIndex() + 1);
         }
     }
 
@@ -207,7 +221,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
     public void previous() {
         pause();
         if (mPager != null) {
-            mPager.setCurrentItem(mSequence.getRequestedFrameIndex() - 1);
+            mPager.setCurrentItem(getFrameIndex() - 1);
         }
     }
 
@@ -223,19 +237,24 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         if (mPlaying) {
             mPlaying = false;
             mPlayHandler.removeCallbacks(mRunnable);
-            for (PlaybackListener pl : mPlaybackListeners) {
-                pl.onPaused();
+            Iterator<PlaybackListener> iterator = mPlaybackListeners.iterator();
+            //using iterator due to a crash on popBackStackImmediate
+            while (iterator.hasNext()) {
+                iterator.next().onPaused();
             }
         }
     }
 
     @Override
     public void stop() {
+        Log.d(TAG, "stop");
         mPlaying = false;
         mPlayHandler.removeCallbacks(mRunnable);
 
-        for (PlaybackListener pl : mPlaybackListeners) {
-            pl.onStopped();
+        Iterator<PlaybackListener> iterator = mPlaybackListeners.iterator();
+        //using iterator due to a crash on popBackStackImmediate
+        while (iterator.hasNext()) {
+            iterator.next().onStopped();
         }
     }
 
@@ -278,12 +297,17 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     @Override
     public void destroy() {
-        stop();
-        for (PlaybackListener pl : mPlaybackListeners) {
-            pl.onExit();
+        synchronized (object) {
+            Log.d(TAG, "destroy");
+            stop();
+            Iterator<PlaybackListener> iterator = mPlaybackListeners.iterator();
+            //using iterator due to a crash on popBackStackImmediate
+            while (iterator.hasNext()) {
+                iterator.next().onExit();
+                iterator.remove();
+            }
+            mGlide.clearMemory();
         }
-        mPlaybackListeners.clear();
-        mGlide.clearMemory();
     }
 
     @Override
@@ -295,7 +319,9 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     @Override
     public void removePlaybackListener(PlaybackListener playbackListener) {
-        mPlaybackListeners.remove(playbackListener);
+        synchronized (object) {
+            mPlaybackListeners.remove(playbackListener);
+        }
     }
 
     @Override
@@ -308,7 +334,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         return mSequence;
     }
 
-    public ArrayList<SKCoordinate> getTrack() {
+    public ArrayList<Location> getTrack() {
         return mTrack;
     }
 
@@ -323,8 +349,10 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
             mPager.setCurrentItem(progress, false);
         }
 
-        for (PlaybackListener pl : mPlaybackListeners) {
-            pl.onProgressChanged(progress);
+        Iterator<PlaybackListener> iterator = mPlaybackListeners.iterator();
+        //using iterator due to a crash on popBackStackImmediate
+        while (iterator.hasNext()) {
+            iterator.next().onProgressChanged(progress);
         }
     }
 
@@ -338,9 +366,27 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
 
     }
 
+    /**
+     * @return the index of the frame in case the compression is {@code SequenceDetailsCompressionJpeg} otherwise it will return default value which is 0.
+     */
+    private int getFrameIndex() {
+        SequenceDetailsCompressionBase compressionBase = mSequence.getCompressionDetails();
+        return compressionBase instanceof SequenceDetailsCompressionJpeg ? ((SequenceDetailsCompressionJpeg) compressionBase).getFrameIndex() : 0;
+    }
+
+    /**
+     * Sets the frame index for the current sequence in case the compression is {@code SequenceDetailsCompressionJpeg}.
+     */
+    private void setFrameIndex(int frameIndex) {
+        SequenceDetailsCompressionBase compressionBase = mSequence.getCompressionDetails();
+        if (compressionBase instanceof SequenceDetailsCompressionJpeg) {
+            ((SequenceDetailsCompressionJpeg) compressionBase).setFrameIndex(frameIndex);
+        }
+    }
+
     private void loadFrames() {
         activity.enableProgressBar(true);
-        activity.getUserDataManager().listImages(mSequence.getId(), new NetworkResponseDataListener<PhotoCollection>() {
+        activity.getUserDataManager().listImages(mSequence.getDetails().getOnlineId(), new NetworkResponseDataListener<PhotoCollection>() {
 
             @Override
             public void requestFailed(int status, PhotoCollection details) {
@@ -363,7 +409,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                         mPrepared = true;
                         mImages.clear();
                         mImages.addAll(collectionData.getNodes());
-                        mTrack = new ArrayList<SKCoordinate>(collectionData.getTrack());
+                        mTrack = new ArrayList<>(Utils.toLocationFromKVLatLng(collectionData.getTrack()));
                         if (mSeekbar != null) {
                             mSeekbar.setMax(mImages.size());
                             mSeekbar.setProgress(0);
@@ -372,12 +418,9 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                         for (PlaybackListener pl : mPlaybackListeners) {
                             pl.onPrepared();
                         }
-                        if (mSequence.getRequestedFrameIndex() != 0) {
-                            if (mPager != null) {
-                                mPager.setCurrentItem(mSequence.getRequestedFrameIndex());
-                            }
+                        if (mPager != null) {
+                            mPager.setCurrentItem(getFrameIndex());
                         }
-                        //                                play();
                         activity.enableProgressBar(false);
                     }
                 });
@@ -423,17 +466,16 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
                     mGlide.trimMemory(OFFSCREEN_LIMIT);
                 }
                 try {
-                    DrawableRequestBuilder<String> builder =
-                            Glide.with(activity).load((PLAYBACK_RATE < 200 && isPlaying()) ? mImages.get(position).thumb : mImages.get(position).link)
-                                    .fitCenter().diskCacheStrategy(DiskCacheStrategy.ALL).animate(new AlphaAnimation(1f, 1f)).skipMemoryCache(false)
-                                    .signature(new StringSignature(
-                                            mImages.get(position).coords.getLatitude() + "," + mImages.get(position).coords.getLongitude() + " full"))
+                    RequestBuilder<Drawable> builder =
+                            Glide.with(activity).load(NetworkUtils.provideGlideUrlWithAuthorizationIfRequired(applicationPreferences, (PLAYBACK_RATE < 200 && isPlaying()) ?
+                                    mImages.get(position).thumb : mImages.get(position).link))
+                                    .fitCenter().diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false)
                                     .priority(Priority.NORMAL).error(R.drawable.vector_picture_placeholder).listener(mGlideListener);
                     if (PLAYBACK_RATE > 200 || !isPlaying()) {
                         if (!mImages.get(position).thumb.equals("") && mImages.get(position).file == null) {
-                            builder.thumbnail(Glide.with(activity).load(mImages.get(position).thumb).fitCenter().animate(new AlphaAnimation(1f, 1f))
-                                    .diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false).signature(
-                                            new StringSignature(mImages.get(position).coords.getLatitude() + "," + mImages.get(position).coords.getLongitude()))
+                            builder.thumbnail(Glide.with(activity).load(NetworkUtils.provideGlideUrlWithAuthorizationIfRequired(applicationPreferences,
+                                    mImages.get(position).thumb)).fitCenter()
+                                    .diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false)
                                     .priority(Priority.IMMEDIATE).error(R.drawable.vector_picture_placeholder).listener(mGlideListener));
                         } else if (mImages.get(position).file != null) {
                             builder.thumbnail(0.2f).listener(mGlideListener);
@@ -452,7 +494,7 @@ public class OnlinePlaybackManager extends PlaybackManager implements SeekBar.On
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
             if (object != null) {
-                Glide.clear(((View) object));
+                Glide.with(activity).clear(((View) object));
             }
             container.removeView((View) object);
         }

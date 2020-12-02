@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
@@ -51,14 +50,14 @@ public class MockUtil {
 
             @Override
             public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                Runnable runnable = invocation.getArgumentAt(0, Runnable.class);
+//                Runnable runnable = invocation.getArgumentAt(0, Runnable.class);
                 Long delay = 0L;
                 if (invocation.getArguments().length > 1) {
-                    delay = invocation.getArgumentAt(1, Long.class);
+//                    delay = invocation.getArgumentAt(1, Long.class);
                 }
-                if (runnable != null) {
-                    mainThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
-                }
+//                if (runnable != null) {
+//                    mainThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+//                }
                 return true;
             }
         };
@@ -100,14 +99,14 @@ public class MockUtil {
 
             @Override
             public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                Runnable runnable = invocation.getArgumentAt(0, Runnable.class);
+//                Runnable runnable = invocation.getArgumentAt(0, Runnable.class);
                 Long delay = 0L;
                 if (invocation.getArguments().length > 1) {
-                    delay = invocation.getArgumentAt(1, Long.class);
+//                    delay = invocation.getArgumentAt(1, Long.class);
                 }
-                if (runnable != null) {
-                    mainThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
-                }
+//                if (runnable != null) {
+//                    mainThread.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+//                }
                 return true;
             }
         };

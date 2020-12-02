@@ -1,0 +1,245 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/settings_default_color"
+    android:paddingTop="30dp"
+    android:paddingBottom="14dp"
+    tools:context=".obd.connected.ObdConnectedFragment">
+
+    <ImageView
+        android:id="@+id/image_view_obd_connected_line"
+        android:layout_width="0dp"
+        android:layout_height="5dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginEnd="2dp"
+        android:src="@drawable/vector_obd_connected_line"
+        app:layout_constraintBottom_toBottomOf="@+id/image_view_obd_connected_car"
+        app:layout_constraintEnd_toStartOf="@+id/image_view_obd_connected_phone"
+        app:layout_constraintStart_toEndOf="@+id/image_view_obd_connected_car"
+        app:layout_constraintTop_toTopOf="@+id/image_view_obd_connected_car" />
+
+    <ImageView
+        android:id="@+id/image_view_obd_connected_data"
+        android:layout_width="33dp"
+        android:layout_height="33dp"
+        android:src="@drawable/vector_obd_connected_data"
+        app:layout_constraintBottom_toBottomOf="@+id/image_view_obd_connected_phone"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_vertical"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_left_vertical"
+        app:layout_constraintTop_toTopOf="@+id/image_view_obd_connected_phone" />
+
+    <ImageView
+        android:id="@+id/image_view_obd_connected_car"
+        android:layout_width="@dimen/obd_connected_icons_default_size"
+        android:layout_height="@dimen/obd_connected_icons_default_size"
+        android:layout_marginBottom="24dp"
+        android:src="@drawable/vector_obd_connected_car"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_obd_connected_pics"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_left_vertical"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/image_view_obd_connected_phone"
+        android:layout_width="@dimen/obd_connected_icons_default_size"
+        android:layout_height="@dimen/obd_connected_icons_default_size"
+        android:src="@drawable/vector_obd_connected_phone"
+        app:layout_constraintBottom_toBottomOf="@+id/image_view_obd_connected_line"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_obd_connected_left_vertical"
+        app:layout_constraintStart_toEndOf="@+id/guideline_obd_connected_vertical"
+        app:layout_constraintTop_toTopOf="@+id/image_view_obd_connected_line" />
+
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_speed"
+        android:layout_width="139dp"
+        android:layout_height="139dp"
+        android:background="@drawable/vector_car_obd_speed"
+        android:gravity="center"
+        android:lineSpacingMultiplier="1.30"
+        android:textAlignment="center"
+        android:textColor="@color/default_white"
+        android:textSize="50sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/text_view_obd_connected_pics"
+        tools:text="42" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/speed"
+        android:textAllCaps="true"
+        android:textColor="@color/default_white"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/text_view_obd_connected_speed" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_speed_metrics"
+        style="@style/obd_faq_text_style"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="19dp"
+        android:textColor="@color/default_white"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/text_view_obd_connected_speed"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="km/h" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_duration"
+        style="@style/obd_style_text_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_obd_connected_duration_label"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_right_vertical"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_vertical"
+        tools:text="08:23 min" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_duration_label"
+        style="@style/obd_style_text_subtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="@string/duration"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_obd_connected_pics"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_right_vertical"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_vertical" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_pics"
+        style="@style/obd_style_text_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_obd_connected_horizontal"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_right_vertical"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_vertical"
+        tools:text="4565" />
+
+    <TextView
+        style="@style/obd_style_text_subtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/pics"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_obd_connected_right_vertical"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_vertical"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_obd_connected_pics" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_distance"
+        style="@style/obd_style_text_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_obd_connected_distance_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_right_vertical"
+        tools:text="4.2 km" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_distance_label"
+        style="@style/obd_style_text_subtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="@string/distance"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_view_obd_connected_points"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_right_vertical" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_points"
+        style="@style/obd_style_text_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_obd_connected_horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_right_vertical"
+        tools:text="456" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_points_label"
+        style="@style/obd_style_text_subtext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/points"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_right_vertical"
+        app:layout_constraintTop_toBottomOf="@+id/text_view_obd_connected_points" />
+
+    <TextView
+        android:id="@+id/text_view_obd_connected_disconnect_button"
+        style="@style/obd_disconnect_filled_button"
+        android:layout_width="0dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        android:text="@string/disconnect_obd"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_obd_connected_vertical" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_obd_connected_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_obd_connected_left_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_obd_connected_right_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_obd_connected_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintGuide_percent="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

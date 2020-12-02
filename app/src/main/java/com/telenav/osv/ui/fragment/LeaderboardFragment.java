@@ -15,19 +15,14 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.PreferenceTypes;
@@ -39,6 +34,11 @@ import com.telenav.osv.ui.custom.CenterLayoutManager;
 import com.telenav.osv.ui.list.LeaderboardAdapter;
 import com.telenav.osv.utils.BackgroundThreadPool;
 import com.telenav.osv.utils.Log;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 /**
  * Fragmnent holding the ui for the leaderboard screen
@@ -47,6 +47,8 @@ import com.telenav.osv.utils.Log;
 public class LeaderboardFragment extends OSVFragment {
 
     public final static String TAG = "LeaderboardFragment";
+
+    private static final String LOADER_THREAD_NAME = "leaderboardLoader";
 
     private MainActivity activity;
 
@@ -98,7 +100,7 @@ public class LeaderboardFragment extends OSVFragment {
         View view = inflater.inflate(R.layout.fragment_leaderboard, null);
 
         activity = (MainActivity) getActivity();
-        HandlerThread thread = new HandlerThread("leaderboardLoader", Process.THREAD_PRIORITY_LOWEST);
+        HandlerThread thread = new HandlerThread(LOADER_THREAD_NAME, Process.THREAD_PRIORITY_LOWEST);
         thread.start();
         mBackgroundHandler = new Handler(thread.getLooper());
         savedUsername = activity.getApp().getAppPrefs().getStringPreference(PreferenceTypes.K_USER_NAME);
@@ -193,19 +195,19 @@ public class LeaderboardFragment extends OSVFragment {
                 tv.setGravity(Gravity.CENTER);
                 switch (position) {
                     case 0:
-                        tv.setText("All Time");
+                        tv.setText(R.string.leaderboard_all_time_label);
                         break;
                     case 1:
-                        tv.setText("This Month");
+                        tv.setText(R.string.leaderboard_this_month_label);
                         break;
                     case 2:
-                        tv.setText("This Week");
+                        tv.setText(R.string.leaderboard_this_week_label);
                         break;
                     case 3:
-                        tv.setText("This Day");
+                        tv.setText(R.string.leaderboard_this_day_label);
                         break;
                 }
-                tv.setTextColor(activity.getResources().getColor(R.color.leaderboard_text_grey));
+                tv.setTextColor(activity.getResources().getColor(R.color.default_black_lighter));
                 container.addView(tv);
                 tv.setTextSize(18);
                 return tv;
@@ -382,7 +384,7 @@ public class LeaderboardFragment extends OSVFragment {
                                 if (collection != null) {
                                     if (!savedUsername.equals("")) {
                                         for (LeaderboardData user : collection.getUserList()) {
-                                            if (user.getName().equals(savedUsername)) {
+                                            if (user.getUsername().equals(savedUsername)) {
                                                 mCountryCode = user.getCountryCode();
                                                 mUserPosition = user.getRank();
                                                 refreshRegionTab();

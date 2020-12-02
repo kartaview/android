@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="20dp"
     android:height="20dp"
-    android:viewportHeight="24"
-    android:viewportWidth="24">
+    android:viewportWidth="24"
+    android:viewportHeight="24">
 
     <group
         android:name="Icons"
@@ -20,7 +20,7 @@
                 android:translateY="5.000000">
                 <path
                     android:name="Oval"
-                    android:fillColor="@color/sequence_card_text_color_secondary_grey"
+                    android:fillColor="@color/default_gray_darker"
                     android:fillType="evenOdd"
                     android:pathData="M7.77777778,10.2666667 C9.15235316,10.2666667 10.2666667,9.15235316
 10.2666667,7.77777778 C10.2666667,6.4032024 9.15235316,5.28888889
@@ -32,7 +32,7 @@
                     tools:targetApi="n" />
                 <path
                     android:name="Shape"
-                    android:fillColor="@color/sequence_card_text_color_secondary_grey"
+                    android:fillColor="@color/default_gray_darker"
                     android:fillType="evenOdd"
                     android:pathData="M5.44444444,0 L4.02111111,1.55555556 L1.55555556,1.55555556 C0.7,1.55555556
 0,2.25555556 0,3.11111111 L0,12.4444444 C0,13.3 0.7,14 1.55555556,14 L14,14

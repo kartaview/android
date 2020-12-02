@@ -2,9 +2,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="horizontal"
     android:paddingTop="17dp"
-    android:paddingBottom="17dp"
-    android:orientation="horizontal">
+    android:paddingBottom="17dp">
 
     <TextView
         android:id="@+id/text_track_breakdown_column1"
@@ -17,7 +17,7 @@
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="@string/default_value_0"
-        android:textColor="@color/white" />
+        android:textColor="@color/default_white" />
 
     <TextView
         android:id="@+id/text_track_breakdown_column2"
@@ -29,7 +29,7 @@
         android:layout_marginRight="10dp"
         android:fontFamily="sans-serif"
         android:text="@string/default_value_0"
-        android:textColor="@color/white" />
+        android:textColor="@color/default_white" />
 
     <TextView
         android:id="@+id/text_track_breakdown_column3"
@@ -42,5 +42,5 @@
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="@string/default_value_0"
-        android:textColor="@color/white" />
+        android:textColor="@color/default_white" />
 </FrameLayout>

@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="35dp"
     android:height="29dp"
-    android:viewportHeight="29"
-    android:viewportWidth="35">
+    android:viewportWidth="35"
+    android:viewportHeight="29">
 
     <path
         android:name="Fill-1"
-        android:fillColor="#FFFFFF"
+        android:fillColor="@color/default_white"
         android:fillType="evenOdd"
         android:pathData="M29.7326,5.83358 L29.7326,0.0868239 L27.8126,0.0868239 L27.8126,5.83358
 L22.0526,5.83358 L22.0526,7.74917 L27.8126,7.74917 L27.8126,13.4959

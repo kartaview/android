@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="14dp"
     android:height="30dp"
-    android:viewportHeight="30"
-    android:viewportWidth="14">
+    android:viewportWidth="14"
+    android:viewportHeight="30">
 
     <path
         android:name="facebook"
-        android:fillColor="#FFFFFF"
+        android:fillColor="@color/default_white"
         android:fillType="evenOdd"
         android:pathData="M9.0567,10.7034 L10.7034,10.7034 L12.35,10.7034 L13.9967,10.7034 L12.35,14.82
 L9.0567,14.82 L9.0567,29.6401 L3.29333,29.6401 L3.29333,14.82 L0,14.82

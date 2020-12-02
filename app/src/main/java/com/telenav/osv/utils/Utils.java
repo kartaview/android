@@ -1,18 +1,8 @@
 package com.telenav.osv.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Map;
-import javax.security.auth.x500.X500Principal;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Application;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,55 +13,97 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.content.res.Resources;
+import android.graphics.Point;
+import android.hardware.Camera;
+import android.location.Location;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
+import android.media.MediaFormat;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.WindowManager;
-import com.crashlytics.android.Crashlytics;
-import com.faraji.environment3.Environment3;
-import com.faraji.environment3.NoSecondaryStorageException;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.skobbler.ngx.SKDeveloperKeyException;
-import com.skobbler.ngx.SKMaps;
-import com.skobbler.ngx.SKMapsInitSettings;
-import com.skobbler.ngx.SKMapsInitializationListener;
-import com.skobbler.ngx.map.SKMapViewStyle;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.telenav.osv.R;
-import com.telenav.osv.application.OSVApplication;
+import com.telenav.osv.application.KVApplication;
 import com.telenav.osv.application.PreferenceTypes;
-import com.telenav.osv.item.OSVFile;
-import io.fabric.sdk.android.Fabric;
+import com.telenav.osv.common.model.KVLatLng;
+import com.telenav.osv.data.location.model.KVLocation;
+import com.telenav.osv.data.sequence.model.details.compression.SequenceDetailsCompressionBase;
+import com.telenav.osv.item.KVFile;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.x500.X500Principal;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 @SuppressLint("SimpleDateFormat")
 public class Utils {
 
+    /**
+     * The index for days for the duration breakdown.
+     */
+    public static final int DURATION_BREAKDOWN_DAYS_INDEX = 0;
+
+    /**
+     * The index for hours for the duration breakdown.
+     */
+    public static final int DURATION_BREAKDOWN_HOURS_INDEX = 1;
+
+    /**
+     * The index for minutes for the duration breakdown.
+     */
+    public static final int DURATION_BREAKDOWN_MIN_INDEX = 2;
+
+    /**
+     * The index for seconds for the duration breakdown.
+     */
+    public static final int DURATION_BREAKDOWN_SEC_INDEX = 3;
+
     public static final SimpleDateFormat onlineDateFormat = new SimpleDateFormat("yyyy-MM-dd  (hh:mm)");
 
-    public static final SimpleDateFormat onlineDriverDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
-    public static final SimpleDateFormat numericDateFormat = new SimpleDateFormat("MM-dd hh:mm");
+    public static final String numericDateFormatPattern = "MM-dd hh:mm";
 
     public static final SimpleDateFormat numericCardDateFormat = new SimpleDateFormat("MMM dd, hh:mm");
 
-    public static final SimpleDateFormat numericPaymentDateFormat = new SimpleDateFormat("MMM dd ''yy");
-
-    public static final SimpleDateFormat paymentServerDateFormat = new SimpleDateFormat("dd MMM yy");
-
     public static final SimpleDateFormat niceDateFormat = new SimpleDateFormat("MMMM dd | h:mm a");
 
+    public static final SimpleDateFormat operationLogDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
     public static final int REQUEST_ENABLE_BT = 1;
+
+    public static final String APP_FOLDER_PATTERN = "%s/OSV";
+
+    public static final int STORAGE_SIZE_MINIMUM_LENGTH = 1;
+
+    public static final int INDEX_STORAGE_EXTERNAL = 1;
 
     // Orientation hysteresis amount used in rounding, in degrees
     private static final int ORIENTATION_HYSTERESIS = 10;
@@ -82,60 +114,15 @@ public class Utils {
 
     private static final long UNKNOWN_SIZE = -3L;
 
-    private static final float METER_TO_FEET = 3.28084f;
-
     private static final int[] SCORES = new int[]{10, 5, 5, 3, 3, 2, 2, 2, 2, 2, 1};
-
-    private static final float KILOMETER_TO_MILE = 0.621371f;
 
     private static final String TAG = "Utils";
 
     private static final X500Principal DEBUG_DN = new X500Principal("CN=Android Debug,O=Android,C=US");
 
-    public static String EXTERNAL_STORAGE_PATH = "no external";
-
-    /**
-     * true if multiple map instances can be created
-     */
-    public static boolean isMultipleMapSupportEnabled;
+    private static final int METADATA_TXT_FILE_INDEX = 1;
 
     public static boolean DEBUG = false;
-
-    /**
-     * Formats a given distance value (given in meters)
-     * @param distInMeters dist
-     * @return strings, value/unit
-     */
-    public static String[] formatDistanceFromMeters(Context context, int distInMeters) {
-        boolean isUS =
-                !((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC);
-        if (isUS) {
-            distInMeters = (int) (distInMeters * METER_TO_FEET);
-        }
-        DecimalFormat df2 = new DecimalFormat("#.#");
-        if (distInMeters < 500) {
-            return new String[]{distInMeters + "", (isUS ? " ft" : " m")};
-        } else {
-            return new String[]{df2.format((double) distInMeters / (isUS ? 5280 : 1000)) + "", (isUS ? " mi" : " km")};
-        }
-    }
-
-    /**
-     * Formats a given distance value (given in meters)
-     * @param dist dist
-     * @return value/unit
-     */
-    public static String[] formatDistanceFromKiloMeters(Context context, double dist) {
-        boolean isUS =
-                !((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC);
-        if (isUS) {
-            dist = (int) (dist * KILOMETER_TO_MILE);
-        }
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setGroupingSeparator(' ');
-        DecimalFormat df2 = new DecimalFormat("#,###,###,###.#", symbols);
-        return new String[]{df2.format(dist) + "", (isUS ? " mi" : " km")};
-    }
 
     /**
      * Tells if internet is currently available on the device
@@ -157,36 +144,6 @@ public class Utils {
             }
         }
         return false;
-    }
-
-    /**
-     * Initializes the SKMaps framework
-     */
-    @SuppressWarnings("UnusedReturnValue")
-    public static boolean initializeLibrary(final Activity context, SKMapsInitializationListener initListener) {
-
-        // get object holding map initialization settings
-        SKMapsInitSettings initMapSettings = new SKMapsInitSettings();
-
-        final String mapResourcesPath =
-                ((OSVApplication) context.getApplicationContext()).getAppPrefs().getStringPreference("mapResourcesPath");
-        // set path to map resources and initial map style
-        initMapSettings.setMapResourcesPath(mapResourcesPath);
-        initMapSettings.setCurrentMapViewStyle(new SKMapViewStyle(mapResourcesPath + "grayscalestyle/", "grayscalestyle.json"));
-
-        if (context.getApplicationContext() != null) {
-            try {
-                SKMaps.getInstance().initializeSKMaps((Application) context.getApplicationContext(), initListener, initMapSettings);
-                return true;
-            } catch (SKDeveloperKeyException exception) {
-                exception.printStackTrace();
-                showApiKeyErrorDialog(context);
-                return false;
-            }
-        } else {
-            initListener.onLibraryInitialized(false);
-            return false;
-        }
     }
 
     public static boolean isDebugBuild(Context ctx) {
@@ -212,10 +169,32 @@ public class Utils {
         return debug;
     }
 
+    /**
+     * Convert a millisecond duration to an array of days, hours, minutes, seconds in that specific order.
+     * @param millis The duration in milliseconds
+     */
+    public static void durationBreakdown(long millis, long[] outDurationBreakdown) {
+        if (millis < 0) {
+            throw new IllegalArgumentException("Duration must be greater than zero!");
+        }
+
+        long days = TimeUnit.MILLISECONDS.toDays(millis);
+        outDurationBreakdown[DURATION_BREAKDOWN_DAYS_INDEX] = days;
+        millis -= TimeUnit.DAYS.toMillis(days);
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        outDurationBreakdown[DURATION_BREAKDOWN_HOURS_INDEX] = hours;
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        outDurationBreakdown[DURATION_BREAKDOWN_MIN_INDEX] = minutes;
+        millis -= TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+        outDurationBreakdown[DURATION_BREAKDOWN_SEC_INDEX] = seconds;
+    }
+
     public static boolean isDebugEnabled(Context ctx) {
         DEBUG = false;
         if (ctx != null) {
-            DEBUG = ((OSVApplication) ctx.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED);
+            DEBUG = ((KVApplication) ctx.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DEBUG_ENABLED);
         }
         return DEBUG;
     }
@@ -282,16 +261,17 @@ public class Utils {
 
     /**
      * Deletes all files and directories from <>file</> except PreinstalledMaps
+     *
      * @param file a
      */
-    public static void deleteFileOrDirectory(OSVFile file) {
+    public static void deleteFileOrDirectory(KVFile file) {
         if (file.isDirectory()) {
             String[] children = file.list();
             for (String aChildren : children) {
-                if (new OSVFile(file, aChildren).isDirectory() && !aChildren.equals("PreinstalledMaps") && !aChildren.equals("Maps")) {
-                    deleteFileOrDirectory(new OSVFile(file, aChildren));
+                if (new KVFile(file, aChildren).isDirectory() && !aChildren.equals("PreinstalledMaps") && !aChildren.equals("Maps")) {
+                    deleteFileOrDirectory(new KVFile(file, aChildren));
                 } else {
-                    new OSVFile(file, aChildren).delete();
+                    new KVFile(file, aChildren).delete();
                 }
             }
         }
@@ -321,8 +301,9 @@ public class Utils {
 
     /**
      * Converts the specified DP to PIXELS according to current screen density
+     *
      * @param context a
-     * @param dp a
+     * @param dp      a
      * @return a
      */
     public static float dpToPx(Context context, float dp) {
@@ -330,57 +311,68 @@ public class Utils {
         return (int) ((dp * displayMetrics.density) + 0.5);
     }
 
-    public static OSVFile generateOSVFolder(Context context) {
-        OSVFile osv = new OSVFile(getSelectedStorage(context).getPath() + "/OSV");
+    public static KVFile generateOSVFolder(Context context) {
+        KVFile osv = new KVFile(String.format(APP_FOLDER_PATTERN, getSelectedStoragePath(context)));
         if (!osv.exists()) {
             osv.mkdir();
         }
         return osv;
     }
 
-    public static File getSelectedStorage(Context context) {
-        if (Build.VERSION.SDK_INT < 19 && Environment3.isSecondaryExternalStorageAvailable()) {
-            try {
-                return Environment3.getSecondaryExternalFilesDir(context, null);
-            } catch (NoSecondaryStorageException e) {
-                Log.w(TAG, "getSelectedStorage: " + Log.getStackTraceString(e));
+    public static long getOSVDiskSize(Context context) {
+        List<String> storagePaths = new ArrayList<>();
+        String internalStoragePath = getInternalStoragePath(context);
+        if (internalStoragePath != null) {
+            storagePaths.add(internalStoragePath);
+        }
+
+        long fileSize = 0;
+        for (String path : storagePaths) {
+            KVFile osv = new KVFile(String.format(APP_FOLDER_PATTERN, path));
+            if (osv.exists()) {
+                fileSize += fileSize(osv);
             }
         }
-        File[] storages = ContextCompat.getExternalFilesDirs(context, null);
-        if (storages.length > 1) {
-            File file = storages[1];
-            if (file != null) {
-                EXTERNAL_STORAGE_PATH = file.getPath();
-            }
-        }
-        //        Log.d(TAG, "getSelectedStorage: " + Arrays.toString(storages));
-        boolean external =
-                ((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE);
-        if (storages.length > 1 && external && storages[1] != null) {
-            //            Log.d(TAG, "getSelectedStorage: external");
-            return storages[1];
-        }
-        if (external) {
-            ((OSVApplication) context.getApplicationContext()).getAppPrefs().saveBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE, false);
-        }
-        //        Log.d(TAG, "getSelectedStorage: internal");
-        File result = storages[0];
-        if (result == null) {
-            result = context.getExternalFilesDir(null);
-        }
-        if (result == null) {
-            return Environment3.getInternalStorage().getFile();
-        }
-        return result;
+
+        return fileSize;
     }
 
-    public static long folderSize(OSVFile directory) {
+    @Nullable
+    public static String getExternalStoragePath(Context context) {
+        File[] storages = ContextCompat.getExternalFilesDirs(context, null);
+        if (storages.length > STORAGE_SIZE_MINIMUM_LENGTH && storages[INDEX_STORAGE_EXTERNAL] != null) {
+            return storages[INDEX_STORAGE_EXTERNAL].getPath();
+        }
+
+        return null;
+    }
+
+    public static String getInternalStoragePath(Context context) {
+        File[] storages = ContextCompat.getExternalFilesDirs(context, null);
+        if (storages.length > 0 && storages[0] != null) {
+            return storages[0].getPath();
+        }
+
+        return Environment.getDataDirectory().getAbsolutePath();
+    }
+
+    public static String getSelectedStoragePath(Context context) {
+        boolean external =
+                ((KVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_EXTERNAL_STORAGE);
+        if (external) {
+            return getExternalStoragePath(context);
+        } else {
+            return getInternalStoragePath(context);
+        }
+    }
+
+    public static long folderSize(KVFile directory) {
         if (directory == null) {
             return 0;
         }
         long length = 0;
         try {
-            for (OSVFile file : directory.listFiles()) {
+            for (KVFile file : directory.listFiles()) {
                 if (file.isFile()) {
                     length += file.length();
                 } else {
@@ -402,17 +394,17 @@ public class Utils {
     //        new Thread(new Runnable() {
     //            @Override
     //            public void run() {
-    //                OSVFile osvOld = new OSVFile(context.getFilesDir().getPath(), "OSV");
+    //                OSVFile osvOld = new OSVFile(context.getFilesDir().getFilePath(), "OSV");
     //                if (!osvOld.exists()) {
     //                    osvOld.mkdir();
     //                }
     //
-    //                OSVFile osv = new OSVFile(getSelectedStorage(context).getPath() + "/OSV");
+    //                OSVFile osv = new OSVFile(getSelectedStorage(context).getFilePath() + "/OSV");
     //                if (!osv.exists()) {
     //                    osv.mkdir();
     //                }
     //                for (OSVFile folder : osvOld.listFiles()) {
-    //                    OSVFile fileTo = new OSVFile(getSelectedStorage(context).getPath() + "/OSV", folder.getName());
+    //                    OSVFile fileTo = new OSVFile(getSelectedStorage(context).getFilePath() + "/OSV", folder.getName());
     //                    if (!fileTo.exists()) {
     //                        fileTo.mkdir();
     //                    }
@@ -457,7 +449,7 @@ public class Utils {
     //
     //    }
 
-    public static long fileSize(OSVFile file) {
+    public static long fileSize(KVFile file) {
         if (file == null || !file.exists()) {
             return 0;
         }
@@ -474,6 +466,103 @@ public class Utils {
         return length;
     }
 
+    public static File[] findFilesByExtension(File dir, final List<String> extensions) {
+        return dir.listFiles(pathname -> {
+            for (String ext : extensions) {
+                if (pathname.getName().endsWith(ext)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    public static String getOSCodeName() {
+        Field[] fields = Build.VERSION_CODES.class.getFields();
+        String codeName = "UNKNOWN";
+        for (Field field : fields) {
+            try {
+                if (field.getInt(Build.VERSION_CODES.class) == Build.VERSION.SDK_INT) {
+                    codeName = field.getName();
+                }
+            } catch (IllegalAccessException e) {
+                Log.d(TAG, String.format("getOSCodeName. Status: error. Message: %s.", e.getMessage()));
+            }
+        }
+        return codeName;
+    }
+
+    public static String getAppVersion() {
+        String osVersion = KVApplication.VERSION_NAME;
+        if (osVersion.length() >= 5) {
+            return osVersion.substring(0, 5);
+        } else {
+            return osVersion;
+        }
+    }
+
+    /**
+     * @param dir the directory where the search for metadata file extension will be performed. This will internally use {@link #findFilesByExtension(File, List)}.
+     * @return {@code true} if metadata files exist, {@code false} otherwise.
+     */
+    public static boolean doesMetadataExist(File dir) {
+        File[] metadata = Utils.findFilesByExtension(dir, new ArrayList<String>() {
+            {
+                add(SequenceDetailsCompressionBase.SequenceFilesExtensions.METADATA_DEFAULT);
+            }
+
+            {
+                add(SequenceDetailsCompressionBase.SequenceFilesExtensions.METADATA_TXT);
+            }
+        });
+        boolean metadataExists = metadata.length != 0;
+        Log.d(TAG, String.format("doesMetadataExist. Status: %s. Message: Checking for metadata file extensions.", metadataExists));
+        return metadataExists;
+    }
+
+    public static long getMetadataSize(File dir) {
+        File[] metadata = Utils.findFilesByExtension(dir, new ArrayList<String>() {
+            {
+                add(SequenceDetailsCompressionBase.SequenceFilesExtensions.METADATA_DEFAULT);
+            }
+
+            {
+                add(SequenceDetailsCompressionBase.SequenceFilesExtensions.METADATA_TXT);
+            }
+        });
+        if (metadata.length != 0) {
+            if (metadata[0] != null) {
+                return fileSize(new KVFile(metadata[0].getPath()));
+            }
+            if (metadata[METADATA_TXT_FILE_INDEX] != null) {
+                return fileSize(new KVFile(metadata[1].getPath()));
+            }
+        }
+
+        return 0;
+    }
+
+    public static File[] findFilesByExtension(File dir, String ext) {
+        return dir.listFiles(pathname -> pathname.getName().endsWith(ext));
+    }
+
+    public static long creationTime(KVFile file) {
+        if (file == null || !file.exists()) {
+            return 0;
+        }
+        long creationTime = 0;
+        try {
+            if (file.isFile()) {
+                creationTime = file.lastModified();
+            } else {
+                creationTime = creationTime(file);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "fileSize: " + e.getLocalizedMessage());
+        }
+        return creationTime;
+    }
+
     public static long getAvailableSpace(Context mContext) {
         String state = Environment.getExternalStorageState();
         //        Log.d(TAG, "External storage state=" + state);
@@ -483,101 +572,28 @@ public class Utils {
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
             return UNAVAILABLE;
         }
-        String path = getSelectedStorage(mContext).getPath();
-        OSVFile dir = new OSVFile(path);
-        dir.mkdirs();
-        if (!dir.isDirectory() || !dir.canWrite()) {
+        String path = getSelectedStoragePath(mContext);
+        KVFile dir = new KVFile(path);
+        if (!dir.exists() && !dir.isDirectory() || !dir.canWrite()) {
             return UNAVAILABLE;
         }
 
         try {
             StatFs stat = new StatFs(path);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                Log.d(TAG, "getStorageSpace: " + ((stat.getAvailableBlocksLong() * stat.getBlockSizeLong()) / 1024 / 1024));
-                return (stat.getAvailableBlocksLong() * stat.getBlockSizeLong()) / 1024 / 1024;
-            } else {
-                Log.d(TAG, "getStorageSpace: " + ((long) (stat.getAvailableBlocks() * stat.getBlockSize()) / 1024 / 1024));
-                return (stat.getAvailableBlocks() * stat.getBlockSize()) / 1024 / 1024;
-            }
+            Log.d(TAG, "getStorageSpace: " + ((stat.getAvailableBlocksLong() * stat.getBlockSizeLong()) / 1024 / 1024));
+            return (stat.getAvailableBlocksLong() * stat.getBlockSizeLong()) / 1024 / 1024;
         } catch (Exception e) {
             Log.i(TAG, "Fail to access external storage", e);
-
-            if (Fabric.isInitialized()) {
-                Crashlytics.logException(e);
-            }
+            FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+            crashlytics.recordException(e);
         }
         return UNKNOWN_SIZE;
     }
 
-    public static String formatNumber(double value) {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setGroupingSeparator(' ');
-        DecimalFormat formatter = new DecimalFormat("#,###,###,###", symbols);
-        return formatter.format(value);
-    }
-
-    public static String formatSize(double value) {
-        String[] sizeText = formatSizeDetailed(value);
-        return sizeText[0] + sizeText[1];
-    }
-
-    //    public static float getPictureSize(Context context) {
-    //        if (mImageSize == -1 || mImageSize == 0) {
-    //            OSVFile[] folderList = generateOSVFolder(context).listFiles();
-    //            if (folderList.length > 0) {
-    //                long total = 0;
-    //                float nr = folderList[0].listFiles().length;
-    //                for (OSVFile img : folderList[0].listFiles()) {
-    //                    total = total + img.length();
-    //                }
-    //                if (nr > 0) {
-    //                    mImageSize = (float) total / nr / 1024f / 1024f;
-    //                    context.getSharedPreferences("osvAppPrefs", Context.MODE_PRIVATE).edit().putFloat(PreferenceTypes.K_IMAGE_SIZE,
-    // mImageSize).commit();
-    //                }
-    //            }
-    //            mImageSize = context.getSharedPreferences("osvAppPrefs", Context.MODE_PRIVATE).getFloat(PreferenceTypes.K_IMAGE_SIZE, 2);
-    //        }
-    //        return mImageSize;
-    //    }
-
-    public static String[] formatSizeDetailed(double value) {
-        String[] sizeText = new String[]{"0", " MB"};
-        if (value > 0) {
-            double size = value / (double) 1024 / (double) 1024;
-            String type = " MB";
-            DecimalFormat df2 = new DecimalFormat("#.#");
-            if (size > 1024) {
-                size = (size / (double) 1024);
-                type = " GB";
-                sizeText = new String[]{"" + df2.format(size), type};
-            } else {
-                sizeText = new String[]{"" + df2.format(size), type};
-            }
-        }
-        return sizeText;
-    }
-
     public static boolean checkSDCard(Context context) {
-        if (Build.VERSION.SDK_INT < 19) {
-            return Environment3.isSecondaryExternalStorageAvailable();
-        } else {
-            File[] storages = ContextCompat.getExternalFilesDirs(context, null);
-            Log.d(TAG, "getSelectedStorage: " + Arrays.toString(storages));
-            return storages.length > 1 && storages[1] != null;
-        }
-    }
-
-    public static String[] formatSpeedFromKmph(Context context, int speed) {
-        boolean isUS =
-                !((OSVApplication) context.getApplicationContext()).getAppPrefs().getBooleanPreference(PreferenceTypes.K_DISTANCE_UNIT_METRIC);
-        int ret = speed;
-        if (isUS) {
-            ret = (int) (speed * KILOMETER_TO_MILE);
-            return new String[]{ret + "", "mph"};
-        } else {
-            return new String[]{ret + "", "km/h"};
-        }
+        File[] storages = ContextCompat.getExternalFilesDirs(context, null);
+        Log.d(TAG, "getSelectedStoragePath: " + Arrays.toString(storages));
+        return storages.length > 1 && storages[1] != null;
     }
 
     public static boolean isInsideBoundingBox(double latPoint, double lonPoint, double latTopLeft, double longTopLeft, double latBottomRight,
@@ -590,6 +606,9 @@ public class Utils {
     }
 
     public static boolean isGPSEnabled(Context context) {
+        if (context == null) {
+            return false;
+        }
         android.location.LocationManager locationManager =
                 (android.location.LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER);
@@ -639,31 +658,10 @@ public class Utils {
         return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB;
     }
 
-    public static String formatMoney(double value) {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setGroupingSeparator(',');
-        DecimalFormat df2 = new DecimalFormat("#,###,###,###.##", symbols);
-        return df2.format(value);
-    }
-
     public static void trace() {
         StackTraceElement[] trace = Thread.currentThread().getStackTrace();
         for (StackTraceElement e : trace) {
             Log.d(TAG, "####### " + e);
-        }
-    }
-
-    public static String formatMoneyConstrained(double value) {
-        if (value < 100) {
-            DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-            symbols.setGroupingSeparator(',');
-            DecimalFormat df2 = new DecimalFormat("#,###,###,###.##", symbols);
-            return df2.format(value);
-        } else {
-            DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-            symbols.setGroupingSeparator(',');
-            DecimalFormat df2 = new DecimalFormat("#,###,###,###", symbols);
-            return df2.format(value);
         }
     }
 
@@ -686,6 +684,123 @@ public class Utils {
     }
 
     /**
+     * @param context the application context.
+     * @return {@code true} if the {@code GooglePlayServices} is available on device, {@code false} otherwise.
+     */
+    public static boolean isGooglePlayServicesAvailable(final Context context) {
+        final int googlePlayServicesCheck = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+        switch (googlePlayServicesCheck) {
+            case ConnectionResult.SUCCESS:
+            case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param imageCoordinates the list representing the image coordinates.
+     * @return {@code List<Location>} representing the translated location objects into android location objects.
+     */
+    public static List<Location> toLocationFromKVLatLng(List<KVLatLng> imageCoordinates) {
+        List<Location> locations = new ArrayList<>();
+        for (KVLatLng imageCoordinate : imageCoordinates) {
+            Location location = new Location(StringUtils.EMPTY_STRING);
+            location.setLatitude(imageCoordinate.getLat());
+            location.setLongitude(imageCoordinate.getLon());
+            locations.add(location);
+        }
+        return locations;
+    }
+
+    /**
+     * @param kvLocations the list representing the {@code OSVLocation} objects.
+     * @return {@code List<SKCoordinate>} representing the translated location objects into skcoordinate objects.
+     */
+    public static List<Location> toLocationFromKVLocations(List<KVLocation> kvLocations) {
+        List<Location> skCoordinateList = new ArrayList<>();
+        if (kvLocations != null) {
+            for (KVLocation kvLocation : kvLocations) {
+                Location newLocation = new Location(StringUtils.EMPTY_STRING);
+                Location location = kvLocation.getLocation();
+                newLocation.setLongitude(location.getLongitude());
+                newLocation.setLatitude(location.getLatitude());
+                skCoordinateList.add(newLocation);
+            }
+        }
+        return skCoordinateList;
+    }
+
+    /**
+     * Checks which resolutions are available also for teh encoder output and
+     * keeps only those which are supported by both, camera and encoder.
+     * @param resolutions the camera resolutions.
+     */
+    public static void checkResolutionsAvailabilityForEncoder(List<Camera.Size> resolutions) {
+        MediaCodecInfo codecInfo = selectCodec();
+        if (codecInfo == null) {
+            return;
+        }
+        MediaCodecInfo.CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC);
+        MediaCodecInfo.VideoCapabilities videoCapabilities = capabilities.getVideoCapabilities();
+        Iterator<Camera.Size> i = resolutions.iterator();
+        while (i.hasNext()) {
+            Camera.Size size = i.next();
+            if (!videoCapabilities.isSizeSupported(size.width, size.height)) {
+                i.remove();
+            }
+        }
+    }
+
+    public static MediaCodecInfo.VideoCapabilities getEncoderVideoCapabilities() {
+        MediaCodecInfo codecInfo = selectCodec();
+        if (codecInfo == null) {
+            return null;
+        }
+        MediaCodecInfo.CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC);
+        return capabilities.getVideoCapabilities();
+    }
+
+    /**
+     * @return {@code true} if the format YUV420 Semi-Planar is available for encoding, {@code false} otherwise.
+     */
+    public static boolean isYUV420SemiPlanarSupportedByEncoder() {
+        MediaCodecInfo codecInfo = selectCodec();
+        if (codecInfo == null) {
+            return false;
+        }
+        MediaCodecInfo.CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC);
+        //Check which formats are supported by the encoder
+        for (int i = 0; i < capabilities.colorFormats.length; i++) {
+            Log.d(TAG, String.format("setEncodingFormat. Format available: %s", capabilities.colorFormats[i]));
+            if (capabilities.colorFormats[i] == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param context the application context used for accessing system window properties.
+     * @return a {@code Size} which represents the landscape screen dimensions.
+     */
+    public static Size getLandscapeScreenSize(Context context) {
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Point point = new Point();
+        Size screenSize;
+        if (windowManager != null) {
+            windowManager.getDefaultDisplay().getRealSize(point);
+            screenSize = new Size(point.x, point.y);
+        } else {
+            DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+            screenSize = new Size(displayMetrics.widthPixels, displayMetrics.heightPixels);
+        }
+        if (screenSize.getHeight() > screenSize.getWidth()) {
+            screenSize.swapValues();
+        }
+        return screenSize;
+    }
+
+    /**
      * Shows the api key not set dialog.
      */
     private static void showApiKeyErrorDialog(Activity currentActivity) {
@@ -702,5 +817,26 @@ public class Utils {
         });
 
         alertDialog.show();
+    }
+
+    /**
+     * Selects the codec info for the H264 encoder.
+     * @return {@code MediaCodecInfo} which contains the information regarding the supported color formats.
+     */
+    private static MediaCodecInfo selectCodec() {
+        int numCodecs = MediaCodecList.getCodecCount();
+        for (int i = 0; i < numCodecs; i++) {
+            MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
+            if (!codecInfo.isEncoder()) {
+                continue;
+            }
+            String[] types = codecInfo.getSupportedTypes();
+            for (String type : types) {
+                if (type.equalsIgnoreCase(MediaFormat.MIMETYPE_VIDEO_AVC)) {
+                    return codecInfo;
+                }
+            }
+        }
+        return null;
     }
 }

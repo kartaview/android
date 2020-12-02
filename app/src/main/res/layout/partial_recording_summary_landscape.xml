@@ -5,27 +5,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="@dimen/action_bar_size"
-    android:background="@color/gray_summary_background">
+    android:background="@color/default_white">
 
     <TextView
         android:id="@+id/well_done_label"
         style="@style/textStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
         android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="@string/well_done_label"
-        android:textColor="@color/gray_summary_primary_text"
+        android:textColor="@color/default_black"
         android:textSize="36sp"
         android:textStyle="normal" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="68dp"
         android:layout_marginTop="@dimen/action_bar_size"
+        android:layout_marginBottom="68dp"
         android:orientation="horizontal"
         android:weightSum="100">
 
@@ -48,18 +48,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/points_label"
-                    android:textColor="@color/gray_summary_secondary_text"
+                    android:textColor="@color/default_black"
                     android:textSize="36sp" />
 
                 <TextView
                     style="@style/textStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBaseline="@+id/points_label"
-                    android:layout_toEndOf="@+id/points_label"
-                    android:layout_toRightOf="@+id/points_label"
+                    android:layout_below="@+id/points_label"
                     android:text="@string/partial_estimated"
-                    android:textColor="@color/gray_summary_secondary_text"
+                    android:textColor="@color/default_black_lighter"
                     android:textSize="17sp" />
 
                 <TextView
@@ -68,9 +66,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
                     android:fontFamily="sans-serif"
-                    android:textColor="@color/gray_summary_primary_text"
+                    android:textColor="@color/default_black"
                     android:textSize="36sp"
                     android:textStyle="normal"
                     tools:text="372" />
@@ -81,8 +78,8 @@
             android:layout_width="1dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_marginBottom="20dp"
             android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:background="#31333b" />
 
         <RelativeLayout
@@ -90,14 +87,14 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="50"
-            android:background="@color/gray_summary_background">
+            android:background="@color/default_white">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:layout_marginEnd="20dp"
                 android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -106,6 +103,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="15dp"
+                    android:textColor="@color/default_black"
                     tools:text="Photos 943" />
 
                 <TextView
@@ -114,6 +112,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="15dp"
+                    android:textColor="@color/default_black"
                     tools:text="Distance 19.3 km" />
 
                 <TextView
@@ -121,6 +120,7 @@
                     style="@style/textStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/default_black"
                     tools:text="Disk size 216 mb" />
 
             </LinearLayout>
@@ -134,29 +134,27 @@
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="78dp"
-        android:layout_marginLeft="10dp"
         android:layout_marginStart="10dp"
+        android:layout_marginBottom="78dp"
+        android:buttonTint="@color/default_black"
         android:text="@string/don_t_show_again_label"
-        android:textColor="@color/gray_summary_secondary_text" />
+        android:textColor="@color/default_black_lighter" />
 
-    <android.support.percent.PercentRelativeLayout
+    <androidx.percentlayout.widget.PercentRelativeLayout
         android:id="@+id/buttons_layout"
         android:layout_width="match_parent"
         android:layout_height="68dp"
-        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
-        android:background="#1B1C1F"
+        android:background="@color/default_white"
         android:padding="10dp">
 
         <LinearLayout
             android:id="@+id/ok_button"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="5dp"
-            android:background="@drawable/custom_bg_uploading_buttons"
+            android:layout_marginStart="5dp"
+            android:background="@color/default_black"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
@@ -172,8 +170,8 @@
                 android:fontFamily="sans-serif-light"
                 android:gravity="center"
                 android:text="@string/ok_label"
-                android:textColor="@color/gray_text_color"
+                android:textColor="@color/default_white"
                 android:textSize="19sp" />
         </LinearLayout>
-    </android.support.percent.PercentRelativeLayout>
+    </androidx.percentlayout.widget.PercentRelativeLayout>
 </FrameLayout>

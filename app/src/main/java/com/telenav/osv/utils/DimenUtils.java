@@ -29,6 +29,10 @@ public class DimenUtils {
         return size;
     }
 
+    public static int dpToPx(int dp) {
+        return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
+    }
+
     private static int getStatusBarHeight(Context context) {
         int statusBarHeight = 0;
         Resources resources = context.getResources();

@@ -1,27 +1,35 @@
 package com.telenav.osv.ui.fragment;
 
-import java.util.ArrayList;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 import com.matthewtamlin.dotindicator.DotIndicator;
 import com.telenav.osv.R;
-import com.telenav.osv.activity.MainActivity;
+import com.telenav.osv.common.model.base.KVBaseFragment;
+import com.telenav.osv.common.toolbar.KVToolbar;
+import com.telenav.osv.common.toolbar.ToolbarSettings;
+
+import java.util.ArrayList;
 
 /**
  * Created by Kalman on 18/07/16.
  */
-public class HintsFragment extends OSVFragment {
+public class HintsFragment extends KVBaseFragment {
 
     public static final String TAG = "HintsFragment";
+
+    public static final String SHOW_POINTS_ARG = "POINTS_ARGUMENT";
 
     private ViewPager hintPager;
 
@@ -31,27 +39,59 @@ public class HintsFragment extends OSVFragment {
 
     private Runnable hintPagerAutoRunnable;
 
-    private MainActivity activity;
+    private View view;
+
+    /**
+     * Method used to create an instance of {@link HintsFragment}.
+     * @return a new instance of {@code HintsFragment}.
+     */
+    public static HintsFragment newInstance() {
+        return new HintsFragment();
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_recording_hints, null);
-        activity = (MainActivity) getActivity();
+        super.onCreateView(inflater, container, savedInstanceState);
+        view = inflater.inflate(R.layout.fragment_recording_hints, container, false);
+        populatePager(view);
+        return view;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        populatePager(view);
+    }
+
+    @Override
+    public ToolbarSettings getToolbarSettings(KVToolbar toolbar) {
+        return null;
+    }
+
+    @Override
+    public boolean handleBackPressed() {
+        return false;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
+
+    private void populatePager(View view) {
         hintPager = view.findViewById(R.id.hint_pager);
         hintIndicator = view.findViewById(R.id.hint_indicator);
-        hintPagerAdapter = new HintPagerAdapter(inflater);
-        int orientation = activity.getResources().getConfiguration().orientation;
+        hintPager.removeCallbacks(hintPagerAutoRunnable);
+        hintIndicator.setSelectedItem(0, false);
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        hintPagerAdapter = new HintPagerAdapter(inflater, getPointsArgument());
+        int orientation = getResources().getConfiguration().orientation;
         boolean portrait = orientation == Configuration.ORIENTATION_PORTRAIT;
         hintPagerAdapter.populate(portrait);
         hintPager.setAdapter(hintPagerAdapter);
-        hintPagerAutoRunnable = new Runnable() {
-
-            @Override
-            public void run() {
-                hintPager.setCurrentItem((hintPager.getCurrentItem() + 1) % hintPagerAdapter.getCount(), true);
-            }
-        };
+        hintPagerAutoRunnable = () -> hintPager.setCurrentItem((hintPager.getCurrentItem() + 1) % hintPagerAdapter.getCount(), true);
         hintPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             @Override
@@ -73,44 +113,19 @@ public class HintsFragment extends OSVFragment {
         });
         hintPager.postDelayed(hintPagerAutoRunnable, 8000);
         ImageView mCloseButton = view.findViewById(R.id.close_button);
-        mCloseButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                activity.onBackPressed();
+        mCloseButton.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().onBackPressed();
             }
         });
-        return view;
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
-    @Override
-    public void cancelAction() {
-
-    }
-
-    @Override
-    public boolean onBackPressed() {
+    private boolean getPointsArgument() {
+        if (getArguments() != null) {
+            return getArguments().getBoolean(SHOW_POINTS_ARG, false);
+        }
         return false;
-    }
-
-    @Override
-    public View getSharedElement() {
-        return null;
-    }
-
-    @Override
-    public String getSharedElementTransitionName() {
-        return null;
-    }
-
-    @Override
-    public int getEnterAnimation() {
-        return R.anim.alpha_add;
-    }
-
-    @Override
-    public int getExitAnimation() {
-        return R.anim.alpha_remove;
     }
 
     public class HintPagerAdapter extends PagerAdapter {
@@ -126,7 +141,7 @@ public class HintsFragment extends OSVFragment {
 
         ArrayList<String[]> hints = new ArrayList<>();
 
-        HintPagerAdapter(LayoutInflater inflater) {
+        HintPagerAdapter(LayoutInflater inflater, boolean showPoints) {
             super();
             mInflater = inflater;
             hints.clear();
@@ -145,16 +160,17 @@ public class HintsFragment extends OSVFragment {
             fifthHint[0] = getString(R.string.hint_points);
             fifthHint[1] = getString(R.string.hint_points_message);
 
-            hints.add(fifthHint);
+            if (showPoints) {
+                hints.add(fifthHint);
+            }
             hints.add(secondHint);
             hints.add(thirdHint);
             hints.add(fourthHint);
             colors.clear();
-            colors.add(R.color.hint_blue);
-            colors.add(R.color.hint_purple);
-            colors.add(R.color.hint_green);
-            colors.add(R.color.hint_yellow);
-            colors.add(R.color.hint_red);
+            colors.add(R.color.default_purple);
+            colors.add(R.color.default_green);
+            colors.add(R.color.default_yellow);
+            colors.add(R.color.default_red);
         }
 
         @Override
@@ -195,7 +211,7 @@ public class HintsFragment extends OSVFragment {
             int numberOfItems;
             if (portrait) {
                 landscape = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
-                landscape.setBackgroundColor(activity.getResources().getColor(colors.get((views.size() + 1) % colors.size())));
+                landscape.setBackgroundColor(getResources().getColor(colors.get((views.size() + 1) % colors.size())));
                 viewTitleHint = landscape.findViewById(R.id.title_hint_text_vertical);
                 viewTitleHint.setText(R.string.hint_landscape_label);
                 viewHintDescription = landscape.findViewById(R.id.hint_text_vertical);
@@ -210,7 +226,7 @@ public class HintsFragment extends OSVFragment {
                     views.add(landscape);
                 }
                 frameLayout = (FrameLayout) mInflater.inflate(R.layout.item_hint_text, null);
-                frameLayout.setBackgroundColor(activity.getResources().getColor(colors.get(views.size() % colors.size())));
+                frameLayout.setBackgroundColor(getResources().getColor(colors.get(views.size() % colors.size())));
                 viewTitleHint = frameLayout.findViewById(R.id.title_hint_text_vertical);
                 viewHintDescription = frameLayout.findViewById(R.id.hint_text_vertical);
                 viewTitleHint.setText(hint[0]);

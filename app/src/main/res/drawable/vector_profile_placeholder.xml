@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="96dp"
     android:height="96dp"
-    android:viewportHeight="24"
-    android:viewportWidth="24">
+    android:viewportWidth="24"
+    android:viewportHeight="24">
 
     <path
         android:name="Shape"

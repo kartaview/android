@@ -1,5 +1,12 @@
 package com.telenav.osv.utils;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.telenav.osv.application.KVApplication;
+import com.telenav.osv.item.KVFile;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -8,12 +15,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import android.annotation.SuppressLint;
-import android.content.Context;
-import com.crashlytics.android.Crashlytics;
-import com.telenav.osv.application.OSVApplication;
-import com.telenav.osv.item.OSVFile;
-import io.fabric.sdk.android.Fabric;
 
 /**
  * Internal logging chained through crashlytics logging
@@ -47,6 +48,8 @@ public class Log {
 
     public static final String NEW_VERSION = "oldVersion";
 
+    public static final String USER_NAME = " userName";
+
     @SuppressLint("SimpleDateFormat")
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM_dd_hh_mm");
 
@@ -63,7 +66,7 @@ public class Log {
 
     public static File getLogFile() {
         if (logFile == null) {
-            logFile = new File(externalFilesDir, "log_" + dateFormat.format(OSVApplication.runTime) + ".txt");
+            logFile = new File(externalFilesDir, "log_" + dateFormat.format(KVApplication.runTime) + ".txt");
         }
         return logFile;
     }
@@ -121,8 +124,8 @@ public class Log {
                     f.delete();
                 }
             }
-            OSVFile avRecordLog = new OSVFile(files, "av_recording_log.txt");
-            OSVFile avPlayerLog = new OSVFile(files, "av_player_log.txt");
+            KVFile avRecordLog = new KVFile(files, "av_recording_log.txt");
+            KVFile avPlayerLog = new KVFile(files, "av_player_log.txt");
             if (avRecordLog.exists() && Utils.fileSize(avRecordLog) > 1024 * 1024 * 20) {
                 avRecordLog.delete();
             }
@@ -134,14 +137,14 @@ public class Log {
         }
     }
 
-    public static ArrayList<OSVFile> getLogFiles(Context context) {
-        ArrayList<OSVFile> files = new ArrayList<>();
-        OSVFile folder = new OSVFile(context.getExternalFilesDir(null).getPath());
+    public static ArrayList<KVFile> getLogFiles(Context context) {
+        ArrayList<KVFile> files = new ArrayList<>();
+        KVFile folder = new KVFile(context.getExternalFilesDir(null).getPath());
         Collections.addAll(files, folder.listFiles(new FilenameFilter() {
 
             @Override
             public boolean accept(File dir, String filename) {
-                OSVFile file = new OSVFile(dir, filename);
+                KVFile file = new KVFile(dir, filename);
                 return (filename.contains("log") || filename.contains("av_")) && System.currentTimeMillis() - file.lastModified() <= TWO_DAYS;
             }
         }));
@@ -150,7 +153,7 @@ public class Log {
 
     private static void appendLog(int priority, String tag, String text) {
         if (logFile == null) {
-            logFile = new File(externalFilesDir, "log_" + dateFormat.format(OSVApplication.runTime) + ".txt");
+            logFile = new File(externalFilesDir, "log_" + dateFormat.format(KVApplication.runTime) + ".txt");
         }
         if (!logFile.exists()) {
             try {
@@ -170,12 +173,11 @@ public class Log {
         } catch (IOException e) {
             //e.printStackTrace();
         }
-        if (Fabric.isInitialized()) {
-            try {
-                Crashlytics.log(priority, tag, text);
-            } catch (Exception ignored) {
-            }
-        } else {
+        FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+
+        try {
+            crashlytics.log(String.format("%s %s %s", priority, tag, text));
+        } catch (Exception ignored) {
             android.util.Log.println(priority, tag, text);
         }
     }

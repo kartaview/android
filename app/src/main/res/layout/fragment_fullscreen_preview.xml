@@ -4,12 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center_vertical"
-    android:background="@color/black"
+    android:background="@color/default_black"
     android:orientation="vertical"
     android:transitionName="@string/transition_name_fullscreen_preview">
 
     <ImageView
-        android:id="@+id/temp_image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

@@ -3,15 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="20dp"
     android:height="20dp"
-    android:viewportHeight="24"
-    android:viewportWidth="24">
+    android:viewportWidth="24"
+    android:viewportHeight="24">
 
     <group
         android:name="Shape"
         android:translateX="5.000000"
         android:translateY="6.000000">
         <path
-            android:fillColor="@color/sequence_card_text_color_secondary_grey"
+            android:fillColor="@color/default_gray_darker"
             android:fillType="evenOdd"
             android:pathData="M1.24768519,2.77342593 C1.74675926,2.26722222 2.24583333,1.81092593
 2.46685185,1.90361111 C2.82333333,2.0462037 2.46685185,2.63796296

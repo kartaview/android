@@ -1,31 +1,36 @@
 package com.telenav.osv.ui.fragment;
 
-import org.greenrobot.eventbus.Subscribe;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.signature.StringSignature;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.snackbar.Snackbar;
 import com.telenav.osv.R;
 import com.telenav.osv.activity.MainActivity;
 import com.telenav.osv.application.PreferenceTypes;
+import com.telenav.osv.data.user.model.User;
+import com.telenav.osv.data.user.model.details.BaseUserDetails;
+import com.telenav.osv.data.user.model.details.gamification.GamificationDetails;
 import com.telenav.osv.event.EventBus;
 import com.telenav.osv.event.ui.SequencesChangedEvent;
 import com.telenav.osv.item.network.TrackCollection;
 import com.telenav.osv.item.network.UserData;
 import com.telenav.osv.listener.network.NetworkResponseDataListener;
 import com.telenav.osv.utils.BackgroundThreadPool;
+import com.telenav.osv.utils.FormatUtils;
 import com.telenav.osv.utils.Log;
+import com.telenav.osv.utils.NetworkUtils;
+import com.telenav.osv.utils.StringUtils;
 import com.telenav.osv.utils.Utils;
+
+import org.greenrobot.eventbus.Subscribe;
 
 /**
  * fragment holding the ui for the user's data
@@ -42,6 +47,7 @@ public class SimpleProfileFragment extends ProfileFragment {
             collapsingToolbar
                     .setExpandedTitleMarginBottom((int) activity.getResources().getDimension(R.dimen.profile_user_header_title_margin_bottom));
         }
+        mOnlineSequencesAdapter.setTrackIdVisibility(true);
         return view;
     }
 
@@ -62,116 +68,68 @@ public class SimpleProfileFragment extends ProfileFragment {
 
             @Override
             public void requestFailed(int status, UserData details) {
-                activity.showSnackBar("Failed to communicate with server.", Snackbar.LENGTH_LONG);
-                displayCachedStats();
+                Log.d(TAG, String.format("requestUserDetails. Status: error. Status code: %s. User data: %s. Message: Request details failed.", status, details));
+                activity.showSnackBar(getString(R.string.failed_server_login), Snackbar.LENGTH_LONG);
                 Log.d(TAG, "requestUserDetails: " + " status - > " + status + " details - > " + details);
             }
 
             @Override
             public void requestFinished(int status, final UserData userData) {
-                Log.d(TAG, "requestUserDetails: " + " status - > " + status + " result - > " + userData);
-                if (userData != null) {
-
-                    final String[] totalDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, userData.getTotalDistance());
-                    final String[] obdDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, userData.getObdDistance());
-                    String displayName = userData.getDisplayName();
-                    String username = userData.getUserName();
-                    String totalPhotos = Utils.formatNumber((int) userData.getTotalPhotos());
-                    String totalTracks = Utils.formatNumber((int) userData.getTotalTracks());
-                    final String photoUrl = appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL);
-                    fillUserInformation(displayName, username, photoUrl, totalDistanceFormatted, obdDistanceFormatted, totalPhotos, totalTracks);
-                }
+                Log.d(TAG, String.format("requestUserDetails. Status: success. Status code: %s. User data: %s. Message: Request details successful.", status, userData));
+                displayCachedStats(user -> {
+                            Log.d(TAG, "requestDetails. Status: complete. Message: User found.");
+                            displayGamificationDetails(user);
+                        },
+                        throwable -> Log.d(TAG, String.format("requestDetails. Status: error. Message: %s", throwable.getMessage())),
+                        () -> Log.d(TAG, "requestDetails. Status: complete. Message: User not found.")
+                );
             }
         });
-    }
-
-    protected void displayCachedStats() {
-        SharedPreferences prefs = activity.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        final String photos = prefs.getString(K_TOTAL_PHOTOS, "");
-        final String tracks = prefs.getString(K_TOTAL_TRACKS, "");
-        final String distance = prefs.getString(K_TOTAL_DISTANCE, "");
-        final String obdDistance = prefs.getString(K_OBD_DISTANCE, "");
-        final String[] totalDistanceFormatted, obdDistanceFormatted;
-        if (distance.equals("")) {
-            return;
-        }
-        double totalDistanceNum = 0;
-        double obdDistanceNum = 0;
-        try {
-            totalDistanceNum = Double.parseDouble(distance);
-        } catch (NumberFormatException e) {
-            Log.d(TAG, "displayCachedStats: " + Log.getStackTraceString(e));
-        }
-        try {
-            obdDistanceNum = Double.parseDouble(obdDistance);
-        } catch (NumberFormatException e) {
-            Log.d(TAG, "displayCachedStats: " + Log.getStackTraceString(e));
-        }
-        totalDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, totalDistanceNum);
-        obdDistanceFormatted = Utils.formatDistanceFromKiloMeters(activity, obdDistanceNum);
-        final String photoUrl = appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL);
-        final String username = appPrefs.getStringPreference(PreferenceTypes.K_USER_NAME);
-        final String name = appPrefs.getStringPreference(PreferenceTypes.K_DISPLAY_NAME);
-        fillUserInformation(name, username, photoUrl, totalDistanceFormatted, obdDistanceFormatted, photos, tracks);
     }
 
     protected void loadMoreResults() {
-        BackgroundThreadPool.post(new Runnable() {
+        BackgroundThreadPool.post(() -> activity.getUserDataManager().listSequences(new NetworkResponseDataListener<TrackCollection>() {
 
             @Override
-            public void run() {
-                activity.getUserDataManager().listSequences(new NetworkResponseDataListener<TrackCollection>() {
-
-                    @Override
-                    public void requestFailed(int status, TrackCollection details) {
-                        mHandler.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                //                                mCurrentPageToList--;
-                                if (mOnlineSequences.isEmpty()) {
-                                    mOnlineSequencesAdapter.setOnline(Utils.isInternetAvailable(activity));
-                                }
-                                mOnlineSequencesAdapter.notifyDataSetChanged();
-                                stopRefreshing();
-                            }
-                        });
+            public void requestFailed(int status, TrackCollection details) {
+                mHandler.post(() -> {
+                    if (mOnlineSequences.isEmpty()) {
+                        mOnlineSequencesAdapter.setOnline(Utils.isInternetAvailable(activity));
                     }
-
-                    @Override
-                    public void requestFinished(int status, final TrackCollection collectionData) {
-                        BackgroundThreadPool.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                if (collectionData != null) {
-                                    try {
-                                        mCurrentPageToList++;
-                                        mMaxNumberOfResults = collectionData.getTotalFilteredItems();
-                                        mOnlineSequences.addAll(collectionData.getTrackList());
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                mLoading = false;
-
-                                mHandler.post(new Runnable() {
-
-                                    public void run() {
-                                        //change adapter contents
-                                        if (mOnlineSequencesAdapter != null) {
-                                            mOnlineSequencesAdapter.setOnline(Utils.isInternetAvailable(activity));
-                                            mOnlineSequencesAdapter.notifyDataSetChanged();
-                                        }
-                                    }
-                                });
-                                stopRefreshing();
-                            }
-                        });
-                    }
-                }, mCurrentPageToList, NUMBER_OF_ITEMS_PER_PAGE);
+                    mOnlineSequencesAdapter.notifyDataSetChanged();
+                    stopRefreshing();
+                });
             }
-        });
+
+            @Override
+            public void requestFinished(int status, final TrackCollection collectionData) {
+                BackgroundThreadPool.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (collectionData != null) {
+                            try {
+                                mCurrentPageToList++;
+                                mMaxNumberOfResults = collectionData.getTotalFilteredItems();
+                                mOnlineSequences.addAll(collectionData.getTrackList());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        mLoading = false;
+
+                        mHandler.post(() -> {
+                            //change adapter contents
+                            if (mOnlineSequencesAdapter != null) {
+                                mOnlineSequencesAdapter.setOnline(Utils.isInternetAvailable(activity));
+                                mOnlineSequencesAdapter.notifyDataSetChanged();
+                            }
+                        });
+                        stopRefreshing();
+                    }
+                });
+            }
+        }, mCurrentPageToList, NUMBER_OF_ITEMS_PER_PAGE));
     }
 
     @Override
@@ -217,25 +175,46 @@ public class SimpleProfileFragment extends ProfileFragment {
         }
     }
 
-    private void fillUserInformation(final String name, final String username, final String photoUrl, final String[] totalDistanceFormatted,
-                                     final String[] obdDistanceFormatted, final String photos, final String tracks) {
-        mHandler.post(new Runnable() {
+    /**
+     * Displays the gamification profile picture. This is performed using {@link Glide}.
+     * @param username the username used in {@code Glide} signature.
+     */
+    public void displayProfileImage(String username) {
+        Log.d(TAG, "displayProfileImage");
+        String photoUrl = appPrefs.getStringPreference(PreferenceTypes.K_USER_PHOTO_URL);
+        if (!photoUrl.equals(StringUtils.EMPTY_STRING)) {
+            Glide.with(activity).load(NetworkUtils.provideGlideUrlWithAuthorizationIfRequired(appPrefs, photoUrl)).centerCrop().dontAnimate().diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false)
+                    .placeholder(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
+                    .error(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
+                    .listener(MainActivity.mGlideRequestListener).into(mProfileImage);
+        }
+        mProfileImage.setInstantProgress(0.01f);
+    }
 
-            @Override
-            public void run() {
-                collapsingToolbar.setTitle(name);
-                if (!photoUrl.equals("")) {
-                    Glide.with(activity).load(photoUrl).centerCrop().dontAnimate().diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(false)
-                            .signature(new StringSignature("profile " + username + "-" + photoUrl)).priority(Priority.IMMEDIATE)
-                            .placeholder(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
-                            .error(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.vector_profile_placeholder, null))
-                            .listener(MainActivity.mGlideRequestListener).into(mProfileImage);
-                }
-                mProfileImage.setInstantProgress(0.01f);
-                //                mOnlineSequencesAdapter.notifyDataSetChanged();
-                mOnlineSequencesAdapter.refreshDetails(totalDistanceFormatted, new String[]{}, obdDistanceFormatted, photos, tracks);
-            }
-        });
+    /**
+     * Displays driver complete information meaning it will display total values for distances and tracks with photos information.
+     * @param gamificationDetails the gamification details.
+     */
+    public void displayGamificationInfo(GamificationDetails gamificationDetails) {
+        final String tracks = FormatUtils.formatNumber(gamificationDetails.getTracksCount());
+        final String photos = FormatUtils.formatNumber(gamificationDetails.getPhotosCount());
+        String[] totalDistanceFormatted = FormatUtils.formatDistanceFromKiloMeters(activity, gamificationDetails.getDistance(), FormatUtils.FORMAT_ONE_DECIMAL);
+        String[] obdDistanceFormatted = FormatUtils.formatDistanceFromKiloMeters(activity, gamificationDetails.getObdDistance(), FormatUtils.FORMAT_ONE_DECIMAL);
+
+        mOnlineSequencesAdapter.refreshDetails(totalDistanceFormatted, new String[]{}, obdDistanceFormatted, photos, tracks);
+    }
+
+    /**
+     * Displays the gamification information.
+     * @param user the gamification data which is displayed.
+     */
+    private void displayGamificationDetails(User user) {
+        hideLoadingIndicator();
+        collapsingToolbar.setTitle(user.getDisplayName());
+        displayProfileImage(user.getUserName());
+        if (user.getDetails() != null && user.getDetails().getType() == BaseUserDetails.UserDetailsTypes.GAMIFICATION) {
+            displayGamificationInfo((GamificationDetails) user.getDetails());
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.telenav.osv">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -9,11 +10,16 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission
+        android:name="android.permission.READ_PHONE_STATE"
+        tools:node="remove" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -38,13 +44,14 @@
         android:required="false" />
 
     <application
-        android:name="com.telenav.osv.application.OSVApplication"
-        android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:name=".application.KVApplication"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:process="@string/main_process_name"
-        android:theme="@style/AppTheme">
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
         <meta-data
             android:name="com.skobbler.ngx.API_KEY"
             android:value="@string/skobbler_api_key" />
@@ -58,7 +65,6 @@
         <activity
             android:name=".activity.SplashActivity"
             android:configChanges="screenSize"
-            android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:screenOrientation="fullSensor">
             <intent-filter>
@@ -67,24 +73,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activity.WalkthroughActivity"
             android:label="Intro"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="orientation|screenSize"
             android:hardwareAccelerated="true"
             android:label="@string/app_name"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTask"
             android:screenOrientation="fullSensor"
             android:windowSoftInputMode="adjustPan" />
-
         <activity
             android:name=".activity.LoginActivity"
-            android:configChanges="orientation|screenSize"
+            android:configChanges="screenSize"
             android:excludeFromRecents="true"
             android:label="@string/login_label"
             android:screenOrientation="fullSensor"
@@ -93,27 +96,16 @@
 
         <service
             android:name=".service.CameraHandlerService"
-            android:icon="@drawable/ic_launcher"
+            android:icon="@mipmap/ic_launcher_round"
             android:label="OSV recording service"
             android:stopWithTask="false" />
 
-        <service
-            android:name=".service.UploadJobService"
-            android:exported="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!--phone collector-->
+        <service android:name=".data.collector.phonedata.service.PhoneService" />
 
-        <receiver android:name=".service.ConnectivityBroadcastReceiver">
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-                <action android:name="android.intent.action.BATTERY_CHANGED" />
-            </intent-filter>
-        </receiver>
+        <!--obd collector-->
+        <service android:name=".data.collector.obddata.service.OBDService" />
 
-        <service
-            android:name=".service.UploadHandlerService"
-            android:icon="@drawable/ic_launcher"
-            android:label="OSV uploading service"
-            android:stopWithTask="false" />
         <service
             android:name=".service.FirebaseService"
             android:permission="android.permission.INTERNET">
@@ -123,17 +115,10 @@
         </service>
 
         <service
-            android:name=".service.RecentClearedService"
-            android:exported="false"
-            android:stopWithTask="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
-            </intent-filter>
-        </service>
+            android:name=".common.service.location.IntentServiceFetchAddress"
+            android:exported="false" />
 
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="00000000000000000b0000000000000000000000" />
+        <service android:name=".upload.ServiceUploadImpl" />
 
         <activity
             android:name=".activity.PlayerActivity"
@@ -150,6 +135,23 @@
             android:process="@string/playback_process_name"
             android:screenOrientation="fullSensor"
             android:taskAffinity="com.telenav.streetview.PlayerActivity" />
+
+        <activity
+            android:name=".obd.ObdActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.Obd" />
+
+        <activity
+            android:name=".tasks.activity.TaskActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="fullSensor"
+            android:windowSoftInputMode="adjustResize" />
+
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
     </application>
 
 </manifest>

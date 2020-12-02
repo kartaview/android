@@ -7,6 +7,6 @@
     <solid android:color="@android:color/transparent" />
     <stroke
         android:width="2dp"
-        android:color="#01579B" />
+        android:color="@color/default_purple" />
 
 </shape>

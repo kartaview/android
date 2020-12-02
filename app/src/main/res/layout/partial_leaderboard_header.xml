@@ -13,21 +13,21 @@
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="Rank"
-        android:textColor="@color/grey" />
+        android:textColor="@color/default_gray_lighter" />
 
     <TextView
         style="@style/textStyle"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginLeft="80dp"
-        android:layout_marginRight="10dp"
         android:layout_marginStart="80dp"
+        android:layout_marginLeft="80dp"
         android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
         android:fontFamily="sans-serif"
         android:text="Name"
-        android:textColor="@color/grey" />
+        android:textColor="@color/default_gray_lighter" />
 
     <TextView
         style="@style/textStyle"
@@ -38,5 +38,5 @@
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="Points"
-        android:textColor="@color/grey" />
+        android:textColor="@color/default_gray_lighter" />
 </FrameLayout>

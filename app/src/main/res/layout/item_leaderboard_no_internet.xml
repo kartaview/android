@@ -14,5 +14,5 @@
         android:fontFamily="sans-serif"
         android:gravity="center"
         android:text="No internet connection."
-        android:textColor="@color/leaderboard_text_grey" />
+        android:textColor="@color/default_black_lighter" />
 </FrameLayout>

@@ -1,1 +1,9 @@
-include ':app'/*, ':sdk', ':ffmpeg', ':dotindicator', ':eventbus', ':volley', ':connectivity', ':photoview', ':scalablevideoview', ':spherical'*/
+include ':app'
+//include ':sdk'
+//include ':dotindicator'
+//include ':eventbus'
+//include ':volley'
+//include ':connectivity'
+//include ':photoview'
+//include ':scalablevideoview'
+//include ':spherical'

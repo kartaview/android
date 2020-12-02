@@ -8,15 +8,15 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import com.telenav.osv.R;
 import com.telenav.osv.utils.Utils;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 /**
  * Visualizing the score for the recording
@@ -79,7 +79,7 @@ public class ScoreIndicator extends View {
 
     private int mPoints = 0;
 
-    private int mMultiplier = 0;
+    private int mMultiplier = 1;
 
     private int mState = STATE_HIDDEN;
 
@@ -101,7 +101,7 @@ public class ScoreIndicator extends View {
 
     private String mPointsSuffix = "pts";
 
-    private String mMultiplierText = "0";
+    private String mMultiplierText = "1";
 
     private String mPointsText = "0";
 
@@ -282,8 +282,8 @@ public class ScoreIndicator extends View {
         mDrawMultiplierTexts = false;
         mState = STATE_HIDDEN;
         mMultiplierPrefix = "x";
-        mMultiplier = 0;
-        mMultiplierText = "0";
+        mMultiplier = 1;
+        mMultiplierText = "1";
         mDrawIcon = false;
         mPoints = 0;
         requestLayout();
@@ -311,12 +311,12 @@ public class ScoreIndicator extends View {
         rectangle = new RectF();
         rightArc = new RectF();
         leftArc = new RectF();
-        mColorBlue = getResources().getColor(R.color.score_background_blue);
+        mColorBlue = getResources().getColor(R.color.default_purple);
         mColorLightBlue = getResources().getColor(R.color.score_background_light_blue);
-        mColorGray = getResources().getColor(R.color.score_background_gray);
+        mColorGray = getResources().getColor(R.color.default_gray);
         mColorLightGray = getResources().getColor(R.color.score_background_light_gray);
-        mColorYellow = getResources().getColor(R.color.score_background_yellow);
-        mColorLightYellow = getResources().getColor(R.color.score_background_light_yellow);
+        mColorYellow = getResources().getColor(R.color.default_yellow);
+        mColorLightYellow = getResources().getColor(R.color.default_yellow_lighter);
         mPaintLarge = new Paint();
         mPaintLarge.setColor(mColorBlue);
         mPaintLarge.setStrokeWidth(0);
